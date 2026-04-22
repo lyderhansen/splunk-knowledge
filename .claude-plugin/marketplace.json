@@ -1,0 +1,20 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "splunk-knowledge",
+  "description": "Marketplace for Splunk knowledge plugins. Currently hosts splunk-dashboards for authoring Dashboard Studio dashboards end-to-end.",
+  "owner": {
+    "name": "Lyder Hansen"
+  },
+  "plugins": [
+    {
+      "name": "splunk-dashboards",
+      "description": "Guided authoring of Splunk Dashboard Studio (v2) dashboards from scope to deploy.",
+      "source": "./plugins/splunk-dashboards",
+      "category": "productivity",
+      "homepage": "https://github.com/lyderhansen/splunk-knowledge",
+      "author": {
+        "name": "Lyder Hansen"
+      }
+    }
+  ]
+}

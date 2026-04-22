@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Lay the foundation for the `splunk-dashboards` plugin (workspace/state infrastructure, plugin manifest) and implement the `ds-init` skill for dashboard requirements gathering.
+**Goal:** Lay the foundation for the `plugins/splunk-dashboards` plugin (workspace/state infrastructure, plugin manifest) and implement the `ds-init` skill for dashboard requirements gathering.
 
-**Architecture:** The plugin lives in a directory at the repo root (`splunk-dashboards/`). It ships a plugin manifest (`plugin.json`), a shared Python package (`src/splunk_dashboards/`) for workspace and state management, and per-skill directories under `skills/`. Workspace state is persisted on disk under `./.splunk-dashboards/<project>/` (cwd-relative) as plain JSON and Markdown files. The `ds-init` skill gathers requirements via a ten-question interactive flow, then writes `requirements.md` and updates `state.json`. Later sub-plans add skills that read this workspace state.
+**Architecture:** The plugin lives in a directory at the repo root (`plugins/splunk-dashboards/`). It ships a plugin manifest (`plugin.json`), a shared Python package (`src/splunk_dashboards/`) for workspace and state management, and per-skill directories under `skills/`. Workspace state is persisted on disk under `./.splunk-dashboards/<project>/` (cwd-relative) as plain JSON and Markdown files. The `ds-init` skill gathers requirements via a ten-question interactive flow, then writes `requirements.md` and updates `state.json`. Later sub-plans add skills that read this workspace state.
 
 **Tech Stack:** Python 3.11+ stdlib (`pathlib`, `json`, `argparse`, `dataclasses`, `datetime`). `pytest` for tests. No external runtime dependencies. All plugin artifacts are written in English (per repo `CLAUDE.md`).
 
@@ -13,8 +13,11 @@
 ## File structure created by this sub-plan
 
 ```
-splunk-dashboards/
-├── plugin.json                                 # Plugin manifest
+.claude-plugin/
+└── marketplace.json                            # Marketplace metadata (repo root)
+plugins/splunk-dashboards/
+├── .claude-plugin/
+│   └── plugin.json                             # Plugin manifest (Claude Code schema)
 ├── README.md                                   # Plugin overview
 ├── pyproject.toml                              # Python package + pytest config
 ├── src/
@@ -37,13 +40,13 @@ splunk-dashboards/
 ### Task 1: Scaffold plugin directory and manifest
 
 **Files:**
-- Create: `splunk-dashboards/plugin.json`
-- Create: `splunk-dashboards/README.md`
-- Create: `splunk-dashboards/pyproject.toml`
+- Create: `plugins/splunk-dashboards/plugin.json`
+- Create: `plugins/splunk-dashboards/README.md`
+- Create: `plugins/splunk-dashboards/pyproject.toml`
 
 - [ ] **Step 1: Create plugin directory and manifest**
 
-Create `splunk-dashboards/plugin.json`:
+Create `plugins/splunk-dashboards/plugin.json`:
 
 ```json
 {
@@ -57,7 +60,7 @@ Create `splunk-dashboards/plugin.json`:
 
 - [ ] **Step 2: Create README.md**
 
-Create `splunk-dashboards/README.md`:
+Create `plugins/splunk-dashboards/README.md`:
 
 ```markdown
 # splunk-dashboards
@@ -79,7 +82,7 @@ Each dashboard project lives in `./.splunk-dashboards/<project-name>/` relative 
 
 - [ ] **Step 3: Create pyproject.toml**
 
-Create `splunk-dashboards/pyproject.toml`:
+Create `plugins/splunk-dashboards/pyproject.toml`:
 
 ```toml
 [build-system]
@@ -103,10 +106,10 @@ python_files = ["test_*.py"]
 - [ ] **Step 4: Commit**
 
 ```bash
-cd splunk-dashboards
+cd plugins/splunk-dashboards
 git init 2>/dev/null || true
 cd ..
-git add splunk-dashboards/plugin.json splunk-dashboards/README.md splunk-dashboards/pyproject.toml
+git add plugins/splunk-dashboards/plugin.json plugins/splunk-dashboards/README.md plugins/splunk-dashboards/pyproject.toml
 git commit -m "feat(splunk-dashboards): scaffold plugin manifest and pyproject"
 ```
 
@@ -115,12 +118,12 @@ git commit -m "feat(splunk-dashboards): scaffold plugin manifest and pyproject"
 ### Task 2: Python package skeleton
 
 **Files:**
-- Create: `splunk-dashboards/src/splunk_dashboards/__init__.py`
-- Create: `splunk-dashboards/tests/__init__.py`
+- Create: `plugins/splunk-dashboards/src/splunk_dashboards/__init__.py`
+- Create: `plugins/splunk-dashboards/tests/__init__.py`
 
 - [ ] **Step 1: Create package init**
 
-Create `splunk-dashboards/src/splunk_dashboards/__init__.py`:
+Create `plugins/splunk-dashboards/src/splunk_dashboards/__init__.py`:
 
 ```python
 """splunk-dashboards plugin — shared utilities."""
@@ -130,14 +133,14 @@ __version__ = "0.1.0"
 
 - [ ] **Step 2: Create tests init**
 
-Create `splunk-dashboards/tests/__init__.py` (empty file).
+Create `plugins/splunk-dashboards/tests/__init__.py` (empty file).
 
 - [ ] **Step 3: Verify package is importable**
 
-Run from `splunk-dashboards/` directory:
+Run from `plugins/splunk-dashboards/` directory:
 
 ```bash
-cd splunk-dashboards
+cd plugins/splunk-dashboards
 python -c "import sys; sys.path.insert(0, 'src'); import splunk_dashboards; print(splunk_dashboards.__version__)"
 ```
 
@@ -146,7 +149,7 @@ Expected output: `0.1.0`
 - [ ] **Step 4: Commit**
 
 ```bash
-git add splunk-dashboards/src splunk-dashboards/tests/__init__.py
+git add plugins/splunk-dashboards/src plugins/splunk-dashboards/tests/__init__.py
 git commit -m "feat(splunk-dashboards): add Python package skeleton"
 ```
 
@@ -155,12 +158,12 @@ git commit -m "feat(splunk-dashboards): add Python package skeleton"
 ### Task 3: WorkspaceState dataclass (TDD)
 
 **Files:**
-- Create: `splunk-dashboards/tests/test_workspace.py`
-- Create: `splunk-dashboards/src/splunk_dashboards/workspace.py`
+- Create: `plugins/splunk-dashboards/tests/test_workspace.py`
+- Create: `plugins/splunk-dashboards/src/splunk_dashboards/workspace.py`
 
 - [ ] **Step 1: Write the failing test**
 
-Create `splunk-dashboards/tests/test_workspace.py`:
+Create `plugins/splunk-dashboards/tests/test_workspace.py`:
 
 ```python
 """Tests for workspace module."""
@@ -211,7 +214,7 @@ def test_stages_sequence():
 - [ ] **Step 2: Run the test and verify it fails**
 
 ```bash
-cd splunk-dashboards
+cd plugins/splunk-dashboards
 python -m pytest tests/test_workspace.py -v
 ```
 
@@ -219,7 +222,7 @@ Expected: `ImportError` — `workspace.py` does not exist yet.
 
 - [ ] **Step 3: Implement workspace.py (dataclass only)**
 
-Create `splunk-dashboards/src/splunk_dashboards/workspace.py`:
+Create `plugins/splunk-dashboards/src/splunk_dashboards/workspace.py`:
 
 ```python
 """Workspace and state management for splunk-dashboards."""
@@ -264,7 +267,7 @@ class WorkspaceState:
 - [ ] **Step 4: Run the test and verify it passes**
 
 ```bash
-cd splunk-dashboards
+cd plugins/splunk-dashboards
 python -m pytest tests/test_workspace.py -v
 ```
 
@@ -273,7 +276,7 @@ Expected: 3 passed.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add splunk-dashboards/src/splunk_dashboards/workspace.py splunk-dashboards/tests/test_workspace.py
+git add plugins/splunk-dashboards/src/splunk_dashboards/workspace.py plugins/splunk-dashboards/tests/test_workspace.py
 git commit -m "feat(splunk-dashboards): add WorkspaceState dataclass"
 ```
 
@@ -282,12 +285,12 @@ git commit -m "feat(splunk-dashboards): add WorkspaceState dataclass"
 ### Task 4: Workspace directory operations (TDD)
 
 **Files:**
-- Modify: `splunk-dashboards/tests/test_workspace.py`
-- Modify: `splunk-dashboards/src/splunk_dashboards/workspace.py`
+- Modify: `plugins/splunk-dashboards/tests/test_workspace.py`
+- Modify: `plugins/splunk-dashboards/src/splunk_dashboards/workspace.py`
 
 - [ ] **Step 1: Append failing tests**
 
-Append to `splunk-dashboards/tests/test_workspace.py`:
+Append to `plugins/splunk-dashboards/tests/test_workspace.py`:
 
 ```python
 from splunk_dashboards.workspace import (
@@ -344,7 +347,7 @@ def test_workspace_exists(tmp_path, monkeypatch):
 - [ ] **Step 2: Run tests and verify new ones fail**
 
 ```bash
-cd splunk-dashboards
+cd plugins/splunk-dashboards
 python -m pytest tests/test_workspace.py -v
 ```
 
@@ -352,7 +355,7 @@ Expected: ImportError on `get_workspace_dir`, `init_workspace`, `load_state`, `s
 
 - [ ] **Step 3: Implement the functions**
 
-Append to `splunk-dashboards/src/splunk_dashboards/workspace.py`:
+Append to `plugins/splunk-dashboards/src/splunk_dashboards/workspace.py`:
 
 ```python
 import json
@@ -399,7 +402,7 @@ def _write_state_file(path: Path, state: WorkspaceState) -> None:
 - [ ] **Step 4: Run tests and verify they pass**
 
 ```bash
-cd splunk-dashboards
+cd plugins/splunk-dashboards
 python -m pytest tests/test_workspace.py -v
 ```
 
@@ -408,7 +411,7 @@ Expected: 8 passed (3 from Task 3 + 5 new).
 - [ ] **Step 5: Commit**
 
 ```bash
-git add splunk-dashboards/src/splunk_dashboards/workspace.py splunk-dashboards/tests/test_workspace.py
+git add plugins/splunk-dashboards/src/splunk_dashboards/workspace.py plugins/splunk-dashboards/tests/test_workspace.py
 git commit -m "feat(splunk-dashboards): add workspace directory and state persistence"
 ```
 
@@ -417,12 +420,12 @@ git commit -m "feat(splunk-dashboards): add workspace directory and state persis
 ### Task 5: Stage transitions (TDD)
 
 **Files:**
-- Modify: `splunk-dashboards/tests/test_workspace.py`
-- Modify: `splunk-dashboards/src/splunk_dashboards/workspace.py`
+- Modify: `plugins/splunk-dashboards/tests/test_workspace.py`
+- Modify: `plugins/splunk-dashboards/src/splunk_dashboards/workspace.py`
 
 - [ ] **Step 1: Append failing tests**
 
-Append to `splunk-dashboards/tests/test_workspace.py`:
+Append to `plugins/splunk-dashboards/tests/test_workspace.py`:
 
 ```python
 import pytest
@@ -464,7 +467,7 @@ def test_advance_stage_rejects_unknown_stage(tmp_path, monkeypatch):
 - [ ] **Step 2: Run tests and verify they fail**
 
 ```bash
-cd splunk-dashboards
+cd plugins/splunk-dashboards
 python -m pytest tests/test_workspace.py -v
 ```
 
@@ -472,7 +475,7 @@ Expected: ImportError on `advance_stage`, `InvalidStageTransition`.
 
 - [ ] **Step 3: Implement stage transitions**
 
-Append to `splunk-dashboards/src/splunk_dashboards/workspace.py`:
+Append to `plugins/splunk-dashboards/src/splunk_dashboards/workspace.py`:
 
 ```python
 class InvalidStageTransition(Exception):
@@ -497,7 +500,7 @@ def advance_stage(state: WorkspaceState, target: str, allow_backward: bool = Fal
 - [ ] **Step 4: Run tests and verify they pass**
 
 ```bash
-cd splunk-dashboards
+cd plugins/splunk-dashboards
 python -m pytest tests/test_workspace.py -v
 ```
 
@@ -506,7 +509,7 @@ Expected: 12 passed.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add splunk-dashboards/src/splunk_dashboards/workspace.py splunk-dashboards/tests/test_workspace.py
+git add plugins/splunk-dashboards/src/splunk_dashboards/workspace.py plugins/splunk-dashboards/tests/test_workspace.py
 git commit -m "feat(splunk-dashboards): add stage transition logic"
 ```
 
@@ -515,12 +518,12 @@ git commit -m "feat(splunk-dashboards): add stage transition logic"
 ### Task 6: workspace.py CLI entry point (TDD)
 
 **Files:**
-- Modify: `splunk-dashboards/tests/test_workspace.py`
-- Modify: `splunk-dashboards/src/splunk_dashboards/workspace.py`
+- Modify: `plugins/splunk-dashboards/tests/test_workspace.py`
+- Modify: `plugins/splunk-dashboards/src/splunk_dashboards/workspace.py`
 
 - [ ] **Step 1: Append failing CLI test**
 
-Append to `splunk-dashboards/tests/test_workspace.py`:
+Append to `plugins/splunk-dashboards/tests/test_workspace.py`:
 
 ```python
 import os
@@ -550,7 +553,7 @@ def test_cli_init_creates_workspace(tmp_path):
 - [ ] **Step 2: Run test and verify it fails**
 
 ```bash
-cd splunk-dashboards
+cd plugins/splunk-dashboards
 python -m pytest tests/test_workspace.py::test_cli_init_creates_workspace -v
 ```
 
@@ -558,7 +561,7 @@ Expected: non-zero return code (no `__main__` handler yet).
 
 - [ ] **Step 3: Add CLI entry point**
 
-Append to `splunk-dashboards/src/splunk_dashboards/workspace.py`:
+Append to `plugins/splunk-dashboards/src/splunk_dashboards/workspace.py`:
 
 ```python
 def _cli(argv: Optional[list[str]] = None) -> int:
@@ -587,7 +590,7 @@ if __name__ == "__main__":
 - [ ] **Step 4: Run test and verify it passes**
 
 ```bash
-cd splunk-dashboards
+cd plugins/splunk-dashboards
 python -m pytest tests/test_workspace.py -v
 ```
 
@@ -596,7 +599,7 @@ Expected: 13 passed.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add splunk-dashboards/src/splunk_dashboards/workspace.py splunk-dashboards/tests/test_workspace.py
+git add plugins/splunk-dashboards/src/splunk_dashboards/workspace.py plugins/splunk-dashboards/tests/test_workspace.py
 git commit -m "feat(splunk-dashboards): add workspace CLI entry point"
 ```
 
@@ -605,12 +608,12 @@ git commit -m "feat(splunk-dashboards): add workspace CLI entry point"
 ### Task 7: Requirements dataclass and builder (TDD)
 
 **Files:**
-- Create: `splunk-dashboards/tests/test_requirements.py`
-- Create: `splunk-dashboards/src/splunk_dashboards/requirements.py`
+- Create: `plugins/splunk-dashboards/tests/test_requirements.py`
+- Create: `plugins/splunk-dashboards/src/splunk_dashboards/requirements.py`
 
 - [ ] **Step 1: Write the failing tests**
 
-Create `splunk-dashboards/tests/test_requirements.py`:
+Create `plugins/splunk-dashboards/tests/test_requirements.py`:
 
 ```python
 """Tests for requirements module."""
@@ -690,7 +693,7 @@ def test_render_markdown_routes_to_both_when_partial():
 - [ ] **Step 2: Run tests and verify they fail**
 
 ```bash
-cd splunk-dashboards
+cd plugins/splunk-dashboards
 python -m pytest tests/test_requirements.py -v
 ```
 
@@ -698,7 +701,7 @@ Expected: ImportError — `requirements.py` does not exist.
 
 - [ ] **Step 3: Implement requirements.py**
 
-Create `splunk-dashboards/src/splunk_dashboards/requirements.py`:
+Create `plugins/splunk-dashboards/src/splunk_dashboards/requirements.py`:
 
 ```python
 """Requirements gathering output for ds-init."""
@@ -764,7 +767,7 @@ def render_markdown(r: Requirements) -> str:
 - [ ] **Step 4: Run tests and verify they pass**
 
 ```bash
-cd splunk-dashboards
+cd plugins/splunk-dashboards
 python -m pytest tests/test_requirements.py -v
 ```
 
@@ -773,7 +776,7 @@ Expected: 5 passed.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add splunk-dashboards/src/splunk_dashboards/requirements.py splunk-dashboards/tests/test_requirements.py
+git add plugins/splunk-dashboards/src/splunk_dashboards/requirements.py plugins/splunk-dashboards/tests/test_requirements.py
 git commit -m "feat(splunk-dashboards): add Requirements model and markdown renderer"
 ```
 
@@ -782,14 +785,14 @@ git commit -m "feat(splunk-dashboards): add Requirements model and markdown rend
 ### Task 8: ds-init CLI (writes requirements.md from JSON input) — TDD
 
 **Files:**
-- Create: `splunk-dashboards/tests/test_ds_init_cli.py`
-- Modify: `splunk-dashboards/src/splunk_dashboards/requirements.py`
+- Create: `plugins/splunk-dashboards/tests/test_ds_init_cli.py`
+- Modify: `plugins/splunk-dashboards/src/splunk_dashboards/requirements.py`
 
 **Rationale:** The interactive question-asking happens in Claude via `SKILL.md`. This CLI takes an answers JSON payload (already collected) and deterministically produces the workspace + `requirements.md`. Tests cover that deterministic step.
 
 - [ ] **Step 1: Write the failing CLI test**
 
-Create `splunk-dashboards/tests/test_ds_init_cli.py`:
+Create `plugins/splunk-dashboards/tests/test_ds_init_cli.py`:
 
 ```python
 """Integration test for the ds-init CLI — writes requirements from a JSON payload."""
@@ -848,7 +851,7 @@ def test_ds_init_writes_workspace_and_requirements(tmp_path):
 - [ ] **Step 2: Run test and verify it fails**
 
 ```bash
-cd splunk-dashboards
+cd plugins/splunk-dashboards
 python -m pytest tests/test_ds_init_cli.py -v
 ```
 
@@ -856,7 +859,7 @@ Expected: non-zero return code (no CLI in `requirements.py` yet).
 
 - [ ] **Step 3: Add the CLI**
 
-Append to `splunk-dashboards/src/splunk_dashboards/requirements.py`:
+Append to `plugins/splunk-dashboards/src/splunk_dashboards/requirements.py`:
 
 ```python
 import json as _json
@@ -913,7 +916,7 @@ if __name__ == "__main__":
 - [ ] **Step 4: Run test and verify it passes**
 
 ```bash
-cd splunk-dashboards
+cd plugins/splunk-dashboards
 python -m pytest tests/test_ds_init_cli.py -v
 ```
 
@@ -922,7 +925,7 @@ Expected: 1 passed.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add splunk-dashboards/src/splunk_dashboards/requirements.py splunk-dashboards/tests/test_ds_init_cli.py
+git add plugins/splunk-dashboards/src/splunk_dashboards/requirements.py plugins/splunk-dashboards/tests/test_ds_init_cli.py
 git commit -m "feat(splunk-dashboards): add ds-init from-json CLI"
 ```
 
@@ -933,7 +936,7 @@ git commit -m "feat(splunk-dashboards): add ds-init from-json CLI"
 - [ ] **Step 1: Run the full test suite**
 
 ```bash
-cd splunk-dashboards
+cd plugins/splunk-dashboards
 python -m pytest -v
 ```
 
@@ -948,11 +951,11 @@ If all pass, skip. If any test fails, diagnose and fix before continuing.
 ### Task 10: ds-init SKILL.md
 
 **Files:**
-- Create: `splunk-dashboards/skills/ds-init/SKILL.md`
+- Create: `plugins/splunk-dashboards/skills/ds-init/SKILL.md`
 
 - [ ] **Step 1: Write the SKILL.md**
 
-Create `splunk-dashboards/skills/ds-init/SKILL.md`:
+Create `plugins/splunk-dashboards/skills/ds-init/SKILL.md`:
 
 ````markdown
 ---
@@ -1025,7 +1028,7 @@ Once all answers are collected, assemble them into a JSON payload and invoke:
 
 ```bash
 cd <repo-root-where-splunk-dashboards-lives>
-PYTHONPATH=splunk-dashboards/src python -m splunk_dashboards.requirements from-json - <<'JSON'
+PYTHONPATH=plugins/splunk-dashboards/src python -m splunk_dashboards.requirements from-json - <<'JSON'
 {
   "project": "<kebab-case-project-name>",
   "goal": "<goal sentence>",
@@ -1056,7 +1059,7 @@ Run from a temporary directory:
 
 ```bash
 mkdir -p /tmp/ds-init-smoke && cd /tmp/ds-init-smoke
-PYTHONPATH=<repo>/splunk-dashboards/src python -m splunk_dashboards.requirements from-json - <<'JSON'
+PYTHONPATH=<repo>/plugins/splunk-dashboards/src python -m splunk_dashboards.requirements from-json - <<'JSON'
 {
   "project": "smoke-test",
   "goal": "Test the scoping flow",
@@ -1086,50 +1089,36 @@ rm -rf /tmp/ds-init-smoke
 - [ ] **Step 3: Commit**
 
 ```bash
-git add splunk-dashboards/skills/ds-init/SKILL.md
+git add plugins/splunk-dashboards/skills/ds-init/SKILL.md
 git commit -m "feat(splunk-dashboards): add ds-init SKILL.md"
 ```
 
 ---
 
-### Task 11: Register ds-init in plugin.json
+### Task 11: Verify plugin is discoverable via marketplace
 
 **Files:**
-- Modify: `splunk-dashboards/plugin.json`
+- None to modify — `plugins/splunk-dashboards/.claude-plugin/plugin.json` and the repo-root `.claude-plugin/marketplace.json` already exist from the restructure. Claude Code auto-discovers skills from the `skills/` directory, so no per-skill registration is needed in `plugin.json`.
 
-- [ ] **Step 1: Update the manifest**
-
-Replace `splunk-dashboards/plugin.json` with:
-
-```json
-{
-  "name": "splunk-dashboards",
-  "version": "0.1.0",
-  "description": "Guided authoring of Splunk Dashboard Studio (v2) dashboards from scope to deploy.",
-  "author": "splunk-knowledge",
-  "skills": [
-    {
-      "name": "ds-init",
-      "path": "skills/ds-init"
-    }
-  ]
-}
-```
-
-- [ ] **Step 2: Verify JSON is valid**
+- [ ] **Step 1: Validate both manifests parse**
 
 ```bash
-python -c "import json; json.load(open('splunk-dashboards/plugin.json'))"
+python -c "import json; json.load(open('plugins/splunk-dashboards/.claude-plugin/plugin.json')); json.load(open('.claude-plugin/marketplace.json')); print('OK')"
 ```
 
-Expected: no output, exit code 0.
+Expected: prints `OK`.
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 2: Verify ds-init skill directory is present**
 
 ```bash
-git add splunk-dashboards/plugin.json
-git commit -m "feat(splunk-dashboards): register ds-init in plugin manifest"
+ls plugins/splunk-dashboards/skills/ds-init/SKILL.md
 ```
+
+Expected: the file exists (created in Task 10).
+
+- [ ] **Step 3: No commit needed**
+
+The manifests were already committed in the restructure commit; the ds-init skill was committed in Task 10. Task 11 is a verification-only step.
 
 ---
 
@@ -1138,7 +1127,7 @@ git commit -m "feat(splunk-dashboards): register ds-init in plugin manifest"
 - [ ] **Step 1: Run full test suite one more time**
 
 ```bash
-cd splunk-dashboards
+cd plugins/splunk-dashboards
 python -m pytest -v
 ```
 
@@ -1147,15 +1136,15 @@ Expected: 19 passed, 0 failed.
 - [ ] **Step 2: Verify the file tree matches the plan**
 
 ```bash
-cd splunk-dashboards
-find . -type f -not -path "./.*" -not -path "*/__pycache__/*" | sort
+cd plugins/splunk-dashboards
+find . -type f -not -path "*/__pycache__/*" | sort
 ```
 
 Expected output:
 
 ```
+./.claude-plugin/plugin.json
 ./README.md
-./plugin.json
 ./pyproject.toml
 ./skills/ds-init/SKILL.md
 ./src/splunk_dashboards/__init__.py
@@ -1173,13 +1162,13 @@ Expected output:
 git log --oneline | head -15
 ```
 
-Expected: 11 commits corresponding to Tasks 1–11, each with `feat(splunk-dashboards):` prefix.
+Expected: commits corresponding to Tasks 1–10 plus the `chore(marketplace): restructure to Claude plugin marketplace layout` commit.
 
 ---
 
 ## What this sub-plan delivers
 
-- A registered `splunk-dashboards` plugin with a valid manifest.
+- A registered `plugins/splunk-dashboards` plugin with a valid manifest.
 - A shared Python package (`splunk_dashboards`) with tested workspace and requirements modules.
 - A `ds-init` skill that can be invoked from Claude Code / Cursor, gathers scoping information via ten questions, and produces a `.splunk-dashboards/<project>/` workspace containing `state.json` and `requirements.md`.
 - A deterministic JSON-in / files-out CLI (`python -m splunk_dashboards.requirements from-json`) that lets any agent — or a future `--autopilot` runner — produce the same output without asking questions.
