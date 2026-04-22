@@ -94,3 +94,26 @@ def advance_stage(state: WorkspaceState, target: str, allow_backward: bool = Fal
         state.stages_completed.append(state.current_stage)
     state.current_stage = target
     return state
+
+
+def _cli(argv: Optional[list[str]] = None) -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser(prog="splunk_dashboards.workspace")
+    sub = parser.add_subparsers(dest="command", required=True)
+    init_p = sub.add_parser("init", help="Create a new workspace")
+    init_p.add_argument("project")
+    init_p.add_argument("--autopilot", action="store_true")
+
+    args = parser.parse_args(argv)
+    if args.command == "init":
+        state = init_workspace(args.project, autopilot=args.autopilot)
+        print(f"Workspace initialized: {get_workspace_dir(state.project)}")
+        return 0
+    return 1
+
+
+if __name__ == "__main__":
+    import sys
+
+    sys.exit(_cli())

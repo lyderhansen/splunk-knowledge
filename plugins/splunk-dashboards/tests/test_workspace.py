@@ -128,3 +128,27 @@ def test_advance_stage_rejects_unknown_stage(tmp_path, monkeypatch):
     state = init_workspace("my-dash", autopilot=False)
     with pytest.raises(InvalidStageTransition):
         advance_stage(state, "nonsense")
+
+
+import os
+import subprocess
+import sys as _sys
+
+
+def test_cli_init_creates_workspace(tmp_path):
+    env = {**os.environ, "PYTHONPATH": str(Path(__file__).parent.parent / "src")}
+    result = subprocess.run(
+        [
+            _sys.executable,
+            "-m",
+            "splunk_dashboards.workspace",
+            "init",
+            "my-cli-dash",
+        ],
+        cwd=tmp_path,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    assert (tmp_path / ".splunk-dashboards" / "my-cli-dash" / "state.json").exists()
