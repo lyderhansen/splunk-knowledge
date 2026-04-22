@@ -104,3 +104,88 @@ def test_build_dashboard_preserves_theme():
     result = build_dashboard(layout, data, title="t", description="")
     # Theme is a top-level hint consumed by the XML envelope at deploy time
     assert result["theme"] == "light"
+
+
+import json
+import os
+import subprocess
+import sys as _sys
+from splunk_dashboards.workspace import (
+    init_workspace,
+    load_state,
+    save_state,
+    advance_stage,
+)
+from splunk_dashboards.layout import save_layout
+from splunk_dashboards.data_sources import save_data_sources
+
+
+def _run_cli(args, cwd):
+    env = {**os.environ, "PYTHONPATH": str(Path(__file__).parent.parent / "src")}
+    return subprocess.run(
+        [_sys.executable, "-m", "splunk_dashboards.create", *args],
+        cwd=cwd,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+
+def _prepare_workspace_at_designed(tmp_path, monkeypatch, project="my-dash"):
+    monkeypatch.chdir(tmp_path)
+    state = init_workspace(project, autopilot=False)
+    advance_stage(state, "data-ready")
+    advance_stage(state, "designed")
+    save_state(state)
+    save_data_sources(DataSources(
+        project=project,
+        sources=[DataSource(question="q1", spl="| makeresults count=1", name="Q1")],
+    ))
+    save_layout(Layout(
+        project=project,
+        panels=[Panel(id="p1", title="T", viz_type="splunk.singlevalue", data_source_ref="q1")],
+    ))
+
+
+def test_cli_build_persists_dashboard_and_advances_state(tmp_path, monkeypatch):
+    _prepare_workspace_at_designed(tmp_path, monkeypatch)
+    result = _run_cli(
+        ["build", "my-dash", "--title", "My Dashboard", "--description", "Test"],
+        cwd=tmp_path,
+    )
+    assert result.returncode == 0, result.stderr
+
+    ws = tmp_path / ".splunk-dashboards" / "my-dash"
+    dashboard = json.loads((ws / "dashboard.json").read_text())
+    assert dashboard["title"] == "My Dashboard"
+    assert dashboard["description"] == "Test"
+    assert "ds_1" in dashboard["dataSources"]
+    assert "viz_p1" in dashboard["visualizations"]
+
+    state = load_state("my-dash")
+    assert state.current_stage == "built"
+    assert "designed" in state.stages_completed
+
+
+def test_cli_build_rejects_wrong_stage(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    init_workspace("my-dash", autopilot=False)  # stage = scoped
+    result = _run_cli(
+        ["build", "my-dash", "--title", "t", "--description", ""],
+        cwd=tmp_path,
+    )
+    assert result.returncode != 0
+
+
+def test_cli_build_rejects_missing_inputs(tmp_path, monkeypatch):
+    # Workspace at 'designed' but without layout/data-sources files on disk
+    monkeypatch.chdir(tmp_path)
+    state = init_workspace("my-dash", autopilot=False)
+    advance_stage(state, "data-ready")
+    advance_stage(state, "designed")
+    save_state(state)
+    result = _run_cli(
+        ["build", "my-dash", "--title", "t", "--description", ""],
+        cwd=tmp_path,
+    )
+    assert result.returncode != 0

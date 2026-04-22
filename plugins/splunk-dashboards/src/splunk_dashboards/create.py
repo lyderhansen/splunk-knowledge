@@ -66,3 +66,73 @@ def build_dashboard(layout: Layout, data: DataSources, title: str, description: 
             "structure": structure,
         },
     }
+
+
+import json as _json
+import sys as _sys
+from pathlib import Path as _Path
+
+from splunk_dashboards.data_sources import load_data_sources
+from splunk_dashboards.layout import load_layout
+from splunk_dashboards.workspace import (
+    advance_stage,
+    get_workspace_dir,
+    load_state,
+    save_state,
+    InvalidStageTransition,
+)
+
+DASHBOARD_FILENAME = "dashboard.json"
+
+
+def _cli(argv=None) -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser(prog="splunk_dashboards.create")
+    sub = parser.add_subparsers(dest="command", required=True)
+    build = sub.add_parser("build", help="Build dashboard.json from workspace")
+    build.add_argument("project")
+    build.add_argument("--title", required=True)
+    build.add_argument("--description", default="")
+
+    args = parser.parse_args(argv)
+
+    if args.command == "build":
+        try:
+            state = load_state(args.project)
+        except FileNotFoundError:
+            print(f"No workspace for project '{args.project}'", file=_sys.stderr)
+            return 2
+        if state.current_stage != "designed":
+            print(
+                f"Cannot build from stage '{state.current_stage}' — expected 'designed'",
+                file=_sys.stderr,
+            )
+            return 2
+        try:
+            layout = load_layout(args.project)
+            data = load_data_sources(args.project)
+        except FileNotFoundError as e:
+            print(f"Missing workspace file: {e}", file=_sys.stderr)
+            return 2
+
+        dashboard = build_dashboard(
+            layout, data, title=args.title, description=args.description
+        )
+        ws = get_workspace_dir(args.project)
+        path = ws / DASHBOARD_FILENAME
+        path.write_text(_json.dumps(dashboard, indent=2) + "\n", encoding="utf-8")
+
+        try:
+            advance_stage(state, "built")
+        except InvalidStageTransition as e:
+            print(str(e), file=_sys.stderr)
+            return 3
+        save_state(state)
+        print(f"Wrote {path} ({len(dashboard['visualizations'])} visualizations)")
+        return 0
+    return 1
+
+
+if __name__ == "__main__":
+    _sys.exit(_cli())
