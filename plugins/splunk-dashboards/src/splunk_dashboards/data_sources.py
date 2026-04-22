@@ -68,3 +68,47 @@ def load_data_sources(project: str, cwd: Optional[Path] = None) -> DataSources:
     path = _data_sources_path(project, cwd)
     data = json.loads(path.read_text(encoding="utf-8"))
     return DataSources.from_dict(data)
+
+
+import sys as _sys
+
+from splunk_dashboards.workspace import (
+    advance_stage,
+    load_state,
+    save_state,
+)
+
+
+def _cli(argv: Optional[list[str]] = None) -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser(prog="splunk_dashboards.data_sources")
+    sub = parser.add_subparsers(dest="command", required=True)
+    write = sub.add_parser(
+        "write",
+        help="Write data-sources.json from a JSON payload and advance workspace state",
+    )
+    write.add_argument("source_arg", help='Path to JSON file, or "-" to read stdin')
+
+    args = parser.parse_args(argv)
+
+    if args.command == "write":
+        raw = _sys.stdin.read() if args.source_arg == "-" else Path(args.source_arg).read_text(encoding="utf-8")
+        coll = DataSources.from_dict(json.loads(raw))
+        try:
+            save_data_sources(coll)
+        except FileNotFoundError as e:
+            print(str(e), file=_sys.stderr)
+            return 2
+        # advance state scoped -> data-ready
+        state = load_state(coll.project)
+        if state.current_stage == "scoped":
+            advance_stage(state, "data-ready")
+            save_state(state)
+        print(f"Wrote data-sources.json for {coll.project} ({len(coll.sources)} sources)")
+        return 0
+    return 1
+
+
+if __name__ == "__main__":
+    _sys.exit(_cli())

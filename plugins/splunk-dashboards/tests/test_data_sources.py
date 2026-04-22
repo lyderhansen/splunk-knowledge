@@ -87,3 +87,60 @@ def test_save_data_sources_requires_workspace(tmp_path, monkeypatch):
     coll = DataSources(project="ghost")
     with pytest.raises(FileNotFoundError):
         save_data_sources(coll)
+
+
+import os
+import subprocess
+import sys as _sys
+import json as _json
+
+
+def _run_cli(args, cwd, stdin=None):
+    env = {**os.environ, "PYTHONPATH": str(Path(__file__).parent.parent / "src")}
+    return subprocess.run(
+        [_sys.executable, "-m", "splunk_dashboards.data_sources", *args],
+        cwd=cwd,
+        env=env,
+        input=stdin,
+        capture_output=True,
+        text=True,
+    )
+
+
+def test_cli_write_persists_and_advances_stage(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    init_workspace("auth-mon", autopilot=False)
+    payload = {
+        "project": "auth-mon",
+        "source": "mock",
+        "sources": [
+            {
+                "question": "Top failed logins?",
+                "spl": "| makeresults count=10 | eval src=\"10.0.0.1\"",
+                "earliest": "-24h",
+                "latest": "now",
+                "name": "Failed Logins"
+            }
+        ]
+    }
+    result = _run_cli(["write", "-"], cwd=tmp_path, stdin=_json.dumps(payload))
+    assert result.returncode == 0, result.stderr
+
+    ws = tmp_path / ".splunk-dashboards" / "auth-mon"
+    # data-sources.json written
+    coll = _json.loads((ws / "data-sources.json").read_text())
+    assert coll["project"] == "auth-mon"
+    assert len(coll["sources"]) == 1
+    assert coll["sources"][0]["name"] == "Failed Logins"
+    # state advanced to data-ready
+    state = _json.loads((ws / "state.json").read_text())
+    assert state["current_stage"] == "data-ready"
+    assert "scoped" in state["stages_completed"]
+
+
+def test_cli_write_rejects_missing_workspace(tmp_path):
+    # No init_workspace — CLI should fail with non-zero exit code
+    payload = {"project": "ghost", "sources": []}
+    result = _run_cli(["write", "-"], cwd=tmp_path, stdin=_json.dumps(payload))
+    assert result.returncode != 0
+    assert "Workspace does not exist" in result.stderr or "Workspace does not exist" in result.stdout
