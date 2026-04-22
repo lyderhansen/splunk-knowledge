@@ -103,3 +103,73 @@ def check_all(dashboard: dict) -> list[Finding]:
     findings.extend(check_token_references(dashboard))
     findings.extend(check_drilldown_targets(dashboard))
     return findings
+
+
+import json as _json
+import sys as _sys
+from pathlib import Path as _Path
+
+from splunk_dashboards.workspace import (
+    advance_stage,
+    get_workspace_dir,
+    load_state,
+    save_state,
+    InvalidStageTransition,
+)
+
+
+def _cli(argv=None) -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser(prog="splunk_dashboards.validate")
+    sub = parser.add_subparsers(dest="command", required=True)
+    check = sub.add_parser("check", help="Lint a built dashboard")
+    check.add_argument("project")
+    check.add_argument("--force", action="store_true",
+                       help="Advance stage even if errors are found")
+
+    args = parser.parse_args(argv)
+    if args.command == "check":
+        try:
+            state = load_state(args.project)
+        except FileNotFoundError:
+            print(f"No workspace for project '{args.project}'", file=_sys.stderr)
+            return 2
+        if state.current_stage != "built":
+            print(
+                f"Cannot validate from stage '{state.current_stage}' — expected 'built'",
+                file=_sys.stderr,
+            )
+            return 2
+        ws = get_workspace_dir(args.project)
+        dashboard_path = ws / "dashboard.json"
+        if not dashboard_path.exists():
+            print(f"Missing {dashboard_path}", file=_sys.stderr)
+            return 2
+
+        dashboard = _json.loads(dashboard_path.read_text(encoding="utf-8"))
+        findings = check_all(dashboard)
+        errors = [f for f in findings if f.severity == "error"]
+        warnings = [f for f in findings if f.severity == "warning"]
+
+        for f in findings:
+            print(f"[{f.severity}] {f.code}: {f.message}")
+
+        if errors and not args.force:
+            print(f"\n{len(errors)} error(s), {len(warnings)} warning(s). Refusing to advance stage. Use --force to override.",
+                  file=_sys.stderr)
+            return 1
+
+        try:
+            advance_stage(state, "validated")
+        except InvalidStageTransition as e:
+            print(str(e), file=_sys.stderr)
+            return 3
+        save_state(state)
+        print(f"\nValidation complete: {len(errors)} error(s), {len(warnings)} warning(s). Stage advanced to 'validated'.")
+        return 0
+    return 1
+
+
+if __name__ == "__main__":
+    _sys.exit(_cli())

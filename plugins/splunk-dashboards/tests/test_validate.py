@@ -133,3 +133,52 @@ def test_check_all_aggregates_all_findings():
     severities = {f.severity for f in findings}
     assert "error" in severities
     assert "warning" in severities
+
+
+from splunk_dashboards.workspace import (
+    init_workspace,
+    load_state,
+    save_state,
+    advance_stage,
+    get_workspace_dir,
+)
+
+
+def _run_cli(args, cwd):
+    env = {**os.environ, "PYTHONPATH": str(Path(__file__).parent.parent / "src")}
+    return subprocess.run(
+        [_sys.executable, "-m", "splunk_dashboards.validate", *args],
+        cwd=cwd,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+
+def _prepare_workspace_at_built(tmp_path, monkeypatch, dashboard: dict, project="my-dash"):
+    monkeypatch.chdir(tmp_path)
+    state = init_workspace(project, autopilot=False)
+    for stage in ("data-ready", "designed", "built"):
+        advance_stage(state, stage)
+    save_state(state)
+    (get_workspace_dir(project) / "dashboard.json").write_text(json.dumps(dashboard), encoding="utf-8")
+
+
+def test_cli_check_passes_clean_dashboard_and_advances_stage(tmp_path, monkeypatch):
+    _prepare_workspace_at_built(tmp_path, monkeypatch, _sample_dashboard())
+    result = _run_cli(["check", "my-dash"], cwd=tmp_path)
+    assert result.returncode == 0, result.stderr
+    state = load_state("my-dash")
+    assert state.current_stage == "validated"
+    assert "built" in state.stages_completed
+
+
+def test_cli_check_fails_on_errors_without_force(tmp_path, monkeypatch):
+    d = _sample_dashboard()
+    del d["dataSources"]["ds_1"]["name"]  # introduces an error
+    _prepare_workspace_at_built(tmp_path, monkeypatch, d)
+    result = _run_cli(["check", "my-dash"], cwd=tmp_path)
+    assert result.returncode != 0
+    state = load_state("my-dash")
+    # Stage should NOT have advanced
+    assert state.current_stage == "built"
