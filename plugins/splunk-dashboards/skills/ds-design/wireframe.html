@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ds-design wireframe editor</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack@10.1.2/dist/gridstack.min.css" />
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; background: #1a1a1a; color: #eee; margin: 0; padding: 16px; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    header h1 { margin: 0; font-size: 16px; font-weight: 500; }
+    button { background: #2d5a87; color: #fff; border: 0; padding: 8px 14px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+    button:hover { background: #3a6fa0; }
+    button.secondary { background: #444; }
+    .grid-stack { background: #111; min-height: 480px; border: 1px solid #333; border-radius: 4px; }
+    .grid-stack-item-content { background: #2a2a2a; border: 1px solid #444; border-radius: 4px; padding: 8px; display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
+    .panel-title { font-size: 13px; font-weight: 500; color: #fff; }
+    .panel-viz { flex: 1; display: flex; align-items: center; justify-content: center; color: #888; font-size: 11px; }
+    select { background: #333; color: #eee; border: 1px solid #555; padding: 2px 4px; font-size: 11px; border-radius: 2px; }
+    .controls { display: flex; gap: 8px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ds-design &mdash; wireframe editor</h1>
+    <div class="controls">
+      <button class="secondary" id="add">+ Add panel</button>
+      <button id="save">Save &amp; Exit</button>
+    </div>
+  </header>
+  <div class="grid-stack"></div>
+  <script src="https://cdn.jsdelivr.net/npm/gridstack@10.1.2/dist/gridstack-all.js"></script>
+  <script>
+    const VIZ = ['splunk.singlevalue','splunk.line','splunk.column','splunk.bar','splunk.pie','splunk.area','splunk.table','splunk.timeline','splunk.choropleth','splunk.markergauge'];
+    const grid = GridStack.init({ column: 12, cellHeight: 40, float: true });
+    let PROJECT = null;
+
+    function panelHtml(p) {
+      const options = VIZ.map(v => `<option value="${v}" ${v===p.viz_type?'selected':''}>${v}</option>`).join('');
+      return `<div class="grid-stack-item-content">
+        <div class="panel-title" contenteditable="true" data-field="title">${p.title}</div>
+        <select data-field="viz_type">${options}</select>
+        <div class="panel-viz">${p.viz_type}</div>
+      </div>`;
+    }
+
+    function addPanel(p) {
+      const w = grid.addWidget({
+        x: p.x, y: p.y, w: p.w, h: p.h,
+        content: panelHtml(p),
+      });
+      w.setAttribute('data-id', p.id);
+      w.setAttribute('data-viz', p.viz_type);
+      w.setAttribute('data-ds', p.data_source_ref || '');
+      const sel = w.querySelector('select[data-field="viz_type"]');
+      sel.addEventListener('change', e => {
+        w.setAttribute('data-viz', e.target.value);
+        w.querySelector('.panel-viz').textContent = e.target.value;
+      });
+    }
+
+    function collect() {
+      const items = grid.save(false);
+      const panels = items.map((it, idx) => {
+        const el = it.el;
+        return {
+          id: el.getAttribute('data-id') || `p${idx+1}`,
+          title: el.querySelector('[data-field="title"]').textContent.trim(),
+          x: it.x, y: it.y, w: it.w, h: it.h,
+          viz_type: el.getAttribute('data-viz') || 'splunk.singlevalue',
+          data_source_ref: el.getAttribute('data-ds') || null,
+        };
+      });
+      return { project: PROJECT, theme: 'dark', panels };
+    }
+
+    document.getElementById('add').addEventListener('click', () => {
+      const id = `p${Date.now()}`;
+      addPanel({ id, title: 'New panel', x: 0, y: 0, w: 6, h: 4, viz_type: 'splunk.singlevalue', data_source_ref: null });
+    });
+
+    document.getElementById('save').addEventListener('click', async () => {
+      const payload = collect();
+      const resp = await fetch('/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      if (resp.ok) {
+        document.body.innerHTML = '<p style="padding:20px;">Saved. You can close this tab.</p>';
+      } else {
+        alert('Save failed: ' + resp.status + ' ' + await resp.text());
+      }
+    });
+
+    (async () => {
+      const resp = await fetch('/api/layout');
+      const layout = await resp.json();
+      PROJECT = layout.project;
+      (layout.panels || []).forEach(addPanel);
+    })();
+  </script>
+</body>
+</html>
