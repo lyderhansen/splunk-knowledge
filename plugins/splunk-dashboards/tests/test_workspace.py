@@ -92,3 +92,39 @@ def test_workspace_exists(tmp_path, monkeypatch):
     assert workspace_exists("my-dash") is False
     init_workspace("my-dash", autopilot=False)
     assert workspace_exists("my-dash") is True
+
+
+import pytest
+from splunk_dashboards.workspace import advance_stage, InvalidStageTransition
+
+
+def test_advance_stage_moves_to_next(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    state = init_workspace("my-dash", autopilot=False)
+    advanced = advance_stage(state, "data-ready")
+    assert advanced.current_stage == "data-ready"
+    assert advanced.stages_completed == ["scoped"]
+
+
+def test_advance_stage_rejects_skipping(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    state = init_workspace("my-dash", autopilot=False)
+    with pytest.raises(InvalidStageTransition):
+        advance_stage(state, "built")  # skips data-ready and designed
+
+
+def test_advance_stage_allows_update_loop(tmp_path, monkeypatch):
+    # deployed -> validated is legal (ds-update loops back through validate)
+    monkeypatch.chdir(tmp_path)
+    state = init_workspace("my-dash", autopilot=False)
+    state.current_stage = "deployed"
+    state.stages_completed = ["scoped", "data-ready", "designed", "built", "validated"]
+    advanced = advance_stage(state, "validated", allow_backward=True)
+    assert advanced.current_stage == "validated"
+
+
+def test_advance_stage_rejects_unknown_stage(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    state = init_workspace("my-dash", autopilot=False)
+    with pytest.raises(InvalidStageTransition):
+        advance_stage(state, "nonsense")

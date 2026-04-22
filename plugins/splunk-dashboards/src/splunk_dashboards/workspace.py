@@ -75,3 +75,22 @@ def save_state(state: WorkspaceState, cwd: Optional[Path] = None) -> None:
 
 def _write_state_file(path: Path, state: WorkspaceState) -> None:
     path.write_text(json.dumps(state.to_dict(), indent=2) + "\n", encoding="utf-8")
+
+
+class InvalidStageTransition(Exception):
+    pass
+
+
+def advance_stage(state: WorkspaceState, target: str, allow_backward: bool = False) -> WorkspaceState:
+    if target not in STAGES:
+        raise InvalidStageTransition(f"Unknown stage: {target}")
+    current_idx = STAGES.index(state.current_stage)
+    target_idx = STAGES.index(target)
+    if not allow_backward and target_idx != current_idx + 1:
+        raise InvalidStageTransition(
+            f"Cannot advance from {state.current_stage} to {target}"
+        )
+    if state.current_stage not in state.stages_completed:
+        state.stages_completed.append(state.current_stage)
+    state.current_stage = target
+    return state
