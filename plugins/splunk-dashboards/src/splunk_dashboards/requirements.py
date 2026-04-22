@@ -56,3 +56,54 @@ def render_markdown(r: Requirements) -> str:
         f"## Next step\n"
         f"{_next_step(r.has_data)}\n"
     )
+
+
+import json as _json
+import sys as _sys
+from pathlib import Path as _Path
+
+from splunk_dashboards.workspace import init_workspace, get_workspace_dir
+
+
+def _cli(argv: Optional[list[str]] = None) -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser(prog="splunk_dashboards.requirements")
+    sub = parser.add_subparsers(dest="command", required=True)
+    from_json = sub.add_parser(
+        "from-json",
+        help="Build requirements.md from an answers JSON payload",
+    )
+    from_json.add_argument(
+        "source",
+        help='Path to JSON file, or "-" to read from stdin',
+    )
+
+    args = parser.parse_args(argv)
+
+    if args.command == "from-json":
+        raw = _sys.stdin.read() if args.source == "-" else _Path(args.source).read_text(encoding="utf-8")
+        payload = _json.loads(raw)
+        r = Requirements(
+            project=payload["project"],
+            goal=payload["goal"],
+            role=payload.get("role", "Developer"),
+            audience=payload.get("audience", "Self"),
+            focus=payload.get("focus", "Mixed"),
+            questions=payload.get("questions", []),
+            has_data=payload.get("has_data", "no"),
+            indexes=payload.get("indexes", []),
+            customization=payload.get("customization", "moderate"),
+            nice_to_haves=payload.get("nice_to_haves", []),
+            reference_dashboard=payload.get("reference_dashboard"),
+        )
+        init_workspace(r.project, autopilot=payload.get("autopilot", False))
+        ws = get_workspace_dir(r.project)
+        (ws / "requirements.md").write_text(render_markdown(r), encoding="utf-8")
+        print(f"Wrote {ws / 'requirements.md'}")
+        return 0
+    return 1
+
+
+if __name__ == "__main__":
+    _sys.exit(_cli())
