@@ -1,0 +1,12 @@
+{
+  "name": "security-monitoring",
+  "description": "Authentication and access monitoring — failed logins, unusual access patterns",
+  "theme": "dark",
+  "panels": [
+    { "id": "p1", "title": "Failed Logins (24h)", "x": 0, "y": 0, "w": 3, "h": 3, "viz_type": "splunk.singlevalue", "data_source_ref": null },
+    { "id": "p2", "title": "Unique Attackers", "x": 3, "y": 0, "w": 3, "h": 3, "viz_type": "splunk.singlevalue", "data_source_ref": null },
+    { "id": "p3", "title": "Login Activity", "x": 6, "y": 0, "w": 6, "h": 3, "viz_type": "splunk.area", "data_source_ref": null },
+    { "id": "p4", "title": "Top Source IPs", "x": 0, "y": 3, "w": 6, "h": 4, "viz_type": "splunk.table", "data_source_ref": null },
+    { "id": "p5", "title": "Failures by Country", "x": 6, "y": 3, "w": 6, "h": 4, "viz_type": "splunk.choropleth", "data_source_ref": null }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "soc-overview",
+  "description": "Security operations center overview — events, alerts, top sources",
+  "theme": "dark",
+  "panels": [
+    { "id": "p1", "title": "Total Events (24h)", "x": 0, "y": 0, "w": 3, "h": 3, "viz_type": "splunk.singlevalue", "data_source_ref": null },
+    { "id": "p2", "title": "Open Alerts", "x": 3, "y": 0, "w": 3, "h": 3, "viz_type": "splunk.singlevalue", "data_source_ref": null },
+    { "id": "p3", "title": "Events Over Time", "x": 6, "y": 0, "w": 6, "h": 3, "viz_type": "splunk.line", "data_source_ref": null },
+    { "id": "p4", "title": "Top Source IPs", "x": 0, "y": 3, "w": 6, "h": 4, "viz_type": "splunk.bar", "data_source_ref": null },
+    { "id": "p5", "title": "Alert Severity Breakdown", "x": 6, "y": 3, "w": 6, "h": 4, "viz_type": "splunk.pie", "data_source_ref": null }
+  ]
+}

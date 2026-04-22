@@ -1,0 +1,13 @@
+{
+  "name": "api-performance",
+  "description": "API endpoint performance — latency, throughput, error breakdown",
+  "theme": "dark",
+  "panels": [
+    { "id": "p1", "title": "Requests / sec", "x": 0, "y": 0, "w": 3, "h": 3, "viz_type": "splunk.singlevalue", "data_source_ref": null },
+    { "id": "p2", "title": "p50 Latency", "x": 3, "y": 0, "w": 3, "h": 3, "viz_type": "splunk.singlevalue", "data_source_ref": null },
+    { "id": "p3", "title": "p99 Latency", "x": 6, "y": 0, "w": 3, "h": 3, "viz_type": "splunk.singlevalue", "data_source_ref": null },
+    { "id": "p4", "title": "5xx Rate", "x": 9, "y": 0, "w": 3, "h": 3, "viz_type": "splunk.singlevalue", "data_source_ref": null },
+    { "id": "p5", "title": "Throughput Over Time", "x": 0, "y": 3, "w": 12, "h": 4, "viz_type": "splunk.area", "data_source_ref": null },
+    { "id": "p6", "title": "Slowest Endpoints", "x": 0, "y": 7, "w": 12, "h": 4, "viz_type": "splunk.bar", "data_source_ref": null }
+  ]
+}
