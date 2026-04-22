@@ -100,3 +100,52 @@ def test_ta_tarball_app_conf_has_label(tmp_path):
         assert f is not None
         content = f.read().decode("utf-8")
     assert "label = Human Friendly Label" in content
+
+
+import os
+import subprocess
+import sys as _sys
+from splunk_dashboards.workspace import (
+    init_workspace,
+    load_state,
+    save_state,
+    advance_stage,
+    get_workspace_dir,
+)
+
+
+def _run_cli(args, cwd):
+    env = {**os.environ, "PYTHONPATH": str(Path(__file__).parent.parent / "src")}
+    return subprocess.run(
+        [_sys.executable, "-m", "splunk_dashboards.deploy", *args],
+        cwd=cwd,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+
+def test_cli_build_writes_xml_and_advances_stage(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    state = init_workspace("my-dash", autopilot=False)
+    for stage in ("data-ready", "designed", "built", "validated"):
+        advance_stage(state, stage)
+    save_state(state)
+    dashboard = {"title": "T", "description": "d", "theme": "dark", "dataSources": {}, "visualizations": {}, "inputs": {}, "defaults": {}, "layout": {"type": "absolute", "structure": []}}
+    (get_workspace_dir("my-dash") / "dashboard.json").write_text(json.dumps(dashboard))
+
+    result = _run_cli(
+        ["build", "my-dash", "--label", "My Dashboard"],
+        cwd=tmp_path,
+    )
+    assert result.returncode == 0, result.stderr
+
+    xml_path = get_workspace_dir("my-dash") / "dashboard.xml"
+    assert xml_path.exists()
+    content = xml_path.read_text()
+    assert '<dashboard version="2"' in content
+    assert "<label>My Dashboard</label>" in content
+
+    state = load_state("my-dash")
+    assert state.current_stage == "deployed"
+    assert "validated" in state.stages_completed
