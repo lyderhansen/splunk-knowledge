@@ -14,6 +14,7 @@ def build_dashboard(
     title: str,
     description: str,
     with_time_input: bool = True,
+    layout_type: str = "absolute",
 ) -> dict:
     """Build a Splunk Dashboard Studio JSON definition from a Layout + DataSources."""
     # Map DataSource index -> ds key. Also build question -> ds key lookup for panel binding.
@@ -85,6 +86,30 @@ def build_dashboard(
             }
         }
 
+    if layout_type == "grid":
+        # Group panels by y coordinate. Each unique y becomes a row.
+        rows: dict = {}
+        for panel in layout.panels:
+            rows.setdefault(panel.y, []).append(panel)
+        grid_structure = []
+        for y in sorted(rows.keys()):
+            row_panels = sorted(rows[y], key=lambda p: p.x)
+            total_width = sum(p.w for p in row_panels) or 1
+            grid_structure.append({
+                "type": "row",
+                "items": [
+                    {"item": f"viz_{p.id}", "width": int(p.w / total_width * 100)}
+                    for p in row_panels
+                ],
+            })
+        layout_block = {"type": "grid", "structure": grid_structure}
+    else:
+        layout_block = {
+            "type": "absolute",
+            "options": {"width": 1440, "height": 960},
+            "structure": structure,
+        }
+
     return {
         "title": title,
         "description": description,
@@ -93,11 +118,7 @@ def build_dashboard(
         "visualizations": visualizations,
         "inputs": inputs,
         "defaults": defaults,
-        "layout": {
-            "type": "absolute",
-            "options": {"width": 1440, "height": 960},
-            "structure": structure,
-        },
+        "layout": layout_block,
     }
 
 

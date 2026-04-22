@@ -239,3 +239,24 @@ def test_build_dashboard_emits_drilldown_when_panel_has_one():
     viz = result["visualizations"]["viz_p1"]
     assert viz["options"]["drilldown"] == "all"
     assert viz["options"]["drilldownAction"] == {"type": "link.dashboard", "dashboard": "other"}
+
+
+def test_build_dashboard_grid_layout_emits_row_structure():
+    layout = Layout(project="x", panels=[
+        Panel(id="p1", title="A", x=0, y=0, w=6, h=4),
+        Panel(id="p2", title="B", x=6, y=0, w=6, h=4),
+        Panel(id="p3", title="C", x=0, y=4, w=12, h=4),
+    ])
+    data = DataSources(project="x")
+    result = build_dashboard(layout, data, title="t", description="", with_time_input=False, layout_type="grid")
+    assert result["layout"]["type"] == "grid"
+    structure = result["layout"]["structure"]
+    # Each row is a {"type": "row", "items": [...]}. Panels at the same y share a row.
+    assert len(structure) == 2  # two rows (y=0 and y=4)
+    assert structure[0]["type"] == "row"
+    first_row_items = [it["item"] for it in structure[0]["items"]]
+    assert "viz_p1" in first_row_items
+    assert "viz_p2" in first_row_items
+    # Second row has a single panel at y=4
+    second_row_items = [it["item"] for it in structure[1]["items"]]
+    assert second_row_items == ["viz_p3"]
