@@ -41,3 +41,54 @@ def test_stages_sequence():
         "deployed",
         "reviewed",
     ]
+
+
+from splunk_dashboards.workspace import (
+    get_workspace_dir,
+    init_workspace,
+    load_state,
+    save_state,
+    workspace_exists,
+)
+
+
+def test_get_workspace_dir_resolves_under_cwd(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    result = get_workspace_dir("my-dash")
+    assert result == tmp_path / ".splunk-dashboards" / "my-dash"
+
+
+def test_init_workspace_creates_scaffolding(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    state = init_workspace("my-dash", autopilot=False)
+    ws = tmp_path / ".splunk-dashboards" / "my-dash"
+    assert ws.exists()
+    assert (ws / "state.json").exists()
+    assert state.project == "my-dash"
+    assert state.current_stage == "scoped"
+
+
+def test_init_workspace_is_idempotent(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    state1 = init_workspace("my-dash", autopilot=False)
+    state2 = init_workspace("my-dash", autopilot=False)
+    # Second call returns the existing state, does not overwrite
+    assert state1.created == state2.created
+
+
+def test_save_and_load_state_roundtrip(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    state = init_workspace("my-dash", autopilot=False)
+    state.current_stage = "data-ready"
+    state.stages_completed = ["scoped"]
+    save_state(state)
+    loaded = load_state("my-dash")
+    assert loaded.current_stage == "data-ready"
+    assert loaded.stages_completed == ["scoped"]
+
+
+def test_workspace_exists(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    assert workspace_exists("my-dash") is False
+    init_workspace("my-dash", autopilot=False)
+    assert workspace_exists("my-dash") is True
