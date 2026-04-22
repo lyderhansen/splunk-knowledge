@@ -48,3 +48,42 @@ def test_data_sources_collection_roundtrip():
     data = coll.to_dict()
     restored = DataSources.from_dict(data)
     assert restored == coll
+
+
+import pytest
+from splunk_dashboards.data_sources import (
+    DATA_SOURCES_FILENAME,
+    load_data_sources,
+    save_data_sources,
+)
+from splunk_dashboards.workspace import init_workspace
+
+
+def test_save_and_load_data_sources_roundtrip(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    init_workspace("my-dash", autopilot=False)
+    coll = DataSources(
+        project="my-dash",
+        source="mock",
+        sources=[DataSource(question="q1", spl="| makeresults count=10")],
+    )
+    save_data_sources(coll)
+    loaded = load_data_sources("my-dash")
+    assert loaded == coll
+    # File should land under the workspace directory
+    assert (tmp_path / ".splunk-dashboards" / "my-dash" / DATA_SOURCES_FILENAME).exists()
+
+
+def test_load_data_sources_missing_raises(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    init_workspace("my-dash", autopilot=False)
+    with pytest.raises(FileNotFoundError):
+        load_data_sources("my-dash")
+
+
+def test_save_data_sources_requires_workspace(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    # No init_workspace call — workspace does not exist
+    coll = DataSources(project="ghost")
+    with pytest.raises(FileNotFoundError):
+        save_data_sources(coll)
