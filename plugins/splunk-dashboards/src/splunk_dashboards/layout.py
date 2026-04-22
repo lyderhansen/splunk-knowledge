@@ -88,3 +88,36 @@ def load_layout(project: str, cwd: Optional[Path] = None) -> Layout:
     path = layout_path(project, cwd)
     data = json.loads(path.read_text(encoding="utf-8"))
     return Layout.from_dict(data)
+
+
+import sys as _sys
+
+
+def _cli(argv: Optional[list[str]] = None) -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser(prog="splunk_dashboards.layout")
+    sub = parser.add_subparsers(dest="command", required=True)
+    write = sub.add_parser(
+        "write",
+        help="Write layout.json from a JSON payload (does not advance state)",
+    )
+    write.add_argument("source_arg", help='Path to JSON file, or "-" to read stdin')
+
+    args = parser.parse_args(argv)
+
+    if args.command == "write":
+        raw = _sys.stdin.read() if args.source_arg == "-" else Path(args.source_arg).read_text(encoding="utf-8")
+        layout = Layout.from_dict(json.loads(raw))
+        try:
+            save_layout(layout)
+        except FileNotFoundError as e:
+            print(str(e), file=_sys.stderr)
+            return 2
+        print(f"Wrote layout.json for {layout.project} ({len(layout.panels)} panels)")
+        return 0
+    return 1
+
+
+if __name__ == "__main__":
+    _sys.exit(_cli())

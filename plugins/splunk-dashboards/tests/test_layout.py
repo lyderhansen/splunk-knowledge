@@ -119,3 +119,48 @@ def test_load_layout_missing_raises(tmp_path, monkeypatch):
     init_workspace("my-dash", autopilot=False)
     with pytest.raises(FileNotFoundError):
         load_layout("my-dash")
+
+
+import os
+import subprocess
+import sys as _sys
+import json as _json
+
+
+def _run_cli(args, cwd, stdin=None):
+    env = {**os.environ, "PYTHONPATH": str(Path(__file__).parent.parent / "src")}
+    return subprocess.run(
+        [_sys.executable, "-m", "splunk_dashboards.layout", *args],
+        cwd=cwd,
+        env=env,
+        input=stdin,
+        capture_output=True,
+        text=True,
+    )
+
+
+def test_cli_write_persists_layout(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    init_workspace("my-dash", autopilot=False)
+    payload = {
+        "project": "my-dash",
+        "theme": "dark",
+        "panels": [
+            {"id": "p1", "title": "T1", "x": 0, "y": 0, "w": 6, "h": 4,
+             "viz_type": "splunk.singlevalue", "data_source_ref": None}
+        ]
+    }
+    result = _run_cli(["write", "-"], cwd=tmp_path, stdin=_json.dumps(payload))
+    assert result.returncode == 0, result.stderr
+    ws = tmp_path / ".splunk-dashboards" / "my-dash"
+    loaded = _json.loads((ws / "design" / "layout.json").read_text())
+    assert loaded["project"] == "my-dash"
+    assert len(loaded["panels"]) == 1
+    state = _json.loads((ws / "state.json").read_text())
+    assert state["current_stage"] == "scoped"
+
+
+def test_cli_write_rejects_missing_workspace(tmp_path):
+    payload = {"project": "ghost", "panels": []}
+    result = _run_cli(["write", "-"], cwd=tmp_path, stdin=_json.dumps(payload))
+    assert result.returncode != 0
