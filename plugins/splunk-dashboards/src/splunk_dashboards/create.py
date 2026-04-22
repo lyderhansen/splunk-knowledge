@@ -49,6 +49,9 @@ def build_dashboard(
             "dataSources": data_sources,
             "options": {},
         }
+        if panel.drilldown:
+            visualizations[viz_key]["options"]["drilldown"] = "all"
+            visualizations[viz_key]["options"]["drilldownAction"] = panel.drilldown
         structure.append({
             "item": viz_key,
             "type": "block",

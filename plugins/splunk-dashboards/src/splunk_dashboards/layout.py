@@ -28,6 +28,7 @@ class Panel:
     h: int = 4
     viz_type: str = "splunk.singlevalue"
     data_source_ref: Optional[str] = None
+    drilldown: Optional[dict] = None
 
     def to_dict(self) -> dict:
         return asdict(self)

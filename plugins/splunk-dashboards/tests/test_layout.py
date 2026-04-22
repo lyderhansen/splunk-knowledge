@@ -164,3 +164,14 @@ def test_cli_write_rejects_missing_workspace(tmp_path):
     payload = {"project": "ghost", "panels": []}
     result = _run_cli(["write", "-"], cwd=tmp_path, stdin=_json.dumps(payload))
     assert result.returncode != 0
+
+
+def test_panel_with_drilldown_roundtrip():
+    p = Panel(
+        id="p1",
+        title="T",
+        drilldown={"type": "link.dashboard", "dashboard": "target_dash"},
+    )
+    data = p.to_dict()
+    restored = Panel.from_dict(data)
+    assert restored == p

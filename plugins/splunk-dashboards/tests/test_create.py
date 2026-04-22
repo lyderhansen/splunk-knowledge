@@ -225,3 +225,17 @@ def test_build_dashboard_without_time_input_keeps_raw_time_strings():
     qp = result["dataSources"]["ds_1"]["options"]["queryParameters"]
     assert qp["earliest"] == "-7d"
     assert qp["latest"] == "now"
+
+
+def test_build_dashboard_emits_drilldown_when_panel_has_one():
+    layout = Layout(project="x", panels=[
+        Panel(
+            id="p1", title="T", viz_type="splunk.table",
+            drilldown={"type": "link.dashboard", "dashboard": "other"},
+        )
+    ])
+    data = DataSources(project="x")
+    result = build_dashboard(layout, data, title="t", description="", with_time_input=False)
+    viz = result["visualizations"]["viz_p1"]
+    assert viz["options"]["drilldown"] == "all"
+    assert viz["options"]["drilldownAction"] == {"type": "link.dashboard", "dashboard": "other"}
