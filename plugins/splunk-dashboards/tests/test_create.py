@@ -17,7 +17,7 @@ from splunk_dashboards.data_sources import DataSources, DataSource
 def test_build_dashboard_empty_layout_returns_skeleton():
     layout = Layout(project="my-dash")
     data = DataSources(project="my-dash")
-    result = build_dashboard(layout, data, title="My Dash", description="desc")
+    result = build_dashboard(layout, data, title="My Dash", description="desc", with_time_input=False)
     assert result["title"] == "My Dash"
     assert result["description"] == "desc"
     assert result["dataSources"] == {}
@@ -37,7 +37,7 @@ def test_build_dashboard_maps_data_sources_to_ds_search():
             DataSource(question="Events over time?", spl="index=main | timechart count", earliest="-7d", latest="now"),
         ],
     )
-    result = build_dashboard(layout, data, title="t", description="")
+    result = build_dashboard(layout, data, title="t", description="", with_time_input=False)
     ds = result["dataSources"]
     assert len(ds) == 2
     # Each entry has type, name, options.query
@@ -67,7 +67,7 @@ def test_build_dashboard_maps_panels_to_visualizations_and_layout():
             DataSource(question="q2", spl="| makeresults count=100 | timechart count"),
         ],
     )
-    result = build_dashboard(layout, data, title="t", description="")
+    result = build_dashboard(layout, data, title="t", description="", with_time_input=False)
 
     # Visualizations keyed as viz_<panel.id>
     viz = result["visualizations"]
@@ -92,7 +92,7 @@ def test_build_dashboard_maps_panels_to_visualizations_and_layout():
 def test_build_dashboard_panel_without_data_source_ref_gets_no_primary():
     layout = Layout(project="x", panels=[Panel(id="p1", title="Orphan")])
     data = DataSources(project="x")
-    result = build_dashboard(layout, data, title="t", description="")
+    result = build_dashboard(layout, data, title="t", description="", with_time_input=False)
     viz = result["visualizations"]["viz_p1"]
     # dataSources map is present but empty when no ref
     assert viz["dataSources"] == {}
@@ -101,7 +101,7 @@ def test_build_dashboard_panel_without_data_source_ref_gets_no_primary():
 def test_build_dashboard_preserves_theme():
     layout = Layout(project="x", theme="light")
     data = DataSources(project="x")
-    result = build_dashboard(layout, data, title="t", description="")
+    result = build_dashboard(layout, data, title="t", description="", with_time_input=False)
     # Theme is a top-level hint consumed by the XML envelope at deploy time
     assert result["theme"] == "light"
 
@@ -189,3 +189,39 @@ def test_cli_build_rejects_missing_inputs(tmp_path, monkeypatch):
         cwd=tmp_path,
     )
     assert result.returncode != 0
+
+
+def test_build_dashboard_with_time_input_emits_global_time():
+    layout = Layout(project="x")
+    data = DataSources(project="x", sources=[DataSource(question="q", spl="index=main | stats count")])
+    result = build_dashboard(layout, data, title="t", description="", with_time_input=True)
+    assert "input_global_time" in result["inputs"]
+    tr = result["inputs"]["input_global_time"]
+    assert tr["type"] == "input.timerange"
+    assert tr["options"]["token"] == "global_time"
+    # Defaults block wires panels to the token
+    defaults = result["defaults"]["dataSources"]["global"]["options"]["queryParameters"]
+    assert defaults["earliest"] == "$global_time.earliest$"
+    assert defaults["latest"] == "$global_time.latest$"
+
+
+def test_build_dashboard_panel_queries_use_token_when_time_input_enabled():
+    layout = Layout(project="x")
+    data = DataSources(project="x", sources=[
+        DataSource(question="q1", spl="| makeresults count=1", earliest="-24h", latest="now"),
+    ])
+    result = build_dashboard(layout, data, title="t", description="", with_time_input=True)
+    qp = result["dataSources"]["ds_1"]["options"]["queryParameters"]
+    assert qp["earliest"] == "$global_time.earliest$"
+    assert qp["latest"] == "$global_time.latest$"
+
+
+def test_build_dashboard_without_time_input_keeps_raw_time_strings():
+    layout = Layout(project="x")
+    data = DataSources(project="x", sources=[DataSource(question="q", spl="q", earliest="-7d", latest="now")])
+    result = build_dashboard(layout, data, title="t", description="", with_time_input=False)
+    assert result["inputs"] == {}
+    assert result["defaults"] == {}
+    qp = result["dataSources"]["ds_1"]["options"]["queryParameters"]
+    assert qp["earliest"] == "-7d"
+    assert qp["latest"] == "now"

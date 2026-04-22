@@ -8,21 +8,29 @@ GRID_UNIT_W = 100  # pixels per grid column
 GRID_UNIT_H = 80   # pixels per grid row
 
 
-def build_dashboard(layout: Layout, data: DataSources, title: str, description: str) -> dict:
+def build_dashboard(
+    layout: Layout,
+    data: DataSources,
+    title: str,
+    description: str,
+    with_time_input: bool = True,
+) -> dict:
     """Build a Splunk Dashboard Studio JSON definition from a Layout + DataSources."""
     # Map DataSource index -> ds key. Also build question -> ds key lookup for panel binding.
     ds_map: dict = {}
     question_to_key: dict = {}
     for idx, source in enumerate(data.sources, start=1):
         key = f"ds_{idx}"
+        earliest = "$global_time.earliest$" if with_time_input else source.earliest
+        latest = "$global_time.latest$" if with_time_input else source.latest
         ds_map[key] = {
             "type": "ds.search",
             "name": source.name or source.question,
             "options": {
                 "query": source.spl,
                 "queryParameters": {
-                    "earliest": source.earliest,
-                    "latest": source.latest,
+                    "earliest": earliest,
+                    "latest": latest,
                 },
             },
         }
@@ -52,14 +60,36 @@ def build_dashboard(layout: Layout, data: DataSources, title: str, description: 
             },
         })
 
+    inputs: dict = {}
+    defaults: dict = {}
+    if with_time_input:
+        inputs["input_global_time"] = {
+            "type": "input.timerange",
+            "title": "Time range",
+            "options": {
+                "token": "global_time",
+                "defaultValue": {"earliest": "-24h", "latest": "now"},
+            },
+        }
+        defaults["dataSources"] = {
+            "global": {
+                "options": {
+                    "queryParameters": {
+                        "earliest": "$global_time.earliest$",
+                        "latest": "$global_time.latest$",
+                    }
+                }
+            }
+        }
+
     return {
         "title": title,
         "description": description,
         "theme": layout.theme,
         "dataSources": ds_map,
         "visualizations": visualizations,
-        "inputs": {},
-        "defaults": {},
+        "inputs": inputs,
+        "defaults": defaults,
         "layout": {
             "type": "absolute",
             "options": {"width": 1440, "height": 960},
