@@ -272,3 +272,32 @@ def test_cli_build_grid_layout_flag(tmp_path, monkeypatch):
     dashboard = json.loads((tmp_path / ".splunk-dashboards" / "my-dash" / "dashboard.json").read_text())
     assert dashboard["layout"]["type"] == "grid"
     assert dashboard["inputs"] == {}
+
+
+def test_build_dashboard_applies_soc_theme():
+    layout = Layout(project="x", panels=[
+        Panel(id="p1", title="Failed Logins", viz_type="splunk.singlevalue", data_source_ref="q1"),
+    ])
+    data = DataSources(project="x", sources=[
+        DataSource(question="q1", spl="index=auth action=failure | stats count", name="Failed Logins"),
+    ])
+    result = build_dashboard(layout, data, title="SOC Dashboard", description="", with_time_input=False, theme="soc")
+    viz = result["visualizations"]["viz_p1"]
+    # SOC theme colored the failure singlevalue red
+    assert viz["options"]["majorColor"] == "#dc4e41"
+    # And added a markdown header panel
+    header_ids = [k for k, v in result["visualizations"].items() if v["type"] == "splunk.markdown"]
+    assert len(header_ids) == 1
+
+
+def test_cli_build_theme_flag(tmp_path, monkeypatch):
+    _prepare_workspace_at_designed(tmp_path, monkeypatch)
+    result = _run_cli(
+        ["build", "my-dash", "--title", "T", "--description", "", "--theme", "soc", "--no-time-input"],
+        cwd=tmp_path,
+    )
+    assert result.returncode == 0, result.stderr
+    dashboard = json.loads((tmp_path / ".splunk-dashboards" / "my-dash" / "dashboard.json").read_text())
+    # Theme applied → header panel present
+    header_ids = [k for k, v in dashboard["visualizations"].items() if v["type"] == "splunk.markdown"]
+    assert len(header_ids) == 1

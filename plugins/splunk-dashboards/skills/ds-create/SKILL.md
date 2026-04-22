@@ -86,6 +86,22 @@ Panels in `layout.json` can carry a `drilldown` field:
 
 `ds-create` translates this into `options.drilldown = "all"` and `options.drilldownAction = <drilldown value>` on the matching visualization, enabling click-through behavior in the rendered dashboard.
 
+## Theme
+
+Pass `--theme {clean|soc|ops|exec}` to apply visual styling. Default is `clean` (no-op).
+
+- **clean** — minimal, preserves Splunk defaults.
+- **soc** — security-ops palette. Failures render red, successes green, with sparklines on count-type KPIs.
+- **ops** — cool-blue operations palette with traffic-light semantic coloring.
+- **exec** — muted executive palette with subtle accents for critical states.
+
+Non-`clean` themes also:
+- Set `seriesColors` on chart-type visualizations from the theme's palette.
+- Hide minor gridlines for a cleaner look.
+- Insert an automatic `splunk.markdown` header panel at the top with the dashboard title and description.
+
+The semantic engine reads each panel's SPL and title to detect tags (`failure`, `success`, `latency`, `count`, `volume`, `critical`) and applies the theme's color for the most specific match.
+
 ## After building
 
 - `dashboard.json` exists at the workspace root.
