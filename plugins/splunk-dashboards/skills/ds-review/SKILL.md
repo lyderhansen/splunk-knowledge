@@ -13,6 +13,8 @@ description: Use this skill to audit a Splunk Dashboard Studio dashboard against
 
 ## Review dimensions
 
+**See `ds-design-principles`** for the canonical dashboard archetypes and the "Common antipatterns" list — many of the checks below are direct applications of those principles.
+
 ### 1. Panel count and density
 
 - **Too many panels** (more than ~12): overloaded, likely hiding signal.

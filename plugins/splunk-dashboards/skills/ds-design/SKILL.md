@@ -50,3 +50,10 @@ Supported viz types: `splunk.singlevalue`, `splunk.line`, `splunk.column`, `splu
 - `design/layout.json` contains the panel grid.
 - `state.json` has `current_stage=designed`.
 - Next step: `ds-create` to generate the full Dashboard Studio JSON from layout + data sources.
+
+## See also
+
+Before wireframing, invoke **`ds-design-principles`** for:
+- The four dashboard archetypes (executive / operational / analytical / SOC) — pick one based on `requirements.md` audience.
+- Layout principles (F-pattern reading, visual hierarchy, grouping).
+- KPI sizing rules and the chart-selection decision table.

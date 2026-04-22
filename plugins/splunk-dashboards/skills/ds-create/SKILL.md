@@ -107,3 +107,9 @@ The semantic engine reads each panel's SPL and title to detect tags (`failure`, 
 - `dashboard.json` exists at the workspace root.
 - `state.json` has `current_stage=built`.
 - Next step: `ds-validate` (lint SPL, tokens, drilldowns) before `ds-deploy`.
+
+## Design considerations
+
+If the layout picked viz types that don't fit the data shape, consult **`ds-design-principles`** — specifically the "Chart selection" decision table. Then invoke `ds-update` to swap viz types before building the final JSON.
+
+The `--theme {soc|ops|exec}` flags apply the color semantics described in the design-principles skill automatically.
