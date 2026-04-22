@@ -4,7 +4,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from splunk_dashboards.layout import Panel, VIZ_TYPES
+from splunk_dashboards.layout import Panel, VIZ_TYPES, Layout
 
 
 def test_panel_defaults():
@@ -46,3 +46,24 @@ def test_viz_types_includes_core_set():
         "splunk.markergauge",
     }
     assert core.issubset(set(VIZ_TYPES))
+
+
+def test_layout_defaults():
+    layout = Layout(project="my-dash")
+    assert layout.project == "my-dash"
+    assert layout.theme == "dark"
+    assert layout.panels == []
+
+
+def test_layout_roundtrip():
+    layout = Layout(
+        project="my-dash",
+        theme="light",
+        panels=[
+            Panel(id="p1", title="T1"),
+            Panel(id="p2", title="T2", viz_type="splunk.line"),
+        ],
+    )
+    data = layout.to_dict()
+    restored = Layout.from_dict(data)
+    assert restored == layout

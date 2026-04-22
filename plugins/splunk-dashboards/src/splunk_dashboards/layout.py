@@ -35,3 +35,28 @@ class Panel:
     @classmethod
     def from_dict(cls, data: dict) -> "Panel":
         return cls(**data)
+
+
+Theme = Literal["light", "dark"]
+
+
+@dataclass
+class Layout:
+    project: str
+    theme: Theme = "dark"
+    panels: list[Panel] = field(default_factory=list)
+
+    def to_dict(self) -> dict:
+        return {
+            "project": self.project,
+            "theme": self.theme,
+            "panels": [p.to_dict() for p in self.panels],
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "Layout":
+        return cls(
+            project=data["project"],
+            theme=data.get("theme", "dark"),
+            panels=[Panel.from_dict(p) for p in data.get("panels", [])],
+        )
