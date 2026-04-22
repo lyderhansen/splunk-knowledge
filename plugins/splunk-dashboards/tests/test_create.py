@@ -260,3 +260,15 @@ def test_build_dashboard_grid_layout_emits_row_structure():
     # Second row has a single panel at y=4
     second_row_items = [it["item"] for it in structure[1]["items"]]
     assert second_row_items == ["viz_p3"]
+
+
+def test_cli_build_grid_layout_flag(tmp_path, monkeypatch):
+    _prepare_workspace_at_designed(tmp_path, monkeypatch)
+    result = _run_cli(
+        ["build", "my-dash", "--title", "T", "--description", "", "--layout", "grid", "--no-time-input"],
+        cwd=tmp_path,
+    )
+    assert result.returncode == 0, result.stderr
+    dashboard = json.loads((tmp_path / ".splunk-dashboards" / "my-dash" / "dashboard.json").read_text())
+    assert dashboard["layout"]["type"] == "grid"
+    assert dashboard["inputs"] == {}

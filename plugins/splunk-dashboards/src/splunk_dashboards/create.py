@@ -148,6 +148,10 @@ def _cli(argv=None) -> int:
     build.add_argument("project")
     build.add_argument("--title", required=True)
     build.add_argument("--description", default="")
+    build.add_argument("--no-time-input", action="store_true",
+                       help="Omit the global time-range input and defaults block")
+    build.add_argument("--layout", choices=["absolute", "grid"], default="absolute",
+                       help="Layout type (default: absolute)")
 
     args = parser.parse_args(argv)
 
@@ -171,7 +175,11 @@ def _cli(argv=None) -> int:
             return 2
 
         dashboard = build_dashboard(
-            layout, data, title=args.title, description=args.description
+            layout, data,
+            title=args.title,
+            description=args.description,
+            with_time_input=not args.no_time_input,
+            layout_type=args.layout,
         )
         ws = get_workspace_dir(args.project)
         path = ws / DASHBOARD_FILENAME

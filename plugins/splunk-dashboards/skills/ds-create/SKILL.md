@@ -56,6 +56,36 @@ The `title` becomes the dashboard's top-level title (shown in the Splunk UI). `d
 
 For deeper schema details, invoke `ds-syntax`. For per-visualization option fields, invoke `ds-viz`.
 
+## New: global time input, drilldowns, grid layout
+
+### CLI flags
+
+- `--no-time-input` — Omits the global time-range input and the `defaults` block that wires panel queries to it. Useful when embedding a dashboard in a context that supplies its own time picker, or for static dashboards.
+- `--layout grid` — Emits a grid layout instead of absolute positioning. Panels are grouped into rows by their `y` coordinate and sorted by `x` within each row. Each row becomes a `{"type": "row", "items": [...]}` entry with `width` expressed as a percentage of the row. Default is `--layout absolute`.
+
+### Global time input (default on)
+
+When `--no-time-input` is NOT passed (the default), `ds-create` automatically:
+
+1. Adds an `input.timerange` keyed `input_global_time` with token `global_time` to the `inputs` block.
+2. Adds a `defaults.dataSources.global` block that wires every panel's `queryParameters.earliest` / `latest` to `$global_time.earliest$` / `$global_time.latest$`.
+
+This means users get a working time-range picker that controls all panels without any extra configuration.
+
+### Panel drilldowns
+
+Panels in `layout.json` can carry a `drilldown` field:
+
+```json
+{
+  "id": "p1",
+  "title": "My Panel",
+  "drilldown": {"type": "link.dashboard", "dashboard": "target_dash"}
+}
+```
+
+`ds-create` translates this into `options.drilldown = "all"` and `options.drilldownAction = <drilldown value>` on the matching visualization, enabling click-through behavior in the rendered dashboard.
+
 ## After building
 
 - `dashboard.json` exists at the workspace root.
