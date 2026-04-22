@@ -60,3 +60,31 @@ class Layout:
             theme=data.get("theme", "dark"),
             panels=[Panel.from_dict(p) for p in data.get("panels", [])],
         )
+
+
+import json
+from pathlib import Path
+
+from splunk_dashboards.workspace import get_workspace_dir
+
+DESIGN_SUBDIR = "design"
+LAYOUT_FILENAME = "layout.json"
+
+
+def layout_path(project: str, cwd: Optional[Path] = None) -> Path:
+    return get_workspace_dir(project, cwd) / DESIGN_SUBDIR / LAYOUT_FILENAME
+
+
+def save_layout(layout: Layout, cwd: Optional[Path] = None) -> None:
+    ws = get_workspace_dir(layout.project, cwd)
+    if not ws.exists():
+        raise FileNotFoundError(f"Workspace does not exist: {ws}")
+    path = ws / DESIGN_SUBDIR / LAYOUT_FILENAME
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(layout.to_dict(), indent=2) + "\n", encoding="utf-8")
+
+
+def load_layout(project: str, cwd: Optional[Path] = None) -> Layout:
+    path = layout_path(project, cwd)
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return Layout.from_dict(data)

@@ -4,7 +4,17 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from splunk_dashboards.layout import Panel, VIZ_TYPES, Layout
+from splunk_dashboards.layout import (
+    Panel,
+    VIZ_TYPES,
+    Layout,
+    LAYOUT_FILENAME,
+    DESIGN_SUBDIR,
+    layout_path,
+    save_layout,
+    load_layout,
+)
+from splunk_dashboards.workspace import init_workspace
 
 
 def test_panel_defaults():
@@ -67,3 +77,45 @@ def test_layout_roundtrip():
     data = layout.to_dict()
     restored = Layout.from_dict(data)
     assert restored == layout
+
+
+import pytest
+
+
+def test_layout_path_resolves_under_design_subdir(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    init_workspace("my-dash", autopilot=False)
+    assert layout_path("my-dash") == tmp_path / ".splunk-dashboards" / "my-dash" / DESIGN_SUBDIR / LAYOUT_FILENAME
+
+
+def test_save_and_load_layout_roundtrip(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    init_workspace("my-dash", autopilot=False)
+    original = Layout(
+        project="my-dash",
+        theme="dark",
+        panels=[Panel(id="p1", title="Hello")],
+    )
+    save_layout(original)
+    loaded = load_layout("my-dash")
+    assert loaded == original
+
+
+def test_save_layout_creates_design_subdir(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    init_workspace("my-dash", autopilot=False)
+    save_layout(Layout(project="my-dash"))
+    assert (tmp_path / ".splunk-dashboards" / "my-dash" / DESIGN_SUBDIR).is_dir()
+
+
+def test_save_layout_requires_workspace(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    with pytest.raises(FileNotFoundError):
+        save_layout(Layout(project="ghost"))
+
+
+def test_load_layout_missing_raises(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    init_workspace("my-dash", autopilot=False)
+    with pytest.raises(FileNotFoundError):
+        load_layout("my-dash")
