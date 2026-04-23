@@ -1,0 +1,14 @@
+# Superpowers brainstorm session artifacts
+.superpowers/
+
+# Workspace artifacts (dashboard project workspaces)
+.splunk-dashboards/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+
+# OS
+.DS_Store
