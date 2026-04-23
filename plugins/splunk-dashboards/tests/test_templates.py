@@ -80,3 +80,31 @@ def test_cli_load_rejects_unknown_template(tmp_path, monkeypatch):
     init_workspace("my-dash", autopilot=False)
     result = _run_cli(["load", "does-not-exist", "--project", "my-dash"], cwd=tmp_path)
     assert result.returncode != 0
+
+
+def test_aurora_flagship_templates_listed():
+    from splunk_dashboards.templates import list_bundled_templates
+    names = set(list_bundled_templates())
+    assert "aurora-exec-hero" in names
+    assert "aurora-noc-wall" in names
+
+
+def test_aurora_exec_hero_loads_and_has_valid_structure():
+    import json
+    from splunk_dashboards.templates import load_bundled_template
+    data = load_bundled_template("aurora-exec-hero")
+    assert data["title"] == "Executive Hero"
+    assert len(data["visualizations"]) >= 5
+    assert data["layout"]["type"] == "absolute"
+    assert len(data["layout"]["structure"]) == len(data["visualizations"])
+
+
+def test_aurora_noc_wall_loads_and_has_valid_structure():
+    from splunk_dashboards.templates import load_bundled_template
+    data = load_bundled_template("aurora-noc-wall")
+    assert data["title"] == "NOC Wall"
+    # 4 status tiles + live chart + hosts = 6
+    assert len(data["visualizations"]) == 6
+    # Verify status-tile backgrounds are semantically colored
+    alert_viz = data["visualizations"]["viz_alerts"]
+    assert alert_viz["options"]["backgroundColor"] == "#DC4E41"
