@@ -241,3 +241,63 @@ def _check_semantic_colors(dashboard: dict) -> Finding:
                     message=f"{len(matches)} status KPI(s) use semantic colors")
 
 register_rule(ScoringRule("semantic-colors", 1.2, _check_semantic_colors))
+
+
+# ----- Rule 9: gutters (weight 0.8) -----
+
+def _rects_overlap_or_too_close(entries: list, min_gap: int = 20) -> bool:
+    """True if any pair of rects has a gap < min_gap on x-axis when y overlaps."""
+    for i, a in enumerate(entries):
+        for b in entries[i+1:]:
+            a_pos, b_pos = a["position"], b["position"]
+            # y overlap?
+            a_bot = a_pos["y"] + a_pos["h"]
+            b_bot = b_pos["y"] + b_pos["h"]
+            if a_pos["y"] >= b_bot or b_pos["y"] >= a_bot:
+                continue  # no y overlap; x gap not enforced
+            a_right = a_pos["x"] + a_pos["w"]
+            b_right = b_pos["x"] + b_pos["w"]
+            # Measure min horizontal gap
+            if a_pos["x"] < b_pos["x"]:
+                gap = b_pos["x"] - a_right
+            else:
+                gap = a_pos["x"] - b_right
+            if gap < min_gap:
+                return True
+    return False
+
+
+def _check_gutters(dashboard: dict) -> Finding:
+    structure = dashboard["layout"].get("structure", [])
+    # Ignore rectangle decorations; measure only content panels
+    non_decoration = [e for e in structure
+                       if dashboard["visualizations"].get(e["item"], {}).get("type")
+                       not in ("splunk.rectangle", "splunk.ellipse")]
+    if len(non_decoration) < 2:
+        return Finding(rule="gutters", level="pass", message="Too few panels to measure gutters")
+    if _rects_overlap_or_too_close(non_decoration, min_gap=20):
+        return Finding(rule="gutters", level="fail",
+                        message="Some panels have < 20px horizontal gap",
+                        suggestion="Adjust layout x-positions in design/layout.json")
+    return Finding(rule="gutters", level="pass",
+                    message="All panel gutters >= 20 px")
+
+register_rule(ScoringRule("gutters", 0.8, _check_gutters))
+
+
+# ----- Rule 10: typography (weight 1.0) -----
+
+MAX_TITLE_LEN = 40
+
+
+def _check_typography(dashboard: dict) -> Finding:
+    over = [viz.get("title", "") for viz in dashboard["visualizations"].values()
+            if len(viz.get("title", "")) > MAX_TITLE_LEN]
+    if not over:
+        return Finding(rule="typography", level="pass",
+                        message=f"All panel titles <= {MAX_TITLE_LEN} chars")
+    return Finding(rule="typography", level="fail",
+                    message=f"{len(over)} panel title(s) exceed {MAX_TITLE_LEN} chars",
+                    suggestion="Shorten titles; use 3-5 words")
+
+register_rule(ScoringRule("typography", 1.0, _check_typography))

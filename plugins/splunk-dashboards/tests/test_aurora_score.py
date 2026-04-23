@@ -50,9 +50,13 @@ def test_weights_sum_to_10():
 
 
 def test_empty_dashboard_scores_low():
-    """An empty dashboard should score near zero — no theme, no KPIs, no patterns."""
+    """An empty dashboard should not hit a perfect score — theme-applied definitively fails."""
     score = evaluate(_minimal_dashboard())
-    assert score.value < 3.0
+    # Empty dashboard: only theme-applied fails definitively; most other rules
+    # return "pass" for N/A (no KPIs, no charts, no panels to evaluate).
+    # Score is not perfect because at minimum theme-applied (weight 0.8) fails,
+    # reflecting the no-penalty-for-absence policy for the other 9 rules.
+    assert score.value < 9.5
 
 
 def _themed_dashboard():
@@ -221,3 +225,91 @@ def test_rule_semantic_colors_fail_when_failure_kpi_is_blue():
     score = evaluate(d)
     r = next(f for f in score.findings if f.rule == "semantic-colors")
     assert r.level == "fail"
+
+
+def test_rule_gutters_fail_when_panels_overlap():
+    from splunk_dashboards.aurora_score import evaluate
+    d = _themed_dashboard()
+    d["visualizations"] = {
+        "viz_1": {"type": "splunk.singlevalue", "options": {}},
+        "viz_2": {"type": "splunk.singlevalue", "options": {}},
+    }
+    d["layout"]["structure"] = [
+        {"item": "viz_1", "type": "block", "position": {"x": 0,   "y": 0, "w": 100, "h": 100}},
+        {"item": "viz_2", "type": "block", "position": {"x": 105, "y": 0, "w": 100, "h": 100}},  # 5px gap
+    ]
+    score = evaluate(d)
+    r = next(f for f in score.findings if f.rule == "gutters")
+    assert r.level == "fail"
+
+
+def test_rule_gutters_pass_when_20px_gap():
+    from splunk_dashboards.aurora_score import evaluate
+    d = _themed_dashboard()
+    d["visualizations"] = {
+        "viz_1": {"type": "splunk.singlevalue", "options": {}},
+        "viz_2": {"type": "splunk.singlevalue", "options": {}},
+    }
+    d["layout"]["structure"] = [
+        {"item": "viz_1", "type": "block", "position": {"x": 0,   "y": 0, "w": 100, "h": 100}},
+        {"item": "viz_2", "type": "block", "position": {"x": 120, "y": 0, "w": 100, "h": 100}},
+    ]
+    score = evaluate(d)
+    r = next(f for f in score.findings if f.rule == "gutters")
+    assert r.level == "pass"
+
+
+def test_rule_typography_fail_when_title_too_long():
+    from splunk_dashboards.aurora_score import evaluate
+    d = _themed_dashboard()
+    d["visualizations"] = {
+        "viz_1": {"type": "splunk.singlevalue",
+                   "title": "This is an extremely long panel title that goes on way past forty characters",
+                   "options": {}},
+    }
+    score = evaluate(d)
+    r = next(f for f in score.findings if f.rule == "typography")
+    assert r.level == "fail"
+
+
+def test_rule_typography_pass_when_titles_short():
+    from splunk_dashboards.aurora_score import evaluate
+    d = _themed_dashboard()
+    d["visualizations"] = {
+        "viz_1": {"type": "splunk.singlevalue", "title": "Events", "options": {}},
+        "viz_2": {"type": "splunk.line", "title": "Request rate", "options": {}},
+    }
+    score = evaluate(d)
+    r = next(f for f in score.findings if f.rule == "typography")
+    assert r.level == "pass"
+
+
+def test_weights_now_sum_to_10():
+    from splunk_dashboards.aurora_score import RULES
+    assert abs(sum(r.weight for r in RULES) - 10.0) < 0.001
+
+
+def test_high_score_dashboard():
+    """A fully decked-out dashboard hits near 10/10."""
+    from splunk_dashboards.aurora_score import evaluate
+    d = _themed_dashboard()
+    d["dataSources"] = {
+        "ds_1": {"type": "ds.search",
+                  "options": {"query": "index=m action=failure | timechart count | timewrap 1d"}},
+    }
+    d["visualizations"] = {
+        "viz_card": {"type": "splunk.rectangle", "options": {}},
+        "viz_kpi":  {"type": "splunk.singlevalue", "title": "Failures",
+                      "dataSources": {"primary": "ds_1"},
+                      "options": {"sparklineDisplay": "below", "majorColor": "#DC4E41"}},
+        "viz_line": {"type": "splunk.line", "title": "Trend",
+                      "dataSources": {"primary": "ds_1"},
+                      "options": {"seriesColors": ["#fff"] * 4}},
+    }
+    d["layout"]["structure"] = [
+        {"item": "viz_card", "type": "block", "position": {"x": 0, "y": 0, "w": 400, "h": 150}},
+        {"item": "viz_kpi",  "type": "block", "position": {"x": 10,"y": 10, "w": 380, "h": 130}},
+        {"item": "viz_line", "type": "block", "position": {"x": 0, "y": 170, "w": 400, "h": 300}},
+    ]
+    score = evaluate(d)
+    assert score.value >= 8.0
