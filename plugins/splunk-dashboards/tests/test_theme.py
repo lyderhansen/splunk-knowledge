@@ -1,4 +1,4 @@
-"""Tests for theme module."""
+"""Tests for theme module (Aurora-aware compatibility shim + engine)."""
 import sys
 from pathlib import Path
 
@@ -8,13 +8,15 @@ import pytest
 from splunk_dashboards.theme import (
     THEMES,
     ThemeConfig,
+    apply_theme,
     detect_semantics,
     get_theme,
 )
 
 
 def test_four_bundled_themes_exist():
-    assert set(THEMES.keys()) == {"clean", "soc", "ops", "exec"}
+    # Aurora v1 — 4 new canonical themes replace the old 4; legacy names still resolve.
+    assert set(THEMES.keys()) == {"pro", "glass", "exec", "noc"}
 
 
 def test_each_theme_has_required_fields():
@@ -47,12 +49,55 @@ def test_get_theme_unknown_raises():
         get_theme("nonexistent")
 
 
-def test_clean_theme_has_no_semantic_colors():
-    # The clean theme is a no-op baseline — no semantic coloring
-    assert THEMES["clean"].semantic_colors == {}
+def _empty_dashboard():
+    return {
+        "title": "T", "description": "",
+        "dataSources": {},
+        "visualizations": {},
+        "layout": {"type": "absolute", "options": {"width": 1440}, "structure": []},
+        "defaults": {},
+    }
 
 
-from splunk_dashboards.theme import apply_theme
+def test_apply_theme_pro_writes_definition_defaults():
+    """Aurora pro theme should emit definition.defaults with canvas + series palette."""
+    dashboard = _empty_dashboard()
+    apply_theme(dashboard, "pro")
+    d = dashboard.get("defaults", {})
+    # definition.defaults.visualizations.global.options.backgroundColor
+    global_opts = d.get("visualizations", {}).get("global", {}).get("options", {})
+    assert global_opts.get("backgroundColor") == "#0b0c0e"
+
+
+def test_apply_theme_legacy_clean_routes_to_pro():
+    """'clean' is a legacy alias for 'pro' — behavior identical."""
+    d1 = _empty_dashboard()
+    d2 = _empty_dashboard()
+    apply_theme(d1, "clean")
+    apply_theme(d2, "pro")
+    assert d1.get("defaults") == d2.get("defaults")
+
+
+def test_apply_theme_noc_uses_black_canvas():
+    d = _empty_dashboard()
+    apply_theme(d, "noc")
+    global_opts = d["defaults"]["visualizations"]["global"]["options"]
+    assert global_opts["backgroundColor"] == "#000000"
+
+
+def test_apply_theme_exec_uses_light_canvas():
+    d = _empty_dashboard()
+    apply_theme(d, "exec")
+    global_opts = d["defaults"]["visualizations"]["global"]["options"]
+    assert global_opts["backgroundColor"] == "#FAFAF7"
+
+
+def test_apply_theme_legacy_ops_routes_to_noc():
+    d1 = _empty_dashboard()
+    d2 = _empty_dashboard()
+    apply_theme(d1, "ops")
+    apply_theme(d2, "noc")
+    assert d1.get("defaults") == d2.get("defaults")
 
 
 def _sample_dashboard_with_singlevalue() -> dict:
@@ -86,52 +131,10 @@ def _sample_dashboard_with_singlevalue() -> dict:
     }
 
 
-def test_apply_theme_clean_is_noop():
+def test_apply_theme_noc_colors_failure_singlevalue_red():
+    """Legacy 'soc' / new 'noc' theme colors the failure singlevalue with STATUS_CRITICAL."""
     d = _sample_dashboard_with_singlevalue()
-    before = {k: v for k, v in d["visualizations"]["viz_p1"]["options"].items()}
-    apply_theme(d, "clean")
-    after = d["visualizations"]["viz_p1"]["options"]
-    assert after == before  # clean theme does nothing
-
-
-def test_apply_theme_soc_colors_failure_singlevalue_red():
-    d = _sample_dashboard_with_singlevalue()
-    apply_theme(d, "soc")
+    apply_theme(d, "noc")
     options = d["visualizations"]["viz_p1"]["options"]
-    # SPL contains "action=failure" → semantic "failure" → red majorColor
-    assert options["majorColor"] == "#dc4e41"
-
-
-def test_apply_theme_soc_adds_sparkline_on_count_singlevalue():
-    d = _sample_dashboard_with_singlevalue()
-    apply_theme(d, "soc")
-    options = d["visualizations"]["viz_p1"]["options"]
-    # "stats count" in SPL → "count" semantic → sparkline on
-    assert options["sparklineDisplay"] == "below"
-
-
-def test_apply_theme_soc_adds_series_colors_to_charts():
-    d = {
-        "title": "T", "description": "", "theme": "dark",
-        "dataSources": {"ds_1": {"type": "ds.search", "name": "x", "options": {"query": "| makeresults count=10", "queryParameters": {"earliest": "-24h", "latest": "now"}}}},
-        "visualizations": {
-            "viz_p1": {"type": "splunk.line", "title": "T", "dataSources": {"primary": "ds_1"}, "options": {}}
-        },
-        "inputs": {}, "defaults": {},
-        "layout": {"type": "absolute", "structure": [{"item": "viz_p1", "type": "block", "position": {"x": 0, "y": 0, "w": 600, "h": 320}}]},
-    }
-    apply_theme(d, "soc")
-    options = d["visualizations"]["viz_p1"]["options"]
-    assert "seriesColors" in options
-    # SOC palette starts with red
-    assert options["seriesColors"][0] == "#dc4e41"
-
-
-def test_apply_theme_soc_adds_markdown_header_panel():
-    d = _sample_dashboard_with_singlevalue()
-    apply_theme(d, "soc")
-    # Header markdown panel is added
-    header_ids = [k for k, v in d["visualizations"].items() if v["type"] == "splunk.markdown"]
-    assert len(header_ids) == 1
-    header = d["visualizations"][header_ids[0]]
-    assert d["title"] in header["options"]["markdown"]
+    # SPL contains "action=failure" → semantic "failure" → critical majorColor
+    assert options["majorColor"] == "#DC4E41"

@@ -23,7 +23,8 @@ def test_build_dashboard_empty_layout_returns_skeleton():
     assert result["dataSources"] == {}
     assert result["visualizations"] == {}
     assert result["inputs"] == {}
-    assert result["defaults"] == {}
+    # Aurora: apply_theme always emits definition.defaults (canvas + series palette).
+    assert "visualizations" in result["defaults"]
     assert result["layout"]["type"] == "absolute"
     assert result["layout"]["structure"] == []
 
@@ -221,7 +222,8 @@ def test_build_dashboard_without_time_input_keeps_raw_time_strings():
     data = DataSources(project="x", sources=[DataSource(question="q", spl="q", earliest="-7d", latest="now")])
     result = build_dashboard(layout, data, title="t", description="", with_time_input=False)
     assert result["inputs"] == {}
-    assert result["defaults"] == {}
+    # Aurora: apply_theme always emits definition.defaults (canvas + series palette).
+    assert "visualizations" in result["defaults"]
     qp = result["dataSources"]["ds_1"]["options"]["queryParameters"]
     assert qp["earliest"] == "-7d"
     assert qp["latest"] == "now"
@@ -275,6 +277,7 @@ def test_cli_build_grid_layout_flag(tmp_path, monkeypatch):
 
 
 def test_build_dashboard_applies_soc_theme():
+    # Aurora: legacy "soc" theme routes to "noc" via themes.LEGACY_ALIASES.
     layout = Layout(project="x", panels=[
         Panel(id="p1", title="Failed Logins", viz_type="splunk.singlevalue", data_source_ref="q1"),
     ])
@@ -283,11 +286,10 @@ def test_build_dashboard_applies_soc_theme():
     ])
     result = build_dashboard(layout, data, title="SOC Dashboard", description="", with_time_input=False, theme="soc")
     viz = result["visualizations"]["viz_p1"]
-    # SOC theme colored the failure singlevalue red
-    assert viz["options"]["majorColor"] == "#dc4e41"
-    # And added a markdown header panel
-    header_ids = [k for k, v in result["visualizations"].items() if v["type"] == "splunk.markdown"]
-    assert len(header_ids) == 1
+    # noc theme colors the failure singlevalue with STATUS_CRITICAL.
+    assert viz["options"]["majorColor"] == "#DC4E41"
+    # noc uses pure black canvas via definition.defaults.
+    assert result["defaults"]["visualizations"]["global"]["options"]["backgroundColor"] == "#000000"
 
 
 def test_cli_build_theme_flag(tmp_path, monkeypatch):
@@ -298,6 +300,7 @@ def test_cli_build_theme_flag(tmp_path, monkeypatch):
     )
     assert result.returncode == 0, result.stderr
     dashboard = json.loads((tmp_path / ".splunk-dashboards" / "my-dash" / "dashboard.json").read_text())
-    # Theme applied → header panel present
-    header_ids = [k for k, v in dashboard["visualizations"].items() if v["type"] == "splunk.markdown"]
-    assert len(header_ids) == 1
+    # Aurora: theme applied → definition.defaults populated with canvas + series palette.
+    # "soc" routes to "noc" (pure black canvas).
+    global_opts = dashboard["defaults"]["visualizations"]["global"]["options"]
+    assert global_opts["backgroundColor"] == "#000000"
