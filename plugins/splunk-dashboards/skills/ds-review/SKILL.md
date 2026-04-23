@@ -51,6 +51,25 @@ Check each panel's `viz_type` against the shape of its data (see `ds-viz` for re
 - Queries without `earliest` / `latest` bounds at the dashboard level — suggest setting `defaults` or a global timerange input.
 - Use of `join` or `append` on large datasets — suggest `tstats` or subsearch redesign.
 
+### 7. Polish scorecard (Aurora)
+
+`ds-review` produces a weighted **Polish score (0–10)** measuring ten dimensions:
+
+1. Aurora theme applied (vs. unstyled Splunk default)
+2. KPI row wrapped in rectangle card (`card-kpi` pattern active)
+3. Hero KPI identified and sized correctly when present
+4. Sparklines on every singlevalue backed by a time-series SPL
+5. Compare-to-previous-period active on at least one time chart
+6. Section-zones used when panel count > 6
+7. No chart exceeds 8 series
+8. Semantic colors used on status KPIs (red for failure, green for healthy, etc.)
+9. Panel gutter minimum 20 px
+10. Panel titles ≤ 40 characters
+
+Each dimension returns pass/partial/fail and contributes to the weighted score. Findings appear in `review.md` under `## Polish scorecard` with per-dimension hits and suggested `ds-update` commands for gaps.
+
+Implementation: `src/splunk_dashboards/aurora_score.py` (sub-plan 13).
+
 ## Output
 
 Write findings to `review.md` in the workspace (or to the directory of the input file when operating standalone):
