@@ -1,0 +1,95 @@
+{
+  "_description": "Aurora theme registry. Each theme bundles tokens + behavior hints consumed by theme_engine.apply_theme. Values starting with '@' reference a token key in tokens.json (e.g. '@CANVAS_DARK'); literal strings pass through. Default patterns are applied unless overridden by --pattern.",
+
+  "themes": {
+    "pro": {
+      "mode": "dark",
+      "canvas": "@CANVAS_DARK",
+      "panel": "@PANEL_DARK",
+      "panel_stroke": "@PANEL_STROKE_DARK",
+      "text_primary": "@TEXT_PRIMARY_DARK",
+      "text_secondary": "@TEXT_SECONDARY_DARK",
+      "accent": "@STATUS_INFO",
+      "series_colors": "@SERIES_CATEGORICAL_10",
+      "semantic_colors": {
+        "failure": "@STATUS_CRITICAL",
+        "success": "@STATUS_OK",
+        "critical": "@STATUS_CRITICAL",
+        "latency": "@STATUS_HIGH",
+        "count": "@STATUS_INFO",
+        "volume": "@STATUS_INFO"
+      },
+      "default_patterns": ["card-kpi", "sparkline-in-kpi", "compare-prev"],
+      "uses_gradient_canvas": false
+    },
+
+    "glass": {
+      "mode": "dark",
+      "canvas": "@CANVAS_DARK",
+      "panel": "rgba(255,255,255,0.03)",
+      "panel_stroke": "rgba(255,255,255,0.08)",
+      "text_primary": "@TEXT_PRIMARY_DARK",
+      "text_secondary": "@TEXT_SECONDARY_DARK",
+      "accent": "#009CEB",
+      "series_colors_slice": {"source": "@SERIES_STUDIO_20", "end": 8},
+      "semantic_colors": {
+        "failure": "@STATUS_CRITICAL",
+        "success": "@STATUS_OK",
+        "critical": "@STATUS_CRITICAL",
+        "latency": "@STATUS_HIGH",
+        "count": "#009CEB",
+        "volume": "#7B56DB"
+      },
+      "default_patterns": ["hero-kpi", "card-kpi", "sparkline-in-kpi"],
+      "uses_gradient_canvas": true
+    },
+
+    "exec": {
+      "mode": "light",
+      "canvas": "@CANVAS_LIGHT",
+      "panel": "@PANEL_LIGHT",
+      "panel_stroke": "@PANEL_STROKE_LIGHT",
+      "text_primary": "@TEXT_PRIMARY_LIGHT",
+      "text_secondary": "@TEXT_SECONDARY_LIGHT",
+      "accent": "@STATUS_INFO_LIGHT",
+      "series_colors": "@SERIES_CATEGORICAL_10_LIGHT",
+      "semantic_colors": {
+        "failure": "@STATUS_CRITICAL_LIGHT",
+        "success": "@STATUS_OK_LIGHT",
+        "critical": "@STATUS_CRITICAL_LIGHT",
+        "latency": "@STATUS_HIGH_LIGHT",
+        "count": "@STATUS_INFO_LIGHT",
+        "volume": "@STATUS_INFO_LIGHT"
+      },
+      "default_patterns": ["compare-prev", "section-zones", "sparkline-in-kpi"],
+      "uses_gradient_canvas": false
+    },
+
+    "noc": {
+      "mode": "dark",
+      "canvas": "@CANVAS_DARK_PURE",
+      "panel": "@PANEL_DARK_NOC",
+      "panel_stroke": "#1FBAD6",
+      "text_primary": "@TEXT_PRIMARY_DARK",
+      "text_secondary": "@TEXT_SECONDARY_DARK",
+      "accent": "#1FBAD6",
+      "series_colors": "@SERIES_SOC_8",
+      "semantic_colors": {
+        "failure": "@STATUS_CRITICAL",
+        "success": "@STATUS_OK",
+        "critical": "@STATUS_CRITICAL",
+        "latency": "@STATUS_HIGH",
+        "count": "#1FBAD6",
+        "volume": "@STATUS_INFO"
+      },
+      "default_patterns": ["card-kpi", "annotations", "status-tile"],
+      "uses_gradient_canvas": false
+    }
+  },
+
+  "legacy_aliases": {
+    "clean": "pro",
+    "ops": "noc",
+    "soc": "noc"
+  }
+}

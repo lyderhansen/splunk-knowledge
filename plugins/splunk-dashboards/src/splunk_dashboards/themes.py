@@ -1,18 +1,27 @@
-"""Aurora themes registry — 4 canonical themes + legacy aliases.
+"""Aurora themes registry — loads from data/themes.json.
 
-A Theme captures the tokens and behavior hints that the Aurora engine uses
+A Theme captures tokens and behavior hints that the Aurora engine uses
 to emit definition.defaults and per-viz overrides. Patterns are separate
-(see patterns/ package, sub-plan 11).
+(see patterns/ package).
+
+Token references: values like ``"@STATUS_INFO"`` in themes.json resolve
+to ``tokens.STATUS_INFO``. Literals (``"#009CEB"``, ``"rgba(...)"``) pass
+through unchanged. A slice spec ``{"source": "@SERIES_X", "end": N}``
+yields the first ``N`` colors of the referenced palette.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Literal, Tuple, Dict
+import json
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Dict, List, Literal, Tuple
 
 from splunk_dashboards import tokens as T
 
 
 ThemeMode = Literal["dark", "light"]
+
+_DATA_PATH = Path(__file__).parent / "data" / "themes.json"
 
 
 @dataclass(frozen=True)
@@ -28,110 +37,61 @@ class Theme:
     series_colors: list
     semantic_colors: Dict[str, str]
     default_patterns: Tuple[str, ...]
-    # True for themes that rely on rectangle stacking to fake gradients (glass)
     uses_gradient_canvas: bool = False
 
 
-PRO = Theme(
-    name="pro",
-    mode="dark",
-    canvas=T.CANVAS_DARK,
-    panel=T.PANEL_DARK,
-    panel_stroke=T.PANEL_STROKE_DARK,
-    text_primary=T.TEXT_PRIMARY_DARK,
-    text_secondary=T.TEXT_SECONDARY_DARK,
-    accent=T.STATUS_INFO,  # #006D9C
-    series_colors=list(T.SERIES_CATEGORICAL_10),
-    semantic_colors={
-        "failure": T.STATUS_CRITICAL,
-        "success": T.STATUS_OK,
-        "critical": T.STATUS_CRITICAL,
-        "latency": T.STATUS_HIGH,
-        "count": T.STATUS_INFO,
-        "volume": T.STATUS_INFO,
-    },
-    default_patterns=("card-kpi", "sparkline-in-kpi", "compare-prev"),
-)
-
-GLASS = Theme(
-    name="glass",
-    mode="dark",
-    canvas=T.CANVAS_DARK,  # gradient faked via rectangle stack
-    panel="rgba(255,255,255,0.03)",
-    panel_stroke="rgba(255,255,255,0.08)",
-    text_primary=T.TEXT_PRIMARY_DARK,
-    text_secondary=T.TEXT_SECONDARY_DARK,
-    accent="#009CEB",  # DS default blue, slightly richer than #006D9C
-    series_colors=list(T.SERIES_STUDIO_20[:8]),
-    semantic_colors={
-        "failure": T.STATUS_CRITICAL,
-        "success": T.STATUS_OK,
-        "critical": T.STATUS_CRITICAL,
-        "latency": T.STATUS_HIGH,
-        "count": "#009CEB",
-        "volume": "#7B56DB",
-    },
-    default_patterns=("hero-kpi", "card-kpi", "sparkline-in-kpi"),
-    uses_gradient_canvas=True,
-)
-
-EXEC = Theme(
-    name="exec",
-    mode="light",
-    canvas=T.CANVAS_LIGHT,
-    panel=T.PANEL_LIGHT,
-    panel_stroke=T.PANEL_STROKE_LIGHT,
-    text_primary=T.TEXT_PRIMARY_LIGHT,
-    text_secondary=T.TEXT_SECONDARY_LIGHT,
-    accent=T.STATUS_INFO_LIGHT,
-    series_colors=list(T.SERIES_CATEGORICAL_10_LIGHT),
-    semantic_colors={
-        "failure": T.STATUS_CRITICAL_LIGHT,
-        "success": T.STATUS_OK_LIGHT,
-        "critical": T.STATUS_CRITICAL_LIGHT,
-        "latency": T.STATUS_HIGH_LIGHT,
-        "count": T.STATUS_INFO_LIGHT,
-        "volume": T.STATUS_INFO_LIGHT,
-    },
-    default_patterns=("compare-prev", "section-zones", "sparkline-in-kpi"),
-)
-
-NOC = Theme(
-    name="noc",
-    mode="dark",
-    canvas=T.CANVAS_DARK_PURE,
-    panel=T.PANEL_DARK_NOC,
-    panel_stroke="#1FBAD6",  # cyan stroke at opacity 0.4 applied at render
-    text_primary=T.TEXT_PRIMARY_DARK,
-    text_secondary=T.TEXT_SECONDARY_DARK,
-    accent="#1FBAD6",
-    series_colors=list(T.SERIES_SOC_8),
-    semantic_colors={
-        "failure": T.STATUS_CRITICAL,
-        "success": T.STATUS_OK,
-        "critical": T.STATUS_CRITICAL,
-        "latency": T.STATUS_HIGH,
-        "count": "#1FBAD6",
-        "volume": T.STATUS_INFO,
-    },
-    default_patterns=("card-kpi", "annotations", "status-tile"),
-)
+def _resolve(value: Any) -> Any:
+    """Resolve @TOKEN refs and slice specs against the tokens module."""
+    if isinstance(value, str) and value.startswith("@"):
+        token_name = value[1:]
+        if not hasattr(T, token_name):
+            raise KeyError(f"Unknown token reference in themes.json: {value}")
+        resolved = getattr(T, token_name)
+        return list(resolved) if isinstance(resolved, list) else resolved
+    if isinstance(value, dict) and "source" in value:
+        source = _resolve(value["source"])
+        start = value.get("start", 0)
+        end = value.get("end")
+        return list(source[start:end]) if end is not None else list(source[start:])
+    if isinstance(value, dict):
+        return {k: _resolve(v) for k, v in value.items()}
+    return value
 
 
-THEMES: Dict[str, Theme] = {
-    "pro": PRO,
-    "glass": GLASS,
-    "exec": EXEC,
-    "noc": NOC,
-}
+def _build_theme(name: str, spec: Dict[str, Any]) -> Theme:
+    series = spec.get("series_colors")
+    if series is None:
+        series = spec.get("series_colors_slice")
+    return Theme(
+        name=name,
+        mode=spec["mode"],
+        canvas=_resolve(spec["canvas"]),
+        panel=_resolve(spec["panel"]),
+        panel_stroke=_resolve(spec["panel_stroke"]),
+        text_primary=_resolve(spec["text_primary"]),
+        text_secondary=_resolve(spec["text_secondary"]),
+        accent=_resolve(spec["accent"]),
+        series_colors=_resolve(series),
+        semantic_colors=_resolve(spec["semantic_colors"]),
+        default_patterns=tuple(spec["default_patterns"]),
+        uses_gradient_canvas=spec.get("uses_gradient_canvas", False),
+    )
 
 
-# Legacy theme names → canonical Aurora names.
-LEGACY_ALIASES: Dict[str, str] = {
-    "clean": "pro",
-    "ops": "noc",
-    "soc": "noc",
-}
+def _load() -> Tuple[Dict[str, Theme], Dict[str, str]]:
+    with _DATA_PATH.open("r", encoding="utf-8") as f:
+        raw = json.load(f)
+    themes = {name: _build_theme(name, spec) for name, spec in raw["themes"].items()}
+    aliases = dict(raw.get("legacy_aliases", {}))
+    return themes, aliases
+
+
+THEMES, LEGACY_ALIASES = _load()
+
+PRO = THEMES["pro"]
+GLASS = THEMES["glass"]
+EXEC = THEMES["exec"]
+NOC = THEMES["noc"]
 
 
 def get_theme(name: str) -> Theme:
@@ -142,7 +102,7 @@ def get_theme(name: str) -> Theme:
     return THEMES[canonical]
 
 
-def list_themes() -> list:
+def list_themes() -> List[str]:
     """Return canonical Aurora theme names only (not legacy aliases)."""
     return list(THEMES.keys())
 
