@@ -86,21 +86,58 @@ Panels in `layout.json` can carry a `drilldown` field:
 
 `ds-create` translates this into `options.drilldown = "all"` and `options.drilldownAction = <drilldown value>` on the matching visualization, enabling click-through behavior in the rendered dashboard.
 
-## Theme
+## Aurora themes
 
-Pass `--theme {clean|soc|ops|exec}` to apply visual styling. Default is `clean` (no-op).
+Pass `--theme {pro|glass|exec|noc}` to apply one of four Aurora design themes. Default is `pro`.
 
-- **clean** — minimal, preserves Splunk defaults.
-- **soc** — security-ops palette. Failures render red, successes green, with sparklines on count-type KPIs.
-- **ops** — cool-blue operations palette with traffic-light semantic coloring.
-- **exec** — muted executive palette with subtle accents for critical states.
+- **pro** — Splunk clean professional (dark). Default for executive, ops, analytical. Splunk categorical-10 palette, flat cards, 1px strokes. Legacy alias: `clean`.
+- **glass** — Linear-inspired premium (dark, hero). For landing dashboards with ≤ 8 panels. Radial-gradient canvas (faked via stacked rectangles), translucent cards, hero-KPI sparkline.
+- **exec** — Editorial light. For board decks, PDF reports, leadership distribution. Warm off-white, Georgia/Splunk Data Sans for values, thin divider lines (no cards).
+- **noc** — Mission-control. For 24/7 wall displays, SOC. Pure black canvas, SOC semantic-ordered palette, Roboto Mono on values. Legacy aliases: `ops`, `soc`.
 
-Non-`clean` themes also:
-- Set `seriesColors` on chart-type visualizations from the theme's palette.
-- Hide minor gridlines for a cleaner look.
-- Insert an automatic `splunk.markdown` header panel at the top with the dashboard title and description.
+Each theme ships with a **default pattern package** that auto-applies. Override explicitly with `--pattern`.
 
-The semantic engine reads each panel's SPL and title to detect tags (`failure`, `success`, `latency`, `count`, `volume`, `critical`) and applies the theme's color for the most specific match.
+| Theme | Default patterns |
+|---|---|
+| `pro` | `card-kpi`, `sparkline-in-kpi`, `compare-prev` |
+| `glass` | `hero-kpi`, `card-kpi`, `sparkline-in-kpi` |
+| `exec` | `compare-prev`, `section-zones`, `sparkline-in-kpi` |
+| `noc` | `card-kpi`, `annotations`, built-in status-tile |
+
+## Composition patterns
+
+Pass `--pattern <name>` (repeatable) to apply a composition pattern. If no `--pattern` is passed, the theme's defaults apply.
+
+| Pattern | Does |
+|---|---|
+| `card-kpi` | Inserts a `splunk.rectangle` behind a KPI row (depth via layered rectangles, rx 8). |
+| `hero-kpi` | Promotes one singlevalue to 2.5× width, 1.5× height, with oversized font, sparkline-below, trend delta. |
+| `sparkline-in-kpi` | Adds sparkline-below + theme-accent fill on every singlevalue backed by a time-series SPL. |
+| `compare-prev` | Appends `| timewrap 1d` and configures dashed previous-period overlay on line/area charts. |
+| `annotations` | Adds a secondary data source + binds annotationX/Label/Color on line/area/column charts. |
+| `section-zones` | Groups panels tagged with `section: <name>` into labeled zones with `### Section` headers and background rectangles. |
+
+See also: **`ds-design-principles`** for the decision rules that guide when to apply each pattern.
+
+### Examples
+
+```bash
+# Default pro theme with its default pattern package (card-kpi + sparkline-in-kpi + compare-prev)
+PYTHONPATH=.../src python3 -m splunk_dashboards.create build my-dash --title "Platform Health"
+
+# Glass hero view with only hero-kpi (no card-kpi)
+PYTHONPATH=.../src python3 -m splunk_dashboards.create build my-dash --theme glass --pattern hero-kpi
+
+# Exec PDF-style report, no patterns (pure theme only)
+PYTHONPATH=.../src python3 -m splunk_dashboards.create build my-dash --theme exec --pattern ""
+
+# NOC wall with explicit patterns
+PYTHONPATH=.../src python3 -m splunk_dashboards.create build my-dash --theme noc --pattern card-kpi --pattern annotations
+```
+
+### Splunk Enterprise and Cloud compatibility
+
+All Aurora themes and patterns emit **native Dashboard Studio v2 JSON only** — no custom CSS, no JavaScript, no app dependencies. Output runs unmodified on Splunk Enterprise (9.x+) and Splunk Cloud.
 
 ## After building
 
