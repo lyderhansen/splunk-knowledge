@@ -19,7 +19,7 @@ To pull updates later:
 
 ## Plugins
 
-### splunk-dashboards (v0.9.0)
+### splunk-dashboards (v0.10.0)
 
 Guided authoring of Splunk Dashboard Studio (v2) dashboards. Thirteen skills covering the full lifecycle, plus a theme engine that styles generated dashboards with semantic colors and KPI tiles.
 
@@ -86,6 +86,16 @@ ds-init ──▶ ds-data-explore | ds-mock ──▶ ds-template (opt.) ──�
 - `exec` — muted executive with subtle critical-state accents
 
 Themes detect SPL semantics (failure / success / latency / count / volume / critical) and apply `majorColor` + sparklines automatically.
+
+**Aurora design framework (v0.10.0+):**
+
+The Aurora framework codifies four professionally-tuned themes and six composition patterns that make generated dashboards look world-class while respecting Splunk's own design language. All native Dashboard Studio JSON — no CSS, no JS, Enterprise + Cloud compatible.
+
+- **Themes:** `pro` (dark default), `glass` (premium hero), `exec` (editorial light), `noc` (mission-control). Legacy `clean`/`ops`/`soc` aliases still work.
+- **Patterns:** `card-kpi`, `hero-kpi`, `sparkline-in-kpi`, `compare-prev`, `annotations`, `section-zones`. Apply via `--pattern` or use the theme's default package.
+- **Polish scorecard:** `ds-review` produces a weighted 0–10 score across 10 dimensions with actionable `ds-update` suggestions for gaps.
+
+See `docs/superpowers/specs/2026-04-23-aurora-design-framework-design.md` for the full spec.
 
 **Example flow:**
 
