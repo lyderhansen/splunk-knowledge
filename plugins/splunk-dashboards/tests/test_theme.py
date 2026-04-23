@@ -67,6 +67,9 @@ def test_apply_theme_pro_writes_definition_defaults():
     # definition.defaults.visualizations.global.options.backgroundColor
     global_opts = d.get("visualizations", {}).get("global", {}).get("options", {})
     assert global_opts.get("backgroundColor") == "#0b0c0e"
+    # Also verify per-chart-type seriesColors defaults are written
+    from splunk_dashboards import tokens as T
+    assert dashboard["defaults"]["visualizations"]["splunk.line"]["options"]["seriesColors"] == list(T.SERIES_CATEGORICAL_10)
 
 
 def test_apply_theme_legacy_clean_routes_to_pro():
