@@ -139,3 +139,85 @@ def test_rule_compare_prev_fail_when_no_timewrap_anywhere():
     score = evaluate(d)
     r = next(f for f in score.findings if f.rule == "compare-prev")
     assert r.level == "fail"
+
+
+def test_rule_section_zones_na_when_small_dashboard():
+    from splunk_dashboards.aurora_score import evaluate
+    d = _themed_dashboard()
+    d["visualizations"] = {
+        f"viz_{i}": {"type": "splunk.singlevalue", "options": {}}
+        for i in range(4)
+    }
+    d["layout"]["structure"] = [
+        {"item": f"viz_{i}", "type": "block", "position": {"x": i*100, "y": 0, "w": 100, "h": 100}}
+        for i in range(4)
+    ]
+    score = evaluate(d)
+    r = next(f for f in score.findings if f.rule == "section-zones")
+    assert r.level == "pass"  # N/A because <= 6 panels
+
+
+def test_rule_section_zones_fail_when_large_dashboard_unzoned():
+    from splunk_dashboards.aurora_score import evaluate
+    d = _themed_dashboard()
+    d["visualizations"] = {
+        f"viz_{i}": {"type": "splunk.singlevalue", "options": {}}
+        for i in range(8)
+    }
+    d["layout"]["structure"] = [
+        {"item": f"viz_{i}", "type": "block", "position": {"x": i*100, "y": 0, "w": 100, "h": 100}}
+        for i in range(8)
+    ]
+    score = evaluate(d)
+    r = next(f for f in score.findings if f.rule == "section-zones")
+    assert r.level == "fail"
+
+
+def test_rule_series_cap_fail_when_chart_has_too_many():
+    from splunk_dashboards.aurora_score import evaluate
+    d = _themed_dashboard()
+    d["visualizations"] = {
+        "viz_1": {"type": "splunk.line", "options": {"seriesColors": ["#fff"] * 12}},
+    }
+    score = evaluate(d)
+    r = next(f for f in score.findings if f.rule == "series-cap")
+    assert r.level == "fail"
+
+
+def test_rule_series_cap_pass_when_under_8():
+    from splunk_dashboards.aurora_score import evaluate
+    d = _themed_dashboard()
+    d["visualizations"] = {
+        "viz_1": {"type": "splunk.line", "options": {"seriesColors": ["#fff"] * 6}},
+    }
+    score = evaluate(d)
+    r = next(f for f in score.findings if f.rule == "series-cap")
+    assert r.level == "pass"
+
+
+def test_rule_semantic_colors_pass_when_failure_kpi_is_red():
+    from splunk_dashboards.aurora_score import evaluate
+    d = _themed_dashboard()
+    d["dataSources"] = {"ds_1": {"type": "ds.search", "options": {"query": "index=m action=failure | stats count"}}}
+    d["visualizations"] = {
+        "viz_1": {"type": "splunk.singlevalue", "title": "Failed logins",
+                   "dataSources": {"primary": "ds_1"},
+                   "options": {"majorColor": "#DC4E41"}},
+    }
+    score = evaluate(d)
+    r = next(f for f in score.findings if f.rule == "semantic-colors")
+    assert r.level == "pass"
+
+
+def test_rule_semantic_colors_fail_when_failure_kpi_is_blue():
+    from splunk_dashboards.aurora_score import evaluate
+    d = _themed_dashboard()
+    d["dataSources"] = {"ds_1": {"type": "ds.search", "options": {"query": "index=m action=failure | stats count"}}}
+    d["visualizations"] = {
+        "viz_1": {"type": "splunk.singlevalue", "title": "Failed logins",
+                   "dataSources": {"primary": "ds_1"},
+                   "options": {"majorColor": "#006D9C"}},  # blue - wrong for failure
+    }
+    score = evaluate(d)
+    r = next(f for f in score.findings if f.rule == "semantic-colors")
+    assert r.level == "fail"

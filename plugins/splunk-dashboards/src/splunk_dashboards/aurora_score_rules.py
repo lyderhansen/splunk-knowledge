@@ -144,3 +144,100 @@ def _check_compare_prev(dashboard: dict) -> Finding:
                     suggestion="Add: --pattern compare-prev")
 
 register_rule(ScoringRule("compare-prev", 1.2, _check_compare_prev))
+
+
+# ----- Rule 6: section-zones (weight 0.8) -----
+
+def _check_section_zones(dashboard: dict) -> Finding:
+    # Count non-decoration panels
+    content_types = SINGLEVALUE_TYPES | {
+        "splunk.line", "splunk.area", "splunk.bar", "splunk.column", "splunk.pie",
+        "splunk.table", "splunk.timeline", "splunk.choropleth.map",
+    }
+    content = [vid for vid, v in dashboard["visualizations"].items()
+               if v.get("type") in content_types]
+    if len(content) <= 6:
+        return Finding(rule="section-zones", level="pass",
+                        message=f"Small dashboard ({len(content)} panels) - zones N/A")
+    # Check for zone rectangles or section-header markdowns
+    has_zone = any(v.get("type") in ("splunk.rectangle", "splunk.markdown")
+                   for v in dashboard["visualizations"].values()
+                   if v.get("title", "").startswith("") and
+                   ("zone" in (v.get("options", {}).get("markdown", "") or "").lower()
+                     or v.get("options", {}).get("fillOpacity", 1) <= 0.1))
+    if has_zone:
+        return Finding(rule="section-zones", level="pass",
+                        message="Large dashboard uses section zones")
+    return Finding(rule="section-zones", level="fail",
+                    message=f"Dashboard has {len(content)} panels but no section-zones",
+                    suggestion="Add: --pattern section-zones (after tagging panels with section)")
+
+register_rule(ScoringRule("section-zones", 0.8, _check_section_zones))
+
+
+# ----- Rule 7: series-cap (weight 1.0) -----
+
+CHART_TYPES = {"splunk.line", "splunk.area", "splunk.bar", "splunk.column",
+               "splunk.pie", "splunk.bubble", "splunk.scatter"}
+
+
+def _check_series_cap(dashboard: dict) -> Finding:
+    exceeders = []
+    for vid, viz in dashboard["visualizations"].items():
+        if viz.get("type") not in CHART_TYPES:
+            continue
+        sc = viz.get("options", {}).get("seriesColors") or []
+        if len(sc) > 8:
+            exceeders.append(vid)
+    if not exceeders:
+        return Finding(rule="series-cap", level="pass",
+                        message="No chart exceeds 8 series")
+    return Finding(rule="series-cap", level="fail",
+                    message=f"{len(exceeders)} chart(s) have > 8 series: {', '.join(exceeders)}",
+                    suggestion="Add Top-N + Other aggregation to SPL")
+
+register_rule(ScoringRule("series-cap", 1.0, _check_series_cap))
+
+
+# ----- Rule 8: semantic-colors (weight 1.2) -----
+
+SEMANTIC_HINTS = {
+    "failure": "#DC4E41", "critical": "#DC4E41", "error": "#DC4E41",
+    "success": "#53A051", "healthy": "#53A051", "uptime": "#53A051",
+}
+
+
+def _check_semantic_colors(dashboard: dict) -> Finding:
+    mismatches = []
+    matches = []
+    for vid, viz in dashboard["visualizations"].items():
+        if viz.get("type") not in SINGLEVALUE_TYPES:
+            continue
+        text = (viz.get("title", "") + " " + _spl_for_viz(viz, dashboard)).lower()
+        major_color = (viz.get("options", {}) or {}).get("majorColor", "")
+        for hint, expected_hex in SEMANTIC_HINTS.items():
+            if hint in text:
+                if not major_color:
+                    continue  # no color set - not a mismatch
+                # Check the color matches the expected hue family (red/green exact match for now)
+                if major_color.upper() == expected_hex.upper():
+                    matches.append(vid)
+                else:
+                    # Also allow light variants
+                    light_variants = {"#DC4E41": "#C0392B", "#53A051": "#2B9E44"}
+                    if major_color.upper() == light_variants.get(expected_hex, "").upper():
+                        matches.append(vid)
+                    else:
+                        mismatches.append((vid, hint, major_color))
+                break
+    if not matches and not mismatches:
+        return Finding(rule="semantic-colors", level="pass",
+                        message="No status KPIs detected (N/A)")
+    if mismatches:
+        return Finding(rule="semantic-colors", level="fail",
+                        message=f"{len(mismatches)} status KPI(s) use wrong color",
+                        suggestion="Apply theme with semantic detection enabled (--theme pro/glass/exec/noc)")
+    return Finding(rule="semantic-colors", level="pass",
+                    message=f"{len(matches)} status KPI(s) use semantic colors")
+
+register_rule(ScoringRule("semantic-colors", 1.2, _check_semantic_colors))
