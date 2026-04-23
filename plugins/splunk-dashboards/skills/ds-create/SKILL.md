@@ -149,4 +149,4 @@ All Aurora themes and patterns emit **native Dashboard Studio v2 JSON only** —
 
 If the layout picked viz types that don't fit the data shape, consult **`ds-design-principles`** — specifically the "Chart selection" decision table. Then invoke `ds-update` to swap viz types before building the final JSON.
 
-The `--theme {soc|ops|exec}` flags apply the color semantics described in the design-principles skill automatically.
+The `--theme {pro|glass|exec|noc}` flags apply the color semantics described in the design-principles skill automatically.
