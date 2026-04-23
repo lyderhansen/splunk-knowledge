@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from splunk_dashboards.data_sources import DataSources
 from splunk_dashboards.layout import Layout
-from splunk_dashboards.theme import apply_theme
+from splunk_dashboards.aurora import apply as aurora_apply
 
 GRID_UNIT_W = 100  # pixels per grid column
 GRID_UNIT_H = 80   # pixels per grid row
@@ -17,6 +17,7 @@ def build_dashboard(
     with_time_input: bool = True,
     layout_type: str = "absolute",
     theme: str = "pro",
+    patterns: list | None = None,
 ) -> dict:
     """Build a Splunk Dashboard Studio JSON definition from a Layout + DataSources."""
     # Map DataSource index -> ds key. Also build question -> ds key lookup for panel binding.
@@ -122,7 +123,7 @@ def build_dashboard(
         "defaults": defaults,
         "layout": layout_block,
     }
-    apply_theme(dashboard, theme)
+    aurora_apply(dashboard, theme=theme, patterns=patterns)
     return dashboard
 
 
@@ -162,6 +163,11 @@ def _cli(argv=None) -> int:
         default="pro",
         help="Visual theme: pro|glass|exec|noc (aliases: clean→pro, ops→noc, soc→noc)",
     )
+    build.add_argument(
+        "--pattern", action="append", default=None,
+        help="Composition pattern to apply. Repeatable. E.g. --pattern card-kpi --pattern compare-prev. "
+             "If omitted, the theme's default patterns apply. Pass --pattern '' to disable patterns entirely.",
+    )
 
     args = parser.parse_args(argv)
 
@@ -184,6 +190,11 @@ def _cli(argv=None) -> int:
             print(f"Missing workspace file: {e}", file=_sys.stderr)
             return 2
 
+        # --pattern '' (empty string) explicitly disables all patterns.
+        if args.pattern == [""]:
+            patterns = []
+        else:
+            patterns = args.pattern
         dashboard = build_dashboard(
             layout, data,
             title=args.title,
@@ -191,6 +202,7 @@ def _cli(argv=None) -> int:
             with_time_input=not args.no_time_input,
             layout_type=args.layout,
             theme=args.theme,
+            patterns=patterns,
         )
         ws = get_workspace_dir(args.project)
         path = ws / DASHBOARD_FILENAME

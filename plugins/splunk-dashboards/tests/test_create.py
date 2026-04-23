@@ -68,7 +68,9 @@ def test_build_dashboard_maps_panels_to_visualizations_and_layout():
             DataSource(question="q2", spl="| makeresults count=100 | timechart count"),
         ],
     )
-    result = build_dashboard(layout, data, title="t", description="", with_time_input=False)
+    # patterns=[] isolates this test from the theme's default pattern auto-apply
+    # (card-kpi would otherwise add a splunk.rectangle to visualizations).
+    result = build_dashboard(layout, data, title="t", description="", with_time_input=False, patterns=[])
 
     # Visualizations keyed as viz_<panel.id>
     viz = result["visualizations"]
@@ -336,3 +338,36 @@ def test_build_dashboard_unknown_theme_raises(tmp_path):
             Layout(project="x"), DataSources(project="x"),
             title="T", description="", theme="nope",
         )
+
+
+def test_build_dashboard_applies_theme_defaults_by_default():
+    """Without --pattern, theme's default_patterns auto-apply."""
+    from splunk_dashboards.create import build_dashboard
+    from splunk_dashboards.layout import Layout, Panel
+    from splunk_dashboards.data_sources import DataSources, DataSource
+
+    layout = Layout(project="x", panels=[
+        Panel(id="p1", title="Events", x=0, y=0, w=4, h=3,
+              viz_type="splunk.singlevalue", data_source_ref="q1"),
+    ])
+    data = DataSources(project="x", sources=[
+        DataSource(question="q1", spl="index=m | timechart count", earliest="-24h", latest="now"),
+    ])
+    result = build_dashboard(layout, data, title="T", description="", theme="pro")
+    # pro default includes card-kpi
+    assert any(v.get("type") == "splunk.rectangle" for v in result["visualizations"].values())
+
+
+def test_build_dashboard_explicit_patterns_override():
+    from splunk_dashboards.create import build_dashboard
+    from splunk_dashboards.layout import Layout, Panel
+    from splunk_dashboards.data_sources import DataSources, DataSource
+
+    layout = Layout(project="x", panels=[
+        Panel(id="p1", title="E", x=0, y=0, w=4, h=3,
+              viz_type="splunk.singlevalue", data_source_ref="q1"),
+    ])
+    data = DataSources(project="x", sources=[DataSource(question="q1", spl="index=m | stats count", earliest="-24h", latest="now")])
+    # patterns=[] means no patterns run
+    result = build_dashboard(layout, data, title="T", description="", theme="pro", patterns=[])
+    assert not any(v.get("type") == "splunk.rectangle" for v in result["visualizations"].values())
