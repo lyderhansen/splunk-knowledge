@@ -53,3 +53,89 @@ def test_empty_dashboard_scores_low():
     """An empty dashboard should score near zero — no theme, no KPIs, no patterns."""
     score = evaluate(_minimal_dashboard())
     assert score.value < 3.0
+
+
+def _themed_dashboard():
+    d = _minimal_dashboard()
+    d["defaults"] = {"visualizations": {"global": {"options": {"backgroundColor": "#0b0c0e"}}}}
+    return d
+
+
+def test_rule_theme_applied_pass():
+    from splunk_dashboards.aurora_score import evaluate
+    score = evaluate(_themed_dashboard())
+    theme_findings = [f for f in score.findings if f.rule == "theme-applied"]
+    assert theme_findings and theme_findings[0].level == "pass"
+
+
+def test_rule_theme_applied_fail_when_no_defaults():
+    from splunk_dashboards.aurora_score import evaluate
+    score = evaluate(_minimal_dashboard())
+    theme_findings = [f for f in score.findings if f.rule == "theme-applied"]
+    assert theme_findings and theme_findings[0].level == "fail"
+
+
+def test_rule_card_kpi_pass_when_rectangle_before_kpis():
+    from splunk_dashboards.aurora_score import evaluate
+    d = _themed_dashboard()
+    d["visualizations"] = {
+        "viz_card": {"type": "splunk.rectangle", "options": {}},
+        "viz_kpi":  {"type": "splunk.singlevalue", "options": {}},
+    }
+    d["layout"]["structure"] = [
+        {"item": "viz_card", "type": "block", "position": {"x": 0, "y": 0, "w": 100, "h": 100}},
+        {"item": "viz_kpi",  "type": "block", "position": {"x": 10, "y": 10, "w": 80, "h": 80}},
+    ]
+    score = evaluate(d)
+    r = next(f for f in score.findings if f.rule == "card-kpi")
+    assert r.level == "pass"
+
+
+def test_rule_hero_kpi_partial_when_no_sized_hero():
+    from splunk_dashboards.aurora_score import evaluate
+    d = _themed_dashboard()
+    d["visualizations"] = {
+        "viz_a": {"type": "splunk.singlevalue", "options": {"majorValueSize": 32}},
+        "viz_b": {"type": "splunk.singlevalue", "options": {"majorValueSize": 32}},
+    }
+    d["layout"]["structure"] = [
+        {"item": "viz_a", "type": "block", "position": {"x": 0, "y": 0, "w": 320, "h": 140}},
+        {"item": "viz_b", "type": "block", "position": {"x": 340, "y": 0, "w": 320, "h": 140}},
+    ]
+    score = evaluate(d)
+    r = next(f for f in score.findings if f.rule == "hero-kpi")
+    # No singlevalue is 2x size → partial or fail (treat as partial because pattern is optional)
+    assert r.level in ("partial", "fail")
+
+
+def test_rule_sparkline_in_kpi_pass_when_all_timeseries_have_spark():
+    from splunk_dashboards.aurora_score import evaluate
+    d = _themed_dashboard()
+    d["dataSources"] = {"ds_1": {"type": "ds.search", "options": {"query": "index=m | timechart count"}}}
+    d["visualizations"] = {
+        "viz_1": {"type": "splunk.singlevalue", "dataSources": {"primary": "ds_1"},
+                   "options": {"sparklineDisplay": "below"}},
+    }
+    score = evaluate(d)
+    r = next(f for f in score.findings if f.rule == "sparkline-in-kpi")
+    assert r.level == "pass"
+
+
+def test_rule_compare_prev_pass_when_timewrap_in_line_spl():
+    from splunk_dashboards.aurora_score import evaluate
+    d = _themed_dashboard()
+    d["dataSources"] = {"ds_1": {"type": "ds.search", "options": {"query": "| timechart count | timewrap 1d"}}}
+    d["visualizations"] = {"viz_1": {"type": "splunk.line", "dataSources": {"primary": "ds_1"}, "options": {}}}
+    score = evaluate(d)
+    r = next(f for f in score.findings if f.rule == "compare-prev")
+    assert r.level == "pass"
+
+
+def test_rule_compare_prev_fail_when_no_timewrap_anywhere():
+    from splunk_dashboards.aurora_score import evaluate
+    d = _themed_dashboard()
+    d["dataSources"] = {"ds_1": {"type": "ds.search", "options": {"query": "| timechart count"}}}
+    d["visualizations"] = {"viz_1": {"type": "splunk.line", "dataSources": {"primary": "ds_1"}, "options": {}}}
+    score = evaluate(d)
+    r = next(f for f in score.findings if f.rule == "compare-prev")
+    assert r.level == "fail"
