@@ -58,5 +58,25 @@ def evaluate(dashboard: dict) -> PolishScore:
     return PolishScore(value=round(total, 2), findings=findings)
 
 
+def render_markdown(score: PolishScore) -> str:
+    lines = ["## Polish scorecard", "", f"**Score: {score.value} / 10**", ""]
+    wins = score.wins
+    gaps = score.gaps
+    if wins:
+        lines.append("### Wins")
+        for f in wins:
+            lines.append(f"- [{f.level}] **{f.rule}** — {f.message}")
+        lines.append("")
+    if gaps:
+        lines.append("### Gaps")
+        for f in gaps:
+            item = f"- [{f.level}] **{f.rule}** — {f.message}"
+            if f.suggestion:
+                item += f"\n  _Suggestion:_ `{f.suggestion}`"
+            lines.append(item)
+        lines.append("")
+    return "\n".join(lines)
+
+
 # Rule module imports (self-registering). Kept at bottom to avoid circular.
 from splunk_dashboards import aurora_score_rules  # noqa: E402, F401

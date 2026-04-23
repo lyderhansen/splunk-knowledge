@@ -70,6 +70,21 @@ Each dimension returns pass/partial/fail and contributes to the weighted score. 
 
 Implementation: `src/splunk_dashboards/aurora_score.py` (sub-plan 13).
 
+### How ds-review computes the score
+
+```python
+from splunk_dashboards.aurora_score import evaluate, render_markdown
+import json
+
+with open("dashboard.json") as f:
+    dashboard = json.load(f)
+score = evaluate(dashboard)
+print(render_markdown(score))
+# Appends result to review.md
+```
+
+The scorecard is deterministic — the same `dashboard.json` always produces the same score. It does NOT execute SPL against a live Splunk instance; it only inspects the JSON structure and static SPL text.
+
 ## Output
 
 Write findings to `review.md` in the workspace (or to the directory of the input file when operating standalone):

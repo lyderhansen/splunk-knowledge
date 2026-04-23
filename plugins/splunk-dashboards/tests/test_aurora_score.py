@@ -313,3 +313,20 @@ def test_high_score_dashboard():
     ]
     score = evaluate(d)
     assert score.value >= 8.0
+
+
+def test_render_markdown_includes_score_and_sections():
+    from splunk_dashboards.aurora_score import evaluate, render_markdown
+    d = _themed_dashboard()
+    score = evaluate(d)
+    md = render_markdown(score)
+    assert "## Polish scorecard" in md
+    assert f"**Score: {score.value}" in md
+    assert "### Wins" in md or "### Gaps" in md
+
+
+def test_render_markdown_shows_suggestions_in_gaps():
+    from splunk_dashboards.aurora_score import evaluate, render_markdown
+    d = _minimal_dashboard()  # no theme -> lots of gaps
+    md = render_markdown(evaluate(d))
+    assert "ds-create build" in md or "--pattern" in md  # at least one suggestion surfaces
