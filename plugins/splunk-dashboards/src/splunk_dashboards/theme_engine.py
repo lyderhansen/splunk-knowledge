@@ -3,7 +3,6 @@
 Responsibilities:
 1. Emit definition.defaults (canvas + series palette) — global, not per-viz.
 2. Per-viz semantic coloring on singlevalues where SPL/title matches tags.
-3. Insert a markdown header panel for themes that request one.
 
 Patterns (card-kpi, hero-kpi, etc.) are NOT applied here — see aurora.py
 (sub-plan 11) for pattern orchestration.
@@ -113,7 +112,7 @@ def _emit_definition_defaults(dashboard: dict, theme: Theme) -> None:
     # Default series palette for every chart type.
     for chart_type in CHART_TYPES:
         type_defaults = viz_defaults.setdefault(chart_type, {}).setdefault("options", {})
-        type_defaults.setdefault("seriesColors", list(theme.series_colors))
+        type_defaults["seriesColors"] = list(theme.series_colors)
 
 
 def apply_theme(dashboard: dict, theme_name: str) -> None:
