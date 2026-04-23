@@ -304,3 +304,35 @@ def test_cli_build_theme_flag(tmp_path, monkeypatch):
     # "soc" routes to "noc" (pure black canvas).
     global_opts = dashboard["defaults"]["visualizations"]["global"]["options"]
     assert global_opts["backgroundColor"] == "#000000"
+
+
+def test_build_dashboard_accepts_aurora_theme_pro(tmp_path):
+    """Aurora theme 'pro' should be accepted by build_dashboard."""
+    layout = Layout(project="x", panels=[
+        Panel(id="p1", title="Events", x=0, y=0, w=4, h=3,
+              viz_type="splunk.singlevalue", data_source_ref="q1"),
+    ])
+    data = DataSources(project="x", sources=[
+        DataSource(question="q1", spl="index=main | stats count", earliest="-24h", latest="now"),
+    ])
+    result = build_dashboard(layout, data, title="T", description="D", theme="pro")
+    assert result["defaults"]["visualizations"]["global"]["options"]["backgroundColor"] == "#0b0c0e"
+
+
+def test_build_dashboard_accepts_legacy_clean_via_alias(tmp_path):
+    """Legacy theme 'clean' should resolve to 'pro' via LEGACY_ALIASES."""
+    result = build_dashboard(
+        Layout(project="x"), DataSources(project="x"),
+        title="T", description="", theme="clean",
+    )
+    # 'clean' resolves to 'pro' — canvas == Prisma Dark
+    assert result["defaults"]["visualizations"]["global"]["options"]["backgroundColor"] == "#0b0c0e"
+
+
+def test_build_dashboard_unknown_theme_raises(tmp_path):
+    """Unknown theme names should raise KeyError from apply_theme/get_theme."""
+    with pytest.raises(KeyError):
+        build_dashboard(
+            Layout(project="x"), DataSources(project="x"),
+            title="T", description="", theme="nope",
+        )

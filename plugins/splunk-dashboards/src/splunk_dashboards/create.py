@@ -16,7 +16,7 @@ def build_dashboard(
     description: str,
     with_time_input: bool = True,
     layout_type: str = "absolute",
-    theme: str = "clean",
+    theme: str = "pro",
 ) -> dict:
     """Build a Splunk Dashboard Studio JSON definition from a Layout + DataSources."""
     # Map DataSource index -> ds key. Also build question -> ds key lookup for panel binding.
@@ -156,8 +156,12 @@ def _cli(argv=None) -> int:
                        help="Omit the global time-range input and defaults block")
     build.add_argument("--layout", choices=["absolute", "grid"], default="absolute",
                        help="Layout type (default: absolute)")
-    build.add_argument("--theme", choices=["clean", "soc", "ops", "exec"], default="clean",
-                       help="Visual theme (default: clean, no-op)")
+    build.add_argument(
+        "--theme",
+        choices=["pro", "glass", "exec", "noc", "clean", "ops", "soc"],
+        default="pro",
+        help="Visual theme: pro|glass|exec|noc (aliases: clean→pro, ops→noc, soc→noc)",
+    )
 
     args = parser.parse_args(argv)
 
