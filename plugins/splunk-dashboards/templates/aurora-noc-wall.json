@@ -1,0 +1,83 @@
+{
+  "title": "NOC Wall",
+  "description": "Aurora flagship — noc theme. 4 status tiles + live request-rate chart + top-hosts ticker. For 24/7 wall displays.",
+  "theme": "dark",
+  "dataSources": {
+    "ds_events": {
+      "type": "ds.search",
+      "name": "Events",
+      "options": {"query": "| makeresults | eval events=42128 | table events"}
+    },
+    "ds_uptime": {
+      "type": "ds.search",
+      "name": "Uptime",
+      "options": {"query": "| makeresults | eval uptime=99.98 | table uptime"}
+    },
+    "ds_latency": {
+      "type": "ds.search",
+      "name": "p95 Latency",
+      "options": {"query": "| makeresults | eval p95=148 | table p95"}
+    },
+    "ds_alerts": {
+      "type": "ds.search",
+      "name": "Critical alerts",
+      "options": {"query": "| makeresults | eval alerts=3 | table alerts"}
+    },
+    "ds_request_rate": {
+      "type": "ds.search",
+      "name": "Request rate",
+      "options": {"query": "| makeresults count=60 | streamstats count | eval _time=_time - (count*60), rate=random()%1000 + 500 | table _time rate"}
+    },
+    "ds_hosts": {
+      "type": "ds.search",
+      "name": "Top hosts",
+      "options": {"query": "| makeresults | eval data=\"host-a,98,OK;host-b,221,WARN;host-c,412,CRIT\" | makemv delim=\";\" data | mvexpand data | rex field=data \"(?<host>[^,]+),(?<ms>\\d+),(?<status>\\w+)\" | table host ms status"}
+    }
+  },
+  "visualizations": {
+    "viz_events": {
+      "type": "splunk.singlevalueicon", "title": "EVENTS",
+      "dataSources": {"primary": "ds_events"},
+      "options": {"majorValueSize": 32, "backgroundColor": "#53A051", "icon": "check-circle"}
+    },
+    "viz_uptime": {
+      "type": "splunk.singlevalueicon", "title": "UPTIME",
+      "dataSources": {"primary": "ds_uptime"},
+      "options": {"unit": "%", "majorValueSize": 32, "backgroundColor": "#53A051", "icon": "check-circle"}
+    },
+    "viz_latency": {
+      "type": "splunk.singlevalueicon", "title": "P95 MS",
+      "dataSources": {"primary": "ds_latency"},
+      "options": {"majorValueSize": 32, "backgroundColor": "#F8BE34", "icon": "warning"}
+    },
+    "viz_alerts": {
+      "type": "splunk.singlevalueicon", "title": "ALERTS",
+      "dataSources": {"primary": "ds_alerts"},
+      "options": {"majorValueSize": 32, "backgroundColor": "#DC4E41", "icon": "alarm"}
+    },
+    "viz_rate": {
+      "type": "splunk.line", "title": "REQUEST RATE · LIVE",
+      "dataSources": {"primary": "ds_request_rate"},
+      "options": {}
+    },
+    "viz_hosts": {
+      "type": "splunk.table", "title": "HOSTS",
+      "dataSources": {"primary": "ds_hosts"},
+      "options": {"count": 10}
+    }
+  },
+  "inputs": {},
+  "defaults": {},
+  "layout": {
+    "type": "absolute",
+    "options": {"width": 1920, "height": 1080},
+    "structure": [
+      {"item": "viz_events",  "type": "block", "position": {"x": 20,   "y": 40,  "w": 460, "h": 180}},
+      {"item": "viz_uptime",  "type": "block", "position": {"x": 500,  "y": 40,  "w": 460, "h": 180}},
+      {"item": "viz_latency", "type": "block", "position": {"x": 980,  "y": 40,  "w": 460, "h": 180}},
+      {"item": "viz_alerts",  "type": "block", "position": {"x": 1460, "y": 40,  "w": 440, "h": 180}},
+      {"item": "viz_rate",    "type": "block", "position": {"x": 20,   "y": 240, "w": 1880,"h": 520}},
+      {"item": "viz_hosts",   "type": "block", "position": {"x": 20,   "y": 780, "w": 1880,"h": 280}}
+    ]
+  }
+}
