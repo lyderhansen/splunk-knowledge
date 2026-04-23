@@ -290,6 +290,65 @@ Limit charts to 6–8 series. Beyond that, aggregate to Top N + "Other" or split
 
 ---
 
+## Aurora themes
+
+Four canonical themes ship with the plugin. Use this table to pick one when `ds-init` asks about audience and use case.
+
+| Theme | Mode | Archetype fit | When |
+|---|---|---|---|
+| `pro` | dark | Executive summary, Operational monitoring, Analytical deep-dive | Default choice. Splunk categorical-10 palette. |
+| `glass` | dark (hero) | Executive summary with ≤ 8 panels | When the dashboard is a landing / pitch view. |
+| `exec` | light | Executive summary for print / PDF distribution | Monthly reports, board decks, leadership updates. |
+| `noc` | dark (intense) | Operational monitoring, SOC overview | 24/7 wall displays, on-call rotations. |
+
+### Canvas tokens (verified against splunkui.splunk.com)
+
+| Theme | Canvas | Panel | Stroke | Accent |
+|---|---|---|---|---|
+| `pro` | `#0b0c0e` | `#15161a` | `#2C2C3A` | `#006D9C` |
+| `glass` | gradient `#1a1538 → #0b0c0e` | `rgba(255,255,255,0.03)` | `rgba(255,255,255,0.08)` | `#009CEB` |
+| `exec` | `#FAFAF7` | `#ffffff` | `#E5E5E0` | `#2066C0` |
+| `noc` | `#000000` | `#0F1117` | `#1FBAD6 @ 0.4` | `#1FBAD6` |
+
+## Depth and layering
+
+Dashboard Studio has no box-shadow, no backdrop-blur, no gradient primitive. Depth comes from **layered rectangles**:
+
+- **Card behind KPIs** — `splunk.rectangle` placed first in `layout.structure` (earlier = renders behind) with `fillColor: PANEL`, `strokeColor: PANEL_STROKE`, `rx: 8`. KPI panels layered on top.
+- **Zone background** — a second rectangle at `fillOpacity: 0.04` wrapping a section of panels, combined with a `splunk.markdown` header.
+- **Two-tone highlight** — stack two rectangles at the same position: base at `fillOpacity: 1`, overlay at `fillOpacity: 0.3` with an accent color, to fake a subtle gradient.
+
+**Array-order rule:** entries earlier in `layout.structure` render BEHIND entries later in the array. There is no `z-index`. Aurora's `card-kpi` and `section-zones` patterns handle this automatically.
+
+**Shape layouts only:** `splunk.rectangle` and `splunk.ellipse` require `layout.type: "absolute"`. Patterns that use them skip silently on `grid` or `tab` layouts.
+
+## Composition patterns
+
+Six patterns `ds-create` can apply. Each is independently invokable via `--pattern <name>`.
+
+| Pattern | What it does | Theme defaults that include it |
+|---|---|---|
+| `card-kpi` | Rectangle card behind a KPI row for depth. | pro, glass, noc |
+| `hero-kpi` | Promotes one singlevalue to 2.5× size with sparkline + delta. | glass |
+| `sparkline-in-kpi` | Sparkline-below on every time-series singlevalue. | pro, glass, exec |
+| `compare-prev` | Dashed previous-period overlay on line/area (`timewrap`). | pro, exec |
+| `annotations` | Event markers on line/area/column from a secondary ds. | noc |
+| `section-zones` | Labeled zones for dashboards with > 6 panels. | exec |
+
+See `ds-create` SKILL.md for pattern invocation examples.
+
+## Explicit constraints (honest "not possible" list)
+
+Aurora is native Dashboard Studio JSON. It cannot deliver:
+
+1. **Animations** — no keyframes, no pulsing alerts, no transitions.
+2. **True glassmorphism / backdrop-blur** — `glass` theme fakes the feeling; it is not identical to Linear.
+3. **Gradient text on KPIs** — no gradient-text option; use a saturated color + background rectangle instead.
+4. **Custom chart fonts** — only `splunk.markdown` exposes `fontFamily`.
+5. **Per-region map overlays that pan/zoom with the map** — statically positioned overlays only.
+
+For features that genuinely require these, custom Canvas 2D visualizations via `/splunk-viz` are a Phase 2 extension point (see `viz_packs/README.md`). Aurora v1 does not ship any custom viz.
+
 ## Working with the action skills
 
 | Skill | When design principles applies |
