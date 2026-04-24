@@ -60,14 +60,14 @@ def _empty_dashboard():
 
 
 def test_apply_theme_pro_writes_definition_defaults():
-    """Aurora pro theme should emit definition.defaults with canvas + series palette."""
+    """Aurora pro theme should emit canvas bg on layout + seriesColors under defaults."""
     dashboard = _empty_dashboard()
     apply_theme(dashboard, "pro")
-    d = dashboard.get("defaults", {})
-    # definition.defaults.visualizations.global.options.backgroundColor
-    global_opts = d.get("visualizations", {}).get("global", {}).get("options", {})
-    assert global_opts.get("backgroundColor") == "#0b0c0e"
-    # Also verify per-chart-type seriesColors defaults are written
+    # Canvas background lives on layout.options.backgroundColor (valid per
+    # Splunk schema for absolute layouts). The "defaults.visualizations.global"
+    # path is rejected by Splunk with "must NOT have additional properties".
+    assert dashboard["layout"]["options"]["backgroundColor"] == "#0b0c0e"
+    # Per-chart-type seriesColors defaults are still written under defaults.
     from splunk_dashboards import tokens as T
     assert dashboard["defaults"]["visualizations"]["splunk.line"]["options"]["seriesColors"] == list(T.SERIES_CATEGORICAL_10)
 
@@ -79,20 +79,19 @@ def test_apply_theme_legacy_clean_routes_to_pro():
     apply_theme(d1, "clean")
     apply_theme(d2, "pro")
     assert d1.get("defaults") == d2.get("defaults")
+    assert d1["layout"]["options"].get("backgroundColor") == d2["layout"]["options"].get("backgroundColor")
 
 
 def test_apply_theme_noc_uses_black_canvas():
     d = _empty_dashboard()
     apply_theme(d, "noc")
-    global_opts = d["defaults"]["visualizations"]["global"]["options"]
-    assert global_opts["backgroundColor"] == "#000000"
+    assert d["layout"]["options"]["backgroundColor"] == "#000000"
 
 
 def test_apply_theme_exec_uses_light_canvas():
     d = _empty_dashboard()
     apply_theme(d, "exec")
-    global_opts = d["defaults"]["visualizations"]["global"]["options"]
-    assert global_opts["backgroundColor"] == "#FAFAF7"
+    assert d["layout"]["options"]["backgroundColor"] == "#FAFAF7"
 
 
 def test_apply_theme_legacy_ops_routes_to_noc():
@@ -101,6 +100,7 @@ def test_apply_theme_legacy_ops_routes_to_noc():
     apply_theme(d1, "ops")
     apply_theme(d2, "noc")
     assert d1.get("defaults") == d2.get("defaults")
+    assert d1["layout"]["options"].get("backgroundColor") == d2["layout"]["options"].get("backgroundColor")
 
 
 def _sample_dashboard_with_singlevalue() -> dict:

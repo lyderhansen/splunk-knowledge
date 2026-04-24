@@ -290,8 +290,8 @@ def test_build_dashboard_applies_soc_theme():
     viz = result["visualizations"]["viz_p1"]
     # noc theme colors the failure singlevalue with STATUS_CRITICAL.
     assert viz["options"]["majorColor"] == "#DC4E41"
-    # noc uses pure black canvas via definition.defaults.
-    assert result["defaults"]["visualizations"]["global"]["options"]["backgroundColor"] == "#000000"
+    # noc uses pure black canvas, emitted on layout.options (schema-valid path).
+    assert result["layout"]["options"]["backgroundColor"] == "#000000"
 
 
 def test_cli_build_theme_flag(tmp_path, monkeypatch):
@@ -302,10 +302,9 @@ def test_cli_build_theme_flag(tmp_path, monkeypatch):
     )
     assert result.returncode == 0, result.stderr
     dashboard = json.loads((tmp_path / ".splunk-dashboards" / "my-dash" / "dashboard.json").read_text())
-    # Aurora: theme applied → definition.defaults populated with canvas + series palette.
+    # Aurora: theme applied → canvas backgroundColor written to layout.options.
     # "soc" routes to "noc" (pure black canvas).
-    global_opts = dashboard["defaults"]["visualizations"]["global"]["options"]
-    assert global_opts["backgroundColor"] == "#000000"
+    assert dashboard["layout"]["options"]["backgroundColor"] == "#000000"
 
 
 def test_build_dashboard_accepts_aurora_theme_pro(tmp_path):
@@ -318,7 +317,7 @@ def test_build_dashboard_accepts_aurora_theme_pro(tmp_path):
         DataSource(question="q1", spl="index=main | stats count", earliest="-24h", latest="now"),
     ])
     result = build_dashboard(layout, data, title="T", description="D", theme="pro")
-    assert result["defaults"]["visualizations"]["global"]["options"]["backgroundColor"] == "#0b0c0e"
+    assert result["layout"]["options"]["backgroundColor"] == "#0b0c0e"
 
 
 def test_build_dashboard_accepts_legacy_clean_via_alias(tmp_path):
@@ -328,7 +327,7 @@ def test_build_dashboard_accepts_legacy_clean_via_alias(tmp_path):
         title="T", description="", theme="clean",
     )
     # 'clean' resolves to 'pro' — canvas == Prisma Dark
-    assert result["defaults"]["visualizations"]["global"]["options"]["backgroundColor"] == "#0b0c0e"
+    assert result["layout"]["options"]["backgroundColor"] == "#0b0c0e"
 
 
 def test_build_dashboard_unknown_theme_raises(tmp_path):

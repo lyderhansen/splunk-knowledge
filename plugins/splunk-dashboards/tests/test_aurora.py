@@ -48,10 +48,10 @@ def test_apply_unknown_pattern_raises():
 
 
 def test_apply_writes_definition_defaults():
-    """Theme layer runs first and writes canvas backgroundColor."""
+    """Theme layer runs first and writes canvas backgroundColor on layout."""
     d = _dashboard()
     apply(d, theme="noc")
-    assert d["defaults"]["visualizations"]["global"]["options"]["backgroundColor"] == "#000000"
+    assert d["layout"]["options"]["backgroundColor"] == "#000000"
 
 
 def test_apply_with_legacy_theme_name():
@@ -59,7 +59,7 @@ def test_apply_with_legacy_theme_name():
     d = _dashboard()
     apply(d, theme="clean")
     # Should behave identically to theme="pro"
-    assert d["defaults"]["visualizations"]["global"]["options"]["backgroundColor"] == "#0b0c0e"
+    assert d["layout"]["options"]["backgroundColor"] == "#0b0c0e"
 
 
 def test_apply_patterns_argument_uses_registry_names():

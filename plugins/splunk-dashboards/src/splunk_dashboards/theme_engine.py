@@ -108,12 +108,21 @@ def _style_singlevalue(viz: dict, semantics: list, theme: Theme) -> None:
 
 
 def _emit_definition_defaults(dashboard: dict, theme: Theme) -> None:
-    """Write global canvas + default series palette to definition.defaults."""
+    """Write canvas color + default series palette to the dashboard.
+
+    Splunk's schema rejects a ``"global"`` key under
+    ``defaults.visualizations`` — only real viz-type names are accepted.
+    Canvas background therefore goes on ``layout.options.backgroundColor``
+    (valid for absolute layouts per Dashboard Studio docs). Series
+    colours still go under ``defaults.visualizations.<chart-type>``.
+    """
+    layout = dashboard.setdefault("layout", {})
+    if layout.get("type") == "absolute":
+        layout_opts = layout.setdefault("options", {})
+        layout_opts["backgroundColor"] = theme.canvas
+
     defaults = dashboard.setdefault("defaults", {})
     viz_defaults = defaults.setdefault("visualizations", {})
-    global_opts = viz_defaults.setdefault("global", {}).setdefault("options", {})
-    global_opts["backgroundColor"] = theme.canvas
-    # Default series palette for every chart type.
     for chart_type in CHART_TYPES:
         type_defaults = viz_defaults.setdefault(chart_type, {}).setdefault("options", {})
         type_defaults["seriesColors"] = list(theme.series_colors)

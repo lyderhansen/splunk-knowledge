@@ -30,8 +30,10 @@ def _spl_for_viz(viz: dict, dashboard: dict) -> str:
 # ----- Rule 1: theme-applied (weight 0.8) -----
 
 def _check_theme_applied(dashboard: dict) -> Finding:
-    bg = (((dashboard.get("defaults") or {}).get("visualizations") or {})
-          .get("global", {}).get("options", {}).get("backgroundColor"))
+    # Canvas backgroundColor lives on layout.options for absolute layouts.
+    # Splunk rejects the "defaults.visualizations.global" shape, so that
+    # path is never populated by Aurora anymore.
+    bg = ((dashboard.get("layout") or {}).get("options") or {}).get("backgroundColor")
     if bg:
         return Finding(rule="theme-applied", level="pass",
                         message=f"Canvas backgroundColor set to {bg}")

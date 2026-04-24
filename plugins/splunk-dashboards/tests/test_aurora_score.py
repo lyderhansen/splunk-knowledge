@@ -61,7 +61,7 @@ def test_empty_dashboard_scores_low():
 
 def _themed_dashboard():
     d = _minimal_dashboard()
-    d["defaults"] = {"visualizations": {"global": {"options": {"backgroundColor": "#0b0c0e"}}}}
+    d["layout"]["options"]["backgroundColor"] = "#0b0c0e"
     return d
 
 
