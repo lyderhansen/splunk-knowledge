@@ -51,6 +51,7 @@ for _mod_name in (
     "annotations",
     "section_zones",
     "trend_chip",
+    "markergauge_strip",
 ):
     try:
         __import__(f"splunk_dashboards.patterns.{_mod_name}")

@@ -54,7 +54,12 @@
         "majorValueSize": 32,
         "backgroundColor": "#53A051",
         "icon": "check-circle"
-      }
+      },
+      "gaugeRanges": [
+        {"from": 0, "to": 95, "value": "#DC4E41"},
+        {"from": 95, "to": 99, "value": "#F8BE34"},
+        {"from": 99, "to": 100, "value": "#53A051"}
+      ]
     },
     "viz_latency": {
       "type": "splunk.singlevalueicon", "title": "P95 MS",
@@ -64,7 +69,12 @@
         "majorValueSize": 32,
         "backgroundColor": "#F8BE34",
         "icon": "warning"
-      }
+      },
+      "gaugeRanges": [
+        {"from": 0, "to": 150, "value": "#53A051"},
+        {"from": 150, "to": 300, "value": "#F8BE34"},
+        {"from": 300, "to": 500, "value": "#DC4E41"}
+      ]
     },
     "viz_alerts": {
       "type": "splunk.singlevalueicon", "title": "ALERTS",
@@ -74,7 +84,12 @@
         "majorValueSize": 32,
         "backgroundColor": "#DC4E41",
         "icon": "alarm"
-      }
+      },
+      "gaugeRanges": [
+        {"from": 0, "to": 2, "value": "#53A051"},
+        {"from": 2, "to": 5, "value": "#F8BE34"},
+        {"from": 5, "to": 10, "value": "#DC4E41"}
+      ]
     },
     "viz_rate": {
       "type": "splunk.line", "title": "REQUEST RATE · LIVE",
