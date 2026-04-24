@@ -86,58 +86,9 @@ Panels in `layout.json` can carry a `drilldown` field:
 
 `ds-create` translates this into `options.drilldown = "all"` and `options.drilldownAction = <drilldown value>` on the matching visualization, enabling click-through behavior in the rendered dashboard.
 
-## Aurora themes
+## Splunk Enterprise and Cloud compatibility
 
-Pass `--theme {pro|glass|exec|noc}` to apply one of four Aurora design themes. Default is `pro`.
-
-- **pro** — Splunk clean professional (dark). Default for executive, ops, analytical. Splunk categorical-10 palette, flat cards, 1px strokes. Legacy alias: `clean`.
-- **glass** — Linear-inspired premium (dark, hero). For landing dashboards with ≤ 8 panels. Radial-gradient canvas (faked via stacked rectangles), translucent cards, hero-KPI sparkline.
-- **exec** — Editorial light. For board decks, PDF reports, leadership distribution. Warm off-white, Georgia/Splunk Data Sans for values, thin divider lines (no cards).
-- **noc** — Mission-control. For 24/7 wall displays, SOC. Pure black canvas, SOC semantic-ordered palette, Roboto Mono on values. Legacy aliases: `ops`, `soc`.
-
-Each theme ships with a **default pattern package** that auto-applies. Override explicitly with `--pattern`.
-
-| Theme | Default patterns |
-|---|---|
-| `pro` | `card-kpi`, `sparkline-in-kpi`, `compare-prev` |
-| `glass` | `hero-kpi`, `card-kpi`, `sparkline-in-kpi` |
-| `exec` | `compare-prev`, `section-zones`, `sparkline-in-kpi` |
-| `noc` | `card-kpi`, `annotations`, built-in status-tile |
-
-## Composition patterns
-
-Pass `--pattern <name>` (repeatable) to apply a composition pattern. If no `--pattern` is passed, the theme's defaults apply.
-
-| Pattern | Does |
-|---|---|
-| `card-kpi` | Inserts a `splunk.rectangle` behind a KPI row (depth via layered rectangles, rx 8). |
-| `hero-kpi` | Promotes one singlevalue to 2.5× width, 1.5× height, with oversized font, sparkline-below, trend delta. |
-| `sparkline-in-kpi` | Adds sparkline-below + theme-accent fill on every singlevalue backed by a time-series SPL. |
-| `compare-prev` | Appends `| timewrap 1d` and configures dashed previous-period overlay on line/area charts. |
-| `annotations` | Adds a secondary data source + binds annotationX/Label/Color on line/area/column charts. |
-| `section-zones` | Groups panels tagged with `section: <name>` into labeled zones with `### Section` headers and background rectangles. |
-
-See also: **`ds-design-principles`** for the decision rules that guide when to apply each pattern.
-
-### Examples
-
-```bash
-# Default pro theme with its default pattern package (card-kpi + sparkline-in-kpi + compare-prev)
-PYTHONPATH=.../src python3 -m splunk_dashboards.create build my-dash --title "Platform Health"
-
-# Glass hero view with only hero-kpi (no card-kpi)
-PYTHONPATH=.../src python3 -m splunk_dashboards.create build my-dash --theme glass --pattern hero-kpi
-
-# Exec PDF-style report, no patterns (pure theme only)
-PYTHONPATH=.../src python3 -m splunk_dashboards.create build my-dash --theme exec --pattern ""
-
-# NOC wall with explicit patterns
-PYTHONPATH=.../src python3 -m splunk_dashboards.create build my-dash --theme noc --pattern card-kpi --pattern annotations
-```
-
-### Splunk Enterprise and Cloud compatibility
-
-All Aurora themes and patterns emit **native Dashboard Studio v2 JSON only** — no custom CSS, no JavaScript, no app dependencies. Output runs unmodified on Splunk Enterprise (9.x+) and Splunk Cloud.
+`ds-create` emits **native Dashboard Studio v2 JSON only** — no custom CSS, no JavaScript, no app dependencies. Output runs unmodified on Splunk Enterprise (9.x+) and Splunk Cloud.
 
 ## After building
 
@@ -147,6 +98,20 @@ All Aurora themes and patterns emit **native Dashboard Studio v2 JSON only** —
 
 ## Design considerations
 
-If the layout picked viz types that don't fit the data shape, consult **`ds-design-principles`** — specifically the "Chart selection" decision table. Then invoke `ds-update` to swap viz types before building the final JSON.
+The CLI builds the mechanical skeleton (data sources, visualizations, structure) directly from the workspace. It does not style the dashboard — that is Claude's job during the build.
 
-The `--theme {pro|glass|exec|noc}` flags apply the color semantics described in the design-principles skill automatically.
+Before invoking the CLI, consult:
+
+- **`ds-design-principles`** — archetypes, KPI sizing, chart selection decision table, semantic color palette, canvas tokens.
+- **`ds-syntax`** — the Dashboard Studio v2 JSON schema (required/optional fields, Dynamic Options Syntax, token bindings).
+- **`ds-viz`** — per-visualization option reference.
+
+After the CLI writes `dashboard.json`, enrich the file directly:
+
+- Set `layout.options.backgroundColor` to the canvas token that matches the chosen mode (`#0b0c0e` for dark, `#FAFAF7` for light, `#000000` for NOC wall).
+- Populate per-viz `options` with the semantic palette (e.g. failure KPIs get `"majorColor": "#DC4E41"`).
+- Add `splunk.rectangle` cards behind KPI rows for depth (place first in `layout.structure` so they render behind the panels).
+- Add `splunk.markdown` section headers between zones when panel count > 6.
+- Wire `trendValue`, `sparklineValue`, or `majorValue` Dynamic Options Syntax expressions on singlevalues that have time-series data.
+
+If the layout picked viz types that don't fit the data shape, use the "Chart selection" decision table in `ds-design-principles` and invoke `ds-update` to swap viz types before running the CLI.

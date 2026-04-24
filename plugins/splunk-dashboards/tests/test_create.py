@@ -4,7 +4,6 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-import pytest
 from splunk_dashboards.create import (
     build_dashboard,
     GRID_UNIT_W,
@@ -23,8 +22,7 @@ def test_build_dashboard_empty_layout_returns_skeleton():
     assert result["dataSources"] == {}
     assert result["visualizations"] == {}
     assert result["inputs"] == {}
-    # Aurora: apply_theme always emits definition.defaults (canvas + series palette).
-    assert "visualizations" in result["defaults"]
+    assert result["defaults"] == {}
     assert result["layout"]["type"] == "absolute"
     assert result["layout"]["structure"] == []
 
@@ -41,14 +39,12 @@ def test_build_dashboard_maps_data_sources_to_ds_search():
     result = build_dashboard(layout, data, title="t", description="", with_time_input=False)
     ds = result["dataSources"]
     assert len(ds) == 2
-    # Each entry has type, name, options.query
     first = ds["ds_1"]
     assert first["type"] == "ds.search"
     assert first["name"] == "Failed Logins"
     assert first["options"]["query"] == "index=auth action=failure | top src"
     assert first["options"]["queryParameters"]["earliest"] == "-24h"
     assert first["options"]["queryParameters"]["latest"] == "now"
-    # DataSource without explicit name falls back to the question text
     assert ds["ds_2"]["name"] == "Events over time?"
     assert ds["ds_2"]["options"]["queryParameters"]["earliest"] == "-7d"
 
@@ -68,11 +64,8 @@ def test_build_dashboard_maps_panels_to_visualizations_and_layout():
             DataSource(question="q2", spl="| makeresults count=100 | timechart count"),
         ],
     )
-    # patterns=[] isolates this test from the theme's default pattern auto-apply
-    # (card-kpi would otherwise add a splunk.rectangle to visualizations).
-    result = build_dashboard(layout, data, title="t", description="", with_time_input=False, patterns=[])
+    result = build_dashboard(layout, data, title="t", description="", with_time_input=False)
 
-    # Visualizations keyed as viz_<panel.id>
     viz = result["visualizations"]
     assert len(viz) == 2
     assert viz["viz_p1"]["type"] == "splunk.singlevalue"
@@ -80,7 +73,6 @@ def test_build_dashboard_maps_panels_to_visualizations_and_layout():
     assert viz["viz_p1"]["dataSources"]["primary"] == "ds_1"
     assert viz["viz_p2"]["dataSources"]["primary"] == "ds_2"
 
-    # Layout structure maps grid cells to pixels via GRID_UNIT_W / GRID_UNIT_H
     structure = result["layout"]["structure"]
     assert len(structure) == 2
     first = structure[0]
@@ -97,7 +89,6 @@ def test_build_dashboard_panel_without_data_source_ref_gets_no_primary():
     data = DataSources(project="x")
     result = build_dashboard(layout, data, title="t", description="", with_time_input=False)
     viz = result["visualizations"]["viz_p1"]
-    # dataSources map is present but empty when no ref
     assert viz["dataSources"] == {}
 
 
@@ -105,7 +96,7 @@ def test_build_dashboard_preserves_theme():
     layout = Layout(project="x", theme="light")
     data = DataSources(project="x")
     result = build_dashboard(layout, data, title="t", description="", with_time_input=False)
-    # Theme is a top-level hint consumed by the XML envelope at deploy time
+    # The top-level "theme" key carries Splunk's native light/dark hint into the XML envelope.
     assert result["theme"] == "light"
 
 
@@ -181,7 +172,6 @@ def test_cli_build_rejects_wrong_stage(tmp_path, monkeypatch):
 
 
 def test_cli_build_rejects_missing_inputs(tmp_path, monkeypatch):
-    # Workspace at 'designed' but without layout/data-sources files on disk
     monkeypatch.chdir(tmp_path)
     state = init_workspace("my-dash", autopilot=False)
     advance_stage(state, "data-ready")
@@ -202,7 +192,6 @@ def test_build_dashboard_with_time_input_emits_global_time():
     tr = result["inputs"]["input_global_time"]
     assert tr["type"] == "input.timerange"
     assert tr["options"]["token"] == "global_time"
-    # Defaults block wires panels to the token
     defaults = result["defaults"]["dataSources"]["global"]["options"]["queryParameters"]
     assert defaults["earliest"] == "$global_time.earliest$"
     assert defaults["latest"] == "$global_time.latest$"
@@ -224,8 +213,7 @@ def test_build_dashboard_without_time_input_keeps_raw_time_strings():
     data = DataSources(project="x", sources=[DataSource(question="q", spl="q", earliest="-7d", latest="now")])
     result = build_dashboard(layout, data, title="t", description="", with_time_input=False)
     assert result["inputs"] == {}
-    # Aurora: apply_theme always emits definition.defaults (canvas + series palette).
-    assert "visualizations" in result["defaults"]
+    assert result["defaults"] == {}
     qp = result["dataSources"]["ds_1"]["options"]["queryParameters"]
     assert qp["earliest"] == "-7d"
     assert qp["latest"] == "now"
@@ -255,13 +243,11 @@ def test_build_dashboard_grid_layout_emits_row_structure():
     result = build_dashboard(layout, data, title="t", description="", with_time_input=False, layout_type="grid")
     assert result["layout"]["type"] == "grid"
     structure = result["layout"]["structure"]
-    # Each row is a {"type": "row", "items": [...]}. Panels at the same y share a row.
     assert len(structure) == 2  # two rows (y=0 and y=4)
     assert structure[0]["type"] == "row"
     first_row_items = [it["item"] for it in structure[0]["items"]]
     assert "viz_p1" in first_row_items
     assert "viz_p2" in first_row_items
-    # Second row has a single panel at y=4
     second_row_items = [it["item"] for it in structure[1]["items"]]
     assert second_row_items == ["viz_p3"]
 
@@ -276,97 +262,3 @@ def test_cli_build_grid_layout_flag(tmp_path, monkeypatch):
     dashboard = json.loads((tmp_path / ".splunk-dashboards" / "my-dash" / "dashboard.json").read_text())
     assert dashboard["layout"]["type"] == "grid"
     assert dashboard["inputs"] == {}
-
-
-def test_build_dashboard_applies_soc_theme():
-    # Aurora: legacy "soc" theme routes to "noc" via themes.LEGACY_ALIASES.
-    layout = Layout(project="x", panels=[
-        Panel(id="p1", title="Failed Logins", viz_type="splunk.singlevalue", data_source_ref="q1"),
-    ])
-    data = DataSources(project="x", sources=[
-        DataSource(question="q1", spl="index=auth action=failure | stats count", name="Failed Logins"),
-    ])
-    result = build_dashboard(layout, data, title="SOC Dashboard", description="", with_time_input=False, theme="soc")
-    viz = result["visualizations"]["viz_p1"]
-    # noc theme colors the failure singlevalue with STATUS_CRITICAL.
-    assert viz["options"]["majorColor"] == "#DC4E41"
-    # noc uses pure black canvas, emitted on layout.options (schema-valid path).
-    assert result["layout"]["options"]["backgroundColor"] == "#000000"
-
-
-def test_cli_build_theme_flag(tmp_path, monkeypatch):
-    _prepare_workspace_at_designed(tmp_path, monkeypatch)
-    result = _run_cli(
-        ["build", "my-dash", "--title", "T", "--description", "", "--theme", "soc", "--no-time-input"],
-        cwd=tmp_path,
-    )
-    assert result.returncode == 0, result.stderr
-    dashboard = json.loads((tmp_path / ".splunk-dashboards" / "my-dash" / "dashboard.json").read_text())
-    # Aurora: theme applied → canvas backgroundColor written to layout.options.
-    # "soc" routes to "noc" (pure black canvas).
-    assert dashboard["layout"]["options"]["backgroundColor"] == "#000000"
-
-
-def test_build_dashboard_accepts_aurora_theme_pro(tmp_path):
-    """Aurora theme 'pro' should be accepted by build_dashboard."""
-    layout = Layout(project="x", panels=[
-        Panel(id="p1", title="Events", x=0, y=0, w=4, h=3,
-              viz_type="splunk.singlevalue", data_source_ref="q1"),
-    ])
-    data = DataSources(project="x", sources=[
-        DataSource(question="q1", spl="index=main | stats count", earliest="-24h", latest="now"),
-    ])
-    result = build_dashboard(layout, data, title="T", description="D", theme="pro")
-    assert result["layout"]["options"]["backgroundColor"] == "#0b0c0e"
-
-
-def test_build_dashboard_accepts_legacy_clean_via_alias(tmp_path):
-    """Legacy theme 'clean' should resolve to 'pro' via LEGACY_ALIASES."""
-    result = build_dashboard(
-        Layout(project="x"), DataSources(project="x"),
-        title="T", description="", theme="clean",
-    )
-    # 'clean' resolves to 'pro' — canvas == Prisma Dark
-    assert result["layout"]["options"]["backgroundColor"] == "#0b0c0e"
-
-
-def test_build_dashboard_unknown_theme_raises(tmp_path):
-    """Unknown theme names should raise KeyError from apply_theme/get_theme."""
-    with pytest.raises(KeyError):
-        build_dashboard(
-            Layout(project="x"), DataSources(project="x"),
-            title="T", description="", theme="nope",
-        )
-
-
-def test_build_dashboard_applies_theme_defaults_by_default():
-    """Without --pattern, theme's default_patterns auto-apply."""
-    from splunk_dashboards.create import build_dashboard
-    from splunk_dashboards.layout import Layout, Panel
-    from splunk_dashboards.data_sources import DataSources, DataSource
-
-    layout = Layout(project="x", panels=[
-        Panel(id="p1", title="Events", x=0, y=0, w=4, h=3,
-              viz_type="splunk.singlevalue", data_source_ref="q1"),
-    ])
-    data = DataSources(project="x", sources=[
-        DataSource(question="q1", spl="index=m | timechart count", earliest="-24h", latest="now"),
-    ])
-    result = build_dashboard(layout, data, title="T", description="", theme="pro")
-    # pro default includes card-kpi
-    assert any(v.get("type") == "splunk.rectangle" for v in result["visualizations"].values())
-
-
-def test_build_dashboard_explicit_patterns_override():
-    from splunk_dashboards.create import build_dashboard
-    from splunk_dashboards.layout import Layout, Panel
-    from splunk_dashboards.data_sources import DataSources, DataSource
-
-    layout = Layout(project="x", panels=[
-        Panel(id="p1", title="E", x=0, y=0, w=4, h=3,
-              viz_type="splunk.singlevalue", data_source_ref="q1"),
-    ])
-    data = DataSources(project="x", sources=[DataSource(question="q1", spl="index=m | stats count", earliest="-24h", latest="now")])
-    # patterns=[] means no patterns run
-    result = build_dashboard(layout, data, title="T", description="", theme="pro", patterns=[])
-    assert not any(v.get("type") == "splunk.rectangle" for v in result["visualizations"].values())

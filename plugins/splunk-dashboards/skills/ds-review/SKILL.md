@@ -51,39 +51,22 @@ Check each panel's `viz_type` against the shape of its data (see `ds-viz` for re
 - Queries without `earliest` / `latest` bounds at the dashboard level — suggest setting `defaults` or a global timerange input.
 - Use of `join` or `append` on large datasets — suggest `tstats` or subsearch redesign.
 
-### 7. Polish scorecard (Aurora)
+### 7. Visual polish checklist
 
-`ds-review` produces a weighted **Polish score (0–10)** measuring ten dimensions:
+Review the dashboard against the design principles (see `ds-design-principles`) and call out gaps:
 
-1. Aurora theme applied (vs. unstyled Splunk default)
-2. KPI row wrapped in rectangle card (`card-kpi` pattern active)
-3. Hero KPI identified and sized correctly when present
-4. Sparklines on every singlevalue backed by a time-series SPL
-5. Compare-to-previous-period active on at least one time chart
-6. Section-zones used when panel count > 6
-7. No chart exceeds 8 series
-8. Semantic colors used on status KPIs (red for failure, green for healthy, etc.)
-9. Panel gutter minimum 20 px
-10. Panel titles ≤ 40 characters
+- Canvas background set on `layout.options.backgroundColor` (dashboards should not render on Splunk's unstyled default gray).
+- KPI row has depth — a `splunk.rectangle` rendered behind the KPIs for card effect (first in `layout.structure`).
+- Hero KPI identified and sized correctly when one exists (2.5× body-KPI size, FS_KPI_HERO font).
+- Sparklines on every singlevalue backed by time-series SPL.
+- Compare-to-previous-period overlay on at least one time chart when the user cares about trend direction.
+- Section zones used when panel count > 6 (splunk.rectangle + splunk.markdown header per zone).
+- No chart exceeds 8 series (limit clutter and legend overflow).
+- Semantic colors on status KPIs (red for failure, green for healthy, amber for warning) — verify hex values against the `ds-design-principles` status palette.
+- Panel gutter minimum 20 px; 20 px canvas margins.
+- Panel titles ≤ 40 characters; Title Case.
 
-Each dimension returns pass/partial/fail and contributes to the weighted score. Findings appear in `review.md` under `## Polish scorecard` with per-dimension hits and suggested `ds-update` commands for gaps.
-
-Implementation: `src/splunk_dashboards/aurora_score.py` (sub-plan 13).
-
-### How ds-review computes the score
-
-```python
-from splunk_dashboards.aurora_score import evaluate, render_markdown
-import json
-
-with open("dashboard.json") as f:
-    dashboard = json.load(f)
-score = evaluate(dashboard)
-print(render_markdown(score))
-# Appends result to review.md
-```
-
-The scorecard is deterministic — the same `dashboard.json` always produces the same score. It does NOT execute SPL against a live Splunk instance; it only inspects the JSON structure and static SPL text.
+Write each finding as `[warning]` (gap that reduces polish) or `[info]` (suggestion) — none of these are blocking.
 
 ## Output
 
