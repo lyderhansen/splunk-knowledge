@@ -145,3 +145,81 @@ Each fix has a confidence bucket — one of:
   - Environment / region / tier → the most common value from a scan of the input's data source (if available).
   - Time range → `-24h@h` for operational, `-7d@d` for executive/analytical.
 - **CONFIRMATION**: User confirms the proposed default before it is written.
+
+---
+
+## Run order
+
+`ds-polish` runs in five phases. Order matters: several APPLIED fixes depend on the theme decision resolved in Phase 1, and Phase 3 can only propose SUGGESTED fixes once the auto-applied state is stable.
+
+### Phase 1: Parse and classify
+
+1. Load `dashboard.json` (or extract the embedded JSON from `dashboard.xml`).
+2. Identify the archetype — from the dashboard title, existing panel mix, or by asking the user. The archetype drives theme, palette, and KPI-hierarchy choices.
+3. Resolve the theme — dark / dark-NOC / light. Default to dark for operational and SOC archetypes, light for executive, dark for analytical — but confirm with the user if the signal is weak.
+
+### Phase 2: Auto-apply (the APPLIED bucket)
+
+Apply these fixes in this exact order. Each applied change is added to a pending report entry.
+
+1. **Fix 1 — Canvas background**. Must run first; other APPLIED fixes reference the resolved theme.
+2. **Fix 11 — Unbounded searches**. Runs early because unbounded queries are a cluster-risk and should be corrected before any further panel-level work.
+3. **Fix 2 — KPI row rectangle**. Depends on the canvas theme set in Fix 1.
+4. **Fix 5 — KPI units** / **Fix 6 — numberPrecision** / **Fix 8 — raw `_time` in tables**. Independent, apply together.
+
+### Phase 3: Propose (the SUGGESTED bucket)
+
+Collect every SUGGESTED fix that matched. For each, compute the proposed rewrite and present to the user as a numbered list:
+
+```
+Suggested fixes found (5):
+
+  [1] Fix 3 — Uniform majorColor on 4 KPIs in row 1. Proposed polarity:
+        error_count    → up-is-bad      (#DC4E41 static)
+        avg_latency_ms → up-is-bad      (threshold-colored)
+        uptime_pct     → down-is-bad    (threshold-colored green→red)
+        total_events   → neutral        (#006D9C static)
+  [2] Fix 4 — Uniform KPI size. Propose hero-sizing "error_count" (anchor).
+  [3] Fix 9 — Pie "severity_breakdown" has 11 slices. Swap to horizontal bar?
+  [4] Fix 10 — Rainbow on ordered "severity" field. Replace with semantic gradient?
+  [5] Fix 12 — Input "env_filter" has no default. Propose "*".
+
+Accept all, pick individually, or skip?
+```
+
+User picks; accepted fixes are applied and added to the report. Skipped fixes are recorded as "skipped" in the report so the audit trail is complete.
+
+### Phase 4: Flag (the FLAGGED bucket)
+
+Collect every FLAGGED item. These are recorded in the report but not rewritten — they require judgment `ds-polish` cannot provide unilaterally. The report names the panel, the problem, and the recommended resolution (e.g., "add drilldown to `/app/search/search?q=host=$row.host$`").
+
+### Phase 5: Persist
+
+1. Write the mutated dashboard back to its source path. On the first run outside a workspace, save a `.bak` copy of the original alongside it.
+2. Write `polish-report.md` next to the dashboard.
+3. Echo a one-line summary to the user: `Applied: 6. Suggested: 3 accepted, 2 skipped. Flagged: 1.`
+
+### polish-report.md structure
+
+```markdown
+# Polish report — <dashboard title>
+Generated: <ISO-timestamp>
+Archetype: <executive | operational | analytical | soc>
+Theme: <dark | dark-noc | light>
+Source: <path to dashboard.json>
+
+## Applied (N)
+- Fix 1 — Canvas background set to #0b0c0e (dark theme).
+- Fix 11 — Added global_time binding to 4 searches: ds_primary_trend, ds_top_hosts, ...
+- ...
+
+## Suggested — accepted (N)
+- Fix 3 — Polarity map applied to 4 KPIs. See commit for exact majorColor values.
+- ...
+
+## Suggested — skipped (N)
+- Fix 9 — Pie swap declined; user chose Top-5 + Other aggregation instead. SPL rewritten in panel "severity_breakdown".
+
+## Flagged (N)
+- Fix 7 — Table "recent_alerts" has no drilldown. Recommend: link to /app/search/search?q=alert_id=$row.alert_id$.
+```
