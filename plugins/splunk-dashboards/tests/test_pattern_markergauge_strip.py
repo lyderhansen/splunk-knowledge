@@ -72,20 +72,21 @@ def test_markergauge_binds_value_to_same_series():
 
 def test_markergauge_shrinks_singlevalue_height_and_adds_strip_below():
     from splunk_dashboards.patterns.markergauge_strip import apply
-    d = _dashboard_with_hint(hint=DEFAULT_HINT, position=(100, 100, 400, 180))
+    # Panel needs room for the 100-px gauge plus the KPI body — start at 280.
+    d = _dashboard_with_hint(hint=DEFAULT_HINT, position=(100, 100, 400, 280))
     apply(d, get_theme("noc"), T)
 
     structure = d["layout"]["structure"]
     sv_entry = next(e for e in structure if e["item"] == "viz_p1")
     gauge_entry = next(e for e in structure if e["item"] == "viz_p1_gauge")
 
-    # singlevalue was shrunk by the strip height
-    assert sv_entry["position"]["h"] == 180 - 28
-    # gauge sits directly below, same x/w, height 28
+    # singlevalue was shrunk by the strip height (100) leaving 180 for the KPI
+    assert sv_entry["position"]["h"] == 280 - 100
+    # gauge sits directly below, same x/w, height 100 (Splunk minimum)
     assert gauge_entry["position"]["x"] == 100
-    assert gauge_entry["position"]["y"] == 100 + 180 - 28
+    assert gauge_entry["position"]["y"] == 100 + (280 - 100)
     assert gauge_entry["position"]["w"] == 400
-    assert gauge_entry["position"]["h"] == 28
+    assert gauge_entry["position"]["h"] == 100
 
 
 def test_markergauge_removes_hint_from_original_viz():

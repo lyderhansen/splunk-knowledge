@@ -33,7 +33,9 @@ from splunk_dashboards.themes import Theme
 
 
 TARGET_TYPES = {"splunk.singlevalue", "splunk.singlevalueicon"}
-STRIP_HEIGHT = 28
+# splunk.markergauge refuses to render below ~100 px and shows a
+# "Too small to render content" placeholder instead. Keep this >= 100.
+STRIP_HEIGHT = 100
 
 SERIES_NAME_RE = re.compile(r"seriesByName\(\s*['\"]([^'\"]+)['\"]\s*\)")
 

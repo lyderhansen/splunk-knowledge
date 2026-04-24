@@ -105,13 +105,13 @@
   "layout": {
     "type": "absolute",
     "globalInputs": ["input_global_time"],
-    "options": {"width": 1440, "height": 600},
+    "options": {"width": 1440, "height": 700},
     "structure": [
       {"item": "viz_revenue", "type": "block", "position": {"x": 20,   "y": 60,  "w": 420, "h": 180}},
       {"item": "viz_users",   "type": "block", "position": {"x": 460,  "y": 60,  "w": 300, "h": 180}},
-      {"item": "viz_churn",   "type": "block", "position": {"x": 780,  "y": 60,  "w": 300, "h": 180}},
+      {"item": "viz_churn",   "type": "block", "position": {"x": 780,  "y": 60,  "w": 300, "h": 280}},
       {"item": "viz_mrr",     "type": "block", "position": {"x": 1100, "y": 60,  "w": 320, "h": 180}},
-      {"item": "viz_trend",   "type": "block", "position": {"x": 20,   "y": 260, "w": 1400, "h": 320}}
+      {"item": "viz_trend",   "type": "block", "position": {"x": 20,   "y": 360, "w": 1400, "h": 320}}
     ]
   }
 }
