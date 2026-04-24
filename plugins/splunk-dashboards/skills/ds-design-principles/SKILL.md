@@ -183,6 +183,43 @@ REFLEX 8: Pie by default for part-to-whole
 
 ---
 
+## Absolute bans
+
+Reflex defaults are autopilot patterns to refuse unless a deliberate choice overrides them. **Absolute bans** are different: they are never acceptable regardless of the justification. If you find yourself about to emit any of these, stop and rewrite the panel with a different structure entirely.
+
+<absolute_bans>
+
+BAN 1: Status colors used as series colors
+  - PATTERN: any of `#DC4E41`, `#F1813F`, `#F8BE34`, `#53A051`, or `#006D9C` appearing in `seriesColors` / `seriesColorsByField` for a non-status chart.
+  - INCLUDES: "accidentally" picking the critical red as the first color in a line chart; using green for a data series because "it looks healthy."
+  - WHY: the Splunk semantic palette is operator muscle memory. A green line in a timeseries chart reads as "OK" — even when it represents transaction volume that is crashing.
+  - REWRITE: use `SERIES_CATEGORICAL_10` (or `SERIES_STUDIO_20` for dense analytical charts). Reserve the semantic palette strictly for status metrics — majorColor on singlevalues, threshold shading, severity cells.
+
+BAN 2: Red/green as the sole differentiator
+  - PATTERN: KPI `majorColor` toggles between `#DC4E41` and `#53A051` with no accompanying icon, shape, or text cue.
+  - INCLUDES: pass/fail singlevalues with color only; severity tables with colored rows and no severity column.
+  - WHY: ~8% of men and ~0.5% of women are red-green colorblind. Color alone excludes them entirely from the dashboard's most important signal.
+  - REWRITE: prefer `splunk.singlevalueicon` (icon + color) over `splunk.singlevalue` for binary status. For tables, add a severity label column. For charts, pair color with a shape or dasharray.
+
+BAN 3: Pie with more than 6 slices
+  - PATTERN: `splunk.pie` bound to a dataSource producing > 6 rows, or without a `| head 6` / Top N aggregation upstream.
+  - WHY: slice angles below ~15° become indistinguishable; legend text wraps and dominates the visualization; the pie fails its one job.
+  - REWRITE: `splunk.bar` (horizontal, sorted descending) for comparison. If part-to-whole matters, aggregate to Top 5 + "Other" in SPL (`| eventstats sum(count) as total | ... | eval category=if(rank > 5, "Other", category)`) before binding to pie.
+
+BAN 4: Searches without `earliest`/`latest`
+  - PATTERN: `ds.search` with a `query` that lacks both `earliest=` and `latest=` and does NOT bind `options.queryParameters.earliest` / `latest` to the global time token.
+  - WHY: unbounded searches trigger full-index scans. A single dashboard with five such panels can saturate an indexer and take the cluster down.
+  - REWRITE: set `defaults.dataSources.ds.search.options.queryParameters.earliest: "$global_time.earliest$"` and `latest: "$global_time.latest$"` — or hard-code a tight window on cold-reference panels (`earliest=-24h`).
+
+BAN 5: Inputs without default values
+  - PATTERN: `input` of type `dropdown` / `multiselect` / `text` without `defaultValue` (and the bound token has no `default`).
+  - WHY: the dashboard renders empty on first load. Panels show "no results" and the user assumes the dashboard is broken before the filter is discovered.
+  - REWRITE: always set `options.defaultValue` to a sensible fallback — `"*"` for open filters, a value that returns typical traffic for environment/region, the most common choice for categorical filters.
+
+</absolute_bans>
+
+---
+
 ## Layout principles
 
 - **F-pattern reading** — users scan top-left first. Place the most important KPIs at top-left; supplementary detail below and right.
