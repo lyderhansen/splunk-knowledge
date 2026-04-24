@@ -509,6 +509,34 @@ For features that genuinely require these, custom Canvas 2D visualizations are a
 
 ---
 
+## The Splunk Dashboard Slop Test
+
+**The quality gate**: before declaring a dashboard done, ask one question.
+
+> *If I showed this dashboard to an SRE, a SOC analyst, or a VP of Engineering and said "an AI made this" — would they nod without hesitation?*
+
+If yes, the dashboard has failed. A well-made Splunk dashboard should make an operator ask *"who built this?"* not *"which model generated this?"* The difference is intentionality: every panel, every color, every default is a deliberate choice, not a template fall-through.
+
+Run this checklist before completion. A single NO means rewrite:
+
+- [ ] **Archetype committed** — the dashboard matches one of the four archetypes; it does not mix exec + SOC + analytical in one surface.
+- [ ] **Theme derived from audience** — 24/7 NOC wall is dark; exec PDF is light; analyst console is dark. Not a default, a decision.
+- [ ] **Canvas `backgroundColor` set** — no default Splunk grey anywhere.
+- [ ] **KPI row has semantic polarity** — status KPIs use threshold-colored `majorColor`; informational counts use `#006D9C`. Not all the same color.
+- [ ] **KPI row has visual hierarchy** — the anchor KPI is hero-sized or otherwise distinguished from the supporting ones.
+- [ ] **Every table has a drilldown** — no dead-end tables, no raw `_time`.
+- [ ] **Every input has a default value** — the dashboard renders full data on first load.
+- [ ] **Every search is time-bounded** — global time token bound, no unbounded scans.
+- [ ] **Series colors come from a categorical palette** — semantic colors never leak into chart series.
+- [ ] **Color is paired with icon / label / shape** — red/green is never the sole status differentiator.
+- [ ] **Pie charts have ≤ 6 slices** — or they have been replaced with bar.
+- [ ] **Panel titles are ≤ 40 characters, title case** — no paragraph-length titles; no `chart_of_thing_by_host_grouped_by_time`.
+- [ ] **Depth comes from layered rectangles** — KPI cards and zone backgrounds are present where the archetype calls for them.
+
+If the dashboard passes all thirteen, it still might be forgettable — but it has cleared the Slop Test.
+
+---
+
 ## Working with the action skills
 
 | Skill | When design principles applies |
