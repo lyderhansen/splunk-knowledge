@@ -20,25 +20,34 @@ icon slot renders as a literal "?" instead of the expected symbol.
 **Screenshots:** 4 tiles all affected — `check-circle`, `warning`,
 `alarm`. Pattern: numeric value shows fine, icon slot is always "?".
 
-**Hypothesis:** The icon names we used (`check-circle`, `alarm`) are
-from the `@splunk/react-icons` package, but Dashboard Studio v2's
-built-in icon set accepts a smaller dictionary. The reference docs
-(splunk-dashboard-studio skill) list examples `alert`, `check`, `warning`
-— suggesting our names map to names that don't exist.
+**Root cause (per user, 2026-04-24):** `splunk.singlevalueicon.icon`
+expects a KV-store URI pointing at an SVG uploaded to Splunk's
+internal store, not a free-text icon name. Example valid value:
 
-**Likely fix:**
-- `check-circle` → `check`
-- `alarm` → `alert`
-- `warning` → keep (already matches)
+```
+splunk-enterprise-kvstore://icon-check__e29f784a-31a2-4544-813f-efce24d5be32.svg
+```
 
-Need to confirm the exact valid dictionary for Dashboard Studio v2. An
-alternative path: use a base64-encoded inline SVG via the `icon` field
-if it accepts data URIs (some viz types do).
+The UUID is generated when the SVG is uploaded. There is no built-in
+named icon dictionary in Dashboard Studio v2 — names like
+`check-circle`, `alarm`, `warning` render as literal "?".
+
+**Fix path (deferred — complex):**
+1. Bundle a small set of canonical SVGs (check, alert, warning, info)
+   in the plugin.
+2. Extend `ds-deploy` to upload these to the target Splunk's KV store
+   via a REST call at install time.
+3. Rewrite each icon-using template's `icon` field with the
+   generated `splunk-enterprise-kvstore://...` URI post-upload.
+
+This is a multi-step lifecycle change (upload → record UUID →
+substitute into template), not a simple value swap.
 
 **Workaround:** Drop the icon entirely — `splunk.singlevalueicon` still
 renders the value + background color + title as a plain status tile.
+This is what we'll do in Track B until the upload pipeline is built.
 
-**Track:** Fix in Track B when polishing status-tile pattern.
+**Track:** Deferred. Separate mini-project, not in Track B.
 
 ---
 

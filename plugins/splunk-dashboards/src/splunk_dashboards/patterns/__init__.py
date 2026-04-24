@@ -50,6 +50,7 @@ for _mod_name in (
     "compare_prev",
     "annotations",
     "section_zones",
+    "trend_chip",
 ):
     try:
         __import__(f"splunk_dashboards.patterns.{_mod_name}")
