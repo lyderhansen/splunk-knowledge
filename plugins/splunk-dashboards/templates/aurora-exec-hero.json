@@ -6,22 +6,22 @@
     "ds_1": {
       "type": "ds.search",
       "name": "Revenue",
-      "options": {"query": "| makeresults | eval rev=2400000 | table rev"}
+      "options": {"query": "| makeresults count=7 | streamstats count as d | eval _time=_time - ((7-d) * 86400), rev=2200000 + (d * 30000) + (random() % 20000) | sort _time | table _time rev"}
     },
     "ds_2": {
       "type": "ds.search",
       "name": "Users",
-      "options": {"query": "| makeresults | eval users=1284 | table users"}
+      "options": {"query": "| makeresults count=7 | streamstats count as d | eval _time=_time - ((7-d) * 86400), users=1100 + (d * 26) + (random() % 10) | sort _time | table _time users"}
     },
     "ds_3": {
       "type": "ds.search",
       "name": "Churn",
-      "options": {"query": "| makeresults | eval churn=2.1 | table churn"}
+      "options": {"query": "| makeresults count=7 | streamstats count as d | eval _time=_time - ((7-d) * 86400), churn=1.5 + (d * 0.09) | sort _time | table _time churn"}
     },
     "ds_4": {
       "type": "ds.search",
       "name": "MRR",
-      "options": {"query": "| makeresults | eval mrr=198000 | table mrr"}
+      "options": {"query": "| makeresults count=7 | streamstats count as d | eval _time=_time - ((7-d) * 86400), mrr=180000 + (d * 2500) + (random() % 500) | sort _time | table _time mrr"}
     },
     "ds_5": {
       "type": "ds.search",

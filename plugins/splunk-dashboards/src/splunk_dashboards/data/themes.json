@@ -19,7 +19,7 @@
         "count": "@STATUS_INFO",
         "volume": "@STATUS_INFO"
       },
-      "default_patterns": ["card-kpi", "sparkline-in-kpi", "compare-prev"],
+      "default_patterns": ["card-kpi", "sparkline-in-kpi", "trend-chip", "compare-prev"],
       "uses_gradient_canvas": false
     },
 
@@ -61,7 +61,7 @@
         "count": "@STATUS_INFO_LIGHT",
         "volume": "@STATUS_INFO_LIGHT"
       },
-      "default_patterns": ["compare-prev", "section-zones", "sparkline-in-kpi"],
+      "default_patterns": ["trend-chip", "compare-prev", "section-zones", "sparkline-in-kpi"],
       "uses_gradient_canvas": false
     },
 
@@ -82,7 +82,7 @@
         "count": "#1FBAD6",
         "volume": "@STATUS_INFO"
       },
-      "default_patterns": ["card-kpi", "annotations", "status-tile"],
+      "default_patterns": ["card-kpi", "trend-chip", "annotations", "status-tile"],
       "uses_gradient_canvas": false
     }
   },

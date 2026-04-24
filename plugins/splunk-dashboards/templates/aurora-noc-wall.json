@@ -6,22 +6,22 @@
     "ds_events": {
       "type": "ds.search",
       "name": "Events",
-      "options": {"query": "| makeresults | eval events=42128 | table events"}
+      "options": {"query": "| makeresults count=7 | streamstats count as d | eval _time=_time - ((7-d) * 86400), events=41000 + (d * 160) + (random() % 150) | sort _time | table _time events"}
     },
     "ds_uptime": {
       "type": "ds.search",
       "name": "Uptime",
-      "options": {"query": "| makeresults | eval uptime=99.98 | table uptime"}
+      "options": {"query": "| makeresults count=7 | streamstats count as d | eval _time=_time - ((7-d) * 86400), uptime=99.90 + (d * 0.012) | sort _time | table _time uptime"}
     },
     "ds_latency": {
       "type": "ds.search",
       "name": "p95 Latency",
-      "options": {"query": "| makeresults | eval p95=148 | table p95"}
+      "options": {"query": "| makeresults count=7 | streamstats count as d | eval _time=_time - ((7-d) * 86400), p95=130 + (d * 2.5) + (random() % 5) | sort _time | table _time p95"}
     },
     "ds_alerts": {
       "type": "ds.search",
       "name": "Critical alerts",
-      "options": {"query": "| makeresults | eval alerts=3 | table alerts"}
+      "options": {"query": "| makeresults count=7 | streamstats count as d | eval _time=_time - ((7-d) * 86400), alerts=9 - d + (random() % 2) | sort _time | table _time alerts"}
     },
     "ds_request_rate": {
       "type": "ds.search",

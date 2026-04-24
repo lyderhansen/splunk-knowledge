@@ -28,6 +28,10 @@ TARGET_TYPES = {"splunk.singlevalue", "splunk.singlevalueicon"}
 TIMESERIES_PATTERNS = [
     re.compile(r"\|\s*timechart\b", re.I),
     re.compile(r"\|\s*bin\s+_time\b", re.I),
+    # Synthetic time series built from | makeresults: | eval _time=...
+    # or | table _time <field> both signal a time-indexed output.
+    re.compile(r"\beval\s+_time\s*=", re.I),
+    re.compile(r"\|\s*table\s+_time\b", re.I),
 ]
 
 # seriesByName('<name>') or seriesByName("<name>") — captures the series id

@@ -93,6 +93,21 @@ def test_trend_chip_skips_non_timeseries_singlevalue():
     assert "trendColor" not in opts
 
 
+def test_trend_chip_fires_on_synthetic_timeseries_with_eval_time():
+    """Patterns like `makeresults + streamstats + eval _time=_time - ...` are
+    genuine time series even though they don't use | timechart."""
+    from splunk_dashboards.patterns.trend_chip import apply
+    spl = (
+        "| makeresults count=7 | streamstats count as d "
+        "| eval _time=_time - ((7-d) * 86400), count=40000 + (d * 250) "
+        "| sort _time | table _time count"
+    )
+    d = _dashboard(spl=spl)
+    apply(d, get_theme("pro"), T)
+    opts = d["visualizations"]["viz_p1"]["options"]
+    assert opts["trendValue"] == "> primary | seriesByName('count') | delta(-2)"
+
+
 def test_trend_chip_does_not_overwrite_existing_trendValue():
     """If the author explicitly set trendValue, respect it."""
     from splunk_dashboards.patterns.trend_chip import apply

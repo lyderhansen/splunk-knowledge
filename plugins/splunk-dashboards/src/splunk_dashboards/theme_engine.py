@@ -30,10 +30,14 @@ FAILURE_PATTERNS = [
     re.compile(r"\baction\s*=\s*failure\b", re.I),
     re.compile(r"\baction\s*=\s*fail\b", re.I),
     re.compile(r"\bstatus\s*>=\s*[45]\d\d\b"),
-    re.compile(r"\berror\b", re.I),
+    re.compile(r"\berrors?\b", re.I),
     re.compile(r"\bfailed\b", re.I),
-    re.compile(r"\bfailure\b", re.I),
-    re.compile(r"\battack\b", re.I),
+    re.compile(r"\bfailures?\b", re.I),
+    re.compile(r"\battacks?\b", re.I),
+    # Business loss metrics — "up is bad" family. Lumped with failure so
+    # trend-chip inverts polarity and theme_engine picks the failure color.
+    re.compile(r"\bchurn\b", re.I),
+    re.compile(r"\battrition\b", re.I),
 ]
 SUCCESS_PATTERNS = [
     re.compile(r"\baction\s*=\s*success\b", re.I),
@@ -59,8 +63,8 @@ VOLUME_PATTERNS = [
 ]
 CRITICAL_PATTERNS = [
     re.compile(r"\bcritical\b", re.I),
-    re.compile(r"\balert\b", re.I),
-    re.compile(r"\bincident\b", re.I),
+    re.compile(r"\balerts?\b", re.I),
+    re.compile(r"\bincidents?\b", re.I),
 ]
 
 
