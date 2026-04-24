@@ -133,6 +133,56 @@ Four canonical layouts. Pick one based on audience and primary question.
 
 ---
 
+## Reflex defaults to reject
+
+When asked to design a Splunk dashboard, Claude reaches for a recognizable set of autopilot patterns. They are not individually wrong — they are wrong *as defaults*, because they survive every brief. Match-and-refuse: if you catch yourself about to emit any of these without having made a deliberate choice, stop and rewrite.
+
+<reflex_defaults_to_reject>
+
+REFLEX 1: The uniform-color KPI row
+  - PATTERN: four KPIs in a row, every `majorColor` hard-coded to `#006D9C` (Splunk info blue).
+  - WHY: operators lose the single most valuable signal a KPI row can give — semantic polarity. Everything looks "neutral informational" regardless of whether the metric is failing.
+  - REWRITE: classify each KPI's polarity (up-is-bad / down-is-bad / neutral). Apply `majorColor` via DOS threshold-coloring for status metrics, static `#006D9C` only for true counts. See Color section below.
+
+REFLEX 2: The uniform-size KPI row
+  - PATTERN: four KPIs at identical dimensions, same font size, same rectangle treatment.
+  - WHY: flat hierarchy is unread hierarchy. The eye has no anchor.
+  - REWRITE: one anchor KPI hero-sized (≥ 1.5× the others) for executive/operational archetypes. For SOC/analytical, rank by criticality — the severity count is bigger than the volume count.
+
+REFLEX 3: Default Splunk canvas
+  - PATTERN: `layout.options` emitted without `backgroundColor`, or with the Splunk default grey.
+  - WHY: default canvas signals "untouched AI output." It is the dashboard equivalent of shipping Inter.
+  - REWRITE: always set `layout.options.backgroundColor` derived from the archetype theme (`#0b0c0e` dark, `#000000` NOC wall, `#FAFAF7` light). See Canvas & chrome tokens.
+
+REFLEX 4: The "4 KPIs + 1 line chart + 1 table" autotemplate
+  - PATTERN: every dashboard regresses to the same three-zone composition regardless of archetype.
+  - WHY: the template is fine for executive summaries and wrong for everything else. SOC needs geo + timeline + severity; analytical needs filter bar + scatter + multi-series + detail table; NOC needs status tiles + alert history + metric grid.
+  - REWRITE: the archetype drives the layout. Start from the archetype's canvas zones, not from the template.
+
+REFLEX 5: Rainbow on ordered data
+  - PATTERN: severity / priority / tier rendered as categorical colors (red / orange / yellow / green / blue / purple).
+  - WHY: rainbow implies "different kinds," not "more or less." Ordered data disguised as categorical hides the ordering.
+  - REWRITE: sequential single-hue gradient (e.g., red `#DC4E41` → `#F1813F` → `#F8BE34` for severity), or the explicit semantic palette if the ordering maps to status.
+
+REFLEX 6: Tables without drilldown
+  - PATTERN: `splunk.table` emitted with no `drilldown.link` or token-set action.
+  - WHY: a table without drilldown is a dead end. The user sees 40 rows and cannot act on any of them.
+  - REWRITE: every table links to a detail view, sets a filter token on the same dashboard, or opens a search. No exceptions.
+
+REFLEX 7: Raw `_time` in tables
+  - PATTERN: `_time` rendered as epoch seconds or raw ISO inside a table column.
+  - WHY: operators cannot read epoch at a glance and ISO wastes a column's worth of width.
+  - REWRITE: `| eval _time=strftime(_time, "%Y-%m-%d %H:%M:%S")` in SPL, or set a `columnFormat` display override on the panel.
+
+REFLEX 8: Pie by default for part-to-whole
+  - PATTERN: `splunk.pie` chosen any time the question is "what's the breakdown," regardless of cardinality.
+  - WHY: pie with > 6 slices is unreadable — slice angles become indistinguishable and labels collide.
+  - REWRITE: pie ONLY if ≤ 6 categories AND one category dominates. Otherwise `splunk.bar` (horizontal, sorted descending, top N + "Other").
+
+</reflex_defaults_to_reject>
+
+---
+
 ## Layout principles
 
 - **F-pattern reading** — users scan top-left first. Place the most important KPIs at top-left; supplementary detail below and right.
