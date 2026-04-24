@@ -220,47 +220,88 @@ Rule: card edge + 10 px = panel edge on all sides. Place the rectangle entry in 
 
 ### Semantic status palette
 
+Verified against Splunk's official design language (splunkui.splunk.com). Use these exact hex values — operators rely on instant recognition.
+
 | Status | Dark theme | Light theme | Use for |
 |---|---|---|---|
-| Critical / Error | `#F74B4A` | `#C0392B` | Alarms, failures, threshold breaches |
-| Warning | `#FFB300` | `#D4820A` | Approaching limits, degraded |
-| High / Elevated | `#F58F39` | `#C05C00` | Exceeding soft limit |
-| OK / Healthy | `#00C853` | `#2B9E44` | Normal operating state |
-| Info / Neutral | `#00A4FD` | `#2066C0` | Informational counts, no health semantics |
+| Critical / Error | `#DC4E41` | `#C0392B` | Alarms, failures, threshold breaches |
+| High / Elevated | `#F1813F` | `#C05C00` | Exceeding soft limit |
+| Warning | `#F8BE34` | `#D4820A` | Approaching limits, degraded |
+| OK / Healthy | `#53A051` | `#2B9E44` | Normal operating state |
+| Info / Neutral | `#006D9C` | `#2066C0` | Informational counts, no health semantics |
 | Unknown / No data | `#B0B0BE` | `#9B99A0` | Missing or unavailable data |
 
-### Dark theme canvas defaults
+### Canvas & chrome tokens
 
-| Element | Hex |
-|---|---|
-| Canvas background | `#101014` |
-| Panel / card fill | `#1A1A2E` |
-| Card stroke | `#2C2C3A` |
-| Primary text | `#FFFFFF` |
-| Secondary text | `#B0B0BE` |
+| Element | Dark (default) | Dark (NOC / wall) | Light |
+|---|---|---|---|
+| Canvas background | `#0b0c0e` | `#000000` | `#FAFAF7` |
+| Panel / card fill | `#15161a` | `#0F1117` | `#ffffff` |
+| Panel stroke | `#2C2C3A` | `#1FBAD6` (accent) | `#E5E5E0` |
+| Primary text | `#FFFFFF` | `#FFFFFF` | `#1A1A1A` |
+| Secondary text | `#B0B0BE` | `#B0B0BE` | `#6B7C85` |
+| Gridline | `#23262b` | `#23262b` | `#ebedef` |
+| Axis line | `#2c3036` | `#2c3036` | `#d9dce0` |
 
-### Dark theme 8-color series palette (use in order)
+### Series color palettes
 
-| Series | Color | Hex |
+Pick one palette per dashboard and stick to it. Limit charts to 6–8 series; beyond that, aggregate to Top N + "Other" or split into multiple charts.
+
+**`SERIES_CATEGORICAL_10` — default for dark dashboards** (executive, ops, analytical)
+
+```
+#006D9C  #4FA484  #EC9960  #AF575A  #B6C75A
+#62B3B2  #294E70  #738795  #EDD051  #BD9872
+```
+
+**`SERIES_CATEGORICAL_10_LIGHT` — default for light dashboards** (executive print/PDF)
+
+```
+#2066C0  #2B9E44  #C05C00  #C0392B  #7A873D
+#3D8B8B  #294E70  #4A5A64  #B39A1F  #8A6B4A
+```
+
+**`SERIES_SOC_8` — status-semantic palette** (use ONLY on SOC / NOC dashboards where the first four colors align with severity)
+
+```
+#DC4E41  #F1813F  #F8BE34  #53A051   ← critical / high / warning / ok
+#006D9C  #1FBAD6  #826AF9  #9B59B6
+```
+
+**`SERIES_STUDIO_20` — Splunk Studio extended palette** (for dense analytical charts with many categories; use first 8–10 entries)
+
+```
+#7B56DB  #009CEB  #00CDAF  #DD9900  #FF677B
+#CB2196  #813193  #0051B5  #008C80  #99B100
+#FFA476  #FF6ACE  #AE8CFF  #00689D  #00490A
+#465D00  #9D6300  #F6540B  #FF969E  #E47BFE
+```
+
+### Semantic coloring for singlevalues (`majorColor`)
+
+Status KPIs use the semantic palette with explicit thresholds. Do not use series-palette blues or greens for status metrics.
+
+| Metric kind | Polarity | Typical majorColor |
 |---|---|---|
-| 1 | Blue | `#00A4FD` |
-| 2 | Amber | `#FFB300` |
-| 3 | Green | `#00C853` |
-| 4 | Red | `#F74B4A` |
-| 5 | Purple | `#9B59B6` |
-| 6 | Teal | `#1FBAD6` |
-| 7 | Orange | `#FB7428` |
-| 8 | Pink | `#ED0080` |
+| Failure count, error count, critical alerts | up-is-bad | `#DC4E41` (static) or DOS threshold-coloring red above threshold |
+| Latency, response time | up-is-bad | `#F1813F` warm / `#DC4E41` if SLA-critical |
+| Success rate, uptime | down-is-bad | `#53A051` above threshold → `#F8BE34` → `#DC4E41` |
+| Capacity / utilisation | up-is-bad-above-cap | `#53A051` < 80 → `#F8BE34` 80–90 → `#DC4E41` > 90 |
+| Informational counts (events, volume) | neutral | `#006D9C` (static) |
 
-Limit charts to 6–8 series. Beyond that, aggregate to Top N + "Other" or split into multiple charts.
+DOS example for SLA-critical latency:
+```
+"majorColor": "> primary | seriesByName('p95') | lastPoint() | formatByType(primary=#53A051, primary_warning=#F8BE34, primary_alarm=#DC4E41)"
+```
 
-### Theme selection guide
+### Theme / mode selection guide
 
-| Dashboard type | Recommended theme | Rationale |
+| Dashboard type | Recommended mode | Rationale |
 |---|---|---|
-| Operational / NOC / SOC | Dark | Reduces eye strain on 24/7 displays; status colors pop |
-| Executive / report | Light | Familiar for print/PDF; professional for leadership |
-| Analytical / investigation | Dark or light | Match existing team tooling |
+| Operational / NOC / SOC | Dark (NOC variant) | Reduces eye strain on 24/7 wall displays; status colors pop off pure-black canvas |
+| Executive summary / Report | Light | Familiar for print and PDF; professional for leadership consumption |
+| Analytical / Investigation | Dark | Longer analyst sessions benefit from lower luminance |
+| Hero / Landing dashboard | Dark | One big KPI on a rich background reads better than on a light canvas |
 
 ---
 
@@ -290,27 +331,50 @@ Limit charts to 6–8 series. Beyond that, aggregate to Top N + "Other" or split
 
 ---
 
-## Aurora themes
+## Spacing, radius, and type scale
 
-Four canonical themes ship with the plugin. Use this table to pick one when `ds-init` asks about audience and use case.
+Verified against `@splunk/themes` conventions. Use these when composing layouts or styling markdown / rectangles by hand.
 
-| Theme | Mode | Archetype fit | When |
-|---|---|---|---|
-| `pro` | dark | Executive summary, Operational monitoring, Analytical deep-dive | Default choice. Splunk categorical-10 palette. |
-| `glass` | dark (hero) | Executive summary with ≤ 8 panels | When the dashboard is a landing / pitch view. |
-| `exec` | light | Executive summary for print / PDF distribution | Monthly reports, board decks, leadership updates. |
-| `noc` | dark (intense) | Operational monitoring, SOC overview | 24/7 wall displays, on-call rotations. |
+### Spacing scale (px)
 
-### Canvas tokens (verified against splunkui.splunk.com)
+| Token | px | Common use |
+|---|---|---|
+| `S_0_5` | 4 | Tight icon gap |
+| `S_1` | 8 | Inline label gap |
+| `S_1_5` | 12 | Panel inner padding (tight) |
+| `S_2` | 16 | Section heading → first panel |
+| `S_2_5` | 20 | **Default gutter between panels** |
+| `S_3` | 24 | KPI row → primary chart zone |
+| `S_4` | 32 | Between logical sections |
+| `S_6` | 48 | Between major zones in long dashboards |
+| `S_8` | 64 | Canvas outer margin on ultrawide wall displays |
 
-| Theme | Canvas | Panel | Stroke | Accent |
-|---|---|---|---|---|
-| `pro` | `#0b0c0e` | `#15161a` | `#2C2C3A` | `#006D9C` |
-| `glass` | gradient `#1a1538 → #0b0c0e` | `rgba(255,255,255,0.03)` | `rgba(255,255,255,0.08)` | `#009CEB` |
-| `exec` | `#FAFAF7` | `#ffffff` | `#E5E5E0` | `#2066C0` |
-| `noc` | `#000000` | `#0F1117` | `#1FBAD6 @ 0.4` | `#1FBAD6` |
+### Corner radius (px)
 
-## Depth and layering
+| Token | px | Use |
+|---|---|---|
+| `R_SHARP` | 0 | Grid / table cells |
+| `R_SUBTLE` | 4 | Inputs, small chips |
+| `R_CARD` | 8 | **Default card/rectangle radius** |
+| `R_HERO` | 12 | Hero KPI background |
+| `R_PILL` | 999 | Status chips, badges |
+
+### Type scale (px)
+
+| Token | px | Use |
+|---|---|---|
+| `FS_TICK` | 11 | Chart tick labels |
+| `FS_AXIS` | 12 | Axis titles |
+| `FS_BODY` | 14 | Markdown body, table cells |
+| `FS_LARGE` | 18 | Panel subtitles |
+| `FS_XLARGE` | 24 | Section headers |
+| `FS_KPI_MINOR` | 28 | Secondary KPI value |
+| `FS_KPI_MAJOR` | 48 | **Standard KPI majorValue** |
+| `FS_KPI_HERO` | 72 | Hero / landing KPI |
+
+---
+
+## Depth and layering in Dashboard Studio
 
 Dashboard Studio has no box-shadow, no backdrop-blur, no gradient primitive. Depth comes from **layered rectangles**:
 
@@ -318,42 +382,32 @@ Dashboard Studio has no box-shadow, no backdrop-blur, no gradient primitive. Dep
 - **Zone background** — a second rectangle at `fillOpacity: 0.04` wrapping a section of panels, combined with a `splunk.markdown` header.
 - **Two-tone highlight** — stack two rectangles at the same position: base at `fillOpacity: 1`, overlay at `fillOpacity: 0.3` with an accent color, to fake a subtle gradient.
 
-**Array-order rule:** entries earlier in `layout.structure` render BEHIND entries later in the array. There is no `z-index`. Aurora's `card-kpi` and `section-zones` patterns handle this automatically.
+**Array-order rule:** entries earlier in `layout.structure` render BEHIND entries later in the array. There is no `z-index`.
 
-**Shape layouts only:** `splunk.rectangle` and `splunk.ellipse` require `layout.type: "absolute"`. Patterns that use them skip silently on `grid` or `tab` layouts.
+**Shape layouts only:** `splunk.rectangle` and `splunk.ellipse` require `layout.type: "absolute"`. They are silently ignored on `grid` or `tab` layouts.
 
-## Composition patterns
-
-Six patterns `ds-create` can apply. Each is independently invokable via `--pattern <name>`.
-
-| Pattern | What it does | Theme defaults that include it |
-|---|---|---|
-| `card-kpi` | Rectangle card behind a KPI row for depth. | pro, glass, noc |
-| `hero-kpi` | Promotes one singlevalue to 2.5× size with sparkline + delta. | glass |
-| `sparkline-in-kpi` | Sparkline-below on every time-series singlevalue. | pro, glass, exec |
-| `compare-prev` | Dashed previous-period overlay on line/area (`timewrap`). | pro, exec |
-| `annotations` | Event markers on line/area/column from a secondary ds. | noc |
-| `section-zones` | Labeled zones for dashboards with > 6 panels. | exec |
-
-See `ds-create` SKILL.md for pattern invocation examples.
+---
 
 ## Explicit constraints (honest "not possible" list)
 
-Aurora is native Dashboard Studio JSON. It cannot deliver:
+Dashboard Studio is a declarative JSON schema. It cannot deliver:
 
 1. **Animations** — no keyframes, no pulsing alerts, no transitions.
-2. **True glassmorphism / backdrop-blur** — `glass` theme fakes the feeling; it is not identical to Linear.
+2. **True glassmorphism / backdrop-blur** — rectangles with low fillOpacity approximate the feeling; they are not identical to Linear / iOS frosted glass.
 3. **Gradient text on KPIs** — no gradient-text option; use a saturated color + background rectangle instead.
 4. **Custom chart fonts** — only `splunk.markdown` exposes `fontFamily`.
 5. **Per-region map overlays that pan/zoom with the map** — statically positioned overlays only.
+6. **Conditional panel visibility** — no `show-if` token; use input defaults + drilldown to separate views.
 
-For features that genuinely require these, custom Canvas 2D visualizations via `/splunk-viz` are a Phase 2 extension point (see `viz_packs/README.md`). Aurora v1 does not ship any custom viz.
+For features that genuinely require these, custom Canvas 2D visualizations are a Phase 2 extension point (see `viz_packs/README.md`).
+
+---
 
 ## Working with the action skills
 
 | Skill | When design principles applies |
 |---|---|
-| `ds-init` | Asks about audience and use case → use the archetypes to pick the right template before any files are created. |
+| `ds-init` | Asks about audience and use case → use the archetypes to pick the right layout archetype before any files are created. |
 | `ds-design` | Wireframes panels → apply layout principles (F-pattern, hierarchy, grouping, whitespace) and KPI sizing rules here. |
-| `ds-create` | Builds JSON → apply the chart-selection decision table when the design left viz type unspecified; `--theme` flag enforces semantic colors automatically. |
+| `ds-create` | Builds JSON → apply the chart-selection decision table when the design left viz type unspecified. Pick palette + canvas tokens based on audience and mode. |
 | `ds-review` | Audits a finished dashboard → flags violations of the antipatterns list above; cross-references color and typography rules. |
