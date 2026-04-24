@@ -1,7 +1,7 @@
 {
   "name": "splunk-dashboards",
   "description": "Guided authoring of Splunk Dashboard Studio (v2) dashboards. Scope requirements, explore data, wireframe layouts in a browser, generate dashboard JSON, validate, and package as a Splunk TA.",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "author": {
     "name": "Lyder Hansen"
   },
