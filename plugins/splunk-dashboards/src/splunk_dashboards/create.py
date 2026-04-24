@@ -72,7 +72,7 @@ def build_dashboard(
             "title": "Time range",
             "options": {
                 "token": "global_time",
-                "defaultValue": {"earliest": "-24h", "latest": "now"},
+                "defaultValue": "-24h,now",
             },
         }
         defaults["dataSources"] = {

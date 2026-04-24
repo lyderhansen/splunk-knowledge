@@ -15,8 +15,127 @@ from splunk_dashboards.validate import (
     check_panel_data_source_refs,
     check_token_references,
     check_drilldown_targets,
+    check_timerange_default_value,
+    check_singlevalue_invalid_options,
+    check_rangevalue_dos_signatures,
     check_all,
 )
+
+
+def test_timerange_default_value_object_form_flagged():
+    d = {
+        "inputs": {
+            "input_time": {
+                "type": "input.timerange",
+                "options": {"token": "t", "defaultValue": {"earliest": "-24h", "latest": "now"}},
+            }
+        }
+    }
+    findings = check_timerange_default_value(d)
+    assert len(findings) == 1
+    assert findings[0].severity == "error"
+    assert findings[0].code == "timerange-defaultvalue-not-string"
+
+
+def test_timerange_default_value_string_form_passes():
+    d = {
+        "inputs": {
+            "input_time": {
+                "type": "input.timerange",
+                "options": {"token": "t", "defaultValue": "-24h,now"},
+            }
+        }
+    }
+    assert check_timerange_default_value(d) == []
+
+
+def test_singlevalue_major_color_configuration_flagged():
+    d = {
+        "visualizations": {
+            "viz_1": {
+                "type": "splunk.singlevalue",
+                "options": {"majorValue": "42", "majorColorConfiguration": [{"to": 1, "value": "#000"}]},
+            }
+        }
+    }
+    findings = check_singlevalue_invalid_options(d)
+    assert len(findings) == 1
+    assert findings[0].code == "singlevalue-invalid-option"
+    assert "majorColorConfiguration" in findings[0].message
+
+
+def test_singlevalue_without_invalid_options_passes():
+    d = {
+        "visualizations": {
+            "viz_1": {
+                "type": "splunk.singlevalue",
+                "options": {"majorValue": "42", "majorColor": "#53A051"},
+            }
+        }
+    }
+    assert check_singlevalue_invalid_options(d) == []
+
+
+def test_rangevalue_null_in_ranges_flagged():
+    d = {
+        "visualizations": {
+            "viz_1": {
+                "type": "splunk.singlevalue",
+                "options": {"majorColor": "> primary | lastPoint() | rangeValue(ranges=[null, 95, 99])"},
+            }
+        }
+    }
+    findings = check_rangevalue_dos_signatures(d)
+    assert any(f.code == "rangevalue-null-in-ranges" for f in findings)
+
+
+def test_rangevalue_missing_values_flagged():
+    d = {
+        "visualizations": {
+            "viz_1": {
+                "type": "splunk.singlevalue",
+                "options": {"majorColor": "> primary | lastPoint() | rangeValue(ranges=[95, 99])"},
+            }
+        }
+    }
+    findings = check_rangevalue_dos_signatures(d)
+    assert any(f.code == "rangevalue-missing-values" for f in findings)
+
+
+def test_rangevalue_proper_signature_passes():
+    d = {
+        "visualizations": {
+            "viz_1": {
+                "type": "splunk.singlevalue",
+                "options": {
+                    "majorColor": "> primary | lastPoint() | rangeValue(ranges=[95, 99], values=[\"#DC4E41\", \"#F8BE34\", \"#53A051\"])",
+                },
+            }
+        }
+    }
+    assert check_rangevalue_dos_signatures(d) == []
+
+
+def test_rangevalue_context_var_form_passes():
+    """rangeValue(colorConfig) uses a context-declared array — no ranges= / values= needed."""
+    d = {
+        "visualizations": {
+            "viz_1": {
+                "type": "splunk.singlevalue",
+                "options": {
+                    "majorColor": "> primary | seriesByName('p95') | lastPoint() | rangeValue(colorConfig)",
+                },
+                "context": {
+                    "colorConfig": [
+                        {"value": "#53A051", "to": 300},
+                        {"value": "#F8BE34", "from": 300, "to": 500},
+                        {"value": "#DC4E41", "from": 500},
+                    ],
+                },
+            }
+        }
+    }
+    assert check_rangevalue_dos_signatures(d) == []
 
 
 def _sample_dashboard(**overrides) -> dict:

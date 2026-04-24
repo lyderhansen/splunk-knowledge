@@ -190,7 +190,20 @@ Fields:
 
 Reference tokens in SPL as `$token_name$`. For timerange inputs, use `$<token>.earliest$` and `$<token>.latest$`.
 
-> **CRITICAL — `input.timerange` defaultValue format.** Use the comma-separated string form `"-24h@h,now"` (matching Splunk's canonical skeleton). The object form `{"earliest": "-24h", "latest": "now"}` renders on some versions but silently fails on others — the picker shows but searches never receive the tokens. When in doubt, use string form.
+> **CRITICAL — `input.timerange` defaultValue MUST be a comma-separated string.** Splunk 10.x schema validation rejects the object form with `/inputs/input_global_time/options/defaultValue: must be string` and the dashboard fails to render entirely.
+>
+> ```json
+> // ✅ CORRECT — canonical string form
+> "options": {"token": "global_time", "defaultValue": "-24h,now"}
+>
+> // ✅ CORRECT — with snap-to-hour modifier
+> "options": {"token": "global_time", "defaultValue": "-24h@h,now"}
+>
+> // ❌ WRONG — crashes dashboard with schema error
+> "options": {"token": "global_time", "defaultValue": {"earliest": "-24h", "latest": "now"}}
+> ```
+>
+> `ds-validate` enforces this (code: `timerange-defaultvalue-not-string`).
 
 ### Multiselect
 
