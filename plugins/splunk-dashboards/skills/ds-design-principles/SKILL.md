@@ -14,11 +14,30 @@ description: >
 
 ---
 
+## The stance
+
+A Splunk dashboard is not a report. It is a live surface that an operator, analyst, or executive scans under time pressure. Every pixel either earns its place or steals attention from the one that should have had it.
+
+The default output of any generative tool — including Claude — is generic: four same-size KPIs in `#006D9C`, one line chart, one table, default canvas grey, no semantic color, no hierarchy. That output passes a demo and fails a shift. This skill exists to refuse it.
+
+**The commitment**: pick an archetype early, derive theme from audience, apply semantic polarity to every status metric, and treat absolute bans as non-negotiable. Bold minimalism and dense operational walls both work — the point is intentionality, not intensity.
+
+## Required context
+
+You cannot design a dashboard without knowing:
+
+1. **Audience** — executives, SREs, SOC analysts, or field technicians?
+2. **Viewing context** — 24/7 NOC wall, laptop at 09:00, printed PDF, phone on-call?
+3. **Primary question** — what does the user need to answer in the first five seconds?
+4. **Decision consequence** — does a red KPI page someone, or does it inform a quarterly review?
+
+If any of these is unknown, ask the user before invoking archetype or palette choices. The codebase cannot tell you these — only the creator can.
+
 ## When to use
 
-- **Before `ds-design`** — choose the archetype and panel count that fits the audience before wireframing begins.
-- **During `ds-create`** — pick the right viz type when the layout left it unspecified, and confirm color/sizing choices.
-- **Standalone** — when the user asks open-ended design questions without invoking the full pipeline.
+- **Before `ds-design`** — lock the archetype and panel count to audience before wireframing begins.
+- **During `ds-create`** — pick the right viz, confirm palette/canvas/semantic coloring, and run the Slop Test before writing JSON.
+- **Standalone** — when the user asks open-ended questions: "what should my dashboard look like?", "which chart for X?", "how do I structure this?".
 
 ---
 
