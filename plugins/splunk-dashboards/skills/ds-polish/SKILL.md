@@ -223,3 +223,54 @@ Source: <path to dashboard.json>
 ## Flagged (N)
 - Fix 7 — Table "recent_alerts" has no drilldown. Recommend: link to /app/search/search?q=alert_id=$row.alert_id$.
 ```
+
+---
+
+## Integration with other skills
+
+### Pipeline position
+
+```
+ds-init → ds-data-explore / ds-mock → ds-design → ds-create → [ds-polish] → ds-validate → ds-deploy
+                                                               ^^^^^^^^^^
+                                                         deliberate-intent pass
+```
+
+`ds-polish` is an optional-but-recommended step between `ds-create` and `ds-validate`. It does not advance a workspace state — `ds-validate` still owns the transition from `built` to `validated`. Skipping `ds-polish` produces a dashboard that is schema-valid but generic; running it produces one that has been through the Slop Test.
+
+### Relationship with `ds-review`
+
+- **`ds-review`** audits an existing dashboard and writes `review.md` with findings. It never mutates the dashboard.
+- **`ds-polish`** reads the same problems and *applies* the fixes directly.
+
+Common workflow on a legacy dashboard: run `ds-review` first to understand scope, then `ds-polish` to execute the auto-fixable subset, then hand the remaining flagged items back to the user.
+
+### Relationship with `ds-update`
+
+- **`ds-update`** handles natural-language changes ("add a panel", "change the title", "swap this query").
+- **`ds-polish`** handles the *opinionated, enumerated fix catalog* — the set of edits that come from design principles, not from user intent.
+
+If the user says "fix the slop" or "polish this dashboard" or "apply the design principles," route to `ds-polish`. If the user says anything specific about *what* to change, route to `ds-update`.
+
+### Relationship with `ds-validate`
+
+- **`ds-validate`** checks the schema: data source names resolve, panels reference existing sources, tokens resolve, drilldown targets exist. It is a linter.
+- **`ds-polish`** checks *intent*: canvas background set, KPIs have semantic polarity, pie charts have few slices. It is a design-principles enforcer.
+
+Always run `ds-validate` AFTER `ds-polish`. Polish can technically introduce schema issues if a SUGGESTED rewrite is accepted with a malformed proposed SPL — validate catches this before deploy.
+
+### Relationship with `ds-design-principles`
+
+`ds-polish` is the *operational arm* of `ds-design-principles`. Every fix in the catalog maps back to:
+
+- A **reflex default** it refuses (Fixes 1, 3, 4, 5, 6, 7, 8, 9, 10).
+- An **absolute ban** it enforces (Fixes 3, 9, 11, 12).
+- A **Slop Test checklist** item it clears (all 12 fixes contribute).
+
+If a design principle changes in `ds-design-principles`, this catalog must update in lockstep.
+
+### When NOT to use `ds-polish`
+
+- **Custom-styled dashboards**: if the author deliberately overrode canvas background, palette, or KPI sizing for a specific brand reason, polish will fight those choices. Use `ds-review` instead and review findings with the user before applying fixes manually.
+- **Schema-broken dashboards**: run `ds-validate` first; fix schema errors with `ds-update`; then polish. Polish assumes the JSON parses and panels resolve.
+- **During initial design exploration**: polish is a finishing pass. Running it on an incomplete dashboard creates noise in the report.
