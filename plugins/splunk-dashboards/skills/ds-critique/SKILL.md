@@ -147,3 +147,108 @@ Each criterion produces one of three outcomes:
 - **DETECT**: If the archetype calls for KPI card backgrounds or zone backgrounds (exec summary, operational, SOC), at least one `splunk.rectangle` is present in `layout.structure` to provide the layering.
 - **EVIDENCE**: Rectangle count, placement (before or after KPI panels in the array).
 - **VERDICT**: PASS if depth is present where the archetype expects it. N/A for dense-grid archetypes that do not use cards. FAIL if exec/ops/SOC dashboard has zero rectangles and KPIs float on the canvas.
+
+---
+
+## Verdict system
+
+Checks 8, 9, 10, and 11 map to **absolute bans** in `ds-design-principles`. A single FAIL on any of them is disqualifying regardless of the total score — the dashboard is SLOP.
+
+All other checks are weighted equally. Compute:
+
+- **Effective checks** = 13 − (count of N/A).
+- **Passed** = count of PASS across effective checks.
+- **Score** = Passed / Effective.
+
+Verdict:
+
+| Verdict | Condition |
+|---|---|
+| **PASS** | Score ≥ 11/13 (≈ 85%) AND zero absolute-ban failures |
+| **MIXED** | Score 7/13–10/13 AND zero absolute-ban failures |
+| **SLOP** | Score < 7/13 OR ≥ 1 absolute-ban failure |
+
+A dashboard with 12/13 passes but an unbounded search is still SLOP — the ban overrides the score. Say so in the verdict sentence, cite the ban.
+
+## critique.md format
+
+```markdown
+# Critique — <dashboard title>
+
+**Verdict**: SLOP | MIXED | PASS
+**Score**: 7/13 (1 absolute-ban failure)
+**Generated**: <ISO-timestamp>
+**Source**: <path to dashboard.json>
+**Archetype**: <executive | operational | analytical | soc>
+**Theme**: <dark | dark-noc | light>
+
+## Summary
+
+One paragraph, direct. Example for a SLOP verdict:
+
+> This dashboard reads as AI-generated. Four KPIs share `#006D9C` with no
+> semantic polarity, the canvas is unset (default Splunk grey), and the
+> pie chart of alert severity has 11 slices. An operator would flag it
+> in under ten seconds. Most issues are auto-fixable via `ds-polish`.
+
+## Scorecard
+
+### FAIL — Check 1: Archetype committed
+Evidence: Panel mix reads as exec + SOC fusion (4 KPIs + geo map + scatter + analyst table).
+Impact: No single audience is well-served. Recommend committing to one archetype via `ds-update`.
+
+### PASS — Check 2: Theme derived from audience
+Evidence: Dark theme (`#0b0c0e`) aligns with declared operational archetype.
+
+### FAIL — Check 3: Canvas backgroundColor set
+Evidence: `layout.options.backgroundColor` is absent. Renders default grey.
+Impact: Auto-fixable — `ds-polish` Fix 1 handles this.
+
+(... continue for all 13 checks ...)
+
+## Absolute ban failures (if any)
+
+- **Check 8 — Unbounded search**: data source `ds_top_hosts` has no `earliest=` / `latest=` binding. This triggers full-index scans. Must be fixed before deploy.
+
+## Next action
+
+Route to one of:
+- **`ds-polish`** — most failures are in the APPLIED or SUGGESTED polish catalog. Run polish, then re-critique.
+- **`ds-update`** — failures are architectural (wrong archetype, panel mix fighting itself). Polish can't fix structural slop.
+- **Accept** — if MIXED with deliberate gaps (e.g., dense-grid archetype explicitly opted out of depth layering), mark the skipped checks in the workspace notes and move on.
+```
+
+---
+
+## Integration with other skills
+
+### When to run ds-critique vs ds-review
+
+- **ds-review** when you want the broad audit — schema issues, perf risks, accessibility gaps, drilldown coverage.
+- **ds-critique** when you want the opinionated design-principles verdict — and only that. Narrower, blunter, scored.
+
+They are complementary — on a legacy dashboard, run both: `ds-review` for the "what's technically wrong" and `ds-critique` for the "is this slop" read.
+
+### Handoff routing after critique
+
+| Verdict | Recommended next skill |
+|---|---|
+| **PASS** | `ds-validate` → `ds-deploy`. Critique is a sign-off. |
+| **MIXED** | `ds-polish` for the fixable subset; revisit critique after. |
+| **SLOP** | `ds-polish` if failures are catalog-covered; `ds-update` if architectural; in severe cases, re-scope via `ds-init` and regenerate. |
+
+### Pipeline position
+
+```
+ds-create → [ds-critique?] → [ds-polish?] → ds-validate → ds-deploy
+            ^^^^^^^^^^^^^^   ^^^^^^^^^^^^
+            read-only verdict apply the fixes
+```
+
+Both `ds-critique` and `ds-polish` are optional. `ds-critique` is the diagnostic pass; `ds-polish` is the fix pass. Running critique BEFORE polish is useful when you want to know how bad it is before starting — especially on legacy dashboards you did not create yourself.
+
+### When NOT to use ds-critique
+
+- **During active design iteration**: critique is a finishing diagnostic. Running it mid-design produces noise.
+- **When the user wants a general review**: route to `ds-review` instead.
+- **When you already plan to run `ds-polish`**: polish includes the same diagnostic pass as its Phase 3 (Propose). Separate critique is redundant — just read the `polish-report.md`.
