@@ -6,76 +6,100 @@
     "ds_1": {
       "type": "ds.search",
       "name": "Revenue",
-      "options": {
-        "query": "| makeresults | eval rev=2400000 | table rev",
-        "queryParameters": {"earliest": "$global_time.earliest$", "latest": "$global_time.latest$"}
-      }
+      "options": {"query": "| makeresults | eval rev=2400000 | table rev"}
     },
     "ds_2": {
       "type": "ds.search",
       "name": "Users",
-      "options": {
-        "query": "| makeresults | eval users=1284 | table users",
-        "queryParameters": {"earliest": "$global_time.earliest$", "latest": "$global_time.latest$"}
-      }
+      "options": {"query": "| makeresults | eval users=1284 | table users"}
     },
     "ds_3": {
       "type": "ds.search",
       "name": "Churn",
-      "options": {
-        "query": "| makeresults | eval churn=2.1 | table churn",
-        "queryParameters": {"earliest": "$global_time.earliest$", "latest": "$global_time.latest$"}
-      }
+      "options": {"query": "| makeresults | eval churn=2.1 | table churn"}
     },
     "ds_4": {
       "type": "ds.search",
       "name": "MRR",
-      "options": {
-        "query": "| makeresults | eval mrr=198000 | table mrr",
-        "queryParameters": {"earliest": "$global_time.earliest$", "latest": "$global_time.latest$"}
-      }
+      "options": {"query": "| makeresults | eval mrr=198000 | table mrr"}
     },
     "ds_5": {
       "type": "ds.search",
       "name": "Growth trajectory",
-      "options": {
-        "query": "| makeresults count=30 | streamstats count | eval _time=_time - (count*86400), revenue=1800000 + (count*20000)+random() % 100000 | table _time revenue",
-        "queryParameters": {"earliest": "$global_time.earliest$", "latest": "$global_time.latest$"}
-      }
+      "options": {"query": "| makeresults count=30 | streamstats count | eval _time=_time - (count*86400), revenue=1800000 + (count*20000)+random() % 100000 | table _time revenue"}
     }
   },
   "visualizations": {
     "viz_revenue": {
-      "type": "splunk.singlevalue", "title": "Monthly Revenue",
+      "type": "splunk.singlevalue",
+      "title": "Monthly Revenue",
       "dataSources": {"primary": "ds_1"},
-      "options": {"unit": "$", "unitPosition": "before", "majorValueSize": 48}
+      "options": {
+        "majorValue": "> primary | seriesByName('rev') | lastPoint()",
+        "unit": "$",
+        "unitPosition": "before",
+        "majorValueSize": 48
+      }
     },
     "viz_users": {
-      "type": "splunk.singlevalue", "title": "New Users",
-      "dataSources": {"primary": "ds_2"}, "options": {"majorValueSize": 28}
+      "type": "splunk.singlevalue",
+      "title": "New Users",
+      "dataSources": {"primary": "ds_2"},
+      "options": {
+        "majorValue": "> primary | seriesByName('users') | lastPoint()",
+        "majorValueSize": 28
+      }
     },
     "viz_churn": {
-      "type": "splunk.singlevalue", "title": "Churn",
-      "dataSources": {"primary": "ds_3"}, "options": {"unit": "%", "majorValueSize": 28}
+      "type": "splunk.singlevalue",
+      "title": "Churn",
+      "dataSources": {"primary": "ds_3"},
+      "options": {
+        "majorValue": "> primary | seriesByName('churn') | lastPoint()",
+        "unit": "%",
+        "majorValueSize": 28
+      }
     },
     "viz_mrr": {
-      "type": "splunk.singlevalue", "title": "MRR",
-      "dataSources": {"primary": "ds_4"}, "options": {"unit": "$", "unitPosition": "before", "majorValueSize": 28}
+      "type": "splunk.singlevalue",
+      "title": "MRR",
+      "dataSources": {"primary": "ds_4"},
+      "options": {
+        "majorValue": "> primary | seriesByName('mrr') | lastPoint()",
+        "unit": "$",
+        "unitPosition": "before",
+        "majorValueSize": 28
+      }
     },
     "viz_trend": {
-      "type": "splunk.line", "title": "Revenue trajectory",
-      "dataSources": {"primary": "ds_5"}, "options": {}
+      "type": "splunk.line",
+      "title": "Revenue trajectory",
+      "dataSources": {"primary": "ds_5"},
+      "options": {}
     }
   },
   "inputs": {
     "input_global_time": {
-      "type": "input.timerange", "title": "Time range",
-      "options": {"token": "global_time", "defaultValue": {"earliest": "-30d@d", "latest": "now"}}
+      "type": "input.timerange",
+      "title": "Time range",
+      "options": {"token": "global_time", "defaultValue": "-30d@d,now"}
     }
   },
-  "defaults": {},
+  "defaults": {
+    "dataSources": {
+      "ds.search": {
+        "options": {
+          "queryParameters": {
+            "earliest": "$global_time.earliest$",
+            "latest": "$global_time.latest$"
+          }
+        }
+      }
+    }
+  },
   "layout": {
     "type": "absolute",
+    "globalInputs": ["input_global_time"],
     "options": {"width": 1440, "height": 600},
     "structure": [
       {"item": "viz_revenue", "type": "block", "position": {"x": 20,   "y": 60,  "w": 420, "h": 180}},

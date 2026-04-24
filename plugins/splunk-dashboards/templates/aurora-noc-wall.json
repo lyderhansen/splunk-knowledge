@@ -38,22 +38,43 @@
     "viz_events": {
       "type": "splunk.singlevalueicon", "title": "EVENTS",
       "dataSources": {"primary": "ds_events"},
-      "options": {"majorValueSize": 32, "backgroundColor": "#53A051", "icon": "check-circle"}
+      "options": {
+        "majorValue": "> primary | seriesByName('events') | lastPoint()",
+        "majorValueSize": 32,
+        "backgroundColor": "#53A051",
+        "icon": "check-circle"
+      }
     },
     "viz_uptime": {
       "type": "splunk.singlevalueicon", "title": "UPTIME",
       "dataSources": {"primary": "ds_uptime"},
-      "options": {"unit": "%", "majorValueSize": 32, "backgroundColor": "#53A051", "icon": "check-circle"}
+      "options": {
+        "majorValue": "> primary | seriesByName('uptime') | lastPoint()",
+        "unit": "%",
+        "majorValueSize": 32,
+        "backgroundColor": "#53A051",
+        "icon": "check-circle"
+      }
     },
     "viz_latency": {
       "type": "splunk.singlevalueicon", "title": "P95 MS",
       "dataSources": {"primary": "ds_latency"},
-      "options": {"majorValueSize": 32, "backgroundColor": "#F8BE34", "icon": "warning"}
+      "options": {
+        "majorValue": "> primary | seriesByName('p95') | lastPoint()",
+        "majorValueSize": 32,
+        "backgroundColor": "#F8BE34",
+        "icon": "warning"
+      }
     },
     "viz_alerts": {
       "type": "splunk.singlevalueicon", "title": "ALERTS",
       "dataSources": {"primary": "ds_alerts"},
-      "options": {"majorValueSize": 32, "backgroundColor": "#DC4E41", "icon": "alarm"}
+      "options": {
+        "majorValue": "> primary | seriesByName('alerts') | lastPoint()",
+        "majorValueSize": 32,
+        "backgroundColor": "#DC4E41",
+        "icon": "alarm"
+      }
     },
     "viz_rate": {
       "type": "splunk.line", "title": "REQUEST RATE · LIVE",

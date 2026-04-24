@@ -108,3 +108,54 @@ def test_aurora_noc_wall_loads_and_has_valid_structure():
     # Verify status-tile backgrounds are semantically colored
     alert_viz = data["visualizations"]["viz_alerts"]
     assert alert_viz["options"]["backgroundColor"] == "#DC4E41"
+
+
+# --- Regression: every singlevalue-family viz must bind majorValue via DOS ---
+# Without an explicit majorValue expression, splunk.singlevalueicon renders "?"
+# and splunk.singlevalue auto-picks the first numeric column, which silently
+# breaks when a future SPL change produces multiple columns.
+
+SINGLEVALUE_TYPES = {"splunk.singlevalue", "splunk.singlevalueicon", "splunk.singlevalueradial"}
+
+
+@pytest.mark.parametrize("template_name", ["aurora-exec-hero", "aurora-noc-wall"])
+def test_flagship_singlevalues_bind_majorValue(template_name):
+    from splunk_dashboards.templates import load_bundled_template
+    data = load_bundled_template(template_name)
+    offenders = []
+    for viz_id, viz in data["visualizations"].items():
+        if viz.get("type") in SINGLEVALUE_TYPES:
+            mv = viz.get("options", {}).get("majorValue")
+            if not (isinstance(mv, str) and mv.startswith(">")):
+                offenders.append(f"{viz_id} ({viz['type']})")
+    assert not offenders, (
+        f"These {template_name} singlevalues are missing a DOS majorValue binding "
+        f"(e.g. \"> primary | seriesByName('field') | lastPoint()\"): {offenders}"
+    )
+
+
+# --- Regression: aurora-exec-hero time picker wires globally via defaults ---
+
+def test_aurora_exec_hero_time_picker_wired_correctly():
+    from splunk_dashboards.templates import load_bundled_template
+    data = load_bundled_template("aurora-exec-hero")
+
+    # defaultValue should be the canonical "earliest,latest" string form, not
+    # an object. The object form is documented in some places but string form
+    # is what the official skeleton uses and what always renders correctly.
+    default = data["inputs"]["input_global_time"]["options"]["defaultValue"]
+    assert isinstance(default, str), f"defaultValue must be string form, got {default!r}"
+    assert "," in default, f"defaultValue must be 'earliest,latest', got {default!r}"
+
+    # Every ds.search inherits earliest/latest from defaults — there must be
+    # no per-ds queryParameters that would override them.
+    qp = data["defaults"]["dataSources"]["ds.search"]["options"]["queryParameters"]
+    assert qp["earliest"] == "$global_time.earliest$"
+    assert qp["latest"] == "$global_time.latest$"
+    for ds_id, ds in data["dataSources"].items():
+        assert "queryParameters" not in ds.get("options", {}), (
+            f"{ds_id} has redundant queryParameters; rely on defaults instead"
+        )
+
+    # The input must be declared as a global input on the layout so it renders.
+    assert "input_global_time" in data["layout"].get("globalInputs", [])
