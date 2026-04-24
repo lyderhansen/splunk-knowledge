@@ -123,6 +123,8 @@ Displays a single number. Best for KPIs.
 
 **Shared groups:** [SERIES]
 
+> **CRITICAL — always bind `majorValue` explicitly.** The documented default `"> primary | seriesByType(\"number\") | lastPoint()"` works for generic `| stats count` output but fails when the SPL uses `| table <field>` or produces multiple columns — the viz then renders "?" or the wrong column. Always set `majorValue` to `"> primary | seriesByName('<column>') | lastPoint()"` naming the exact field you want to show. This rule applies identically to `splunk.singlevalueicon` and `splunk.singlevalueradial`.
+
 **Specific options:**
 
 | Property | Type | Default | Description |
@@ -144,7 +146,17 @@ Displays a single number. Best for KPIs.
 Example:
 
 ```json
-{ "type": "splunk.singlevalue", "title": "Failed Logins", "dataSources": {"primary": "ds_1"}, "options": { "majorColor": "#d13d3d", "unit": "", "sparklineDisplay": "after" } }
+{
+  "type": "splunk.singlevalue",
+  "title": "Failed Logins",
+  "dataSources": {"primary": "ds_1"},
+  "options": {
+    "majorValue": "> primary | seriesByName('failures') | lastPoint()",
+    "majorColor": "#d13d3d",
+    "unit": "",
+    "sparklineDisplay": "after"
+  }
+}
 ```
 
 ## splunk.line
@@ -494,7 +506,18 @@ Single value display with an icon badge.
 Example:
 
 ```json
-{ "type": "splunk.singlevalueicon", "title": "Critical Alerts", "dataSources": {"primary": "ds_crit"}, "options": { "icon": "alert", "iconColor": "#DC4E41", "majorColor": "#DC4E41", "underLabel": "Critical" } }
+{
+  "type": "splunk.singlevalueicon",
+  "title": "Critical Alerts",
+  "dataSources": {"primary": "ds_crit"},
+  "options": {
+    "majorValue": "> primary | seriesByName('alerts') | lastPoint()",
+    "icon": "alert",
+    "iconColor": "#DC4E41",
+    "majorColor": "#DC4E41",
+    "underLabel": "Critical"
+  }
+}
 ```
 
 ## splunk.singlevalueradial
@@ -522,7 +545,20 @@ Single value with a radial arc gauge background.
 Example:
 
 ```json
-{ "type": "splunk.singlevalueradial", "title": "Uptime", "dataSources": {"primary": "ds_uptime"}, "options": { "unit": "%", "radialStrokeColor": "#53A051", "gaugeRanges": [ {"from": 0, "to": 90, "value": "#DC4E41"}, {"from": 90, "to": 100, "value": "#53A051"} ] } }
+{
+  "type": "splunk.singlevalueradial",
+  "title": "Uptime",
+  "dataSources": {"primary": "ds_uptime"},
+  "options": {
+    "majorValue": "> primary | seriesByName('uptime') | lastPoint()",
+    "unit": "%",
+    "radialStrokeColor": "#53A051",
+    "gaugeRanges": [
+      {"from": 0, "to": 90, "value": "#DC4E41"},
+      {"from": 90, "to": 100, "value": "#53A051"}
+    ]
+  }
+}
 ```
 
 ## splunk.fillergauge

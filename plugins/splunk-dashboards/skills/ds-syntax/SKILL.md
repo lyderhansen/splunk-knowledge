@@ -171,7 +171,7 @@ Fields:
   "input_timerange": {
     "type": "input.timerange",
     "title": "Time range",
-    "options": { "token": "global_time", "defaultValue": { "earliest": "-24h", "latest": "now" } }
+    "options": { "token": "global_time", "defaultValue": "-24h@h,now" }
   },
   "input_index": {
     "type": "input.dropdown",
@@ -189,6 +189,8 @@ Fields:
 ```
 
 Reference tokens in SPL as `$token_name$`. For timerange inputs, use `$<token>.earliest$` and `$<token>.latest$`.
+
+> **CRITICAL — `input.timerange` defaultValue format.** Use the comma-separated string form `"-24h@h,now"` (matching Splunk's canonical skeleton). The object form `{"earliest": "-24h", "latest": "now"}` renders on some versions but silently fails on others — the picker shows but searches never receive the tokens. When in doubt, use string form.
 
 ### Multiselect
 
@@ -265,15 +267,46 @@ index=main | stats count by host | rename host AS label | eval value=label | fie
 
 ## defaults
 
-Top-level defaults (often just a global time range):
+Top-level defaults (most commonly used to wire the global time input to every `ds.search`). Key the block under `"ds.search"` — this is the type-level default and applies to every search.
 
 ```json
 "defaults": {
   "dataSources": {
-    "global": { "options": { "queryParameters": { "earliest": "-24h", "latest": "now" } } }
+    "ds.search": {
+      "options": {
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        }
+      }
+    }
   }
 }
 ```
+
+> **CRITICAL — rely on `defaults`, don't set `queryParameters` per search.** When a global time input exists, put `queryParameters` in `defaults.dataSources."ds.search".options.queryParameters`. Do NOT also set `queryParameters` on individual `ds.search` entries — the per-search version silently overrides the default and any later change to the default stops taking effect.
+
+### End-to-end: global time picker wiring
+
+Getting the time picker to actually control searches requires three coordinated pieces. All three must be present, or the picker appears but does nothing.
+
+1. **Declare the input** (pick any id; the `token` is what SPL references):
+   ```json
+   "inputs": {
+     "input_global_time": {
+       "type": "input.timerange",
+       "title": "Time range",
+       "options": { "token": "global_time", "defaultValue": "-24h@h,now" }
+     }
+   }
+   ```
+2. **Wire it via `defaults`** (applies to every `ds.search` — see example above).
+3. **Expose it on the layout** so it renders at the top of the dashboard:
+   ```json
+   "layout": { "globalInputs": ["input_global_time"], ... }
+   ```
+
+Only step 3 makes the picker visible; only step 2 makes searches react to it. Miss either and the dashboard looks correct but the time control is a no-op.
 
 ## layout
 
