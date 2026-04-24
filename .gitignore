@@ -1,5 +1,6 @@
-# Superpowers brainstorm session artifacts
+# Superpowers brainstorm session artifacts + plans/specs
 .superpowers/
+docs/superpowers/
 
 # Workspace artifacts (dashboard project workspaces)
 .splunk-dashboards/
