@@ -1,0 +1,327 @@
+{
+  "title": "ds-viz-image - option matrix (light)",
+  "description": "Light-theme companion. Test bench for splunk.image. Verifies all options from the 10.4 PDF: src (string URL, all browser-supported formats), preserveAspectRatio (boolean). Demonstrates URL reference vs uploaded images, aspect-ratio modes, layering (image-as-background, image-as-watermark), sizing patterns, and the absolute-layout-only constraint.",
+  "defaults": {
+    "dataSources": {
+      "global": {
+        "options": {
+          "queryParameters": {
+            "earliest": "-24h@h",
+            "latest": "now"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": false,
+        "showLastUpdated": false
+      }
+    }
+  },
+  "dataSources": {
+    "ds_overlay_kpi": {
+      "type": "ds.test",
+      "options": {
+        "data": {
+          "fields": [
+            {
+              "name": "value"
+            }
+          ],
+          "columns": [
+            [
+              "1284"
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "visualizations": {
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# `splunk.image` - option matrix (light)\n\nImages are an absolute-layout-only feature. Use them for **logos**, **diagrams**, **background canvases**, **watermarks**, and **icon overlays**.\n\nFull options list from the **10.4 PDF**:\n- `src` (URL of an image; **png / jpeg / gif / webp / svg** supported)\n- `preserveAspectRatio` (default `false` - the image stretches to fill the panel)\n\nTwo ways to source an image:\n1. **Uploaded to KV store** (Enterprise admins, Cloud `sc_admins`, power users) - rendered in PDF/PNG exports.\n2. **Referenced by URL** - any user, but **NOT** included in PDF/PNG exports and the URL domain must be in the **dashboards image allow list**.",
+        "fontSize": "default",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_default": {
+      "type": "splunk.image",
+      "title": "1. Default (preserveAspectRatio=false)",
+      "description": "Image stretches to fill the panel - the PDF default. Rarely what you want for logos or photos.",
+      "options": {
+        "src": "/en-US/static/app/splunk-dashboard-studio/images/examples-hub/datacenter/Background_v2.png"
+      }
+    },
+    "viz_aspect_true": {
+      "type": "splunk.image",
+      "title": "2. preserveAspectRatio=true",
+      "description": "Image is letterboxed inside the panel - intended ratio is preserved. Use this for logos and photos.",
+      "options": {
+        "src": "/en-US/static/app/splunk-dashboard-studio/images/examples-hub/datacenter/Background_v2.png",
+        "preserveAspectRatio": true
+      }
+    },
+    "viz_logo_square": {
+      "type": "splunk.image",
+      "title": "3. Logo in a square panel",
+      "description": "Square panel + preserveAspectRatio=true => logo centers cleanly with empty space on the longer axis.",
+      "options": {
+        "src": "https://www.splunk.com/etc.clientlibs/splunk2/clientlibs/clientlib-base/resources/Splunk_Logo.svg",
+        "preserveAspectRatio": true
+      }
+    },
+    "viz_logo_wide": {
+      "type": "splunk.image",
+      "title": "4. Logo in a wide panel",
+      "description": "Wide panel + preserveAspectRatio=true => same logo, different aspect ratio. Demonstrates that the panel size, not the option, drives the visual.",
+      "options": {
+        "src": "https://www.splunk.com/etc.clientlibs/splunk2/clientlibs/clientlib-base/resources/Splunk_Logo.svg",
+        "preserveAspectRatio": true
+      }
+    },
+    "viz_local_path": {
+      "type": "splunk.image",
+      "title": "5. Local Splunk-bundled asset",
+      "description": "Bundled `/en-US/static/...` paths are always allow-listed and render in PDF/PNG. Great for placeholders.",
+      "options": {
+        "src": "/en-US/static/app/splunk-dashboard-studio/images/examples-hub/datacenter/Background_v2.png",
+        "preserveAspectRatio": true
+      }
+    },
+    "viz_external_cdn": {
+      "type": "splunk.image",
+      "title": "6. External CDN URL",
+      "description": "External URLs require the domain to be in the dashboards image allow list. They will NOT render in PDF/PNG export.",
+      "options": {
+        "src": "https://www.splunk.com/etc.clientlibs/splunk2/clientlibs/clientlib-base/resources/Splunk_Logo.svg",
+        "preserveAspectRatio": true
+      }
+    },
+    "viz_svg": {
+      "type": "splunk.image",
+      "title": "7. SVG image",
+      "description": "Browsers render SVG natively, so `splunk.image` accepts it. Resolution-independent - perfect for logos, icons, diagrams.",
+      "options": {
+        "src": "https://www.splunk.com/etc.clientlibs/splunk2/clientlibs/clientlib-base/resources/Splunk_Logo.svg",
+        "preserveAspectRatio": true
+      }
+    },
+    "viz_background_layer": {
+      "type": "splunk.image",
+      "title": "8. Image as background layer",
+      "description": "Stretched image used as a section backdrop. Layer KPIs on top via z-order.",
+      "options": {
+        "src": "/en-US/static/app/splunk-dashboard-studio/images/examples-hub/datacenter/Background_v2.png",
+        "preserveAspectRatio": false
+      }
+    },
+    "viz_overlay_kpi": {
+      "type": "splunk.singlevalue",
+      "title": "Throughput",
+      "description": "Floats on top of viz_background_layer at the same coordinates - earlier in `structure` array means lower z-order.",
+      "dataSources": {
+        "primary": "ds_overlay_kpi"
+      },
+      "options": {
+        "majorColor": "#26A69A",
+        "trendDisplay": "off",
+        "sparklineDisplay": "off",
+        "unitPosition": "after",
+        "unit": " req/s"
+      }
+    },
+    "viz_watermark": {
+      "type": "splunk.image",
+      "title": "9. Faint watermark layer",
+      "description": "Logo with low opacity - achieved by uploading a pre-faded PNG/SVG. `splunk.image` itself has no opacity option, so you must bake it into the asset.",
+      "options": {
+        "src": "https://www.splunk.com/etc.clientlibs/splunk2/clientlibs/clientlib-base/resources/Splunk_Logo.svg",
+        "preserveAspectRatio": true
+      }
+    },
+    "viz_no_src": {
+      "type": "splunk.markdown",
+      "title": "10. Empty src (fallback panel)",
+      "description": "When `src` is missing or fails to load, the panel shows the placeholder image. Use a markdown fallback panel instead, like this one.",
+      "options": {
+        "markdown": "**Image not configured.** Set `options.src` to a KV-store-uploaded image or an allow-listed URL.\n\nSupported formats:\n- `png`\n- `jpeg`\n- `gif`\n- `webp`\n- `svg` (via URL reference)",
+        "backgroundColor": "#EFE7D3",
+        "fontColor": "#1A1A1A"
+      }
+    },
+    "viz_diagram": {
+      "type": "splunk.image",
+      "title": "11. Architecture diagram",
+      "description": "SVG architecture diagrams render crisply at any panel size. Use SVG over PNG for diagrams.",
+      "options": {
+        "src": "https://www.splunk.com/etc.clientlibs/splunk2/clientlibs/clientlib-base/resources/Splunk_Logo.svg",
+        "preserveAspectRatio": true
+      }
+    },
+    "viz_floor_plan": {
+      "type": "splunk.image",
+      "title": "12. Floor plan / facility map",
+      "description": "Datacenter background image - layer rectangle 'rooms' or singleValue 'sensors' on top using absolute coordinates.",
+      "options": {
+        "src": "/en-US/static/app/splunk-dashboard-studio/images/examples-hub/datacenter/Background_v2.png",
+        "preserveAspectRatio": true
+      }
+    }
+  },
+  "inputs": {},
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 2520,
+      "display": "auto-scale",
+      "backgroundColor": "#FAEAD8"
+    },
+    "structure": [
+      {
+        "item": "viz_title",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 20,
+          "w": 1400,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_default",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 320,
+          "w": 690,
+          "h": 240
+        }
+      },
+      {
+        "item": "viz_aspect_true",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 320,
+          "w": 690,
+          "h": 240
+        }
+      },
+      {
+        "item": "viz_logo_square",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 580,
+          "w": 240,
+          "h": 240
+        }
+      },
+      {
+        "item": "viz_logo_wide",
+        "type": "block",
+        "position": {
+          "x": 280,
+          "y": 580,
+          "w": 1140,
+          "h": 240
+        }
+      },
+      {
+        "item": "viz_local_path",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 840,
+          "w": 690,
+          "h": 240
+        }
+      },
+      {
+        "item": "viz_external_cdn",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 840,
+          "w": 690,
+          "h": 240
+        }
+      },
+      {
+        "item": "viz_svg",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 1100,
+          "w": 690,
+          "h": 240
+        }
+      },
+      {
+        "item": "viz_background_layer",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 1100,
+          "w": 690,
+          "h": 240
+        }
+      },
+      {
+        "item": "viz_overlay_kpi",
+        "type": "block",
+        "position": {
+          "x": 950,
+          "y": 1180,
+          "w": 240,
+          "h": 80
+        }
+      },
+      {
+        "item": "viz_watermark",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 1360,
+          "w": 690,
+          "h": 240
+        }
+      },
+      {
+        "item": "viz_no_src",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 1360,
+          "w": 690,
+          "h": 240
+        }
+      },
+      {
+        "item": "viz_diagram",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 1620,
+          "w": 690,
+          "h": 240
+        }
+      },
+      {
+        "item": "viz_floor_plan",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 1620,
+          "w": 690,
+          "h": 240
+        }
+      }
+    ],
+    "globalInputs": []
+  }
+}

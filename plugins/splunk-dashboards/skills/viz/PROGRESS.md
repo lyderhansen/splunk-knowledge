@@ -61,25 +61,25 @@ Legend: ✅ done · 🟡 in progress · ⬜ not started · ❌ blocked / known i
 | 3 | `splunk.column`           | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ⬜       | Awaiting QA. |
 | 4 | `splunk.bar`              | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ⬜       | Awaiting QA. annotation* options listed in PDF text but not in option table — omitted from test bench. |
 | 5 | `splunk.pie`              | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | |
-| 6 | `splunk.scatter`          | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | |
-| 7 | `splunk.bubble`           | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | |
+| 6 | `splunk.scatter`          | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
+| 7 | `splunk.bubble`           | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
 | 8 | `splunk.singlevalue`      | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | |
 | 9 | `splunk.singlevalueicon`  | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | |
 | 10 | `splunk.singlevalueradial` | ⬜      | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | |
 | 11 | `splunk.markergauge`      | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | gaugeRanges syntax verified in ceo_boardroom (#D41F1F / #CBA700 / #4fa484). |
 | 12 | `splunk.fillergauge`      | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | |
 | 13 | `splunk.table`            | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | showInternalFields:false convention verified. tableFormat / columnFormat patterns covered. |
-| 14 | `splunk.events`           | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | |
-| 15 | `splunk.timeline`         | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | |
-| 16 | `splunk.punchcard`        | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | |
-| 17 | `splunk.parallelcoordinates` | ⬜    | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | |
-| 18 | `splunk.sankey`           | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | |
-| 19 | `splunk.linkgraph`        | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | |
+| 14 | `splunk.events`           | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
+| 15 | `splunk.timeline`         | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
+| 16 | `splunk.punchcard`        | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
+| 17 | `splunk.parallelcoordinates` | ✅    | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
+| 18 | `splunk.sankey`           | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. Validate skipped — module path issue. |
+| 19 | `splunk.linkgraph`        | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
 | 20 | `splunk.map`              | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | Known broken in ceo_boardroom — investigate. |
 | 21 | `splunk.choropleth.svg`   | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | |
 | 22 | `splunk.choropleth.map`   | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | Confirm if this type id is actually accepted by 10.2.1 (was rejected earlier). |
-| 23 | `splunk.markdown`         | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | fontSize is a string enum (not int) — verified. |
-| 24 | `splunk.image`            | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | |
+| 23 | `splunk.markdown`         | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | fontSize is a string enum (not int) — verified. fontFamily supported beyond PDF table. |
+| 24 | `splunk.image`            | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Splunk views handler rejects literal `\n` (0x0A) in JSON definition — must use `\\n` escape sequences when calling MCP. Tracked in `/tmp/dash_to_payload.py`. |
 | 25 | `splunk.rectangle`        | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | |
 | 26 | `splunk.ellipse`          | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | |
 
