@@ -1,0 +1,312 @@
+{
+  "title": "ds-viz-singlevalue - option matrix",
+  "description": "Test bench for splunk.singlevalue. Each panel exercises one option group: unit + unitPosition, underLabel, numberPrecision, trendDisplay (absolute / percent / off), trendColor, sparkline (line / area / off / before / after / below), shouldUseThousandSeparators, shouldAbbreviateTrendValue, custom backgroundColor + majorColor, dynamic colour via DOS / rangeValue. SPL is makeresults-based.",
+  "defaults": {
+    "dataSources": {
+      "global": {
+        "options": {
+          "queryParameters": {
+            "earliest": "-24h@h",
+            "latest": "now"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": false,
+        "showLastUpdated": false
+      }
+    }
+  },
+  "dataSources": {
+
+    "ds_revenue_trend": {
+      "type": "ds.search",
+      "name": "revenue trend - 24h sparkline",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval revenue = round(8000 + 2000*sin(i/4) + random()%500) | table _time revenue"
+      }
+    },
+
+    "ds_kpi_static": {
+      "type": "ds.search",
+      "name": "kpi - single number, no trend",
+      "options": {
+        "query": "| makeresults | eval orders = 1247 | table orders"
+      }
+    },
+
+    "ds_pct_kpi": {
+      "type": "ds.search",
+      "name": "percentage kpi - 24h trend",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval conversion_rate = round(2.5 + sin(i/4)*0.4 + random()%10/100, 2) | table _time conversion_rate"
+      }
+    },
+
+    "ds_currency_kpi": {
+      "type": "ds.search",
+      "name": "currency kpi - large value with trend",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval mrr = round(1245000 + i*1500 + random()%2000) | table _time mrr"
+      }
+    },
+
+    "ds_health_score": {
+      "type": "ds.search",
+      "name": "health score - dynamic colour ranges",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval health = round(85 + sin(i/4)*8 + random()%5) | table _time health"
+      }
+    },
+
+    "ds_error_count": {
+      "type": "ds.search",
+      "name": "error count - red on threshold",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval errors = round(12 + sin(i/3)*8 + random()%5) | table _time errors"
+      }
+    },
+
+    "ds_latency_ms": {
+      "type": "ds.search",
+      "name": "latency - sparkline with area",
+      "options": {
+        "query": "| makeresults count=48 | streamstats count as i | eval _time = relative_time(now(), \"-48h\") + (i*1800) | eval p95_ms = round(120 + sin(i/6)*30 + random()%20) | table _time p95_ms"
+      }
+    }
+
+  },
+
+  "visualizations": {
+
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# `splunk.singlevalue` - option matrix\n\nThe single most-used Dashboard Studio viz: KPI tiles, headline metrics, ratio numbers. The 10.4 reference exposes 22 options grouped into 4 groups: **value** (`majorValue`, `majorColor`, `majorFontSize`, `numberPrecision`, `unit`, `unitPosition`, `underLabel`, `underLabelFontSize`), **trend** (`trendValue`, `trendDisplay`, `trendColor`, `trendFontSize`, `shouldAbbreviateTrendValue`), **sparkline** (`sparklineValues`, `sparklineDisplay`, `sparklineStrokeColor`, `sparklineAreaColor`, `showSparklineAreaGraph`, `showSparklineTooltip`, `sparklineHighlightDots`, `sparklineHighlightSegments`, `shouldSparklineAcceptNullData`), **chrome** (`backgroundColor`, `shouldUseThousandSeparators`).",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default"
+      }
+    },
+
+    "viz_basic": {
+      "type": "splunk.singlevalue",
+      "title": "1. Minimal - all defaults",
+      "description": "Reads majorValue from primary search lastPoint(); trendValue defaults to delta(-2); sparkline below; absolute trend.",
+      "dataSources": { "primary": "ds_revenue_trend" },
+      "options": {}
+    },
+
+    "viz_unit_after": {
+      "type": "splunk.singlevalue",
+      "title": "2. unit + unitPosition (after) + underLabel",
+      "description": "unit = '%', unitPosition = 'after' (default), underLabel positions text below major value. Numeric tiles almost always need both.",
+      "dataSources": { "primary": "ds_pct_kpi" },
+      "options": {
+        "unit": "%",
+        "unitPosition": "after",
+        "underLabel": "Conversion rate",
+        "numberPrecision": 2,
+        "trendDisplay": "percent"
+      }
+    },
+
+    "viz_unit_before": {
+      "type": "splunk.singlevalue",
+      "title": "3. unit before + thousand separators + abbreviate trend",
+      "description": "unitPosition = 'before' for currency. shouldUseThousandSeparators = true (default). shouldAbbreviateTrendValue = true rounds the trend to 2 decimals + magnitude unit ('+1.2K').",
+      "dataSources": { "primary": "ds_currency_kpi" },
+      "options": {
+        "unit": "$",
+        "unitPosition": "before",
+        "underLabel": "Monthly recurring revenue",
+        "shouldUseThousandSeparators": true,
+        "shouldAbbreviateTrendValue": true,
+        "trendDisplay": "percent",
+        "sparklineDisplay": "below"
+      }
+    },
+
+    "viz_no_trend": {
+      "type": "splunk.singlevalue",
+      "title": "4. Static KPI - trendDisplay off + no sparkline",
+      "description": "Single-row dataSource (no time series). trendDisplay = 'off' suppresses the delta. sparklineDisplay = 'off' removes the chart strip.",
+      "dataSources": { "primary": "ds_kpi_static" },
+      "options": {
+        "underLabel": "Orders today",
+        "trendDisplay": "off",
+        "sparklineDisplay": "off"
+      }
+    },
+
+    "viz_dynamic_color_health": {
+      "type": "splunk.singlevalue",
+      "title": "5. Dynamic majorColor via rangeValue",
+      "description": "majorColor uses Dynamic Options Syntax to map the current value to a colour: green >= 90, amber 70-90, red < 70. Pattern: '> primary | seriesByName(field) | lastPoint() | rangeValue(thresholds)'.",
+      "dataSources": { "primary": "ds_health_score" },
+      "options": {
+        "underLabel": "System health",
+        "unit": "/100",
+        "unitPosition": "after",
+        "trendDisplay": "absolute",
+        "majorColor": "> primary | seriesByName('health') | lastPoint() | rangeValue(thresholds)"
+      },
+      "context": {
+        "thresholds": [
+          { "to": 70,            "value": "#FF2D95" },
+          { "from": 70, "to": 90,"value": "#FFB627" },
+          { "from": 90,          "value": "#33FF99" }
+        ]
+      }
+    },
+
+    "viz_dynamic_bg": {
+      "type": "splunk.singlevalue",
+      "title": "6. Dynamic backgroundColor - red tile on errors",
+      "description": "Same DOS pattern but applied to backgroundColor. Tile flips red when errors > 15. Use sparingly - whole-tile red is jarring; usually majorColor is enough.",
+      "dataSources": { "primary": "ds_error_count" },
+      "options": {
+        "underLabel": "Errors / hour",
+        "trendDisplay": "absolute",
+        "backgroundColor": "> primary | seriesByName('errors') | lastPoint() | rangeValue(bgThresholds)",
+        "majorColor": "#FFFFFF"
+      },
+      "context": {
+        "bgThresholds": [
+          { "to": 15,             "value": "#152034" },
+          { "from": 15, "to": 25, "value": "#A85A1F" },
+          { "from": 25,           "value": "#8B1F3A" }
+        ]
+      }
+    },
+
+    "viz_sparkline_area": {
+      "type": "splunk.singlevalue",
+      "title": "7. Sparkline as area + tooltip",
+      "description": "showSparklineAreaGraph = true fills the sparkline. showSparklineTooltip = true exposes hover values. sparklineAreaColor + sparklineStrokeColor pin both layers.",
+      "dataSources": { "primary": "ds_latency_ms" },
+      "options": {
+        "underLabel": "p95 latency",
+        "unit": "ms",
+        "unitPosition": "after",
+        "trendDisplay": "percent",
+        "showSparklineAreaGraph": true,
+        "showSparklineTooltip": true,
+        "sparklineStrokeColor": "#00D9FF",
+        "sparklineAreaColor": "#00D9FF",
+        "sparklineDisplay": "below"
+      }
+    },
+
+    "viz_sparkline_above": {
+      "type": "splunk.singlevalue",
+      "title": "8. sparklineDisplay - above (before)",
+      "description": "sparklineDisplay = 'before' renders the sparkline above the major value. Useful when the trend is the headline and the number supports it.",
+      "dataSources": { "primary": "ds_revenue_trend" },
+      "options": {
+        "underLabel": "Revenue (24h)",
+        "unit": "$",
+        "unitPosition": "before",
+        "shouldAbbreviateTrendValue": true,
+        "trendDisplay": "percent",
+        "sparklineDisplay": "before",
+        "showSparklineAreaGraph": true,
+        "sparklineStrokeColor": "#7AA2FF",
+        "sparklineAreaColor": "#7AA2FF"
+      }
+    },
+
+    "viz_sparkline_after": {
+      "type": "splunk.singlevalue",
+      "title": "9. sparklineDisplay - after",
+      "description": "sparklineDisplay = 'after' renders the sparkline to the right of the major value. Layout choice for wide, short panels (KPI strip).",
+      "dataSources": { "primary": "ds_revenue_trend" },
+      "options": {
+        "underLabel": "Revenue (24h)",
+        "unit": "$",
+        "unitPosition": "before",
+        "shouldAbbreviateTrendValue": true,
+        "trendDisplay": "percent",
+        "sparklineDisplay": "after",
+        "sparklineStrokeColor": "#33FF99"
+      }
+    },
+
+    "viz_highlight": {
+      "type": "splunk.singlevalue",
+      "title": "10. sparklineHighlightDots + Segments",
+      "description": "sparklineHighlightDots = 3 paints the last 3 data points as filled markers. sparklineHighlightSegments = 6 emphasises the most recent 6 segments. Combine with showSparklineAreaGraph for a 'fade to recent' effect.",
+      "dataSources": { "primary": "ds_latency_ms" },
+      "options": {
+        "underLabel": "Recent activity",
+        "showSparklineAreaGraph": true,
+        "sparklineHighlightDots": 3,
+        "sparklineHighlightSegments": 6,
+        "sparklineStrokeColor": "#FFB627",
+        "sparklineAreaColor": "#FFB627",
+        "trendDisplay": "off"
+      }
+    },
+
+    "viz_precision_separators": {
+      "type": "splunk.singlevalue",
+      "title": "11. numberPrecision + thousand separators OFF",
+      "description": "numberPrecision = 4 displays 4 decimals. shouldUseThousandSeparators = false strips commas - useful for IDs, version numbers, anything that is not a quantity.",
+      "dataSources": { "primary": "ds_pct_kpi" },
+      "options": {
+        "underLabel": "Conversion (4dp)",
+        "unit": "%",
+        "unitPosition": "after",
+        "numberPrecision": 4,
+        "shouldUseThousandSeparators": false,
+        "trendDisplay": "percent"
+      }
+    },
+
+    "viz_chrome_stripped": {
+      "type": "splunk.singlevalue",
+      "title": "12. Chrome-stripped - transparent + custom font sizes",
+      "description": "backgroundColor 'transparent' lets the dashboard background show through. majorFontSize / underLabelFontSize override the dynamic sizing for a fixed visual weight - useful inside compact KPI strips.",
+      "dataSources": { "primary": "ds_currency_kpi" },
+      "options": {
+        "backgroundColor": "transparent",
+        "underLabel": "MRR",
+        "unit": "$",
+        "unitPosition": "before",
+        "shouldAbbreviateTrendValue": true,
+        "trendDisplay": "percent",
+        "majorFontSize": 56,
+        "underLabelFontSize": 14,
+        "sparklineDisplay": "below",
+        "sparklineStrokeColor": "#7AA2FF"
+      }
+    }
+
+  },
+
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 1480,
+      "display": "auto-scale"
+    },
+    "structure": [
+      { "item": "viz_title",                "type": "block", "position": { "x": 16,   "y": 16,   "w": 1408, "h": 80 } },
+      { "item": "viz_basic",                "type": "block", "position": { "x": 16,   "y": 112,  "w": 460,  "h": 220 } },
+      { "item": "viz_unit_after",           "type": "block", "position": { "x": 492,  "y": 112,  "w": 460,  "h": 220 } },
+      { "item": "viz_unit_before",          "type": "block", "position": { "x": 968,  "y": 112,  "w": 456,  "h": 220 } },
+      { "item": "viz_no_trend",             "type": "block", "position": { "x": 16,   "y": 348,  "w": 460,  "h": 220 } },
+      { "item": "viz_dynamic_color_health", "type": "block", "position": { "x": 492,  "y": 348,  "w": 460,  "h": 220 } },
+      { "item": "viz_dynamic_bg",           "type": "block", "position": { "x": 968,  "y": 348,  "w": 456,  "h": 220 } },
+      { "item": "viz_sparkline_area",       "type": "block", "position": { "x": 16,   "y": 584,  "w": 460,  "h": 220 } },
+      { "item": "viz_sparkline_above",      "type": "block", "position": { "x": 492,  "y": 584,  "w": 460,  "h": 220 } },
+      { "item": "viz_sparkline_after",      "type": "block", "position": { "x": 968,  "y": 584,  "w": 456,  "h": 220 } },
+      { "item": "viz_highlight",            "type": "block", "position": { "x": 16,   "y": 820,  "w": 460,  "h": 220 } },
+      { "item": "viz_precision_separators", "type": "block", "position": { "x": 492,  "y": 820,  "w": 460,  "h": 220 } },
+      { "item": "viz_chrome_stripped",      "type": "block", "position": { "x": 968,  "y": 820,  "w": 456,  "h": 220 } }
+    ],
+    "globalInputs": []
+  }
+}
