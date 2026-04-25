@@ -1,0 +1,256 @@
+{
+  "title": "ds-viz-linkgraph - option matrix (dark)",
+  "description": "Test bench for splunk.linkgraph. Verifies all options from the 10.4 PDF: backgroundColor, fieldOrder, linkColor, linkWidth, nodeColor, nodeTextColor, nodeHeight, nodeHighlightColor, nodeTextHighlightColor, nodeSpacingX, nodeSpacingY, nodeWidth, resultLimit, showNodeCounts, showValueCounts.",
+  "defaults": {
+    "dataSources": {
+      "global": {
+        "options": { "queryParameters": { "earliest": "-24h@h", "latest": "now" } }
+      }
+    },
+    "visualizations": {
+      "global": { "showProgressBar": false, "showLastUpdated": false }
+    }
+  },
+  "dataSources": {
+    "ds_meals": {
+      "type": "ds.test",
+      "name": "canonical PDF example - meals (Breakfast/Lunch/Dinner)",
+      "options": {
+        "data": {
+          "columns": [
+            ["cheese","croissant","eggs","eggs","eggs","eggs"],
+            ["quiche","sandwich","frittata","quiche","custard","shakshuka"],
+            ["souffle","dinner roll","strata","strata","egg tart","huevos rancheros"]
+          ],
+          "fields": [
+            {"name": "Breakfast"},
+            {"name": "Lunch"},
+            {"name": "Dinner"}
+          ]
+        }
+      }
+    },
+    "ds_kill_chain": {
+      "type": "ds.test",
+      "name": "SOC kill chain - actor x technique x asset x action",
+      "options": {
+        "data": {
+          "columns": [
+            ["APT-Bear","APT-Bear","APT-Bear","APT-Bear","Insider","Insider","Botnet","Botnet"],
+            ["Phishing","Phishing","Lateral","Lateral","Privilege","Exfil","Exploit","Exploit"],
+            ["mail-srv","mail-srv","db-prod","ad-srv","ad-srv","db-prod","web-edge","web-edge"],
+            ["Block","Quarantine","Alert","Alert","Block","Block","Block","Quarantine"]
+          ],
+          "fields": [
+            {"name": "Actor"},
+            {"name": "Technique"},
+            {"name": "Asset"},
+            {"name": "Action"}
+          ]
+        }
+      }
+    },
+    "ds_org": {
+      "type": "ds.search",
+      "name": "org chart - region x team x lead",
+      "options": {
+        "query": "| makeresults count=10 | streamstats count AS rn | eval region = case(rn<=4,\"NA\", rn<=7,\"EMEA\", 1==1,\"APAC\") | eval team = case(rn==1,\"Platform\", rn==2,\"Apps\", rn==3,\"Data\", rn==4,\"SRE\", rn==5,\"Apps\", rn==6,\"Data\", rn==7,\"Security\", rn==8,\"Apps\", rn==9,\"Data\", rn==10,\"Mobile\") | eval lead = case(rn==1,\"Alex\", rn==2,\"Sam\", rn==3,\"Jordan\", rn==4,\"Taylor\", rn==5,\"Morgan\", rn==6,\"Jamie\", rn==7,\"Casey\", rn==8,\"Riley\", rn==9,\"Quinn\", rn==10,\"Avery\") | table region team lead"
+      }
+    },
+    "ds_wide": {
+      "type": "ds.search",
+      "name": "wide data set to test resultLimit (>50 distinct nodes)",
+      "options": {
+        "query": "| makeresults count=80 | streamstats count AS rn | eval colA = \"A_\".tostring(rn%30) | eval colB = \"B_\".tostring(rn%25) | eval colC = \"C_\".tostring(rn%18) | table colA colB colC"
+      }
+    }
+  },
+  "visualizations": {
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# `splunk.linkgraph` - option matrix\n\nLink graphs visualize **discrete relationships across multiple categorical columns**. Each column becomes a stack of nodes; links connect adjacent columns where pairs co-occur.\n\nFull options list from the **10.4 PDF**:\n- `backgroundColor`\n- `fieldOrder` (DOS - controls column order)\n- `linkColor`, `linkWidth`\n- `nodeColor`, `nodeTextColor`\n- `nodeHighlightColor`, `nodeTextHighlightColor`\n- `nodeWidth`, `nodeHeight`, `nodeSpacingX`, `nodeSpacingY`\n- `resultLimit` (default `50` per column)\n- `showNodeCounts`, `showValueCounts`\n\n**Note**: Links only appear between adjacent columns - reorder columns via `fieldOrder` to control which relationships render.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default"
+      }
+    },
+    "viz_default": {
+      "type": "splunk.linkgraph",
+      "title": "1. Default - canonical PDF example",
+      "description": "Breakfast x Lunch x Dinner. Default node and link colors, default sizing.",
+      "dataSources": { "primary": "ds_meals" }
+    },
+    "viz_pdf_styled": {
+      "type": "splunk.linkgraph",
+      "title": "2. PDF-styled (yellow nodes, red links)",
+      "description": "Reproduces the PDF example styling exactly.",
+      "dataSources": { "primary": "ds_meals" },
+      "options": {
+        "nodeColor": "#f8be44",
+        "linkColor": "#dc4e41",
+        "nodeWidth": 220,
+        "nodeHeight": 50,
+        "nodeSpacingY": 20,
+        "nodeSpacingX": 34,
+        "linkWidth": 4
+      }
+    },
+    "viz_kill_chain": {
+      "type": "splunk.linkgraph",
+      "title": "3. SOC kill chain - 4 columns",
+      "description": "Actor x Technique x Asset x Action. Demonstrates 4-column rendering.",
+      "dataSources": { "primary": "ds_kill_chain" },
+      "options": {
+        "nodeColor": "#1F77B4",
+        "linkColor": "#C2185B",
+        "linkWidth": 3,
+        "nodeWidth": 160,
+        "nodeHeight": 36
+      }
+    },
+    "viz_field_order": {
+      "type": "splunk.linkgraph",
+      "title": "4. fieldOrder reorders columns",
+      "description": "fieldOrder explicitly puts Action first, then Technique, then Actor.",
+      "dataSources": { "primary": "ds_kill_chain" },
+      "options": {
+        "fieldOrder": ["Action","Technique","Asset","Actor"],
+        "nodeColor": "#26A69A",
+        "linkColor": "#7B56DB",
+        "linkWidth": 3
+      }
+    },
+    "viz_field_order_subset": {
+      "type": "splunk.linkgraph",
+      "title": "5. fieldOrder excludes a column",
+      "description": "Unspecified fields are dropped entirely. Only Actor and Asset render here.",
+      "dataSources": { "primary": "ds_kill_chain" },
+      "options": {
+        "fieldOrder": ["Actor","Asset"],
+        "nodeColor": "#FF6F50"
+      }
+    },
+    "viz_highlight_colors": {
+      "type": "splunk.linkgraph",
+      "title": "6. nodeHighlightColor + nodeTextHighlightColor",
+      "description": "Click any node to see custom highlight colors (red on dark text).",
+      "dataSources": { "primary": "ds_meals" },
+      "options": {
+        "nodeColor": "#37474F",
+        "nodeTextColor": "#ECEFF1",
+        "nodeHighlightColor": "#FF5252",
+        "nodeTextHighlightColor": "#FFFFFF",
+        "linkColor": "#90A4AE"
+      }
+    },
+    "viz_thick_links": {
+      "type": "splunk.linkgraph",
+      "title": "7. linkWidth=8 - thick links",
+      "description": "Use thick links when relationships are the headline. Becomes noisy past ~20 connections.",
+      "dataSources": { "primary": "ds_meals" },
+      "options": {
+        "linkWidth": 8,
+        "nodeColor": "#5C6BC0",
+        "linkColor": "#FFC107"
+      }
+    },
+    "viz_compact": {
+      "type": "splunk.linkgraph",
+      "title": "8. Compact - small nodes, tight spacing",
+      "description": "nodeWidth=120, nodeHeight=18, nodeSpacingY=4. Fits more rows per panel.",
+      "dataSources": { "primary": "ds_kill_chain" },
+      "options": {
+        "nodeWidth": 120,
+        "nodeHeight": 18,
+        "nodeSpacingY": 4,
+        "nodeSpacingX": 40,
+        "linkWidth": 1
+      }
+    },
+    "viz_spacious": {
+      "type": "splunk.linkgraph",
+      "title": "9. Spacious - large nodes, wide gaps",
+      "description": "Hero panel sizing - few items, lots of breathing room.",
+      "dataSources": { "primary": "ds_meals" },
+      "options": {
+        "nodeWidth": 320,
+        "nodeHeight": 70,
+        "nodeSpacingY": 30,
+        "nodeSpacingX": 80,
+        "linkWidth": 6,
+        "nodeColor": "#26A69A",
+        "linkColor": "#FF8A65"
+      }
+    },
+    "viz_counts_off": {
+      "type": "splunk.linkgraph",
+      "title": "10. showNodeCounts/showValueCounts=false",
+      "description": "Counts hidden - cleaner but loses the magnitude story.",
+      "dataSources": { "primary": "ds_org" },
+      "options": {
+        "showNodeCounts": false,
+        "showValueCounts": false
+      }
+    },
+    "viz_counts_on": {
+      "type": "splunk.linkgraph",
+      "title": "11. showNodeCounts/showValueCounts=true (defaults)",
+      "description": "Counts visible - column header shows total nodes; node label shows occurrence count.",
+      "dataSources": { "primary": "ds_org" },
+      "options": {
+        "showNodeCounts": true,
+        "showValueCounts": true
+      }
+    },
+    "viz_result_limit_low": {
+      "type": "splunk.linkgraph",
+      "title": "12. resultLimit=8 - truncated columns",
+      "description": "Only first 8 nodes per column render. Wider data shows truncation badge.",
+      "dataSources": { "primary": "ds_wide" },
+      "options": {
+        "resultLimit": 8,
+        "nodeColor": "#7B56DB",
+        "linkColor": "#FF677B"
+      }
+    },
+    "viz_tinted_background": {
+      "type": "splunk.linkgraph",
+      "title": "13. Custom backgroundColor",
+      "description": "Editorial panel tint with brand-coordinated nodes.",
+      "dataSources": { "primary": "ds_meals" },
+      "options": {
+        "backgroundColor": "#101A33",
+        "nodeColor": "#7B56DB",
+        "linkColor": "#26A69A",
+        "linkWidth": 3
+      }
+    }
+  },
+  "inputs": {},
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 2880,
+      "display": "auto-scale",
+      "backgroundColor": "#0F1729"
+    },
+    "structure": [
+      { "item": "viz_title", "type": "block", "position": { "x": 20, "y": 20, "w": 1400, "h": 240 } },
+      { "item": "viz_default", "type": "block", "position": { "x": 20, "y": 280, "w": 690, "h": 320 } },
+      { "item": "viz_pdf_styled", "type": "block", "position": { "x": 730, "y": 280, "w": 690, "h": 320 } },
+      { "item": "viz_kill_chain", "type": "block", "position": { "x": 20, "y": 620, "w": 690, "h": 320 } },
+      { "item": "viz_field_order", "type": "block", "position": { "x": 730, "y": 620, "w": 690, "h": 320 } },
+      { "item": "viz_field_order_subset", "type": "block", "position": { "x": 20, "y": 960, "w": 690, "h": 320 } },
+      { "item": "viz_highlight_colors", "type": "block", "position": { "x": 730, "y": 960, "w": 690, "h": 320 } },
+      { "item": "viz_thick_links", "type": "block", "position": { "x": 20, "y": 1300, "w": 690, "h": 320 } },
+      { "item": "viz_compact", "type": "block", "position": { "x": 730, "y": 1300, "w": 690, "h": 320 } },
+      { "item": "viz_spacious", "type": "block", "position": { "x": 20, "y": 1640, "w": 690, "h": 360 } },
+      { "item": "viz_counts_off", "type": "block", "position": { "x": 730, "y": 1640, "w": 690, "h": 360 } },
+      { "item": "viz_counts_on", "type": "block", "position": { "x": 20, "y": 2020, "w": 690, "h": 320 } },
+      { "item": "viz_result_limit_low", "type": "block", "position": { "x": 730, "y": 2020, "w": 690, "h": 320 } },
+      { "item": "viz_tinted_background", "type": "block", "position": { "x": 20, "y": 2360, "w": 690, "h": 360 } }
+    ],
+    "globalInputs": []
+  }
+}
