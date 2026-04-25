@@ -1,0 +1,434 @@
+{
+  "title": "ds-viz-table - option matrix (light)",
+  "description": "Light-theme companion to ds_viz_table_dark. Same 12 patterns, palette retuned for light backgrounds.",
+  "defaults": {
+    "dataSources": {
+      "global": {
+        "options": {
+          "queryParameters": {
+            "earliest": "-24h@h",
+            "latest": "now"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": false,
+        "showLastUpdated": false
+      }
+    }
+  },
+  "dataSources": {
+    "ds_basic": {
+      "type": "ds.search",
+      "name": "basic - alerts (5 rows, 4 fields)",
+      "options": {
+        "query": "| makeresults count=5 | streamstats count AS rn | eval host = case(rn==1,\"web-01\",rn==2,\"web-02\",rn==3,\"db-01\",rn==4,\"app-03\",1==1,\"cache-02\") | eval severity = case(rn==1,\"critical\",rn==2,\"high\",rn==3,\"medium\",rn==4,\"low\",1==1,\"info\") | eval cpu = case(rn==1,94,rn==2,82,rn==3,71,rn==4,55,1==1,33) | eval message = case(rn==1,\"Disk full\",rn==2,\"High latency\",rn==3,\"Slow query\",rn==4,\"Job retry\",1==1,\"Healthy\") | table host severity cpu message"
+      }
+    },
+    "ds_with_internal": {
+      "type": "ds.search",
+      "name": "internal fields - includes _time and _raw",
+      "options": {
+        "query": "| makeresults count=5 | streamstats count AS rn | eval host = \"web-\" . tostring(rn) | eval status = case(rn<=2,\"ok\",1==1,\"degraded\") | eval _internal_id = \"id-\" . tostring(rn*100) | table _time host status _internal_id"
+      }
+    },
+    "ds_heatmap": {
+      "type": "ds.search",
+      "name": "heatmap - severity rank for row tinting",
+      "options": {
+        "query": "| makeresults count=5 | streamstats count AS rn | eval service = case(rn==1,\"checkout\",rn==2,\"login\",rn==3,\"search\",rn==4,\"recs\",1==1,\"static\") | eval severity = case(rn==1,\"critical\",rn==2,\"high\",rn==3,\"medium\",rn==4,\"low\",1==1,\"info\") | eval errors_per_min = case(rn==1,142,rn==2,67,rn==3,28,rn==4,9,1==1,1) | eval _color_rank = case(severity==\"critical\",1,severity==\"high\",2,severity==\"medium\",3,severity==\"low\",4,1==1,5) | table service severity errors_per_min _color_rank"
+      }
+    },
+    "ds_sparkline": {
+      "type": "ds.search",
+      "name": "sparkline - hosts with cpu trend",
+      "options": {
+        "query": "| makeresults count=4 | streamstats count AS rn | eval host = case(rn==1,\"web-01\",rn==2,\"web-02\",rn==3,\"db-01\",1==1,\"app-03\") | eval current_cpu = case(rn==1,94,rn==2,72,rn==3,55,1==1,28) | eval trend = mvappend(case(rn==1,\"60\",rn==2,\"40\",rn==3,\"30\",1==1,\"22\"),case(rn==1,\"72\",rn==2,\"55\",rn==3,\"45\",1==1,\"24\"),case(rn==1,\"81\",rn==2,\"68\",rn==3,\"52\",1==1,\"26\"),case(rn==1,\"88\",rn==2,\"70\",rn==3,\"54\",1==1,\"27\"),case(rn==1,\"94\",rn==2,\"72\",rn==3,\"55\",1==1,\"28\")) | table host current_cpu trend"
+      }
+    },
+    "ds_align": {
+      "type": "ds.search",
+      "name": "align - mixed types for alignment demo",
+      "options": {
+        "query": "| makeresults count=4 | streamstats count AS rn | eval product = case(rn==1,\"Headphones\",rn==2,\"Speaker\",rn==3,\"Mic\",1==1,\"Cable\") | eval orders = case(rn==1,1284,rn==2,672,rn==3,341,1==1,89) | eval revenue_usd = case(rn==1,38520.50,rn==2,16800.00,rn==3,8525.25,1==1,1335.10) | eval status = case(rn==1,\"OK\",rn==2,\"OK\",rn==3,\"WARN\",1==1,\"FAIL\") | table product orders revenue_usd status"
+      }
+    }
+  },
+  "visualizations": {
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# `splunk.table` - option matrix (light)\n\nLight-theme companion. Same 12 patterns; rowBackgroundColors / headerBackgroundColor / sparklineColors retuned for light backgrounds (warm pastel rows, cool blue accents).",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default"
+      }
+    },
+    "viz_default": {
+      "type": "splunk.table",
+      "title": "1. Default - all 5 rows, header inline, internal fields shown",
+      "description": "Pure default. count=10 (we have 5 rows so all show), headerVisibility=inline, showRowNumbers=false, showInternalFields=true. Columns auto-aligned by type.",
+      "dataSources": {
+        "primary": "ds_basic"
+      }
+    },
+    "viz_count_pagination": {
+      "type": "splunk.table",
+      "title": "2. count: 3 + headerVisibility: fixed + showRowNumbers: true",
+      "description": "count caps the rendered rows (paginator handles the rest). headerVisibility=fixed pins the header so it stays put when scrolling. showRowNumbers prepends a row index.",
+      "dataSources": {
+        "primary": "ds_basic"
+      },
+      "options": {
+        "count": 3,
+        "headerVisibility": "fixed",
+        "showRowNumbers": true
+      }
+    },
+    "viz_internal_hidden": {
+      "type": "splunk.table",
+      "title": "3. showInternalFields: false (hides _internal_id, but _time stays)",
+      "description": "Doc note: 'The _time field will still be shown if false.' Underscore-prefixed user fields like `_internal_id` and our `_color_rank` rank field are hidden, but `_time` is exempt. ALWAYS set this to false when you use a `_color_rank` pattern.",
+      "dataSources": {
+        "primary": "ds_with_internal"
+      },
+      "options": {
+        "showInternalFields": false
+      }
+    },
+    "viz_font_mono": {
+      "type": "splunk.table",
+      "title": "4. font: monospace + fontSize: small",
+      "description": "Monospace for log/payload tables where columns line up vertically. fontSize: extraSmall (10px), small (12px), default (14px), large (16px).",
+      "dataSources": {
+        "primary": "ds_basic"
+      },
+      "options": {
+        "font": "monospace",
+        "fontSize": "small"
+      }
+    },
+    "viz_align_columnformat": {
+      "type": "splunk.table",
+      "title": "5. columnFormat: per-column align + width",
+      "description": "Set alignment and width per column. Numbers right-align, status center, text left. width is in pixels. The `align` value here is a single string (the column applies it to every cell) - the GLOBAL `tableFormat.align` is a 2D array.",
+      "dataSources": {
+        "primary": "ds_align"
+      },
+      "options": {
+        "columnFormat": {
+          "product": {
+            "width": 180
+          },
+          "orders": {
+            "width": 110
+          },
+          "revenue_usd": {
+            "width": 140
+          },
+          "status": {
+            "width": 90
+          }
+        }
+      }
+    },
+    "viz_header_colors": {
+      "type": "splunk.table",
+      "title": "6. tableFormat.headerBackgroundColor + headerColor",
+      "description": "Header chrome via tableFormat. Global static colours - the value is a literal hex, not a DOS expression. Use this to match the panel chrome to a brand colour or to deemphasise the header.",
+      "dataSources": {
+        "primary": "ds_basic"
+      },
+      "options": {
+        "tableFormat": {
+          "headerBackgroundColor": "#FAEAD8",
+          "headerColor": "#C2185B"
+        },
+        "showInternalFields": false
+      }
+    },
+    "viz_heatmap": {
+      "type": "splunk.table",
+      "title": "7. Heatmap rows via _color_rank + rangeValue (severity tinting)",
+      "description": "The classic pattern. Compute a numeric rank field upstream (`_color_rank`), keep `showInternalFields: false`, and feed the rank into `tableFormat.rowBackgroundColors` and `rowColors` via DOS. The bands in `context` map rank to colour. Notice critical row reads RED end-to-end without explicit row-by-row config.",
+      "dataSources": {
+        "primary": "ds_heatmap"
+      },
+      "options": {
+        "tableFormat": {
+          "rowBackgroundColors": "> table | seriesByName('_color_rank') | rangeValue(severityRowBg)",
+          "rowColors": "> table | seriesByName('_color_rank') | rangeValue(severityRowFg)",
+          "headerBackgroundColor": "#EFE7D3",
+          "headerColor": "#6B5E48"
+        },
+        "showInternalFields": false
+      },
+      "context": {
+        "severityRowBg": [
+          {
+            "to": 1.5,
+            "value": "#F8C7CF"
+          },
+          {
+            "from": 1.5,
+            "to": 2.5,
+            "value": "#FCE3B3"
+          },
+          {
+            "from": 2.5,
+            "to": 3.5,
+            "value": "#F1E1A8"
+          },
+          {
+            "from": 3.5,
+            "to": 4.5,
+            "value": "#C8E5D2"
+          },
+          {
+            "from": 4.5,
+            "value": "#D8E0F2"
+          }
+        ],
+        "severityRowFg": [
+          {
+            "to": 4.5,
+            "value": "#1A1A1A"
+          },
+          {
+            "from": 4.5,
+            "value": "#5A5C66"
+          }
+        ]
+      }
+    },
+    "viz_sparkline": {
+      "type": "splunk.table",
+      "title": "8. cellTypes: SparklineCell on the trend column",
+      "description": "Convert one column to inline sparklines. Pattern: an array column (`trend` is mvappend()'d into 5 numeric strings) plus columnFormat.cellTypes = ['SparklineCell']. Pair with sparklineColors / sparklineTypes to control the rendering.",
+      "dataSources": {
+        "primary": "ds_sparkline"
+      },
+      "options": {
+        "columnFormat": {
+          "trend": {
+            "cellTypes": [
+              "SparklineCell"
+            ],
+            "sparklineColors": [
+              "#1F77B4"
+            ],
+            "sparklineTypes": [
+              "area"
+            ],
+            "width": 200
+          },
+          "host": {
+            "width": 140
+          },
+          "current_cpu": {
+            "width": 130
+          }
+        }
+      }
+    },
+    "viz_count_one": {
+      "type": "splunk.table",
+      "title": "9. count: 1 + headerVisibility: none",
+      "description": "Stripped down. headerVisibility=none kills the header row entirely - useful for KPI mini-tables embedded in a grid where the title carries the meaning.",
+      "dataSources": {
+        "primary": "ds_basic"
+      },
+      "options": {
+        "count": 1,
+        "headerVisibility": "none",
+        "showInternalFields": false
+      }
+    },
+    "viz_bg_color": {
+      "type": "splunk.table",
+      "title": "10. backgroundColor: panel tint",
+      "description": "Global backgroundColor at the table level. Different from the panel chrome - this paints the cells. Pair with header colours so the gradient reads as one unit.",
+      "dataSources": {
+        "primary": "ds_basic"
+      },
+      "options": {
+        "backgroundColor": "#FAEAD8",
+        "tableFormat": {
+          "headerBackgroundColor": "#EFE7D3",
+          "headerColor": "#3F6FB7"
+        },
+        "showInternalFields": false
+      }
+    },
+    "viz_compact_large": {
+      "type": "splunk.table",
+      "title": "11. fontSize: large + headerVisibility: fixed",
+      "description": "Bigger font (16px) for an executive readout. Combined with fixed header for scroll friendliness even though count<rows.",
+      "dataSources": {
+        "primary": "ds_basic"
+      },
+      "options": {
+        "fontSize": "large",
+        "headerVisibility": "fixed",
+        "showInternalFields": false
+      }
+    },
+    "viz_align_grid": {
+      "type": "splunk.table",
+      "title": "12. tableFormat.align via DOS - auto by type",
+      "description": "Default global align: `> table | type() | matchValue(tableAlignByType)`. Numbers go right, strings left, mixed center. For full control, override per-column via columnFormat.align (1D array) or the global tableFormat.align (2D array).",
+      "dataSources": {
+        "primary": "ds_align"
+      },
+      "options": {
+        "tableFormat": {
+          "align": "> table | type() | matchValue(tableAlignByType)"
+        },
+        "context": {},
+        "showInternalFields": false
+      }
+    }
+  },
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 2480,
+      "display": "auto-scale"
+    },
+    "structure": [
+      {
+        "item": "viz_title",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 16,
+          "w": 1408,
+          "h": 140
+        }
+      },
+      {
+        "item": "viz_default",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 172,
+          "w": 696,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_count_pagination",
+        "type": "block",
+        "position": {
+          "x": 728,
+          "y": 172,
+          "w": 696,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_internal_hidden",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 468,
+          "w": 696,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_font_mono",
+        "type": "block",
+        "position": {
+          "x": 728,
+          "y": 468,
+          "w": 696,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_align_columnformat",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 764,
+          "w": 696,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_header_colors",
+        "type": "block",
+        "position": {
+          "x": 728,
+          "y": 764,
+          "w": 696,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_heatmap",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 1060,
+          "w": 696,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_sparkline",
+        "type": "block",
+        "position": {
+          "x": 728,
+          "y": 1060,
+          "w": 696,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_count_one",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 1396,
+          "w": 696,
+          "h": 200
+        }
+      },
+      {
+        "item": "viz_bg_color",
+        "type": "block",
+        "position": {
+          "x": 728,
+          "y": 1396,
+          "w": 696,
+          "h": 200
+        }
+      },
+      {
+        "item": "viz_compact_large",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 1612,
+          "w": 696,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_align_grid",
+        "type": "block",
+        "position": {
+          "x": 728,
+          "y": 1612,
+          "w": 696,
+          "h": 320
+        }
+      }
+    ],
+    "globalInputs": []
+  }
+}
