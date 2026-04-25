@@ -1,20 +1,180 @@
 ---
 name: ds-viz-punchcard
-description: Reference for the splunk.punchcard visualization. Read when showing activity intensity by hour-of-day × day-of-week. Triggers on 'splunk.punchcard', 'punchcard chart', 'hour weekday heatmap'.
+description: |
+  splunk.punchcard - reveals cyclical patterns by plotting bubbles at the
+  intersection of two dimensions, sized by an aggregated metric, optionally
+  colored by a fourth field. Verified against the 10.4 Dashboard Studio docs.
+version: 1.0.0
+verified_against: SplunkCloud-10.4.2604-DashStudio
+test_dashboards:
+  - ds_viz_punchcard_dark
+  - ds_viz_punchcard_light
+related:
+  - ds-viz-bubble
+  - ds-viz-table
+  - ds-viz-line
+  - ds-viz-events
 ---
 
-# ds-viz-punchcard — `splunk.punchcard`
+# splunk.punchcard
 
-> Stub. Content will be migrated from `reference/ds-viz` in a follow-up commit.
+Use a punchcard to surface **cyclical or schedule-driven patterns** in your
+data. The chart plots a grid of bubbles where each cell is the intersection of
+two dimensions (typically `hour` x `weekday`), the bubble's size is the
+aggregated metric, and an optional fourth field tints the bubble.
 
-This skill will document the `splunk.punchcard` visualization in detail:
+> "Punchcards" got their name from the punched calendar cards in old factory
+> floors - they made it visually obvious *when* work happened.
 
-- Required and common options
-- Required SPL output columns
-- A minimal working JSON example
-- Known gotchas (Splunk 10.2.x)
-- Cross-references: `ds-pick-viz` (when to use), `ds-design-principles`
-  (whether to use), `ds-syntax` (JSON envelope and tokens).
+## When to use it
 
-Until migration is complete, see `reference/ds-viz/SKILL.md` for the
-monolithic version of this content.
+| You want to show...                          | Punchcard? |
+| -------------------------------------------- | ---------- |
+| When events/load cluster across hour x day   | Yes        |
+| Detection rule firing patterns               | Yes        |
+| Failed login concentration by time           | Yes        |
+| 1D time series                               | No -> line |
+| Continuous numeric vs numeric                | No -> scatter / bubble |
+| Rare events with timestamp + payload         | No -> events |
+
+## Data shape
+
+Use a query that returns rows in this exact column order (the visualization
+infers bindings from index by default):
+
+| Column 1                     | Column 2                       | Column 3                | Column 4 (optional) |
+| ---------------------------- | ------------------------------ | ----------------------- | ------------------- |
+| `<first_dimension>` (e.g. `date_hour`) | `<second_dimension>` (e.g. `date_wday`) | metric (size)           | color field         |
+
+Canonical SPL skeleton:
+
+```
+... | stats <fn>(<metric>) [<fn>(<color_field>)] by <first_dimension> <second_dimension>
+```
+
+If the third column has zero variance, every bubble will be the same size -
+use a stats function (`count`, `sum`, `avg`) that produces meaningful spread.
+
+## DOS bindings
+
+By default a punchcard maps:
+
+| Option       | Default                         |
+| ------------ | ------------------------------- |
+| `x`          | `> primary | seriesByIndex(0)`  |
+| `y`          | `> primary | seriesByIndex(1)`  |
+| `size`       | `> primary | seriesByIndex(2)`  |
+| `category`   | `> primary | seriesByIndex(3)`  |
+| `xField`     | `> x | getField()`              |
+| `yField`     | `> y | getField()`              |
+| `sizeField`  | `> size | getField()`           |
+| `categoryField` | `> category | getField()`    |
+
+Use `seriesByName('<col>')` instead of `seriesByIndex` when your SPL doesn't
+emit columns in the canonical order.
+
+## Sizing options
+
+| Option                  | Type / values         | Default |
+| ----------------------- | --------------------- | ------- |
+| `bubbleRadiusMin`       | number (px)           | `1`     |
+| `bubbleRadiusMax`       | number (px)           | `15`    |
+| `bubbleSizeMin`         | number (multiplier)   | `0.25`  |
+| `bubbleSizeMax`         | number (multiplier)   | `1`     |
+| `bubbleSizeMethod`      | `"radius"` \| `"area"` | `area` |
+| `bubbleRowScale`        | `"global"` \| `"row"` | `global` |
+| `showDynamicBubbleSize` | boolean               | `true`  |
+
+- `bubbleSizeMethod = "area"` (default) makes the **area** of the bubble
+  proportional to the value - perceptually correct.
+- `bubbleSizeMethod = "radius"` makes large values feel bigger but
+  exaggerates differences. Use sparingly.
+- `bubbleRowScale = "row"` is essential when one row dominates - it
+  recovers the within-row pattern at the cost of cross-row comparison.
+- `showDynamicBubbleSize = false` collapses all bubbles to one size. Useful
+  when only color carries the signal.
+
+## Color options
+
+| Option                  | Type / values                       | Default               |
+| ----------------------- | ----------------------------------- | --------------------- |
+| `colorMode`             | `"dynamic"` \| `"categorical"`     | `dynamic`             |
+| `bubbleColor`           | DOS string \| array                 | gradient by `size`    |
+| `seriesColors`          | string (CSV) \| array               | platform palette      |
+| `backgroundColor`       | string (hex)                        | theme default         |
+| `legendDisplay`         | `"right"` \| `"off"`                | `right`               |
+
+- `colorMode = "dynamic"` (default) tints all bubbles with a gradient based
+  on the size metric.
+- `colorMode = "categorical"` requires a fourth column (`category`) and
+  draws a unique color per category from `seriesColors`.
+
+## Other toggles
+
+| Option                  | Type     | Default | Purpose |
+| ----------------------- | -------- | ------- | ------- |
+| `showMaxValuePulsation` | boolean  | `true`  | Pulses the largest bubble. Turn off for static screenshots. |
+| `bubbleLabelDisplay`    | `all` \| `max` \| `off` | `all` | Show every value, only the max, or none. |
+| `showDefaultSort`       | boolean  | `false` | Apply built-in chronological sort to the y-axis when applicable. |
+
+## Verified patterns
+
+13 patterns are deployed in `ds_viz_punchcard_dark` / `ds_viz_punchcard_light`:
+
+1. **Default** - `dynamic` color from the size metric.
+2. **Categorical** - `colorMode: "categorical"` with a region field.
+3. **Label max** - `bubbleLabelDisplay: "max"` highlights only the peak cell.
+4. **Label off** - editorial / cleaner look.
+5. **Row scale** - `bubbleRowScale: "row"` recovers patterns hidden by an
+   outlier cell.
+6. **Radius method** - `bubbleSizeMethod: "radius"` makes large values pop.
+7. **Bigger bubbles** - `bubbleRadiusMax: 24` for headline panels.
+8. **No pulsation** - `showMaxValuePulsation: false` for screenshots.
+9. **Static size** - `showDynamicBubbleSize: false` so only color carries
+   the signal.
+10. **Legend off** - compact tiles still benefit from categorical color.
+11. **SOC pattern** - night-clustering of failures becomes visible.
+12. **Default sort** - `showDefaultSort: true` for chronological order.
+13. **Tinted** - custom `backgroundColor` + brand `seriesColors`.
+
+## Drilldown
+
+Punchcards support drilldowns just like other charts. Tokens you can use:
+
+- `$click.value$` - the size metric of the clicked bubble.
+- `$click.value2$` - the category metric (when `colorMode: "categorical"`).
+- `$row.<field>$` - any field from the underlying row, e.g. `$row.punch_hour$`,
+  `$row.punch_day$`.
+
+Pattern - drill into the underlying events:
+
+```json
+"eventActions": {
+  "actions": [
+    {
+      "type": "openSearch",
+      "search": "index=auth date_hour=$row.punch_hour$ date_wday=$row.punch_day$"
+    }
+  ]
+}
+```
+
+## Common gotchas
+
+- **Column order matters.** If `count` ends up in column 4 instead of 3
+  (e.g. you forgot to put the metric before the color field), the chart
+  will look wrong. Either fix the SPL or set explicit DOS bindings.
+- **Single-row data** - if the second dimension only has one value the
+  chart degenerates to a single horizontal strip; consider a line chart.
+- **High-cardinality dimensions** - more than ~10 values on either axis
+  makes the chart unreadable. Bucket via `eval` or use `top`/`rare`.
+- **`showMaxValuePulsation`** can be visually distracting on always-on
+  wallboards. Most production dashboards turn it off.
+- **`bubbleSizeMin = 0`** can hide low-value cells entirely. The default of
+  `0.25` is usually right.
+- The chart defaults to `dynamic` color even if you provide a fourth
+  column - you must explicitly set `colorMode: "categorical"`.
+
+## Reference
+
+Verified against `SplunkCloud-10.4.2604-DashStudio` PDF.
