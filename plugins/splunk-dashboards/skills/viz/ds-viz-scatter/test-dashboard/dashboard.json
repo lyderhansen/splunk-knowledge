@@ -1,0 +1,267 @@
+{
+  "title": "ds-viz-scatter - option matrix (dark)",
+  "description": "Test bench for splunk.scatter. Verifies all options from the 10.4 PDF: x/y/category DOS bindings, markerSize, seriesColors, seriesColorsByField, axis abbreviations/visibility/scale (linear|log), gridlines, axis title visibility, legend, backgroundColor, resultLimit. Two-series and three-series patterns covered.",
+  "defaults": {
+    "dataSources": {
+      "global": {
+        "options": {
+          "queryParameters": {
+            "earliest": "-24h@h",
+            "latest": "now"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": false,
+        "showLastUpdated": false
+      }
+    }
+  },
+  "dataSources": {
+    "ds_xy_simple": {
+      "type": "ds.search",
+      "name": "two-series xy - response_time vs requests, no category",
+      "options": {
+        "query": "| makeresults count=30 | streamstats count AS rn | eval requests = round(50 + random()%450) | eval response_time = round(50 + (requests/5) + (random()%80)) | table requests response_time"
+      }
+    },
+    "ds_xy_categorized": {
+      "type": "ds.search",
+      "name": "three-series xy with category - latency vs throughput per service",
+      "options": {
+        "query": "| makeresults count=60 | streamstats count AS rn | eval service = case(rn%3==0,\"api\", rn%3==1,\"db\", 1==1,\"cache\") | eval throughput = case(service==\"api\",100+random()%400, service==\"db\",50+random()%200, 1==1,500+random()%1500) | eval latency = case(service==\"api\",20+random()%80, service==\"db\",100+random()%300, 1==1,5+random()%20) | table throughput latency service"
+      }
+    },
+    "ds_status_by_hour": {
+      "type": "ds.search",
+      "name": "status x date_hour - PDF canonical example shape",
+      "options": {
+        "query": "| makeresults count=72 | streamstats count AS rn | eval date_hour = (rn-1)%24 | eval status = case(rn%4==0,\"200\", rn%4==1,\"301\", rn%4==2,\"404\", 1==1,\"500\") | eval count = case(status==\"200\",100+random()%400, status==\"301\",10+random()%30, status==\"404\",5+random()%50, 1==1,1+random()%10) | stats sum(count) AS count by status, date_hour | table date_hour count status"
+      }
+    },
+    "ds_log_scale": {
+      "type": "ds.search",
+      "name": "wide-range data - candidates for log scale on y",
+      "options": {
+        "query": "| makeresults count=40 | streamstats count AS rn | eval x_val = rn | eval y_val = pow(2, rn%12) + random()%50 | table x_val y_val"
+      }
+    }
+  },
+  "visualizations": {
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# `splunk.scatter` - option matrix\n\nScatter charts show relationships between two numeric dimensions, optionally split by a third categorical field. Three DOS bindings drive the chart: `x`, `y`, and `category`.\n\nVerified options from the **10.4 PDF**:\n- DOS bindings: `x`, `y`, `category` (default to `seriesByIndex(0|1|2)`)\n- Field labels: `xField`, `yField`, `categoryField` (defaults via `> x | getField()`)\n- `markerSize` (number, default 4), `resultLimit` (default 50000)\n- Color: `seriesColors`, `seriesColorsByField`, `backgroundColor`\n- Axes: `xAxis*` and `yAxis*` (Min/Max, Scale linear|log, Abbreviation, Title/Label/Line/Tick visibility, MajorTickInterval, ExtendedRange, WithZero, MinorGridLines, RoundedXAxisLabels, LabelRotation)\n- Legend: `legendDisplay`, `legendTruncation`",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default"
+      }
+    },
+    "viz_default": {
+      "type": "splunk.scatter",
+      "title": "1. Default - two columns (x, y)",
+      "description": "No options. Defaults to seriesByIndex(0) and seriesByIndex(1).",
+      "dataSources": { "primary": "ds_xy_simple" }
+    },
+    "viz_explicit_xy_named": {
+      "type": "splunk.scatter",
+      "title": "2. Explicit x/y by name",
+      "description": "Uses seriesByName instead of seriesByIndex.",
+      "dataSources": { "primary": "ds_xy_simple" },
+      "options": {
+        "x": "> primary | seriesByName('requests')",
+        "y": "> primary | seriesByName('response_time')",
+        "xField": "requests",
+        "yField": "response_time"
+      }
+    },
+    "viz_categorized": {
+      "type": "splunk.scatter",
+      "title": "3. Three-series with category",
+      "description": "x=throughput, y=latency, category=service. Each service gets its own color.",
+      "dataSources": { "primary": "ds_xy_categorized" },
+      "options": {
+        "x": "> primary | seriesByName('throughput')",
+        "y": "> primary | seriesByName('latency')",
+        "category": "> primary | seriesByName('service')",
+        "xAxisTitleText": "throughput (req/s)",
+        "yAxisTitleText": "latency (ms)"
+      }
+    },
+    "viz_marker_big": {
+      "type": "splunk.scatter",
+      "title": "4. Large markers (markerSize 10)",
+      "description": "Default markerSize is 4. Bigger markers help when point count is low.",
+      "dataSources": { "primary": "ds_xy_categorized" },
+      "options": {
+        "x": "> primary | seriesByName('throughput')",
+        "y": "> primary | seriesByName('latency')",
+        "category": "> primary | seriesByName('service')",
+        "markerSize": 10
+      }
+    },
+    "viz_custom_palette": {
+      "type": "splunk.scatter",
+      "title": "5. Custom seriesColors",
+      "description": "Brand palette overrides default. Maps to series in alphabetical order.",
+      "dataSources": { "primary": "ds_xy_categorized" },
+      "options": {
+        "x": "> primary | seriesByName('throughput')",
+        "y": "> primary | seriesByName('latency')",
+        "category": "> primary | seriesByName('service')",
+        "seriesColors": ["#33FF99", "#FFB627", "#FF2D95"],
+        "markerSize": 8
+      }
+    },
+    "viz_colors_by_field": {
+      "type": "splunk.scatter",
+      "title": "6. seriesColorsByField - lock service to color",
+      "description": "Pin a specific color to a category value regardless of series order.",
+      "dataSources": { "primary": "ds_xy_categorized" },
+      "options": {
+        "x": "> primary | seriesByName('throughput')",
+        "y": "> primary | seriesByName('latency')",
+        "category": "> primary | seriesByName('service')",
+        "seriesColorsByField": {
+          "api": "#7AA2FF",
+          "db": "#FF2D95",
+          "cache": "#33FF99"
+        },
+        "markerSize": 8
+      }
+    },
+    "viz_log_y": {
+      "type": "splunk.scatter",
+      "title": "7. Log scale on y",
+      "description": "yAxisScale=log. Useful when y spans several orders of magnitude.",
+      "dataSources": { "primary": "ds_log_scale" },
+      "options": {
+        "x": "> primary | seriesByName('x_val')",
+        "y": "> primary | seriesByName('y_val')",
+        "yAxisScale": "log",
+        "yAxisTitleText": "value (log)",
+        "xAxisTitleText": "n"
+      }
+    },
+    "viz_axis_extras": {
+      "type": "splunk.scatter",
+      "title": "8. Axis tuning - min/max, abbreviation, extended range",
+      "description": "yAxisMin=0, yAxisAbbreviation=auto, showXAxisExtendedRange=false. Tightens the canvas to the data.",
+      "dataSources": { "primary": "ds_xy_categorized" },
+      "options": {
+        "x": "> primary | seriesByName('throughput')",
+        "y": "> primary | seriesByName('latency')",
+        "category": "> primary | seriesByName('service')",
+        "yAxisMin": 0,
+        "yAxisAbbreviation": "auto",
+        "xAxisAbbreviation": "auto",
+        "showXAxisExtendedRange": false,
+        "showYAxisExtendedRange": false
+      }
+    },
+    "viz_axis_labels_hidden": {
+      "type": "splunk.scatter",
+      "title": "9. Hide axis titles, keep labels",
+      "description": "Titles off (xAxisTitleVisibility=hide), labels still on. Cleaner for grids of small charts.",
+      "dataSources": { "primary": "ds_xy_categorized" },
+      "options": {
+        "x": "> primary | seriesByName('throughput')",
+        "y": "> primary | seriesByName('latency')",
+        "category": "> primary | seriesByName('service')",
+        "xAxisTitleVisibility": "hide",
+        "yAxisTitleVisibility": "hide",
+        "legendDisplay": "off"
+      }
+    },
+    "viz_no_axes_at_all": {
+      "type": "splunk.scatter",
+      "title": "10. Stripped - no titles, no legend, no minor grid",
+      "description": "Editorial / KPI-tile style scatter. Show only the points.",
+      "dataSources": { "primary": "ds_xy_categorized" },
+      "options": {
+        "x": "> primary | seriesByName('throughput')",
+        "y": "> primary | seriesByName('latency')",
+        "category": "> primary | seriesByName('service')",
+        "xAxisTitleVisibility": "hide",
+        "yAxisTitleVisibility": "hide",
+        "xAxisLineVisibility": "hide",
+        "yAxisLineVisibility": "hide",
+        "showYMajorGridLines": false,
+        "showXMinorGridLines": false,
+        "showYMinorGridLines": false,
+        "legendDisplay": "off",
+        "markerSize": 6,
+        "seriesColors": ["#33FF99", "#FFB627", "#FF2D95"]
+      }
+    },
+    "viz_legend_bottom": {
+      "type": "splunk.scatter",
+      "title": "11. Legend bottom + truncation",
+      "description": "legendDisplay=bottom, legendTruncation=ellipsisMiddle.",
+      "dataSources": { "primary": "ds_xy_categorized" },
+      "options": {
+        "x": "> primary | seriesByName('throughput')",
+        "y": "> primary | seriesByName('latency')",
+        "category": "> primary | seriesByName('service')",
+        "legendDisplay": "bottom",
+        "legendTruncation": "ellipsisMiddle"
+      }
+    },
+    "viz_canonical_pdf": {
+      "type": "splunk.scatter",
+      "title": "12. Canonical PDF example - status x date_hour",
+      "description": "Reproduces the splunkd_access example from the 10.4 PDF: x=date_hour, y=count, category=status.",
+      "dataSources": { "primary": "ds_status_by_hour" },
+      "options": {
+        "x": "> primary | seriesByName('date_hour')",
+        "y": "> primary | seriesByName('count')",
+        "category": "> primary | seriesByName('status')",
+        "xAxisTitleText": "hour of day",
+        "yAxisTitleText": "request count",
+        "markerSize": 7
+      }
+    },
+    "viz_tinted": {
+      "type": "splunk.scatter",
+      "title": "13. backgroundColor tint",
+      "description": "Custom panel background. Pairs with brand palette.",
+      "dataSources": { "primary": "ds_xy_categorized" },
+      "options": {
+        "x": "> primary | seriesByName('throughput')",
+        "y": "> primary | seriesByName('latency')",
+        "category": "> primary | seriesByName('service')",
+        "backgroundColor": "#151B3A",
+        "seriesColors": ["#33FF99", "#FFB627", "#7AA2FF"],
+        "markerSize": 7
+      }
+    }
+  },
+  "inputs": {},
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 2360,
+      "display": "auto-scale",
+      "backgroundColor": "#0F1729"
+    },
+    "structure": [
+      { "item": "viz_title", "type": "block", "position": { "x": 20, "y": 20, "w": 1400, "h": 220 } },
+      { "item": "viz_default", "type": "block", "position": { "x": 20, "y": 260, "w": 460, "h": 280 } },
+      { "item": "viz_explicit_xy_named", "type": "block", "position": { "x": 490, "y": 260, "w": 460, "h": 280 } },
+      { "item": "viz_categorized", "type": "block", "position": { "x": 960, "y": 260, "w": 460, "h": 280 } },
+      { "item": "viz_marker_big", "type": "block", "position": { "x": 20, "y": 560, "w": 460, "h": 280 } },
+      { "item": "viz_custom_palette", "type": "block", "position": { "x": 490, "y": 560, "w": 460, "h": 280 } },
+      { "item": "viz_colors_by_field", "type": "block", "position": { "x": 960, "y": 560, "w": 460, "h": 280 } },
+      { "item": "viz_log_y", "type": "block", "position": { "x": 20, "y": 860, "w": 460, "h": 280 } },
+      { "item": "viz_axis_extras", "type": "block", "position": { "x": 490, "y": 860, "w": 460, "h": 280 } },
+      { "item": "viz_axis_labels_hidden", "type": "block", "position": { "x": 960, "y": 860, "w": 460, "h": 280 } },
+      { "item": "viz_no_axes_at_all", "type": "block", "position": { "x": 20, "y": 1160, "w": 460, "h": 280 } },
+      { "item": "viz_legend_bottom", "type": "block", "position": { "x": 490, "y": 1160, "w": 460, "h": 280 } },
+      { "item": "viz_canonical_pdf", "type": "block", "position": { "x": 960, "y": 1160, "w": 460, "h": 280 } },
+      { "item": "viz_tinted", "type": "block", "position": { "x": 20, "y": 1460, "w": 1400, "h": 320 } }
+    ],
+    "globalInputs": []
+  }
+}

@@ -1,0 +1,195 @@
+{
+  "title": "ds-viz-timeline - option matrix (dark)",
+  "description": "Test bench for splunk.timeline. NOTE: splunk.timeline is in the validator's accepted enum but is NOT documented in the 10.4 reference PDF. Options below are verified empirically: category (DOS for the lane field), legendDisplay, backgroundColor, seriesColors, axisVisibility, showProgressBar/showLastUpdated. Drilldowns supported via primary.click.",
+  "defaults": {
+    "dataSources": {
+      "global": {
+        "options": {
+          "queryParameters": {
+            "earliest": "-24h@h",
+            "latest": "now"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": false,
+        "showLastUpdated": false
+      }
+    }
+  },
+  "dataSources": {
+    "ds_incidents": {
+      "type": "ds.search",
+      "name": "incidents - 12 events spread across 24h, 3 categories",
+      "options": {
+        "query": "| makeresults count=12 | streamstats count AS rn | eval _time = relative_time(now(), \"-\" . tostring(24-rn*2) . \"h\") | eval category = case(rn%3==0,\"deploy\", rn%3==1,\"alert\", 1==1,\"audit\") | eval label = case(category==\"deploy\",\"web-\" . tostring(rn) . \" deployed\", category==\"alert\",\"alert: cpu > 90% on host-\" . tostring(rn), 1==1,\"user_login on host-\" . tostring(rn)) | eval severity = case(category==\"alert\",random()%3+1, 1==1,1) | table _time category label severity"
+      }
+    },
+    "ds_deploys_only": {
+      "type": "ds.search",
+      "name": "deploys only - one lane, simple timeline",
+      "options": {
+        "query": "| makeresults count=8 | streamstats count AS rn | eval _time = relative_time(now(), \"-\" . tostring(20-rn*2) . \"h\") | eval env = case(rn%3==0,\"prod\", rn%3==1,\"staging\", 1==1,\"dev\") | eval label = \"deploy v1.\" . tostring(rn) | table _time env label"
+      }
+    },
+    "ds_attack_types": {
+      "type": "ds.search",
+      "name": "attack types over time - SOC investigation pattern",
+      "options": {
+        "query": "| makeresults count=15 | streamstats count AS rn | eval _time = relative_time(now(), \"-\" . tostring(24-rn) . \"h\") | eval attack_type = case(rn%5==0,\"phishing\", rn%5==1,\"brute_force\", rn%5==2,\"sql_injection\", rn%5==3,\"ddos\", 1==1,\"malware\") | eval src_ip = \"10.0.0.\" . tostring(rn) | eval count = rn | table _time attack_type src_ip count"
+      }
+    },
+    "ds_dense": {
+      "type": "ds.search",
+      "name": "dense events - tests visual clutter handling",
+      "options": {
+        "query": "| makeresults count=40 | streamstats count AS rn | eval _time = relative_time(now(), \"-\" . tostring(24*60-rn*30) . \"m\") | eval category = case(rn%4==0,\"info\", rn%4==1,\"warn\", rn%4==2,\"error\", 1==1,\"critical\") | eval label = category . \"_event_\" . tostring(rn) | table _time category label"
+      }
+    }
+  },
+  "visualizations": {
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# `splunk.timeline` - option matrix\n\nThe timeline visualization plots discrete events along a horizontal time axis, optionally grouped into lanes by a `category` field.\n\n**Note**: `splunk.timeline` is NOT in the 10.4 reference PDF. Options below are verified empirically against Splunk Cloud 10.2.x. The viz is officially supported but its option surface is small and lightly documented.\n\nUse it when:\n- The story is **\"when did things happen?\"** rather than \"how much\".\n- Events are sparse and discrete (deploys, alerts, audits) - not continuous metrics.\n- Multiple lanes (`category`) help tell the story.\n\nUse a column or area chart when events are dense and you care about counts.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default"
+      }
+    },
+    "viz_default": {
+      "type": "splunk.timeline",
+      "title": "1. Default - no options, single lane",
+      "description": "The bare minimum: a primary data source. The viz auto-derives the lane from the data and renders a single timeline.",
+      "dataSources": { "primary": "ds_incidents" }
+    },
+    "viz_category": {
+      "type": "splunk.timeline",
+      "title": "2. category - lane by field via DOS",
+      "description": "Use `category` (Dynamic Options Syntax) to specify the lane field. The DOS expression `> primary | seriesByName('category')` resolves to the `category` column. Each unique value gets its own horizontal lane.",
+      "dataSources": { "primary": "ds_incidents" },
+      "options": {
+        "category": "> primary | seriesByName('category')"
+      }
+    },
+    "viz_legend_off": {
+      "type": "splunk.timeline",
+      "title": "3. legendDisplay: off",
+      "description": "Hide the legend entirely. Useful when the lanes are self-explanatory or when screen real estate is tight.",
+      "dataSources": { "primary": "ds_incidents" },
+      "options": {
+        "category": "> primary | seriesByName('category')",
+        "legendDisplay": "off"
+      }
+    },
+    "viz_legend_bottom": {
+      "type": "splunk.timeline",
+      "title": "4. legendDisplay: bottom",
+      "description": "Move the legend below the chart. Default position is `right`. Other valid values: `left`, `top`, `bottom`, `off`.",
+      "dataSources": { "primary": "ds_incidents" },
+      "options": {
+        "category": "> primary | seriesByName('category')",
+        "legendDisplay": "bottom"
+      }
+    },
+    "viz_custom_colors": {
+      "type": "splunk.timeline",
+      "title": "5. seriesColors - custom palette",
+      "description": "Override the auto-generated palette with `seriesColors`. The colors map by series order (alphabetical on the category field).",
+      "dataSources": { "primary": "ds_incidents" },
+      "options": {
+        "category": "> primary | seriesByName('category')",
+        "seriesColors": ["#FFB627", "#FF2D95", "#33FF99"]
+      }
+    },
+    "viz_bg_color": {
+      "type": "splunk.timeline",
+      "title": "6. backgroundColor - custom panel tint",
+      "description": "Tint the events area with `backgroundColor`. Pairs well with bold series colors for editorial impact.",
+      "dataSources": { "primary": "ds_incidents" },
+      "options": {
+        "category": "> primary | seriesByName('category')",
+        "backgroundColor": "#0F1729",
+        "seriesColors": ["#FFB627", "#FF2D95", "#33FF99"]
+      }
+    },
+    "viz_axis_hidden": {
+      "type": "splunk.timeline",
+      "title": "7. axisVisibility: hide",
+      "description": "Hide the time axis labels for a clean, decorative timeline. Works empirically; not in the 10.4 PDF but used in production dashboards.",
+      "dataSources": { "primary": "ds_incidents" },
+      "options": {
+        "category": "> primary | seriesByName('category')",
+        "axisVisibility": "hide"
+      }
+    },
+    "viz_attack_types": {
+      "type": "splunk.timeline",
+      "title": "8. SOC pattern - attack types over time",
+      "description": "Real-world pattern: attack categories on lanes, fed from a SOC investigation search. Use this layout for incident review and investigative dashboards.",
+      "dataSources": { "primary": "ds_attack_types" },
+      "options": {
+        "category": "> primary | seriesByName('attack_type')",
+        "legendDisplay": "right",
+        "seriesColors": ["#7B56DB", "#009CEB", "#00CDAF", "#DD9900", "#FF677B"]
+      }
+    },
+    "viz_deploys": {
+      "type": "splunk.timeline",
+      "title": "9. Deploy timeline - env lanes",
+      "description": "Deploys grouped by environment lane. The `env` field becomes the lane separator.",
+      "dataSources": { "primary": "ds_deploys_only" },
+      "options": {
+        "category": "> primary | seriesByName('env')",
+        "legendDisplay": "right",
+        "seriesColors": ["#FF2D95", "#FFB627", "#7AA2FF"]
+      }
+    },
+    "viz_dense": {
+      "type": "splunk.timeline",
+      "title": "10. Dense events - 40 events stress test",
+      "description": "Stress test with 40 events across 4 categories. Demonstrates how the viz handles overlapping markers - they cluster but remain interactive.",
+      "dataSources": { "primary": "ds_dense" },
+      "options": {
+        "category": "> primary | seriesByName('category')",
+        "legendDisplay": "right",
+        "seriesColors": ["#7AA2FF", "#FFB627", "#FF6B35", "#FF2D95"]
+      }
+    },
+    "viz_no_title": {
+      "type": "splunk.timeline",
+      "description": "No title set - the timeline is a section element rather than a panel. Pair with a markdown header for editorial layouts.",
+      "dataSources": { "primary": "ds_incidents" },
+      "options": {
+        "category": "> primary | seriesByName('category')",
+        "backgroundColor": "transparent",
+        "legendDisplay": "off"
+      }
+    }
+  },
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 2880,
+      "display": "auto-scale",
+      "backgroundColor": "#0B0C0E"
+    },
+    "structure": [
+      { "item": "viz_title",          "type": "block", "position": { "x": 16,  "y": 16,   "w": 1408, "h": 200 } },
+      { "item": "viz_default",        "type": "block", "position": { "x": 16,  "y": 232,  "w": 696,  "h": 280 } },
+      { "item": "viz_category",       "type": "block", "position": { "x": 728, "y": 232,  "w": 696,  "h": 280 } },
+      { "item": "viz_legend_off",     "type": "block", "position": { "x": 16,  "y": 528,  "w": 696,  "h": 260 } },
+      { "item": "viz_legend_bottom",  "type": "block", "position": { "x": 728, "y": 528,  "w": 696,  "h": 260 } },
+      { "item": "viz_custom_colors",  "type": "block", "position": { "x": 16,  "y": 804,  "w": 696,  "h": 260 } },
+      { "item": "viz_bg_color",       "type": "block", "position": { "x": 728, "y": 804,  "w": 696,  "h": 260 } },
+      { "item": "viz_axis_hidden",    "type": "block", "position": { "x": 16,  "y": 1080, "w": 1408, "h": 220 } },
+      { "item": "viz_attack_types",   "type": "block", "position": { "x": 16,  "y": 1316, "w": 1408, "h": 320 } },
+      { "item": "viz_deploys",        "type": "block", "position": { "x": 16,  "y": 1652, "w": 696,  "h": 280 } },
+      { "item": "viz_dense",          "type": "block", "position": { "x": 728, "y": 1652, "w": 696,  "h": 280 } },
+      { "item": "viz_no_title",       "type": "block", "position": { "x": 16,  "y": 1948, "w": 1408, "h": 220 } }
+    ],
+    "globalInputs": []
+  }
+}

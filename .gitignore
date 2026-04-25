@@ -19,5 +19,5 @@ docs/*.pdf
 docs/*.txt
 
 # Local sandbox / test scratch dirs
-test*/
+/test[0-9]*/
 
