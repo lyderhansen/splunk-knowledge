@@ -104,11 +104,11 @@ of jumping around.
 **Flow / network:**
 18. sankey → 19. linkgraph
 
-**Geo:**
-20. map → 21. choropleth.svg → 22. choropleth.map
+**Static / shape (minimal options):**
+20. markdown → 21. image → 22. rectangle → 23. ellipse
 
-**Static / shape (last — minimal options):**
-23. markdown → 24. image → 25. rectangle → 26. ellipse
+**Geo (last — most likely to have rendering issues):**
+24. map → 25. choropleth.svg → 26. choropleth.map
 
 ## Cross-cutting notes
 
