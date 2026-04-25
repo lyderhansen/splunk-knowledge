@@ -13,3 +13,7 @@ __pycache__/
 
 # OS
 .DS_Store
+
+# Local reference docs (large PDF + generated text extract)
+docs/*.pdf
+docs/*.txt

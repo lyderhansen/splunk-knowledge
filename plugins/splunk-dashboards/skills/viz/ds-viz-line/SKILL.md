@@ -1,17 +1,26 @@
 ---
 name: ds-viz-line
-description: Reference skill for the `splunk.line` visualization in Dashboard Studio (v2). Read when plotting a metric over time as a continuous line — single series, multi-series, dual y-axis, event annotations, log scale, sparkline, or split sub-charts. Triggers on 'splunk.line', 'line chart', 'trend', 'time series', 'sparkline', 'overlay y2', 'annotation on chart'. Verified against Splunk Enterprise 10.2.1.
+description: Reference skill for the `splunk.line` visualization in Dashboard Studio (v2). Read when plotting a metric over time as a continuous line — single series, multi-series, dual y-axis, event annotations, log scale, sparkline, or split sub-charts. Triggers on 'splunk.line', 'line chart', 'trend', 'time series', 'sparkline', 'overlay y2', 'annotation on chart'. Cross-checked against the official Splunk Cloud 10.4.2604 Dashboard Studio reference; visually verified on Splunk Enterprise 10.2.1.
 ---
 
 # ds-viz-line — `splunk.line`
 
 `splunk.line` plots one or more numeric series against a continuous x-axis (almost always `_time`). It is the default choice for trend-over-time questions.
 
-> **Tested:** every option pattern in this skill is exercised in the
-> companion test dashboard at `test-dashboard/dashboard.json` (and the
-> mirrored `dashboard-light.json`). Both are deployed to the
-> `splunk-knowledge-testing` Splunk app as `ds_viz_line_dark` and
-> `ds_viz_line_light` and visually verified on Splunk 10.2.1.
+> **Sources of truth used to write this skill:**
+>
+> 1. `docs/SplunkCloud-10.4.2604-DashStudio.pdf` (extracted as
+>    `.txt` for grep) — the official option list, types, and
+>    defaults are taken verbatim from the *Line chart options*
+>    section.
+> 2. `test-dashboard/dashboard.json` and `dashboard-light.json` — every
+>    pattern below was rendered and visually QA'd on Splunk
+>    Enterprise 10.2.1. Both files are deployed to the
+>    `splunk-knowledge-testing` app as `ds_viz_line_dark` and
+>    `ds_viz_line_light`.
+>
+> When 10.4 docs and 10.2.1 behaviour disagree, the gotchas section
+> below names the deviation explicitly.
 
 ---
 
@@ -77,13 +86,26 @@ Verified default for time-series line charts. Codified after visual QA on Splunk
 | Option | Values | Default | Notes |
 |---|---|---|---|
 | `lineWidth` | number (px) | `2` | `2.5–3` reads better on dark themes; ≤ `2` for light themes. |
-| `lineDashStyle` | `"solid" \| "dash" \| "dot" \| "shortDash" \| "longDash" \| "dashDot"` | `"solid"` | Global dash style. |
+| `lineDashStyle` | `"solid" \| "shortDash" \| "shortDot" \| "shortDashDot" \| "shortDashDotDot" \| "dot" \| "dash" \| "longDash" \| "dashDot" \| "longDashDot" \| "longDashDotDot"` | `"solid"` | All 11 values supported per the 10.4 reference. Most useful in practice: `solid`, `dash`, `dot`, `dashDot`. The "short*" / "long*" variants change tick spacing — useful for distinguishing 4–6 dashed series. |
 | `lineDashStylesByField` | `{ field: dashStyle }` | — | Per-field map. Survives SPL field reorder. **Preferred over `lineDashStyle`**. |
 | `markerDisplay` | `"off" \| "filled" \| "outlined"` | `"off"` | Dot at every value. Use sparingly — clutters dense series. |
 | `nullValueDisplay` | `"gaps" \| "zero" \| "connect"` | `"gaps"` | `"connect"` bridges nulls (best for sampling gaps). `"zero"` lies — never use for numeric metrics that can legitimately be zero. |
 | `dataValuesDisplay` | `"off" \| "all" \| "minmax"` | `"off"` | `"minmax"` is the only readable option for ≥ 10 data points. |
 | `legendMode` | `"standard" \| "seriesCompare"` | `"standard"` | `seriesCompare` highlights all series on hover — useful with 4+ series. |
 | `resultLimit` | number | `50000` | Hard cap. If you hit it, aggregate in SPL. |
+
+**Axis tuning** (verified against 10.4 reference):
+
+| Option | Values | Default | Notes |
+|---|---|---|---|
+| `yAxisScale` / `y2AxisScale` | `"linear" \| "log"` | `"linear"` | `log` rejects values ≤ 0; pair with `yAxisMin: "1"`. |
+| `yAxisMin` / `yAxisMax` (and `y2*`) | string \| number | `"auto"` | Force a fixed range when comparing across panels. |
+| `yAxisAbbreviation` / `y2AxisAbbreviation` | `"off" \| "auto"` | `"auto"` | SI prefixes (`1.2k`, `5M`). Turn `off` for currencies you'd rather format yourself. |
+| `yAxisMajorTickInterval` / `y2*` | `"auto"` \| number | `"auto"` | Force whole-number gridlines (`5`, `10`, `100`). |
+| `xAxisMaxLabelParts` | number (1–3) | `3` | Max time parts shown per label (year + month + time). Drop to `2` on dense charts. |
+| `showYAxisExtendedRange` | boolean | `true` | When `true`, y-axis extends to the next tick mark. Set `false` to crop tightly. |
+| `showYAxisWithZero` | boolean | `false` | Force `0` into the y-range. Always `true` for delta/error charts. |
+| `xAxisLineVisibility` / `yAxisLineVisibility` / `y2*` | `"show" \| "hide"` | `"hide"` | Default-hidden axis line. Re-enable only when designing a high-density print export. |
 
 **Color & series binding** (shared with all charts):
 
@@ -379,18 +401,23 @@ Two latency fields go to y2; two utilization fields stay on y. Combine `seriesCo
 }
 ```
 
-### 11. All six dash styles — visual reference
+### 11. All eleven dash styles — visual reference
 
-Every supported `lineDashStyle` value side by side. Use this panel as the lookup when picking a dash.
+Per the 10.4 reference, `lineDashStyle` accepts **eleven** values. Use this panel as the lookup when picking a dash. The test bench currently demos six common ones; the others are valid drop-ins.
 
 | Value | Look |
 |---|---|
 | `solid` | unbroken line (default) |
-| `dash`  | medium dashes |
-| `dot`   | small dots, evenly spaced |
-| `shortDash` | shorter dashes |
-| `longDash`  | long dashes |
-| `dashDot`   | dash–dot–dash repeating |
+| `shortDash` | short dashes |
+| `shortDot` | tight dots |
+| `shortDashDot` | short dash–dot |
+| `shortDashDotDot` | short dash–dot–dot |
+| `dot` | small dots, evenly spaced |
+| `dash` | medium dashes |
+| `longDash` | long dashes |
+| `dashDot` | dash–dot–dash repeating |
+| `longDashDot` | long dash–dot |
+| `longDashDotDot` | long dash–dot–dot |
 
 ### 12. Smart axis — recommended baseline (codified)
 
@@ -408,6 +435,29 @@ This is the convention — the same as pattern 1, restated as a target.
   }
 }
 ```
+
+---
+
+## Trellis layout (Splunk 10.0.2503+, untested in test bench)
+
+Per the *What's New in Splunk Cloud Platform 10.0.2503* changelog:
+
+> Trellis for Area, Line, Column, and Bar charts — you can apply a
+> trellis layout for Area, Line, Column, and Bar charts.
+
+The 10.4 *Trellis layout* page still says "Trellis is only available for single value visualizations" — the doc text contradicts the changelog. The chart-trellis form is therefore **untested in our test bench**. If you adopt it, verify on your Splunk version first.
+
+| Option | Values | Default | Notes |
+|---|---|---|---|
+| `splitByLayout` | `"off" \| "trellis"` | `"off"` | Turn trellis on. |
+| `trellisSplitBy` | string | — | Column/field name to split on. With `\| timechart count by host`, defaults to `host`. |
+| `trellisColumns` | number | `auto` | Columns per row. Pair with `trellisMinColumnWidth`. |
+| `trellisMinColumnWidth` | number (px) | `100` | Minimum width of each sub-chart. |
+| `trellisRowHeight` | number (px) | `70` | Height of each sub-chart. Increase for line charts (default is single-value sized). |
+| `trellisPageCount` | number | `20` | Max sub-charts per page; rest paginate. |
+| `trellisBackgroundColor` | string | theme default | Background of the trellis container. |
+
+If your test fails, fall back to **`showSplitSeries: true`** (pattern 8) — it's been stable since well before 10.0.
 
 ---
 
@@ -456,6 +506,7 @@ When the dashboard envelope sets `theme: "dark"` Splunk inverts panel chrome aut
 - `ds-viz-area` — sibling for filled / stacked / cumulative time series.
 - `ds-viz-column` — sibling for categorical (non-time) bars.
 - `interactivity/ds-tokens`, `interactivity/ds-drilldown` — making the chart respond to filters and clicks.
+- **`docs/SplunkCloud-10.4.2604-DashStudio.pdf`** — official reference. Grep the extracted `.txt` for `^Line chart options` (line ~4962) for the canonical, defaulted option list.
 
 ---
 
