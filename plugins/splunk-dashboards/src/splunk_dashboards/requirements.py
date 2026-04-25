@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from typing import Literal, Optional
 
 HasData = Literal["yes", "no", "partial"]
-Customization = Literal["template", "moderate", "bespoke"]
+Customization = Literal["standard", "moderate", "bespoke"]
 
 
 @dataclass

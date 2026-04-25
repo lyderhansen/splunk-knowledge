@@ -42,7 +42,7 @@ def test_full_pipeline_through_build(tmp_path, monkeypatch):
             "questions": ["How many events?"],
             "has_data": "no",
             "indexes": [],
-            "customization": "template",
+            "customization": "moderate",
             "nice_to_haves": [],
             "reference_dashboard": None,
         }),
@@ -64,15 +64,7 @@ def test_full_pipeline_through_build(tmp_path, monkeypatch):
     )
     assert r.returncode == 0, r.stderr
 
-    # 3. ds-template load
-    r = _run(
-        "splunk_dashboards.templates",
-        ["load", "soc-overview", "--project", "build-demo"],
-        tmp_path,
-    )
-    assert r.returncode == 0, r.stderr
-
-    # 4. ds-design — simulate Save & Exit with one panel bound to our question
+    # 3. ds-design — simulate Save & Exit with one panel bound to our question
     server = create_server(project="build-demo", port=0)
     host, port = server.server_address
     thread = threading.Thread(target=server.serve_forever, daemon=True)
@@ -104,7 +96,7 @@ def test_full_pipeline_through_build(tmp_path, monkeypatch):
 
     assert load_state("build-demo").current_stage == "designed"
 
-    # 5. ds-create build
+    # 4. ds-create build
     r = _run(
         "splunk_dashboards.create",
         ["build", "build-demo", "--title", "Build Demo", "--description", "End-to-end test"],
@@ -112,7 +104,7 @@ def test_full_pipeline_through_build(tmp_path, monkeypatch):
     )
     assert r.returncode == 0, r.stderr
 
-    # 6. Verify dashboard.json
+    # 5. Verify dashboard.json
     ws = tmp_path / ".splunk-dashboards" / "build-demo"
     dashboard = json.loads((ws / "dashboard.json").read_text())
     assert dashboard["title"] == "Build Demo"

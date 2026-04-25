@@ -7,7 +7,7 @@ description: Use this skill to wireframe a Splunk dashboard layout in a local br
 
 ## When to use
 
-After `ds-data-explore` or `ds-mock` has produced `data-sources.json`. Workspace must be at `current_stage=data-ready`. If the user wants to start from a pattern, run `ds-template load <name> --project <proj>` first to seed the layout.
+After `ds-data-explore` or `ds-mock` has produced `data-sources.json`. Workspace must be at `current_stage=data-ready`.
 
 ## Prerequisites
 

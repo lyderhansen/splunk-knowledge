@@ -45,7 +45,7 @@ Ask these one at a time. Prefer multiple-choice where options are listed.
 
 ### Group 4 — Scope
 
-9. **Customization level?** Options: template (start from a pattern) / moderate / bespoke.
+9. **Customization level?** Options: standard (apply archetype conventions verbatim) / moderate (customize layout and viz choices) / bespoke (fully custom layout, heavy tailoring).
 10. **Nice-to-haves?** Multi-select: drilldowns / alerts / scheduled reports / tokens / dark theme / other.
 
 ## Defaults used by `--autopilot`
@@ -77,7 +77,7 @@ PYTHONPATH=<path-to-repo>/plugins/splunk-dashboards/src python3 -m splunk_dashbo
   "questions": ["<q1>", "<q2>"],
   "has_data": "yes|no|partial",
   "indexes": ["<idx1>"],
-  "customization": "template|moderate|bespoke",
+  "customization": "standard|moderate|bespoke",
   "nice_to_haves": ["drilldowns"],
   "reference_dashboard": null,
   "autopilot": false

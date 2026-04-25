@@ -14,11 +14,30 @@ description: >
 
 ---
 
+## The stance
+
+A Splunk dashboard is not a report. It is a live surface that an operator, analyst, or executive scans under time pressure. Every pixel either earns its place or steals attention from the one that should have had it.
+
+The default output of any generative tool — including Claude — is generic: four same-size KPIs in `#006D9C`, one line chart, one table, default canvas grey, no semantic color, no hierarchy. That output passes a demo and fails a shift. This skill exists to refuse it.
+
+**The commitment**: pick an archetype early, derive theme from audience, apply semantic polarity to every status metric, and treat absolute bans as non-negotiable. Bold minimalism and dense operational walls both work — the point is intentionality, not intensity.
+
+## Required context
+
+You cannot design a dashboard without knowing:
+
+1. **Audience** — executives, SREs, SOC analysts, or field technicians?
+2. **Viewing context** — 24/7 NOC wall, laptop at 09:00, printed PDF, phone on-call?
+3. **Primary question** — what does the user need to answer in the first five seconds?
+4. **Decision consequence** — does a red KPI page someone, or does it inform a quarterly review?
+
+If any of these is unknown, ask the user before invoking archetype or palette choices. The codebase cannot tell you these — only the creator can.
+
 ## When to use
 
-- **Before `ds-design`** — choose the archetype and panel count that fits the audience before wireframing begins.
-- **During `ds-create`** — pick the right viz type when the layout left it unspecified, and confirm color/sizing choices.
-- **Standalone** — when the user asks open-ended design questions without invoking the full pipeline.
+- **Before `ds-design`** — lock the archetype and panel count to audience before wireframing begins.
+- **During `ds-create`** — pick the right viz, confirm palette/canvas/semantic coloring, and run the Slop Test before writing JSON.
+- **Standalone** — when the user asks open-ended questions: "what should my dashboard look like?", "which chart for X?", "how do I structure this?".
 
 ---
 
@@ -111,6 +130,93 @@ Four canonical layouts. Pick one based on audience and primary question.
 | Recent alerts table (full width, severity coloring)      |
 +----------------------------------------------------------+
 ```
+
+---
+
+## Reflex defaults to reject
+
+When asked to design a Splunk dashboard, Claude reaches for a recognizable set of autopilot patterns. They are not individually wrong — they are wrong *as defaults*, because they survive every brief. Match-and-refuse: if you catch yourself about to emit any of these without having made a deliberate choice, stop and rewrite.
+
+<reflex_defaults_to_reject>
+
+REFLEX 1: The uniform-color KPI row
+  - PATTERN: four KPIs in a row, every `majorColor` hard-coded to `#006D9C` (Splunk info blue).
+  - WHY: operators lose the single most valuable signal a KPI row can give — semantic polarity. Everything looks "neutral informational" regardless of whether the metric is failing.
+  - REWRITE: classify each KPI's polarity (up-is-bad / down-is-bad / neutral). Apply `majorColor` via DOS threshold-coloring for status metrics, static `#006D9C` only for true counts. See Color section below.
+
+REFLEX 2: The uniform-size KPI row
+  - PATTERN: four KPIs at identical dimensions, same font size, same rectangle treatment.
+  - WHY: flat hierarchy is unread hierarchy. The eye has no anchor.
+  - REWRITE: one anchor KPI hero-sized (≥ 1.5× the others) for executive/operational archetypes. For SOC/analytical, rank by criticality — the severity count is bigger than the volume count.
+
+REFLEX 3: Default Splunk canvas
+  - PATTERN: `layout.options` emitted without `backgroundColor`, or with the Splunk default grey.
+  - WHY: default canvas signals "untouched AI output." It is the dashboard equivalent of shipping Inter.
+  - REWRITE: always set `layout.options.backgroundColor` derived from the archetype theme (`#0b0c0e` dark, `#000000` NOC wall, `#FAFAF7` light). See Canvas & chrome tokens.
+
+REFLEX 4: The "4 KPIs + 1 line chart + 1 table" autotemplate
+  - PATTERN: every dashboard regresses to the same three-zone composition regardless of archetype.
+  - WHY: the template is fine for executive summaries and wrong for everything else. SOC needs geo + timeline + severity; analytical needs filter bar + scatter + multi-series + detail table; NOC needs status tiles + alert history + metric grid.
+  - REWRITE: the archetype drives the layout. Start from the archetype's canvas zones, not from the template.
+
+REFLEX 5: Rainbow on ordered data
+  - PATTERN: severity / priority / tier rendered as categorical colors (red / orange / yellow / green / blue / purple).
+  - WHY: rainbow implies "different kinds," not "more or less." Ordered data disguised as categorical hides the ordering.
+  - REWRITE: sequential single-hue gradient (e.g., red `#DC4E41` → `#F1813F` → `#F8BE34` for severity), or the explicit semantic palette if the ordering maps to status.
+
+REFLEX 6: Tables without drilldown
+  - PATTERN: `splunk.table` emitted with no `drilldown.link` or token-set action.
+  - WHY: a table without drilldown is a dead end. The user sees 40 rows and cannot act on any of them.
+  - REWRITE: every table links to a detail view, sets a filter token on the same dashboard, or opens a search. No exceptions.
+
+REFLEX 7: Raw `_time` in tables
+  - PATTERN: `_time` rendered as epoch seconds or raw ISO inside a table column.
+  - WHY: operators cannot read epoch at a glance and ISO wastes a column's worth of width.
+  - REWRITE: `| eval _time=strftime(_time, "%Y-%m-%d %H:%M:%S")` in SPL, or set a `columnFormat` display override on the panel.
+
+REFLEX 8: Pie by default for part-to-whole
+  - PATTERN: `splunk.pie` chosen any time the question is "what's the breakdown," regardless of cardinality.
+  - WHY: pie with > 6 slices is unreadable — slice angles become indistinguishable and labels collide.
+  - REWRITE: pie ONLY if ≤ 6 categories AND one category dominates. Otherwise `splunk.bar` (horizontal, sorted descending, top N + "Other").
+
+</reflex_defaults_to_reject>
+
+---
+
+## Absolute bans
+
+Reflex defaults are autopilot patterns to refuse unless a deliberate choice overrides them. **Absolute bans** are different: they are never acceptable regardless of the justification. If you find yourself about to emit any of these, stop and rewrite the panel with a different structure entirely.
+
+<absolute_bans>
+
+BAN 1: Status colors used as series colors
+  - PATTERN: any of `#DC4E41`, `#F1813F`, `#F8BE34`, `#53A051`, or `#006D9C` appearing in `seriesColors` / `seriesColorsByField` for a non-status chart.
+  - INCLUDES: "accidentally" picking the critical red as the first color in a line chart; using green for a data series because "it looks healthy."
+  - WHY: the Splunk semantic palette is operator muscle memory. A green line in a timeseries chart reads as "OK" — even when it represents transaction volume that is crashing.
+  - REWRITE: use `SERIES_CATEGORICAL_10` (or `SERIES_STUDIO_20` for dense analytical charts). Reserve the semantic palette strictly for status metrics — majorColor on singlevalues, threshold shading, severity cells.
+
+BAN 2: Red/green as the sole differentiator
+  - PATTERN: KPI `majorColor` toggles between `#DC4E41` and `#53A051` with no accompanying icon, shape, or text cue.
+  - INCLUDES: pass/fail singlevalues with color only; severity tables with colored rows and no severity column.
+  - WHY: ~8% of men and ~0.5% of women are red-green colorblind. Color alone excludes them entirely from the dashboard's most important signal.
+  - REWRITE: prefer `splunk.singlevalueicon` (icon + color) over `splunk.singlevalue` for binary status. For tables, add a severity label column. For charts, pair color with a shape or dasharray.
+
+BAN 3: Pie with more than 6 slices
+  - PATTERN: `splunk.pie` bound to a dataSource producing > 6 rows, or without a `| head 6` / Top N aggregation upstream.
+  - WHY: slice angles below ~15° become indistinguishable; legend text wraps and dominates the visualization; the pie fails its one job.
+  - REWRITE: `splunk.bar` (horizontal, sorted descending) for comparison. If part-to-whole matters, aggregate to Top 5 + "Other" in SPL (`| eventstats sum(count) as total | ... | eval category=if(rank > 5, "Other", category)`) before binding to pie.
+
+BAN 4: Searches without `earliest`/`latest`
+  - PATTERN: `ds.search` with a `query` that lacks both `earliest=` and `latest=` and does NOT bind `options.queryParameters.earliest` / `latest` to the global time token.
+  - WHY: unbounded searches trigger full-index scans. A single dashboard with five such panels can saturate an indexer and take the cluster down.
+  - REWRITE: set `defaults.dataSources.ds.search.options.queryParameters.earliest: "$global_time.earliest$"` and `latest: "$global_time.latest$"` — or hard-code a tight window on cold-reference panels (`earliest=-24h`).
+
+BAN 5: Inputs without default values
+  - PATTERN: `input` of type `dropdown` / `multiselect` / `text` without `defaultValue` (and the bound token has no `default`).
+  - WHY: the dashboard renders empty on first load. Panels show "no results" and the user assumes the dashboard is broken before the filter is discovered.
+  - REWRITE: always set `options.defaultValue` to a sensible fallback — `"*"` for open filters, a value that returns typical traffic for environment/region, the most common choice for categorical filters.
+
+</absolute_bans>
 
 ---
 
@@ -220,47 +326,88 @@ Rule: card edge + 10 px = panel edge on all sides. Place the rectangle entry in 
 
 ### Semantic status palette
 
+Verified against Splunk's official design language (splunkui.splunk.com). Use these exact hex values — operators rely on instant recognition.
+
 | Status | Dark theme | Light theme | Use for |
 |---|---|---|---|
-| Critical / Error | `#F74B4A` | `#C0392B` | Alarms, failures, threshold breaches |
-| Warning | `#FFB300` | `#D4820A` | Approaching limits, degraded |
-| High / Elevated | `#F58F39` | `#C05C00` | Exceeding soft limit |
-| OK / Healthy | `#00C853` | `#2B9E44` | Normal operating state |
-| Info / Neutral | `#00A4FD` | `#2066C0` | Informational counts, no health semantics |
+| Critical / Error | `#DC4E41` | `#C0392B` | Alarms, failures, threshold breaches |
+| High / Elevated | `#F1813F` | `#C05C00` | Exceeding soft limit |
+| Warning | `#F8BE34` | `#D4820A` | Approaching limits, degraded |
+| OK / Healthy | `#53A051` | `#2B9E44` | Normal operating state |
+| Info / Neutral | `#006D9C` | `#2066C0` | Informational counts, no health semantics |
 | Unknown / No data | `#B0B0BE` | `#9B99A0` | Missing or unavailable data |
 
-### Dark theme canvas defaults
+### Canvas & chrome tokens
 
-| Element | Hex |
-|---|---|
-| Canvas background | `#101014` |
-| Panel / card fill | `#1A1A2E` |
-| Card stroke | `#2C2C3A` |
-| Primary text | `#FFFFFF` |
-| Secondary text | `#B0B0BE` |
+| Element | Dark (default) | Dark (NOC / wall) | Light |
+|---|---|---|---|
+| Canvas background | `#0b0c0e` | `#000000` | `#FAFAF7` |
+| Panel / card fill | `#15161a` | `#0F1117` | `#ffffff` |
+| Panel stroke | `#2C2C3A` | `#1FBAD6` (accent) | `#E5E5E0` |
+| Primary text | `#FFFFFF` | `#FFFFFF` | `#1A1A1A` |
+| Secondary text | `#B0B0BE` | `#B0B0BE` | `#6B7C85` |
+| Gridline | `#23262b` | `#23262b` | `#ebedef` |
+| Axis line | `#2c3036` | `#2c3036` | `#d9dce0` |
 
-### Dark theme 8-color series palette (use in order)
+### Series color palettes
 
-| Series | Color | Hex |
+Pick one palette per dashboard and stick to it. Limit charts to 6–8 series; beyond that, aggregate to Top N + "Other" or split into multiple charts.
+
+**`SERIES_CATEGORICAL_10` — default for dark dashboards** (executive, ops, analytical)
+
+```
+#006D9C  #4FA484  #EC9960  #AF575A  #B6C75A
+#62B3B2  #294E70  #738795  #EDD051  #BD9872
+```
+
+**`SERIES_CATEGORICAL_10_LIGHT` — default for light dashboards** (executive print/PDF)
+
+```
+#2066C0  #2B9E44  #C05C00  #C0392B  #7A873D
+#3D8B8B  #294E70  #4A5A64  #B39A1F  #8A6B4A
+```
+
+**`SERIES_SOC_8` — status-semantic palette** (use ONLY on SOC / NOC dashboards where the first four colors align with severity)
+
+```
+#DC4E41  #F1813F  #F8BE34  #53A051   ← critical / high / warning / ok
+#006D9C  #1FBAD6  #826AF9  #9B59B6
+```
+
+**`SERIES_STUDIO_20` — Splunk Studio extended palette** (for dense analytical charts with many categories; use first 8–10 entries)
+
+```
+#7B56DB  #009CEB  #00CDAF  #DD9900  #FF677B
+#CB2196  #813193  #0051B5  #008C80  #99B100
+#FFA476  #FF6ACE  #AE8CFF  #00689D  #00490A
+#465D00  #9D6300  #F6540B  #FF969E  #E47BFE
+```
+
+### Semantic coloring for singlevalues (`majorColor`)
+
+Status KPIs use the semantic palette with explicit thresholds. Do not use series-palette blues or greens for status metrics.
+
+| Metric kind | Polarity | Typical majorColor |
 |---|---|---|
-| 1 | Blue | `#00A4FD` |
-| 2 | Amber | `#FFB300` |
-| 3 | Green | `#00C853` |
-| 4 | Red | `#F74B4A` |
-| 5 | Purple | `#9B59B6` |
-| 6 | Teal | `#1FBAD6` |
-| 7 | Orange | `#FB7428` |
-| 8 | Pink | `#ED0080` |
+| Failure count, error count, critical alerts | up-is-bad | `#DC4E41` (static) or DOS threshold-coloring red above threshold |
+| Latency, response time | up-is-bad | `#F1813F` warm / `#DC4E41` if SLA-critical |
+| Success rate, uptime | down-is-bad | `#53A051` above threshold → `#F8BE34` → `#DC4E41` |
+| Capacity / utilisation | up-is-bad-above-cap | `#53A051` < 80 → `#F8BE34` 80–90 → `#DC4E41` > 90 |
+| Informational counts (events, volume) | neutral | `#006D9C` (static) |
 
-Limit charts to 6–8 series. Beyond that, aggregate to Top N + "Other" or split into multiple charts.
+DOS example for SLA-critical latency:
+```
+"majorColor": "> primary | seriesByName('p95') | lastPoint() | formatByType(primary=#53A051, primary_warning=#F8BE34, primary_alarm=#DC4E41)"
+```
 
-### Theme selection guide
+### Theme / mode selection guide
 
-| Dashboard type | Recommended theme | Rationale |
+| Dashboard type | Recommended mode | Rationale |
 |---|---|---|
-| Operational / NOC / SOC | Dark | Reduces eye strain on 24/7 displays; status colors pop |
-| Executive / report | Light | Familiar for print/PDF; professional for leadership |
-| Analytical / investigation | Dark or light | Match existing team tooling |
+| Operational / NOC / SOC | Dark (NOC variant) | Reduces eye strain on 24/7 wall displays; status colors pop off pure-black canvas |
+| Executive summary / Report | Light | Familiar for print and PDF; professional for leadership consumption |
+| Analytical / Investigation | Dark | Longer analyst sessions benefit from lower luminance |
+| Hero / Landing dashboard | Dark | One big KPI on a rich background reads better than on a light canvas |
 
 ---
 
@@ -290,11 +437,111 @@ Limit charts to 6–8 series. Beyond that, aggregate to Top N + "Other" or split
 
 ---
 
+## Spacing, radius, and type scale
+
+Verified against `@splunk/themes` conventions. Use these when composing layouts or styling markdown / rectangles by hand.
+
+### Spacing scale (px)
+
+| Token | px | Common use |
+|---|---|---|
+| `S_0_5` | 4 | Tight icon gap |
+| `S_1` | 8 | Inline label gap |
+| `S_1_5` | 12 | Panel inner padding (tight) |
+| `S_2` | 16 | Section heading → first panel |
+| `S_2_5` | 20 | **Default gutter between panels** |
+| `S_3` | 24 | KPI row → primary chart zone |
+| `S_4` | 32 | Between logical sections |
+| `S_6` | 48 | Between major zones in long dashboards |
+| `S_8` | 64 | Canvas outer margin on ultrawide wall displays |
+
+### Corner radius (px)
+
+| Token | px | Use |
+|---|---|---|
+| `R_SHARP` | 0 | Grid / table cells |
+| `R_SUBTLE` | 4 | Inputs, small chips |
+| `R_CARD` | 8 | **Default card/rectangle radius** |
+| `R_HERO` | 12 | Hero KPI background |
+| `R_PILL` | 999 | Status chips, badges |
+
+### Type scale (px)
+
+| Token | px | Use |
+|---|---|---|
+| `FS_TICK` | 11 | Chart tick labels |
+| `FS_AXIS` | 12 | Axis titles |
+| `FS_BODY` | 14 | Markdown body, table cells |
+| `FS_LARGE` | 18 | Panel subtitles |
+| `FS_XLARGE` | 24 | Section headers |
+| `FS_KPI_MINOR` | 28 | Secondary KPI value |
+| `FS_KPI_MAJOR` | 48 | **Standard KPI majorValue** |
+| `FS_KPI_HERO` | 72 | Hero / landing KPI |
+
+---
+
+## Depth and layering in Dashboard Studio
+
+Dashboard Studio has no box-shadow, no backdrop-blur, no gradient primitive. Depth comes from **layered rectangles**:
+
+- **Card behind KPIs** — `splunk.rectangle` placed first in `layout.structure` (earlier = renders behind) with `fillColor: PANEL`, `strokeColor: PANEL_STROKE`, `rx: 8`. KPI panels layered on top.
+- **Zone background** — a second rectangle at `fillOpacity: 0.04` wrapping a section of panels, combined with a `splunk.markdown` header.
+- **Two-tone highlight** — stack two rectangles at the same position: base at `fillOpacity: 1`, overlay at `fillOpacity: 0.3` with an accent color, to fake a subtle gradient.
+
+**Array-order rule:** entries earlier in `layout.structure` render BEHIND entries later in the array. There is no `z-index`.
+
+**Shape layouts only:** `splunk.rectangle` and `splunk.ellipse` require `layout.type: "absolute"`. They are silently ignored on `grid` or `tab` layouts.
+
+---
+
+## Explicit constraints (honest "not possible" list)
+
+Dashboard Studio is a declarative JSON schema. It cannot deliver:
+
+1. **Animations** — no keyframes, no pulsing alerts, no transitions.
+2. **True glassmorphism / backdrop-blur** — rectangles with low fillOpacity approximate the feeling; they are not identical to Linear / iOS frosted glass.
+3. **Gradient text on KPIs** — no gradient-text option; use a saturated color + background rectangle instead.
+4. **Custom chart fonts** — only `splunk.markdown` exposes `fontFamily`.
+5. **Per-region map overlays that pan/zoom with the map** — statically positioned overlays only.
+6. **Conditional panel visibility** — no `show-if` token; use input defaults + drilldown to separate views.
+
+For features that genuinely require these, custom Canvas 2D visualizations are a Phase 2 extension point (see `viz_packs/README.md`).
+
+---
+
+## The Splunk Dashboard Slop Test
+
+**The quality gate**: before declaring a dashboard done, ask one question.
+
+> *If I showed this dashboard to an SRE, a SOC analyst, or a VP of Engineering and said "an AI made this" — would they nod without hesitation?*
+
+If yes, the dashboard has failed. A well-made Splunk dashboard should make an operator ask *"who built this?"* not *"which model generated this?"* The difference is intentionality: every panel, every color, every default is a deliberate choice, not a template fall-through.
+
+Run this checklist before completion. A single NO means rewrite:
+
+- [ ] **Archetype committed** — the dashboard matches one of the four archetypes; it does not mix exec + SOC + analytical in one surface.
+- [ ] **Theme derived from audience** — 24/7 NOC wall is dark; exec PDF is light; analyst console is dark. Not a default, a decision.
+- [ ] **Canvas `backgroundColor` set** — no default Splunk grey anywhere.
+- [ ] **KPI row has semantic polarity** — status KPIs use threshold-colored `majorColor`; informational counts use `#006D9C`. Not all the same color.
+- [ ] **KPI row has visual hierarchy** — the anchor KPI is hero-sized or otherwise distinguished from the supporting ones.
+- [ ] **Every table has a drilldown** — no dead-end tables, no raw `_time`.
+- [ ] **Every input has a default value** — the dashboard renders full data on first load.
+- [ ] **Every search is time-bounded** — global time token bound, no unbounded scans.
+- [ ] **Series colors come from a categorical palette** — semantic colors never leak into chart series.
+- [ ] **Color is paired with icon / label / shape** — red/green is never the sole status differentiator.
+- [ ] **Pie charts have ≤ 6 slices** — or they have been replaced with bar.
+- [ ] **Panel titles are ≤ 40 characters, title case** — no paragraph-length titles; no `chart_of_thing_by_host_grouped_by_time`.
+- [ ] **Depth comes from layered rectangles** — KPI cards and zone backgrounds are present where the archetype calls for them.
+
+If the dashboard passes all thirteen, it still might be forgettable — but it has cleared the Slop Test.
+
+---
+
 ## Working with the action skills
 
 | Skill | When design principles applies |
 |---|---|
-| `ds-init` | Asks about audience and use case → use the archetypes to pick the right template before any files are created. |
+| `ds-init` | Asks about audience and use case → use the archetypes to pick the right layout archetype before any files are created. |
 | `ds-design` | Wireframes panels → apply layout principles (F-pattern, hierarchy, grouping, whitespace) and KPI sizing rules here. |
-| `ds-create` | Builds JSON → apply the chart-selection decision table when the design left viz type unspecified; `--theme` flag enforces semantic colors automatically. |
+| `ds-create` | Builds JSON → apply the chart-selection decision table when the design left viz type unspecified. Pick palette + canvas tokens based on audience and mode. |
 | `ds-review` | Audits a finished dashboard → flags violations of the antipatterns list above; cross-references color and typography rules. |

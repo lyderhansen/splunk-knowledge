@@ -51,6 +51,23 @@ Check each panel's `viz_type` against the shape of its data (see `ds-viz` for re
 - Queries without `earliest` / `latest` bounds at the dashboard level — suggest setting `defaults` or a global timerange input.
 - Use of `join` or `append` on large datasets — suggest `tstats` or subsearch redesign.
 
+### 7. Visual polish checklist
+
+Review the dashboard against the design principles (see `ds-design-principles`) and call out gaps:
+
+- Canvas background set on `layout.options.backgroundColor` (dashboards should not render on Splunk's unstyled default gray).
+- KPI row has depth — a `splunk.rectangle` rendered behind the KPIs for card effect (first in `layout.structure`).
+- Hero KPI identified and sized correctly when one exists (2.5× body-KPI size, FS_KPI_HERO font).
+- Sparklines on every singlevalue backed by time-series SPL.
+- Compare-to-previous-period overlay on at least one time chart when the user cares about trend direction.
+- Section zones used when panel count > 6 (splunk.rectangle + splunk.markdown header per zone).
+- No chart exceeds 8 series (limit clutter and legend overflow).
+- Semantic colors on status KPIs (red for failure, green for healthy, amber for warning) — verify hex values against the `ds-design-principles` status palette.
+- Panel gutter minimum 20 px; 20 px canvas margins.
+- Panel titles ≤ 40 characters; Title Case.
+
+Write each finding as `[warning]` (gap that reduces polish) or `[info]` (suggestion) — none of these are blocking.
+
 ## Output
 
 Write findings to `review.md` in the workspace (or to the directory of the input file when operating standalone):

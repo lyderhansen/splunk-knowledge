@@ -1,4 +1,4 @@
-"""Integration test — chain ds-init, ds-mock, ds-template, and ds-design handlers."""
+"""Integration test — chain ds-init, ds-mock, and ds-design handlers."""
 import json
 import os
 import subprocess
@@ -25,7 +25,7 @@ def _run(module, args, cwd, stdin=None):
     )
 
 
-def test_full_pipeline_init_mock_template_design(tmp_path, monkeypatch):
+def test_full_pipeline_init_mock_design(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
 
     # 1. ds-init
@@ -38,7 +38,7 @@ def test_full_pipeline_init_mock_template_design(tmp_path, monkeypatch):
         "questions": ["Q1?", "Q2?"],
         "has_data": "no",
         "indexes": [],
-        "customization": "template",
+        "customization": "moderate",
         "nice_to_haves": [],
         "reference_dashboard": None
     }
@@ -59,29 +59,24 @@ def test_full_pipeline_init_mock_template_design(tmp_path, monkeypatch):
     state = load_state("full-pipeline")
     assert state.current_stage == "data-ready"
 
-    # 3. ds-template load
-    r3 = _run(
-        "splunk_dashboards.templates",
-        ["load", "ops-health", "--project", "full-pipeline"],
-        tmp_path,
-    )
-    assert r3.returncode == 0, r3.stderr
-    ws = tmp_path / ".splunk-dashboards" / "full-pipeline"
-    assert (ws / "design" / "layout.json").exists()
-    state = load_state("full-pipeline")
-    assert state.current_stage == "data-ready"
-
-    # 4. ds-design — simulate the browser's Save & Exit with a POST
+    # 3. ds-design — start from an empty canvas, add one panel via POST
     server = create_server(project="full-pipeline", port=0)
     host, port = server.server_address
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:
-        with urllib.request.urlopen(f"http://{host}:{port}/api/layout", timeout=5) as resp:
-            seeded = json.loads(resp.read().decode())
-        assert len(seeded["panels"]) >= 1
-
-        body = json.dumps(seeded).encode()
+        body = json.dumps({
+            "project": "full-pipeline",
+            "theme": "dark",
+            "panels": [
+                {
+                    "id": "p1", "title": "Q1",
+                    "x": 0, "y": 0, "w": 6, "h": 4,
+                    "viz_type": "splunk.singlevalue",
+                    "data_source_ref": "Q1?",
+                }
+            ],
+        }).encode()
         req = urllib.request.Request(
             f"http://{host}:{port}/save",
             data=body,
@@ -95,7 +90,7 @@ def test_full_pipeline_init_mock_template_design(tmp_path, monkeypatch):
         server.server_close()
         thread.join(timeout=2)
 
-    # 5. State is now 'designed'
+    # 4. State is now 'designed'
     state = load_state("full-pipeline")
     assert state.current_stage == "designed"
     assert "data-ready" in state.stages_completed

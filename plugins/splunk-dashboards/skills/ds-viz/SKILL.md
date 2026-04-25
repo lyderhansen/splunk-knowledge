@@ -123,28 +123,92 @@ Displays a single number. Best for KPIs.
 
 **Shared groups:** [SERIES]
 
-**Specific options:**
+> **CRITICAL — always bind `majorValue` explicitly.** The documented default `"> primary | seriesByType(\"number\") | lastPoint()"` works for generic `| stats count` output but fails when the SPL uses `| table <field>` or produces multiple columns — the viz then renders "?" or the wrong column. Always set `majorValue` to `"> primary | seriesByName('<column>') | lastPoint()"` naming the exact field you want to show. This rule applies identically to `splunk.singlevalueicon` and `splunk.singlevalueradial`.
+
+**Verified option whitelist:**
 
 | Property | Type | Default | Description |
 |---|---|---|---|
-| majorValue | string \| number | `"> primary \| seriesByType(\"number\") \| lastPoint()"` | Primary value to display |
-| majorColor | string | — | Value color; supports dynamic rangeValue thresholds |
-| majorFontSize | number | — | Value font size (px) |
-| trendValue | string \| number | — | Trend delta value |
+| majorValue | string \| number | — | Primary value to display — always bind explicitly (see CRITICAL above) |
+| majorColor | string (hex OR DOS) | — | Value color. See "Threshold coloring" below for the only verified DOS pattern |
+| majorValueSize | number | — | Value font size (px). Use `FS_KPI_MAJOR=48` for standard, `FS_KPI_HERO=72` for hero KPIs |
+| numberPrecision | number | 0 | Decimal digits on the displayed number |
+| trendValue | string (DOS) | — | Trend delta value |
 | trendColor | string | — | Trend indicator color |
 | trendDisplay | "percent" \| "absolute" \| "off" | "percent" | Trend display mode |
-| sparklineValues | number | — | Sparkline data series |
-| sparklineDisplay | "off" \| "before" \| "after" | "off" | Sparkline position |
+| sparklineValue | string (DOS) | — | Sparkline data series |
+| sparklineDisplay | "off" \| "before" \| "after" \| "below" | "off" | Sparkline position |
 | showSparklineAreaGraph | boolean | true | Fill area under sparkline |
 | unit | string | — | Unit label (e.g., `"ms"`, `"%"`) |
 | unitPosition | "before" \| "after" | "after" | Unit label position |
 | underLabel | string | — | Label text below the value |
-| backgroundColor | string | theme default | Background color |
+| backgroundColor | string | theme default | Panel background. Use `"transparent"` when laying a rectangle card underneath |
 
-Example:
+> **DO NOT USE** — these field names render in some contexts but crash the Splunk 10.2 renderer with `split is not a function` or trigger schema errors. They are NOT valid `splunk.singlevalue` options:
+>
+> - `majorColorConfiguration` (array of `{from, to, value}`) — not a field. For threshold coloring use the `majorColor` DOS below.
+> - `majorColor` DOS with `rangeValue(ranges=[null, ...])` — `null` as a range boundary crashes the renderer.
+> - `majorColor` DOS with `rangeValue(ranges=[...])` but no `values=[...]` — both args are required.
+>
+> These crash patterns are also enforced by `ds-validate` (codes: `singlevalue-invalid-option`, `rangevalue-null-in-ranges`, `rangevalue-missing-values`).
+
+### Threshold coloring (verified)
+
+Two approaches — pick one, not both.
+
+**Static color picked at design time** (simplest, use when metric value is known or stable):
 
 ```json
-{ "type": "splunk.singlevalue", "title": "Failed Logins", "dataSources": {"primary": "ds_1"}, "options": { "majorColor": "#d13d3d", "unit": "", "sparklineDisplay": "after" } }
+"majorColor": "#53A051"
+```
+
+**Dynamic threshold color** via `rangeValue` DOS. Two signatures exist on Splunk 10.x; **prefer the context-var form** (form 1) — it's the one used by flagship templates and is more portable across Splunk versions.
+
+*Form 1 — context-var (preferred):* `rangeValue(colorConfig)` where `colorConfig` is declared in the viz's `context` block as an array of `{from, to, value}` entries.
+
+```json
+{
+  "type": "splunk.singlevalue",
+  "title": "p95 Latency",
+  "dataSources": {"primary": "ds_latency"},
+  "options": {
+    "majorValue": "> primary | seriesByName('p95_ms') | lastPoint()",
+    "unit": "ms",
+    "majorColor": "> primary | seriesByName('p95_ms') | lastPoint() | rangeValue(colorConfig)",
+    "majorValueSize": 48
+  },
+  "context": {
+    "colorConfig": [
+      {"value": "#53A051", "to": 300},
+      {"value": "#F8BE34", "from": 300, "to": 500},
+      {"value": "#DC4E41", "from": 500}
+    ]
+  }
+}
+```
+
+Each `colorConfig` entry has `from` (inclusive lower bound), `to` (exclusive upper bound), and `value` (the color). Omit `from` on the first entry and `to` on the last.
+
+*Form 2 — inline:* `rangeValue(ranges=[A, B, ...], values=[c1, c2, c3, ...])` — N ranges, N+1 colors. Avoid on Splunk 10.x unless you've tested it in your target version. Never put `null` inside `ranges=` — it crashes the renderer.
+
+Colors must come from the semantic palette in `ds-design-principles` — operators rely on instant recognition.
+
+**Standard example (static color):**
+
+```json
+{
+  "type": "splunk.singlevalue",
+  "title": "Failed Logins",
+  "dataSources": {"primary": "ds_1"},
+  "options": {
+    "majorValue": "> primary | seriesByName('failures') | lastPoint()",
+    "majorColor": "#DC4E41",
+    "unit": "",
+    "numberPrecision": 0,
+    "majorValueSize": 48,
+    "sparklineDisplay": "below"
+  }
+}
 ```
 
 ## splunk.line
@@ -494,7 +558,18 @@ Single value display with an icon badge.
 Example:
 
 ```json
-{ "type": "splunk.singlevalueicon", "title": "Critical Alerts", "dataSources": {"primary": "ds_crit"}, "options": { "icon": "alert", "iconColor": "#DC4E41", "majorColor": "#DC4E41", "underLabel": "Critical" } }
+{
+  "type": "splunk.singlevalueicon",
+  "title": "Critical Alerts",
+  "dataSources": {"primary": "ds_crit"},
+  "options": {
+    "majorValue": "> primary | seriesByName('alerts') | lastPoint()",
+    "icon": "alert",
+    "iconColor": "#DC4E41",
+    "majorColor": "#DC4E41",
+    "underLabel": "Critical"
+  }
+}
 ```
 
 ## splunk.singlevalueradial
@@ -522,7 +597,20 @@ Single value with a radial arc gauge background.
 Example:
 
 ```json
-{ "type": "splunk.singlevalueradial", "title": "Uptime", "dataSources": {"primary": "ds_uptime"}, "options": { "unit": "%", "radialStrokeColor": "#53A051", "gaugeRanges": [ {"from": 0, "to": 90, "value": "#DC4E41"}, {"from": 90, "to": 100, "value": "#53A051"} ] } }
+{
+  "type": "splunk.singlevalueradial",
+  "title": "Uptime",
+  "dataSources": {"primary": "ds_uptime"},
+  "options": {
+    "majorValue": "> primary | seriesByName('uptime') | lastPoint()",
+    "unit": "%",
+    "radialStrokeColor": "#53A051",
+    "gaugeRanges": [
+      {"from": 0, "to": 90, "value": "#DC4E41"},
+      {"from": 90, "to": 100, "value": "#53A051"}
+    ]
+  }
+}
 ```
 
 ## splunk.fillergauge

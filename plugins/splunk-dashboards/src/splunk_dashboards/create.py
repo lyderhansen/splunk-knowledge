@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from splunk_dashboards.data_sources import DataSources
 from splunk_dashboards.layout import Layout
-from splunk_dashboards.theme import apply_theme
 
 GRID_UNIT_W = 100  # pixels per grid column
 GRID_UNIT_H = 80   # pixels per grid row
@@ -16,7 +15,6 @@ def build_dashboard(
     description: str,
     with_time_input: bool = True,
     layout_type: str = "absolute",
-    theme: str = "clean",
 ) -> dict:
     """Build a Splunk Dashboard Studio JSON definition from a Layout + DataSources."""
     # Map DataSource index -> ds key. Also build question -> ds key lookup for panel binding.
@@ -74,7 +72,7 @@ def build_dashboard(
             "title": "Time range",
             "options": {
                 "token": "global_time",
-                "defaultValue": {"earliest": "-24h", "latest": "now"},
+                "defaultValue": "-24h,now",
             },
         }
         defaults["dataSources"] = {
@@ -122,7 +120,6 @@ def build_dashboard(
         "defaults": defaults,
         "layout": layout_block,
     }
-    apply_theme(dashboard, theme)
     return dashboard
 
 
@@ -156,8 +153,6 @@ def _cli(argv=None) -> int:
                        help="Omit the global time-range input and defaults block")
     build.add_argument("--layout", choices=["absolute", "grid"], default="absolute",
                        help="Layout type (default: absolute)")
-    build.add_argument("--theme", choices=["clean", "soc", "ops", "exec"], default="clean",
-                       help="Visual theme (default: clean, no-op)")
 
     args = parser.parse_args(argv)
 
@@ -186,7 +181,6 @@ def _cli(argv=None) -> int:
             description=args.description,
             with_time_input=not args.no_time_input,
             layout_type=args.layout,
-            theme=args.theme,
         )
         ws = get_workspace_dir(args.project)
         path = ws / DASHBOARD_FILENAME

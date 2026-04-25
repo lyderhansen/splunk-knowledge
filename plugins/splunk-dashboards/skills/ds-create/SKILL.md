@@ -86,21 +86,9 @@ Panels in `layout.json` can carry a `drilldown` field:
 
 `ds-create` translates this into `options.drilldown = "all"` and `options.drilldownAction = <drilldown value>` on the matching visualization, enabling click-through behavior in the rendered dashboard.
 
-## Theme
+## Splunk Enterprise and Cloud compatibility
 
-Pass `--theme {clean|soc|ops|exec}` to apply visual styling. Default is `clean` (no-op).
-
-- **clean** — minimal, preserves Splunk defaults.
-- **soc** — security-ops palette. Failures render red, successes green, with sparklines on count-type KPIs.
-- **ops** — cool-blue operations palette with traffic-light semantic coloring.
-- **exec** — muted executive palette with subtle accents for critical states.
-
-Non-`clean` themes also:
-- Set `seriesColors` on chart-type visualizations from the theme's palette.
-- Hide minor gridlines for a cleaner look.
-- Insert an automatic `splunk.markdown` header panel at the top with the dashboard title and description.
-
-The semantic engine reads each panel's SPL and title to detect tags (`failure`, `success`, `latency`, `count`, `volume`, `critical`) and applies the theme's color for the most specific match.
+`ds-create` emits **native Dashboard Studio v2 JSON only** — no custom CSS, no JavaScript, no app dependencies. Output runs unmodified on Splunk Enterprise (9.x+) and Splunk Cloud.
 
 ## After building
 
@@ -110,6 +98,20 @@ The semantic engine reads each panel's SPL and title to detect tags (`failure`, 
 
 ## Design considerations
 
-If the layout picked viz types that don't fit the data shape, consult **`ds-design-principles`** — specifically the "Chart selection" decision table. Then invoke `ds-update` to swap viz types before building the final JSON.
+The CLI builds the mechanical skeleton (data sources, visualizations, structure) directly from the workspace. It does not style the dashboard — that is Claude's job during the build.
 
-The `--theme {soc|ops|exec}` flags apply the color semantics described in the design-principles skill automatically.
+Before invoking the CLI, consult:
+
+- **`ds-design-principles`** — archetypes, KPI sizing, chart selection decision table, semantic color palette, canvas tokens.
+- **`ds-syntax`** — the Dashboard Studio v2 JSON schema (required/optional fields, Dynamic Options Syntax, token bindings).
+- **`ds-viz`** — per-visualization option reference.
+
+After the CLI writes `dashboard.json`, enrich the file directly:
+
+- Set `layout.options.backgroundColor` to the canvas token that matches the chosen mode (`#0b0c0e` for dark, `#FAFAF7` for light, `#000000` for NOC wall).
+- Populate per-viz `options` with the semantic palette (e.g. failure KPIs get `"majorColor": "#DC4E41"`).
+- Add `splunk.rectangle` cards behind KPI rows for depth (place first in `layout.structure` so they render behind the panels).
+- Add `splunk.markdown` section headers between zones when panel count > 6.
+- Wire `trendValue`, `sparklineValue`, or `majorValue` Dynamic Options Syntax expressions on singlevalues that have time-series data.
+
+If the layout picked viz types that don't fit the data shape, use the "Chart selection" decision table in `ds-design-principles` and invoke `ds-update` to swap viz types before running the CLI.
