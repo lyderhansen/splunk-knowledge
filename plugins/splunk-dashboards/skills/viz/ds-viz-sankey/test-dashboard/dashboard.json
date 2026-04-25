@@ -1,0 +1,180 @@
+{
+  "title": "ds-viz-sankey - option matrix (dark)",
+  "description": "Test bench for splunk.sankey. Verifies all options from the 10.4 PDF: backgroundColor, colorMode (categorical|dynamic), linkOpacity, linkValues, linkColors, resultLimit, seriesColors. Also tests three required fields (source, target, value) and the optional fourth dynamic-coloring field (value2).",
+  "defaults": {
+    "dataSources": {
+      "global": {
+        "options": {
+          "queryParameters": { "earliest": "-24h@h", "latest": "now" }
+        }
+      }
+    },
+    "visualizations": {
+      "global": { "showProgressBar": false, "showLastUpdated": false }
+    }
+  },
+  "dataSources": {
+    "ds_energy": {
+      "type": "ds.test",
+      "name": "canonical PDF example - energy flow with source target value value2",
+      "options": {
+        "data": {
+          "columns": [
+            ["Oil","Natural Gas","Coal","Coal","Fossil Fuels","Electricity","Electricity","Energy"],
+            ["Fossil Fuels","Fossil Fuels","Fossil Fuels","Electricity","Energy","Energy","Electricity","Oil"],
+            [15,20,25,25,60,25,5,2],
+            [1,20,3,4,50,6,7,8]
+          ],
+          "fields": ["source","target","value","value2"]
+        }
+      }
+    },
+    "ds_funnel": {
+      "type": "ds.search",
+      "name": "ecommerce funnel - landing -> product -> cart -> checkout -> purchase",
+      "options": {
+        "query": "| makeresults count=5 | streamstats count AS rn | eval source = case(rn==1,\"Landing\", rn==2,\"Product\", rn==3,\"Cart\", rn==4,\"Checkout\", rn==5,\"Login\") | eval target = case(rn==1,\"Product\", rn==2,\"Cart\", rn==3,\"Checkout\", rn==4,\"Purchase\", rn==5,\"Cart\") | eval value = case(rn==1,1000, rn==2,420, rn==3,260, rn==4,180, rn==5,90) | table source target value"
+      }
+    },
+    "ds_workflow": {
+      "type": "ds.search",
+      "name": "support workflow - intake -> triage -> queue -> resolution",
+      "options": {
+        "query": "| makeresults count=8 | streamstats count AS rn | eval source = case(rn==1,\"Intake\", rn==2,\"Intake\", rn==3,\"Triage\", rn==4,\"Triage\", rn==5,\"Queue-A\", rn==6,\"Queue-A\", rn==7,\"Queue-B\", rn==8,\"Queue-B\") | eval target = case(rn==1,\"Triage\", rn==2,\"Auto-Resolve\", rn==3,\"Queue-A\", rn==4,\"Queue-B\", rn==5,\"Resolved\", rn==6,\"Escalated\", rn==7,\"Resolved\", rn==8,\"Escalated\") | eval value = case(rn==1,500, rn==2,150, rn==3,300, rn==4,200, rn==5,260, rn==6,40, rn==7,170, rn==8,30) | table source target value"
+      }
+    },
+    "ds_dynamic": {
+      "type": "ds.search",
+      "name": "flow with severity - source target value severity (for dynamic coloring)",
+      "options": {
+        "query": "| makeresults count=6 | streamstats count AS rn | eval source = case(rn==1,\"DC1\", rn==2,\"DC1\", rn==3,\"DC2\", rn==4,\"DC2\", rn==5,\"DC3\", rn==6,\"DC3\") | eval target = case(rn==1,\"App-A\", rn==2,\"App-B\", rn==3,\"App-A\", rn==4,\"App-C\", rn==5,\"App-B\", rn==6,\"App-C\") | eval value = case(rn==1,200, rn==2,80, rn==3,140, rn==4,60, rn==5,90, rn==6,50) | eval severity = case(rn==1,1, rn==2,3, rn==3,2, rn==4,5, rn==5,1, rn==6,4) | table source target value severity"
+      }
+    }
+  },
+  "visualizations": {
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# `splunk.sankey` - option matrix\n\nSankey diagrams show **proportional flow between node entities**. The width of each link is proportional to the value field. Best for funnels, energy/material flows, workflow routing, attribution, and budget breakdowns.\n\nFull options list from the **10.4 PDF**:\n- `backgroundColor`\n- `colorMode` (`categorical` | `dynamic`)\n- `linkOpacity` (default `0.5`)\n- `linkValues` - DOS for the link width field\n- `linkColors` - DOS for per-link coloring (used with `colorMode: dynamic`)\n- `resultLimit` (default `1000`)\n- `seriesColors`\n\n**Required fields**: `source`, `target`, `value`. Optional 4th field for dynamic coloring.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default"
+      }
+    },
+    "viz_default": {
+      "type": "splunk.sankey",
+      "title": "1. Default - canonical energy example",
+      "description": "PDF canonical: Oil/Gas/Coal -> Fossil Fuels -> Energy + Electricity. Default colorMode=categorical, linkOpacity=0.5.",
+      "dataSources": { "primary": "ds_energy" }
+    },
+    "viz_funnel": {
+      "type": "splunk.sankey",
+      "title": "2. Ecommerce funnel",
+      "description": "Landing -> Product -> Cart -> Checkout -> Purchase. Drop-offs are visually obvious from link widths.",
+      "dataSources": { "primary": "ds_funnel" }
+    },
+    "viz_workflow": {
+      "type": "splunk.sankey",
+      "title": "3. Support routing",
+      "description": "Multi-stage workflow: Intake branches to Triage / Auto-Resolve, etc.",
+      "dataSources": { "primary": "ds_workflow" }
+    },
+    "viz_low_opacity": {
+      "type": "splunk.sankey",
+      "title": "4. linkOpacity=0.2",
+      "description": "Editorial - de-emphasizes flow weight, lets node labels breathe.",
+      "dataSources": { "primary": "ds_energy" },
+      "options": { "linkOpacity": 0.2 }
+    },
+    "viz_high_opacity": {
+      "type": "splunk.sankey",
+      "title": "5. linkOpacity=0.9",
+      "description": "Maximum saturation - flow becomes the visual headline.",
+      "dataSources": { "primary": "ds_energy" },
+      "options": { "linkOpacity": 0.9 }
+    },
+    "viz_custom_palette": {
+      "type": "splunk.sankey",
+      "title": "6. Custom seriesColors",
+      "description": "Brand palette override. seriesColors assigns one color per source node.",
+      "dataSources": { "primary": "ds_workflow" },
+      "options": {
+        "seriesColors": "#1F77B4,#FF6F50,#9C27B0,#26A69A,#FFC107,#5C6BC0,#EC407A"
+      }
+    },
+    "viz_dynamic_color": {
+      "type": "splunk.sankey",
+      "title": "7. colorMode=dynamic by severity field",
+      "description": "Links are colored by the severity field via DOS rangeValue. Higher severity -> hotter color.",
+      "dataSources": { "primary": "ds_dynamic" },
+      "options": {
+        "colorMode": "dynamic",
+        "linkColors": "> primary | seriesByName(\"severity\") | rangeValue(linkColorRangeConfig)"
+      }
+    },
+    "viz_tinted_background": {
+      "type": "splunk.sankey",
+      "title": "8. Custom backgroundColor",
+      "description": "Editorial panel tint - night-mode-on-night-mode for SOC walls.",
+      "dataSources": { "primary": "ds_funnel" },
+      "options": { "backgroundColor": "#101A33", "linkOpacity": 0.7 }
+    },
+    "viz_result_limit_high": {
+      "type": "splunk.sankey",
+      "title": "9. resultLimit=2000",
+      "description": "Defaults to 1000 rows. Raise when you have very wide flows. Lower for performance.",
+      "dataSources": { "primary": "ds_workflow" },
+      "options": { "resultLimit": 2000 }
+    },
+    "viz_result_limit_low": {
+      "type": "splunk.sankey",
+      "title": "10. resultLimit=4 (truncated)",
+      "description": "Demonstrates truncation behavior - only first N rows render. Workflow data is intentionally cut off.",
+      "dataSources": { "primary": "ds_workflow" },
+      "options": { "resultLimit": 4 }
+    },
+    "viz_link_values_explicit": {
+      "type": "splunk.sankey",
+      "title": "11. Explicit linkValues binding",
+      "description": "Uses linkValues DOS to pick value2 instead of value, demonstrating field selection from a multi-numeric data source.",
+      "dataSources": { "primary": "ds_energy" },
+      "options": {
+        "linkValues": "> primary | seriesByName(\"value2\")"
+      }
+    },
+    "viz_alert_palette": {
+      "type": "splunk.sankey",
+      "title": "12. Alert / SOC palette",
+      "description": "Severity-coded series colors for security flow visualizations.",
+      "dataSources": { "primary": "ds_dynamic" },
+      "options": {
+        "seriesColors": "#C2185B,#E89A2C,#1F77B4,#26A69A,#7B56DB,#FF677B"
+      }
+    }
+  },
+  "inputs": {},
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 2640,
+      "display": "auto-scale",
+      "backgroundColor": "#0F1729"
+    },
+    "structure": [
+      { "item": "viz_title", "type": "block", "position": { "x": 20, "y": 20, "w": 1400, "h": 220 } },
+      { "item": "viz_default", "type": "block", "position": { "x": 20, "y": 260, "w": 690, "h": 320 } },
+      { "item": "viz_funnel", "type": "block", "position": { "x": 730, "y": 260, "w": 690, "h": 320 } },
+      { "item": "viz_workflow", "type": "block", "position": { "x": 20, "y": 600, "w": 690, "h": 320 } },
+      { "item": "viz_low_opacity", "type": "block", "position": { "x": 730, "y": 600, "w": 690, "h": 320 } },
+      { "item": "viz_high_opacity", "type": "block", "position": { "x": 20, "y": 940, "w": 690, "h": 320 } },
+      { "item": "viz_custom_palette", "type": "block", "position": { "x": 730, "y": 940, "w": 690, "h": 320 } },
+      { "item": "viz_dynamic_color", "type": "block", "position": { "x": 20, "y": 1280, "w": 690, "h": 320 } },
+      { "item": "viz_tinted_background", "type": "block", "position": { "x": 730, "y": 1280, "w": 690, "h": 320 } },
+      { "item": "viz_result_limit_high", "type": "block", "position": { "x": 20, "y": 1620, "w": 690, "h": 320 } },
+      { "item": "viz_result_limit_low", "type": "block", "position": { "x": 730, "y": 1620, "w": 690, "h": 320 } },
+      { "item": "viz_link_values_explicit", "type": "block", "position": { "x": 20, "y": 1960, "w": 690, "h": 340 } },
+      { "item": "viz_alert_palette", "type": "block", "position": { "x": 730, "y": 1960, "w": 690, "h": 340 } }
+    ],
+    "globalInputs": []
+  }
+}
