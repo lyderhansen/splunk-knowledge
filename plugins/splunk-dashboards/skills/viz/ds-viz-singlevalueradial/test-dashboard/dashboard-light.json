@@ -1,0 +1,467 @@
+{
+  "title": "ds-viz-singlevalueradial - option matrix (light)",
+  "description": "Test bench for splunk.singlevalueradial. Each panel exercises one option group: maxValue (the fill ceiling), majorValue / majorColor, radialBackgroundColor (track) vs. radialStrokeColor (filled arc), trendDisplay (absolute / percent / off), shouldAbbreviateTrendValue + thousand separators, dynamic colour via DOS / rangeValue, backgroundColor override. SPL is makeresults-based.",
+  "defaults": {
+    "dataSources": {
+      "global": {
+        "options": {
+          "queryParameters": {
+            "earliest": "-24h@h",
+            "latest": "now"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": false,
+        "showLastUpdated": false
+      }
+    }
+  },
+  "dataSources": {
+    "ds_pct_high": {
+      "type": "ds.search",
+      "name": "percent kpi - high (95)",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval pct = round(92 + sin(i/4)*3 + random()%4) | table _time pct"
+      }
+    },
+    "ds_pct_mid": {
+      "type": "ds.search",
+      "name": "percent kpi - mid (62)",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval pct = round(58 + sin(i/4)*5 + random()%4) | table _time pct"
+      }
+    },
+    "ds_pct_low": {
+      "type": "ds.search",
+      "name": "percent kpi - low (32)",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval pct = round(28 + sin(i/4)*4 + random()%4) | table _time pct"
+      }
+    },
+    "ds_disk_usage": {
+      "type": "ds.search",
+      "name": "disk usage - dynamic colour",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval used_gb = round(420 + i*8 + random()%20) | table _time used_gb"
+      }
+    },
+    "ds_quota_progress": {
+      "type": "ds.search",
+      "name": "quota progress - 0-1000",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval orders = round(420 + i*15 + random()%30) | table _time orders"
+      }
+    },
+    "ds_kpi_static": {
+      "type": "ds.search",
+      "name": "static kpi - no trend",
+      "options": {
+        "query": "| makeresults | eval pct = 78 | table pct"
+      }
+    }
+  },
+  "visualizations": {
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# `splunk.singlevalueradial` - option matrix (light)\n\nLight-theme companion to `ds_viz_singlevalueradial_dark`. Track / arc / number colours retuned for light backgrounds.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default"
+      }
+    },
+    "viz_default": {
+      "type": "splunk.singlevalueradial",
+      "title": "1. Default - high pct (92), maxValue=100",
+      "description": "Pure default. majorValue is the last point, maxValue defaults to 100 so the value is also the percent fill. radialStrokeColor falls back to majorColor (theme primary). Reads as 'almost full'.",
+      "dataSources": {
+        "primary": "ds_pct_high"
+      },
+      "options": {
+        "underLabel": "Uptime SLA",
+        "unit": "%",
+        "unitPosition": "after",
+        "trendDisplay": "percent"
+      }
+    },
+    "viz_mid_pct": {
+      "type": "splunk.singlevalueradial",
+      "title": "2. Mid pct (62) - showing track + arc",
+      "description": "Same options, mid value. Makes the contrast between `radialBackgroundColor` (the unfilled track) and `radialStrokeColor` (the filled arc) visible. The track is theme-default; only the arc is the message.",
+      "dataSources": {
+        "primary": "ds_pct_mid"
+      },
+      "options": {
+        "underLabel": "Goal progress",
+        "unit": "%",
+        "unitPosition": "after",
+        "trendDisplay": "percent"
+      }
+    },
+    "viz_low_pct": {
+      "type": "splunk.singlevalueradial",
+      "title": "3. Low pct (32) - inverse-readable",
+      "description": "Low value. The eye reads the *unfilled* portion as 'how much is left'. For metrics where low is bad (uptime, completion), pair with dynamic majorColor.",
+      "dataSources": {
+        "primary": "ds_pct_low"
+      },
+      "options": {
+        "underLabel": "Capacity used",
+        "unit": "%",
+        "unitPosition": "after",
+        "trendDisplay": "absolute"
+      }
+    },
+    "viz_custom_max": {
+      "type": "splunk.singlevalueradial",
+      "title": "4. maxValue 1000 - non-percentage radial",
+      "description": "maxValue = 1000 lets the radial display absolute progress against a target (orders towards a daily quota of 1000). The number stays as-is; only the fill ratio changes.",
+      "dataSources": {
+        "primary": "ds_quota_progress"
+      },
+      "options": {
+        "maxValue": 1000,
+        "underLabel": "Orders / 1000 quota",
+        "unit": "",
+        "trendDisplay": "absolute",
+        "shouldAbbreviateTrendValue": true
+      }
+    },
+    "viz_dynamic_arc": {
+      "type": "splunk.singlevalueradial",
+      "title": "5. Dynamic radialStrokeColor via rangeValue",
+      "description": "radialStrokeColor uses Dynamic Options Syntax to traffic-light the arc. Pattern: `> primary | seriesByName(field) | lastPoint() | rangeValue(thresholds)`. Arc colour follows the value; majorColor stays neutral so the number doesn't compete.",
+      "dataSources": {
+        "primary": "ds_pct_low"
+      },
+      "options": {
+        "underLabel": "Backup completion",
+        "unit": "%",
+        "unitPosition": "after",
+        "trendDisplay": "absolute",
+        "radialStrokeColor": "> primary | seriesByName('pct') | lastPoint() | rangeValue(thresholds)"
+      },
+      "context": {
+        "thresholds": [
+          {
+            "to": 50,
+            "value": "#C2185B"
+          },
+          {
+            "from": 50,
+            "to": 80,
+            "value": "#E89A2C"
+          },
+          {
+            "from": 80,
+            "value": "#1F77B4"
+          }
+        ]
+      }
+    },
+    "viz_dynamic_major": {
+      "type": "splunk.singlevalueradial",
+      "title": "6. Dynamic majorColor (number colour, fixed arc)",
+      "description": "Inverse pattern to #5: arc stays a calm hue, number flips on threshold. Reads as 'this value is in trouble' without redrawing the arc geometry.",
+      "dataSources": {
+        "primary": "ds_pct_low"
+      },
+      "options": {
+        "underLabel": "Capacity used",
+        "unit": "%",
+        "unitPosition": "after",
+        "trendDisplay": "absolute",
+        "radialStrokeColor": "#3F6FB7",
+        "majorColor": "> primary | seriesByName('pct') | lastPoint() | rangeValue(majorThresholds)"
+      },
+      "context": {
+        "majorThresholds": [
+          {
+            "to": 40,
+            "value": "#1F77B4"
+          },
+          {
+            "from": 40,
+            "to": 70,
+            "value": "#E89A2C"
+          },
+          {
+            "from": 70,
+            "value": "#C2185B"
+          }
+        ]
+      }
+    },
+    "viz_radial_bg": {
+      "type": "splunk.singlevalueradial",
+      "title": "7. Custom radialBackgroundColor (track)",
+      "description": "radialBackgroundColor sets the *unfilled* track. Default is a low-alpha theme tone. Override when the theme background is unusual or you want the track to disappear (set to transparent or to the panel bg).",
+      "dataSources": {
+        "primary": "ds_pct_mid"
+      },
+      "options": {
+        "underLabel": "Project progress",
+        "unit": "%",
+        "unitPosition": "after",
+        "trendDisplay": "percent",
+        "radialBackgroundColor": "rgba(63, 111, 183, 0.15)",
+        "radialStrokeColor": "#1F77B4"
+      }
+    },
+    "viz_no_trend": {
+      "type": "splunk.singlevalueradial",
+      "title": "8. trendDisplay: off (static radial)",
+      "description": "Single-row data source, no time. trendDisplay = 'off' suppresses the delta. The radial alone carries the message - common pattern for quotas, completion bars, and configuration health.",
+      "dataSources": {
+        "primary": "ds_kpi_static"
+      },
+      "options": {
+        "underLabel": "Health score",
+        "unit": "/100",
+        "unitPosition": "after",
+        "trendDisplay": "off"
+      }
+    },
+    "viz_disk_dynamic": {
+      "type": "splunk.singlevalueradial",
+      "title": "9. Disk usage - both arc + number flip",
+      "description": "Combines #5 and #6. Both `radialStrokeColor` AND `majorColor` are DOS-driven against the same thresholds. maxValue = 1000 (GB). Use sparingly - it's a strong visual but multiple of these compete on the same dashboard.",
+      "dataSources": {
+        "primary": "ds_disk_usage"
+      },
+      "options": {
+        "maxValue": 1000,
+        "underLabel": "Disk used (GB)",
+        "trendDisplay": "absolute",
+        "shouldAbbreviateTrendValue": true,
+        "radialStrokeColor": "> primary | seriesByName('used_gb') | lastPoint() | rangeValue(diskThresholds)",
+        "majorColor": "> primary | seriesByName('used_gb') | lastPoint() | rangeValue(diskThresholds)"
+      },
+      "context": {
+        "diskThresholds": [
+          {
+            "to": 600,
+            "value": "#1F77B4"
+          },
+          {
+            "from": 600,
+            "to": 800,
+            "value": "#E89A2C"
+          },
+          {
+            "from": 800,
+            "value": "#C2185B"
+          }
+        ]
+      }
+    },
+    "viz_dynamic_bg": {
+      "type": "splunk.singlevalueradial",
+      "title": "10. Dynamic backgroundColor (whole tile)",
+      "description": "backgroundColor flips the entire tile on threshold. Lock majorColor + radialStrokeColor to a contrast colour so the radial stays readable when the bg goes dark. Use sparingly - one alarm tile per dashboard.",
+      "dataSources": {
+        "primary": "ds_disk_usage"
+      },
+      "options": {
+        "maxValue": 1000,
+        "underLabel": "Disk used (GB)",
+        "trendDisplay": "absolute",
+        "shouldAbbreviateTrendValue": true,
+        "majorColor": "#1A1A1A",
+        "radialStrokeColor": "#1A1A1A",
+        "radialBackgroundColor": "rgba(26, 26, 26, 0.2)",
+        "backgroundColor": "> primary | seriesByName('used_gb') | lastPoint() | rangeValue(bgThresholds)"
+      },
+      "context": {
+        "bgThresholds": [
+          {
+            "to": 600,
+            "value": "#E8F1F8"
+          },
+          {
+            "from": 600,
+            "to": 800,
+            "value": "#F8E4C8"
+          },
+          {
+            "from": 800,
+            "value": "#F5D6E0"
+          }
+        ]
+      }
+    },
+    "viz_separators_off": {
+      "type": "splunk.singlevalueradial",
+      "title": "11. shouldUseThousandSeparators - false",
+      "description": "Strips commas. Less common for radials than for plain singlevalue (radials usually display percentages or small absolute numbers), but works the same way.",
+      "dataSources": {
+        "primary": "ds_quota_progress"
+      },
+      "options": {
+        "maxValue": 2000,
+        "underLabel": "Items / 2000",
+        "trendDisplay": "off",
+        "shouldUseThousandSeparators": false
+      }
+    },
+    "viz_precision": {
+      "type": "splunk.singlevalueradial",
+      "title": "12. numberPrecision 2 + unitPosition before",
+      "description": "numberPrecision = 2 gives two decimals. unitPosition = 'before' is the standard for currency. Pattern for 'X.XX$ of Y$' style metrics rendered as a radial.",
+      "dataSources": {
+        "primary": "ds_pct_mid"
+      },
+      "options": {
+        "underLabel": "Margin %",
+        "unit": "%",
+        "unitPosition": "after",
+        "numberPrecision": 2,
+        "trendDisplay": "percent",
+        "radialStrokeColor": "#3F6FB7"
+      }
+    }
+  },
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 1480,
+      "display": "auto-scale"
+    },
+    "structure": [
+      {
+        "item": "viz_title",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 16,
+          "w": 1408,
+          "h": 96
+        }
+      },
+      {
+        "item": "viz_default",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 128,
+          "w": 460,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_mid_pct",
+        "type": "block",
+        "position": {
+          "x": 492,
+          "y": 128,
+          "w": 460,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_low_pct",
+        "type": "block",
+        "position": {
+          "x": 968,
+          "y": 128,
+          "w": 456,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_custom_max",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 364,
+          "w": 460,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_dynamic_arc",
+        "type": "block",
+        "position": {
+          "x": 492,
+          "y": 364,
+          "w": 460,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_dynamic_major",
+        "type": "block",
+        "position": {
+          "x": 968,
+          "y": 364,
+          "w": 456,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_radial_bg",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 600,
+          "w": 460,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_no_trend",
+        "type": "block",
+        "position": {
+          "x": 492,
+          "y": 600,
+          "w": 460,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_disk_dynamic",
+        "type": "block",
+        "position": {
+          "x": 968,
+          "y": 600,
+          "w": 456,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_dynamic_bg",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 836,
+          "w": 460,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_separators_off",
+        "type": "block",
+        "position": {
+          "x": 492,
+          "y": 836,
+          "w": 460,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_precision",
+        "type": "block",
+        "position": {
+          "x": 968,
+          "y": 836,
+          "w": 456,
+          "h": 220
+        }
+      }
+    ],
+    "globalInputs": []
+  }
+}
