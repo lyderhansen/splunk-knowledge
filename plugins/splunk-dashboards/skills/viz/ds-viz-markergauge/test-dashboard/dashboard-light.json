@@ -1,0 +1,480 @@
+{
+  "title": "ds-viz-markergauge - option matrix (light)",
+  "description": "Light-theme companion to ds_viz_markergauge_dark.",
+  "defaults": {
+    "dataSources": {
+      "global": {
+        "options": {
+          "queryParameters": {
+            "earliest": "-24h@h",
+            "latest": "now"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": false,
+        "showLastUpdated": false
+      }
+    }
+  },
+  "dataSources": {
+    "ds_kpi_low": {
+      "type": "ds.search",
+      "name": "kpi - low value (22)",
+      "options": {
+        "query": "| makeresults | eval value = 22 | table value"
+      }
+    },
+    "ds_kpi_mid": {
+      "type": "ds.search",
+      "name": "kpi - mid value (58)",
+      "options": {
+        "query": "| makeresults | eval value = 58 | table value"
+      }
+    },
+    "ds_kpi_high": {
+      "type": "ds.search",
+      "name": "kpi - high value (94)",
+      "options": {
+        "query": "| makeresults | eval value = 94 | table value"
+      }
+    },
+    "ds_nps": {
+      "type": "ds.search",
+      "name": "nps score - 0 to 100",
+      "options": {
+        "query": "| makeresults | eval value = 64 | table value"
+      }
+    },
+    "ds_latency": {
+      "type": "ds.search",
+      "name": "latency ms - 0 to 1000",
+      "options": {
+        "query": "| makeresults | eval value = 320 | table value"
+      }
+    },
+    "ds_csat": {
+      "type": "ds.search",
+      "name": "csat - 0 to 5",
+      "options": {
+        "query": "| makeresults | eval value = 4.2 | table value"
+      }
+    }
+  },
+  "visualizations": {
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# `splunk.markergauge` - option matrix (light)\n\nLight-theme companion. Band colours retuned for light backgrounds: `#1F77B4` (blue), `#E89A2C` (amber), `#C2185B` (rose). Marker contrast preserved.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default"
+      }
+    },
+    "viz_default_low": {
+      "type": "splunk.markergauge",
+      "title": "1. Default - vertical, low value (22)",
+      "description": "Pure default. orientation=vertical, labelDisplay=number, valueDisplay=number, gaugeRanges falls back to a 3-band default. The marker sits at the bottom of the gauge - low value reads instantly.",
+      "dataSources": {
+        "primary": "ds_kpi_low"
+      }
+    },
+    "viz_default_mid": {
+      "type": "splunk.markergauge",
+      "title": "2. Default - vertical, mid value (58)",
+      "description": "Same options, mid value. The marker sits in the middle band. The default colour palette is theme-driven.",
+      "dataSources": {
+        "primary": "ds_kpi_mid"
+      }
+    },
+    "viz_default_high": {
+      "type": "splunk.markergauge",
+      "title": "3. Default - vertical, high value (94)",
+      "description": "Same options, high value. Marker sits near the top.",
+      "dataSources": {
+        "primary": "ds_kpi_high"
+      }
+    },
+    "viz_horizontal": {
+      "type": "splunk.markergauge",
+      "title": "4. orientation: horizontal",
+      "description": "Same data, horizontal axis. Use horizontal in dense rows of KPIs where vertical gauges would cramp; vertical reads better when the gauge has space to breathe (executive boards).",
+      "dataSources": {
+        "primary": "ds_kpi_mid"
+      },
+      "options": {
+        "orientation": "horizontal"
+      }
+    },
+    "viz_traffic_light": {
+      "type": "splunk.markergauge",
+      "title": "5. gaugeRanges - traffic light (low good, high bad)",
+      "description": "Three-band traffic light using the user-confirmed syntax: `[{\"from\":0,\"to\":50,\"value\":\"#33FF99\"},{\"from\":50,\"to\":80,\"value\":\"#FFB627\"},{\"from\":80,\"to\":100,\"value\":\"#FF2D95\"}]`. Bands MUST be contiguous - leave a gap and the missing range renders grey.",
+      "dataSources": {
+        "primary": "ds_kpi_high"
+      },
+      "options": {
+        "gaugeRanges": [
+          {
+            "from": 0,
+            "to": 50,
+            "value": "#1F77B4"
+          },
+          {
+            "from": 50,
+            "to": 80,
+            "value": "#E89A2C"
+          },
+          {
+            "from": 80,
+            "to": 100,
+            "value": "#C2185B"
+          }
+        ]
+      }
+    },
+    "viz_inverse_traffic": {
+      "type": "splunk.markergauge",
+      "title": "6. gaugeRanges - inverse (high good, low bad)",
+      "description": "Same bands flipped. Use for metrics where high IS good (uptime, completion, NPS). The marker on the far right reads as 'in the green zone'.",
+      "dataSources": {
+        "primary": "ds_kpi_high"
+      },
+      "options": {
+        "gaugeRanges": [
+          {
+            "from": 0,
+            "to": 50,
+            "value": "#C2185B"
+          },
+          {
+            "from": 50,
+            "to": 80,
+            "value": "#E89A2C"
+          },
+          {
+            "from": 80,
+            "to": 100,
+            "value": "#1F77B4"
+          }
+        ],
+        "orientation": "horizontal"
+      }
+    },
+    "viz_nps_bands": {
+      "type": "splunk.markergauge",
+      "title": "7. NPS bands (-100 to 100 mapped to 0-100)",
+      "description": "NPS score banded as Detractor / Passive / Promoter. Real NPS is -100..100; here we use 0..100 with `from:0, to:30` (detractor), `from:30, to:70` (passive), `from:70, to:100` (promoter). Marker at 64 reads as 'passive, leaning promoter'.",
+      "dataSources": {
+        "primary": "ds_nps"
+      },
+      "options": {
+        "gaugeRanges": [
+          {
+            "from": 0,
+            "to": 30,
+            "value": "#C2185B"
+          },
+          {
+            "from": 30,
+            "to": 70,
+            "value": "#E89A2C"
+          },
+          {
+            "from": 70,
+            "to": 100,
+            "value": "#1F77B4"
+          }
+        ],
+        "orientation": "horizontal"
+      }
+    },
+    "viz_latency": {
+      "type": "splunk.markergauge",
+      "title": "8. Latency budget (0-1000ms)",
+      "description": "Bands extended to 1000. The gauge auto-scales to the gaugeRanges total span. Marker at 320ms reads as 'inside the warning zone'.",
+      "dataSources": {
+        "primary": "ds_latency"
+      },
+      "options": {
+        "gaugeRanges": [
+          {
+            "from": 0,
+            "to": 200,
+            "value": "#1F77B4"
+          },
+          {
+            "from": 200,
+            "to": 500,
+            "value": "#E89A2C"
+          },
+          {
+            "from": 500,
+            "to": 1000,
+            "value": "#C2185B"
+          }
+        ],
+        "orientation": "horizontal"
+      }
+    },
+    "viz_csat_small": {
+      "type": "splunk.markergauge",
+      "title": "9. CSAT 0-5 (small range)",
+      "description": "Small ranges (0-5, 0-10) work fine. The marker at 4.2 sits in the green band. Useful for ratings, scores, grade scales.",
+      "dataSources": {
+        "primary": "ds_csat"
+      },
+      "options": {
+        "gaugeRanges": [
+          {
+            "from": 0,
+            "to": 2.5,
+            "value": "#C2185B"
+          },
+          {
+            "from": 2.5,
+            "to": 4,
+            "value": "#E89A2C"
+          },
+          {
+            "from": 4,
+            "to": 5,
+            "value": "#1F77B4"
+          }
+        ],
+        "orientation": "horizontal"
+      }
+    },
+    "viz_label_off": {
+      "type": "splunk.markergauge",
+      "title": "10. labelDisplay: off, valueDisplay: off",
+      "description": "Strips the band labels and the value readout. Result is a pure visual band - useful when the dashboard already has the value in a separate singlevalue tile and the gauge is just the contextual band.",
+      "dataSources": {
+        "primary": "ds_kpi_mid"
+      },
+      "options": {
+        "gaugeRanges": [
+          {
+            "from": 0,
+            "to": 50,
+            "value": "#1F77B4"
+          },
+          {
+            "from": 50,
+            "to": 80,
+            "value": "#E89A2C"
+          },
+          {
+            "from": 80,
+            "to": 100,
+            "value": "#C2185B"
+          }
+        ],
+        "labelDisplay": "off",
+        "valueDisplay": "off"
+      }
+    },
+    "viz_label_percentage": {
+      "type": "splunk.markergauge",
+      "title": "11. labelDisplay: percentage, valueDisplay: percentage",
+      "description": "Renders both band labels and the value as percentages of the total range. With `from:0, to:100` they're identical to the numbers; with `from:0, to:1000` (latency) they map to 0% / 50% / 100%. Use when the *position* matters more than the absolute number.",
+      "dataSources": {
+        "primary": "ds_latency"
+      },
+      "options": {
+        "gaugeRanges": [
+          {
+            "from": 0,
+            "to": 200,
+            "value": "#1F77B4"
+          },
+          {
+            "from": 200,
+            "to": 500,
+            "value": "#E89A2C"
+          },
+          {
+            "from": 500,
+            "to": 1000,
+            "value": "#C2185B"
+          }
+        ],
+        "labelDisplay": "percentage",
+        "valueDisplay": "percentage",
+        "orientation": "horizontal"
+      }
+    },
+    "viz_majortick": {
+      "type": "splunk.markergauge",
+      "title": "12. majorTickInterval custom + custom backgroundColor",
+      "description": "majorTickInterval controls the pixel spacing of the major ticks. Pin it when the auto layout produces too few or too many ticks. backgroundColor here is set to a panel-tint hex - useful for highlighting alarm tiles without losing the gauge bands.",
+      "dataSources": {
+        "primary": "ds_kpi_high"
+      },
+      "options": {
+        "gaugeRanges": [
+          {
+            "from": 0,
+            "to": 50,
+            "value": "#1F77B4"
+          },
+          {
+            "from": 50,
+            "to": 80,
+            "value": "#E89A2C"
+          },
+          {
+            "from": 80,
+            "to": 100,
+            "value": "#C2185B"
+          }
+        ],
+        "majorTickInterval": 20,
+        "backgroundColor": "#F5E8F0",
+        "orientation": "horizontal"
+      }
+    }
+  },
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 1480,
+      "display": "auto-scale"
+    },
+    "structure": [
+      {
+        "item": "viz_title",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 16,
+          "w": 1408,
+          "h": 96
+        }
+      },
+      {
+        "item": "viz_default_low",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 128,
+          "w": 460,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_default_mid",
+        "type": "block",
+        "position": {
+          "x": 492,
+          "y": 128,
+          "w": 460,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_default_high",
+        "type": "block",
+        "position": {
+          "x": 968,
+          "y": 128,
+          "w": 456,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_horizontal",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 424,
+          "w": 460,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_traffic_light",
+        "type": "block",
+        "position": {
+          "x": 492,
+          "y": 424,
+          "w": 460,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_inverse_traffic",
+        "type": "block",
+        "position": {
+          "x": 968,
+          "y": 424,
+          "w": 456,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_nps_bands",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 660,
+          "w": 460,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_latency",
+        "type": "block",
+        "position": {
+          "x": 492,
+          "y": 660,
+          "w": 460,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_csat_small",
+        "type": "block",
+        "position": {
+          "x": 968,
+          "y": 660,
+          "w": 456,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_label_off",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 896,
+          "w": 460,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_label_percentage",
+        "type": "block",
+        "position": {
+          "x": 492,
+          "y": 896,
+          "w": 460,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_majortick",
+        "type": "block",
+        "position": {
+          "x": 968,
+          "y": 896,
+          "w": 456,
+          "h": 220
+        }
+      }
+    ],
+    "globalInputs": []
+  }
+}
