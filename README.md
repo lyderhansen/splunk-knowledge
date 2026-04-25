@@ -19,79 +19,66 @@ To pull updates later:
 
 ## Plugins
 
-### splunk-dashboards (v0.10.0)
+### splunk-dashboards (v2.4.0)
 
-Guided authoring of Splunk Dashboard Studio (v2) dashboards. Thirteen skills covering the full lifecycle, plus a theme engine that styles generated dashboards with semantic colors and KPI tiles.
+A professional toolkit for Splunk Dashboard Studio (v2). It ships two layers:
+
+1. **An action pipeline** — eleven skills that walk a project from scope to deployed dashboard.
+2. **A granular reference library** — one skill per visualization type, one per interactivity concept, plus a viz-picker router and design-principles. The skill loader picks the smallest skill that matches the current task.
 
 **Pipeline:**
 
 ```
-ds-init ──▶ ds-data-explore | ds-mock ──▶ ds-template (opt.) ──▶ ds-design
-              │                                                      │
-              ▼                                                      ▼
-            data-ready                                            designed
-                                                                      │
-                                                                      ▼
-                                                                   ds-create
-                                                                      │
-                                                                      ▼
-                                                                    built
-                                                                      │
-                                                                      ▼
-                                                                  ds-validate
-                                                                      │
-                                                                      ▼
-                                                                  validated
-                                                                      │
-                                                                      ▼
-                                                                   ds-deploy
-                                                                      │
-                                                                      ▼
-                                                                   deployed
-                                                                      │
-                                                                      ▼
-                                                                   ds-review ──┐
-                                                                               │
-                                                                   ds-update ◀─┘
+ds-init ─▶ ds-data-explore | ds-mock ─▶ ds-design ─▶ ds-create ─▶ ds-validate ─▶ ds-deploy
+                                                                          │
+                                                          ds-review ◀─────┤
+                                                          ds-update ◀─────┤
+                                                          ds-critique ◀───┤
+                                                          ds-polish ◀─────┘
 ```
 
-**Pipeline skills (workspace-aware):**
+**Pipeline skills** (workspace-aware, in `plugins/splunk-dashboards/skills/pipeline/`):
 
 | Skill | Stage transition | Purpose |
 |---|---|---|
 | `ds-init` | → scoped | Scoping questions, requirements.md, workspace setup |
 | `ds-data-explore` | scoped → data-ready | Draft SPL against real indexes (MCP-aware) |
 | `ds-mock` | scoped → data-ready | Inline synthetic data via `makeresults` |
-| `ds-template` | (no advance) | Seed layout from a bundled pattern |
 | `ds-design` | data-ready → designed | Local browser wireframe editor (Gridstack.js DnD) |
 | `ds-create` | designed → built | Build Dashboard Studio JSON with optional theme |
 | `ds-validate` | built → validated | Lint SPL, tokens, drilldowns, data-source refs |
 | `ds-deploy` | validated → deployed | XML envelope + optional Splunk TA tarball |
 | `ds-review` | (standalone) | Audit against best practices, write review.md |
 | `ds-update` | (standalone) | Apply natural-language edits to any dashboard |
+| `ds-critique` | (standalone) | Quantitative UX critique with persona-based testing |
+| `ds-polish` | (standalone) | Final pre-ship pass: alignment, spacing, micro-detail |
 
-**Reference skills (standalone):**
+**Reference library** (`plugins/splunk-dashboards/skills/`):
 
-| Skill | Content |
-|---|---|
-| `ds-syntax` | Dashboard Studio JSON schema — dataSources (ds.search / ds.chain / ds.test / savedSearch), inputs, drilldowns, tabbed + grid layouts, Dynamic Options Syntax, token filters, color palette |
-| `ds-viz` | All 27 visualization types with per-type options + shared options library (AXES / LEGEND / SERIES / etc.) |
-| `ds-design-principles` | Four dashboard archetypes, layout principles, KPI sizing, chart-selection decision table (21 rows), 10 common antipatterns |
+| Folder | Skills | Content |
+|---|---|---|
+| `reference/` | `ds-syntax`, `ds-design-principles`, `ds-viz` (legacy) | JSON schema, archetypes, chart-selection rationale, color/typography. `ds-viz` is the legacy monolithic per-viz reference and will be removed once content is migrated into `viz/`. |
+| `viz/` | `ds-pick-viz` + 26 `ds-viz-<type>` | Router skill (intent → viz type) plus one skill per visualization (`ds-viz-line`, `ds-viz-sankey`, `ds-viz-markergauge`, `ds-viz-table`, etc.). |
+| `interactivity/` | `ds-tokens`, `ds-inputs`, `ds-drilldowns`, `ds-tabs`, `ds-visibility`, `ds-defaults` | One skill per interactivity concept. |
+| `design/` | (reserved) | Future split of `ds-design-principles` — out of scope today. |
+
+> **Migration in progress (v2.4.0):** The 26 `viz/ds-viz-*` and 6 `interactivity/` skills are currently **stubs** (frontmatter + content placeholder). Until migration is complete, `reference/ds-viz/SKILL.md` is the authoritative per-viz reference. The router (`ds-pick-viz`) is fully functional today against the stub names.
 
 **Themes** (via `ds-create --theme`):
 
 - `clean` — minimal (default, no-op)
-- `soc` — security-ops palette, red/amber/green semantics, sparklines on KPIs, auto header panel
-- `ops` — cool-blue operations with traffic-light semantics
-- `exec` — muted executive with subtle critical-state accents
+- `pro` — dark default
+- `glass` — premium hero
+- `exec` — editorial light
+- `noc` — mission-control
+- Legacy `clean`/`ops`/`soc` aliases still work.
 
 Themes detect SPL semantics (failure / success / latency / count / volume / critical) and apply `majorColor` + sparklines automatically.
 
-**Aurora design framework (v0.10.0+):**
+**Aurora design framework:**
 
-The Aurora framework codifies four professionally-tuned themes and six composition patterns that make generated dashboards look world-class while respecting Splunk's own design language. All native Dashboard Studio JSON — no CSS, no JS, Enterprise + Cloud compatible.
+The Aurora framework codifies professionally-tuned themes and six composition patterns that make generated dashboards look world-class while respecting Splunk's own design language. All native Dashboard Studio JSON — no CSS, no JS, Enterprise + Cloud compatible.
 
-- **Themes:** `pro` (dark default), `glass` (premium hero), `exec` (editorial light), `noc` (mission-control). Legacy `clean`/`ops`/`soc` aliases still work.
 - **Patterns:** `card-kpi`, `hero-kpi`, `sparkline-in-kpi`, `compare-prev`, `annotations`, `section-zones`. Apply via `--pattern` or use the theme's default package.
 - **Polish scorecard:** `ds-review` produces a weighted 0–10 score across 10 dimensions with actionable `ds-update` suggestions for gaps.
 
@@ -100,12 +87,10 @@ See `docs/superpowers/specs/2026-04-23-aurora-design-framework-design.md` for th
 **Example flow:**
 
 ```bash
-# After installing the plugin in Claude Code:
 /ds-init                           # scope: "Monitor failed authentications"
 /ds-mock                           # generate makeresults-based mock SPL
-/ds-template load security-monitoring --project my-dash
 /ds-design launch my-dash          # browser wireframe editor
-/ds-create build my-dash --title "Auth Monitor" --theme soc
+/ds-create build my-dash --title "Auth Monitor" --theme pro
 /ds-validate check my-dash
 /ds-deploy build my-dash --label "Auth Monitor" --as-app
 ```
@@ -122,17 +107,20 @@ You end up with `dashboard.xml` and a `my_dash.tar.gz` Splunk TA in `./.splunk-d
 
 ```
 splunk-knowledge/
-├── .claude-plugin/marketplace.json   # Marketplace metadata (used by /plugin marketplace add)
+├── .claude-plugin/marketplace.json   # Marketplace metadata
 ├── plugins/
-│   └── splunk-dashboards/            # The plugin
+│   └── splunk-dashboards/
 │       ├── .claude-plugin/plugin.json
-│       ├── skills/                   # 13 SKILL.md files
+│       ├── skills/
+│       │   ├── pipeline/             # 11 lifecycle skills
+│       │   ├── reference/            # ds-syntax, ds-design-principles, ds-viz (legacy)
+│       │   ├── viz/                  # ds-pick-viz + 26 ds-viz-<type> stubs
+│       │   ├── interactivity/        # 6 interactivity stubs
+│       │   └── design/               # (reserved, empty)
 │       ├── src/splunk_dashboards/    # Python modules (stdlib only)
 │       ├── templates/                # Bundled dashboard patterns
-│       └── tests/                    # 105 pytest tests
-├── docs/superpowers/
-│   ├── specs/                        # Design specs
-│   └── plans/                        # Sub-plan implementation documents
+│       └── tests/                    # pytest tests
+├── docs/superpowers/                  # Specs and plans
 └── CLAUDE.md                          # Repo policies
 ```
 

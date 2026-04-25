@@ -1,7 +1,7 @@
 {
   "name": "splunk-dashboards",
-  "description": "Guided authoring of Splunk Dashboard Studio (v2) dashboards. Scope requirements, explore data, wireframe layouts in a browser, generate dashboard JSON, validate, and package as a Splunk TA.",
-  "version": "2.3.0",
+  "description": "Professional toolkit for Splunk Dashboard Studio (v2). End-to-end pipeline (scope, data, design, build, validate, deploy, review, polish) plus a granular reference: one skill per visualization type (ds-viz-*), per interactivity concept (ds-tokens, ds-inputs, ds-drilldowns, ds-tabs, ds-visibility, ds-defaults), a viz-picker router (ds-pick-viz), and the design-principles + JSON-schema references.",
+  "version": "2.4.0",
   "author": {
     "name": "Lyder Hansen"
   },
