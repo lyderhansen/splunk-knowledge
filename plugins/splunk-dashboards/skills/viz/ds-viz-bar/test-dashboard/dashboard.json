@@ -1,0 +1,375 @@
+{
+  "title": "ds-viz-bar - option matrix",
+  "description": "Test bench for splunk.bar (HORIZONTAL bars). IMPORTANT: bars are horizontal so the value axis is the x-axis and the category axis is the y-axis - the opposite of splunk.column. Each panel exercises a distinct option group: stack modes, barSpacing, seriesSpacing, dataValuesDisplay, dual-axis (xAxis2 in spirit, but uses overlayFields like the others), split sub-charts, and the sparkbar pattern. SPL is makeresults-based so this dashboard runs in any Splunk instance with no setup. Convention: hide y-axis title (the category name is already visible in labels), keep labels visible (auto), hide major tick marks.",
+  "defaults": {
+    "dataSources": {
+      "global": {
+        "options": {
+          "queryParameters": {
+            "earliest": "-24h@h",
+            "latest": "now"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": false,
+        "showLastUpdated": false
+      }
+    }
+  },
+  "dataSources": {
+
+    "ds_basic": {
+      "type": "ds.search",
+      "name": "basic - single series by category",
+      "options": {
+        "query": "| makeresults count=8 | streamstats count as i | eval category = case(i=1,\"Auth\",i=2,\"Search\",i=3,\"API\",i=4,\"Web\",i=5,\"DB\",i=6,\"Cache\",i=7,\"Queue\",1==1,\"Storage\"), requests = round(800 - (i*50) + random()%200) | table category requests"
+      }
+    },
+
+    "ds_multiseries": {
+      "type": "ds.search",
+      "name": "3-series side-by-side default",
+      "options": {
+        "query": "| makeresults count=6 | streamstats count as i | eval region = case(i=1,\"US-East\",i=2,\"US-West\",i=3,\"EU-West\",i=4,\"EU-Central\",i=5,\"AP-South\",1==1,\"AP-East\"), p50_ms = round(80 + 30*sin(i/2) + random()%15), p95_ms = round(180 + 80*sin(i/3+1) + random()%30), p99_ms = round(320 + 120*sin(i/2+2) + random()%50) | table region p50_ms p95_ms p99_ms"
+      }
+    },
+
+    "ds_stacked": {
+      "type": "ds.search",
+      "name": "3-series cumulative stacking - error breakdown",
+      "options": {
+        "query": "| makeresults count=6 | streamstats count as i | eval service = case(i=1,\"checkout\",i=2,\"search\",i=3,\"profile\",i=4,\"auth\",i=5,\"catalog\",1==1,\"reviews\"), errors_4xx = round(40 + 20*sin(i/2) + random()%10), errors_5xx = round(15 + 12*sin(i/3+1) + random()%6), timeouts = round(8 + 6*sin(i/2+2) + random()%4) | table service errors_4xx errors_5xx timeouts"
+      }
+    },
+
+    "ds_pct": {
+      "type": "ds.search",
+      "name": "share-of-traffic 100pct stacking",
+      "options": {
+        "query": "| makeresults count=6 | streamstats count as i | eval service = case(i=1,\"checkout\",i=2,\"search\",i=3,\"profile\",i=4,\"auth\",i=5,\"catalog\",1==1,\"reviews\"), success = round(85 + 8*sin(i/2)), retried = round(10 + 4*sin(i/3+1)), failed = round(5 + 2*sin(i/2+2)) | table service success retried failed"
+      }
+    },
+
+    "ds_sorted": {
+      "type": "ds.search",
+      "name": "top-10 sorted descending",
+      "options": {
+        "query": "| makeresults count=10 | streamstats count as i | eval product = case(i=1,\"Headphones\",i=2,\"Laptops\",i=3,\"Phones\",i=4,\"Monitors\",i=5,\"Keyboards\",i=6,\"Cameras\",i=7,\"Speakers\",i=8,\"TVs\",i=9,\"Tablets\",1==1,\"Gaming\"), revenue = round(1500 - i*100 + random()%200) | sort -revenue | table product revenue"
+      }
+    },
+
+    "ds_negative": {
+      "type": "ds.search",
+      "name": "negative values - week-over-week delta",
+      "options": {
+        "query": "| makeresults count=8 | streamstats count as i | eval product = case(i=1,\"Phones\",i=2,\"Tablets\",i=3,\"Laptops\",i=4,\"TVs\",i=5,\"Audio\",i=6,\"Wearables\",i=7,\"Cameras\",1==1,\"Gaming\"), delta_pct = round((random()%4000-2000)/100, 1) | table product delta_pct"
+      }
+    },
+
+    "ds_labels": {
+      "type": "ds.search",
+      "name": "data labels - all values shown",
+      "options": {
+        "query": "| makeresults count=7 | streamstats count as i | eval region = case(i=1,\"US-East\",i=2,\"US-West\",i=3,\"EU-West\",i=4,\"EU-Central\",i=5,\"AP-South\",i=6,\"AP-East\",1==1,\"SA-East\"), users = round(50000 + 25000*sin(i/2) + random()%5000) | table region users"
+      }
+    },
+
+    "ds_tight": {
+      "type": "ds.search",
+      "name": "ranged histogram - tight spacing",
+      "options": {
+        "query": "| makeresults count=15 | streamstats count as i | eval bucket = \"Bin \" . i, count = round(50 + 80*sin(i/2) + random()%30) | table bucket count"
+      }
+    },
+
+    "ds_seriesspacing": {
+      "type": "ds.search",
+      "name": "two series - visible series gap",
+      "options": {
+        "query": "| makeresults count=6 | streamstats count as i | eval team = case(i=1,\"Platform\",i=2,\"Mobile\",i=3,\"Web\",i=4,\"Data\",i=5,\"ML\",1==1,\"DevOps\"), q1 = round(20 + 15*sin(i/2) + random()%5), q2 = round(28 + 12*sin(i/3+1) + random()%6) | table team q1 q2"
+      }
+    },
+
+    "ds_dualaxis": {
+      "type": "ds.search",
+      "name": "dual axis - revenue bar and conversion line overlay",
+      "options": {
+        "query": "| makeresults count=6 | streamstats count as i | eval region = case(i=1,\"US-East\",i=2,\"US-West\",i=3,\"EU-West\",i=4,\"EU-Central\",i=5,\"AP-South\",1==1,\"AP-East\"), revenue = round(50000 + 25000*sin(i/2) + random()%5000), conversion_pct = round(2 + 1.5*sin(i/3+1) + random()%1*0.1, 1) | table region revenue conversion_pct"
+      }
+    },
+
+    "ds_split": {
+      "type": "ds.search",
+      "name": "split series - small multiples by metric",
+      "options": {
+        "query": "| makeresults count=6 | streamstats count as i | eval team = case(i=1,\"Platform\",i=2,\"Mobile\",i=3,\"Web\",i=4,\"Data\",i=5,\"ML\",1==1,\"DevOps\"), incidents = round(2 + 5*sin(i/2) + random()%2), tickets = round(20 + 15*sin(i/3+1) + random()%5), deployments = round(50 + 30*sin(i/2+2) + random()%10) | table team incidents tickets deployments"
+      }
+    },
+
+    "ds_minimal": {
+      "type": "ds.search",
+      "name": "minimal sparkbar series",
+      "options": {
+        "query": "| makeresults count=15 | streamstats count as i | eval bin = \"b\" . i, value = round(50 + 30*sin(i/2) + random()%10) | table bin value"
+      }
+    }
+
+  },
+
+  "visualizations": {
+
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# `splunk.bar` - option matrix\n\n**Horizontal bars - the axes are flipped vs. splunk.column.** Categories on the y-axis, values on the x-axis. So `xAxis*` controls the value axis and `yAxis*` controls the category axis. **Convention:** `yAxisTitleVisibility:\"hide\"` (category name is in the labels), `yAxisLabelVisibility:\"auto\"`, `yAxisMajorTickVisibility:\"hide\"`. **Bar-specific:** `barSpacing` (between categories), `seriesSpacing` (within a category, between series), `stackMode` (auto/stacked/stacked100). Bar does NOT have `columnGrouping` (column-only). Per the 10.4 reference, `annotation*` options are listed as supported on bar but not in the option table - tested in column instead.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default"
+      }
+    },
+
+    "viz_basic": {
+      "type": "splunk.bar",
+      "title": "1. Minimal - single series",
+      "description": "Bare options applied. Categories on y-axis, value (requests) on x-axis.",
+      "dataSources": { "primary": "ds_basic" },
+      "options": {
+        "seriesColors": ["#00D9FF"],
+        "xAxisTitleText": "Requests",
+        "yAxisTitleVisibility": "hide",
+        "yAxisLabelVisibility": "auto",
+        "yAxisMajorTickVisibility": "hide"
+      }
+    },
+
+    "viz_unstacked": {
+      "type": "splunk.bar",
+      "title": "2. Multi-series side-by-side - latency p50/p95/p99",
+      "description": "stackMode=auto (default). Three latency percentiles shown next to each other for each region. Width of each bar is the value.",
+      "dataSources": { "primary": "ds_multiseries" },
+      "options": {
+        "seriesColors": ["#33FF99", "#FFB627", "#FF2D95"],
+        "legendDisplay": "bottom",
+        "xAxisTitleText": "Latency (ms)",
+        "yAxisTitleVisibility": "hide",
+        "yAxisLabelVisibility": "auto",
+        "yAxisMajorTickVisibility": "hide"
+      }
+    },
+
+    "viz_stacked": {
+      "type": "splunk.bar",
+      "title": "3. Stacked - cumulative error breakdown per service",
+      "description": "stackMode=stacked. Total error count for each service is the bar width, broken into 4xx / 5xx / timeouts.",
+      "dataSources": { "primary": "ds_stacked" },
+      "options": {
+        "stackMode": "stacked",
+        "seriesColorsByField": {
+          "errors_4xx": "#FFB627",
+          "errors_5xx": "#FF2D95",
+          "timeouts": "#B57BFF"
+        },
+        "legendDisplay": "bottom",
+        "xAxisTitleText": "Errors / 5min",
+        "yAxisTitleVisibility": "hide",
+        "yAxisLabelVisibility": "auto",
+        "yAxisMajorTickVisibility": "hide"
+      }
+    },
+
+    "viz_stacked100": {
+      "type": "splunk.bar",
+      "title": "4. Stacked 100% - request outcome share per service",
+      "description": "stackMode=stacked100. Each bar normalises to 100%. Best for comparing PROPORTIONS across services rather than absolute counts.",
+      "dataSources": { "primary": "ds_pct" },
+      "options": {
+        "stackMode": "stacked100",
+        "seriesColorsByField": {
+          "success": "#33FF99",
+          "retried": "#FFB627",
+          "failed": "#FF2D95"
+        },
+        "legendDisplay": "bottom",
+        "xAxisTitleText": "Outcome share (%)",
+        "xAxisAbbreviation": "off",
+        "yAxisTitleVisibility": "hide",
+        "yAxisLabelVisibility": "auto",
+        "yAxisMajorTickVisibility": "hide"
+      }
+    },
+
+    "viz_sorted": {
+      "type": "splunk.bar",
+      "title": "5. Top-N sorted descending - revenue ranking",
+      "description": "Standard 'horizontal ranking' pattern. Sort happens in SPL (`| sort -revenue`); bar chart preserves row order. The longest bar at top reads naturally left-to-right.",
+      "dataSources": { "primary": "ds_sorted" },
+      "options": {
+        "seriesColors": ["#00D9FF"],
+        "dataValuesDisplay": "all",
+        "xAxisTitleText": "Revenue ($)",
+        "xAxisAbbreviation": "auto",
+        "yAxisTitleVisibility": "hide",
+        "yAxisLabelVisibility": "auto",
+        "yAxisMajorTickVisibility": "hide",
+        "legendDisplay": "off"
+      }
+    },
+
+    "viz_negative": {
+      "type": "splunk.bar",
+      "title": "6. Negative values - delta with zero baseline",
+      "description": "showXAxisWithZero=true forces the value axis (x in bar) to include 0 so positive and negative deltas share a common baseline.",
+      "dataSources": { "primary": "ds_negative" },
+      "options": {
+        "seriesColors": ["#33FF99"],
+        "showXAxisWithZero": true,
+        "xAxisTitleText": "Week-over-week change (%)",
+        "yAxisTitleVisibility": "hide",
+        "yAxisLabelVisibility": "auto",
+        "yAxisMajorTickVisibility": "hide"
+      }
+    },
+
+    "viz_labels_all": {
+      "type": "splunk.bar",
+      "title": "7. Data labels - all values shown",
+      "description": "dataValuesDisplay=all puts the numeric value at the end of every bar. Often pairs with hidden value axis since the labels carry the precision.",
+      "dataSources": { "primary": "ds_labels" },
+      "options": {
+        "seriesColors": ["#7AA2FF"],
+        "dataValuesDisplay": "all",
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "hide",
+        "xAxisMajorTickVisibility": "hide",
+        "yAxisTitleVisibility": "hide",
+        "yAxisLabelVisibility": "auto",
+        "yAxisMajorTickVisibility": "hide",
+        "showXMajorGridLines": false,
+        "legendDisplay": "off"
+      }
+    },
+
+    "viz_tight": {
+      "type": "splunk.bar",
+      "title": "8. Tight bar spacing - histogram-like density",
+      "description": "barSpacing=1 collapses the gap between rows so 15+ categories still read cleanly. Equivalent of a horizontal histogram.",
+      "dataSources": { "primary": "ds_tight" },
+      "options": {
+        "seriesColors": ["#00D9FF"],
+        "barSpacing": 1,
+        "xAxisTitleText": "Count",
+        "yAxisTitleVisibility": "hide",
+        "yAxisLabelVisibility": "auto",
+        "yAxisMajorTickVisibility": "hide",
+        "legendDisplay": "off"
+      }
+    },
+
+    "viz_seriesspacing": {
+      "type": "splunk.bar",
+      "title": "9. Visible series gap - paired comparison",
+      "description": "seriesSpacing=4 creates a deliberate gap between series within each category - useful when you want q1 vs q2 to read as a clear pair, not as adjacent neighbors.",
+      "dataSources": { "primary": "ds_seriesspacing" },
+      "options": {
+        "seriesColors": ["#7AA2FF", "#FF2D95"],
+        "seriesSpacing": 4,
+        "legendDisplay": "bottom",
+        "xAxisTitleText": "Tickets / quarter",
+        "yAxisTitleVisibility": "hide",
+        "yAxisLabelVisibility": "auto",
+        "yAxisMajorTickVisibility": "hide"
+      }
+    },
+
+    "viz_dualaxis": {
+      "type": "splunk.bar",
+      "title": "10. Dual value-axis - revenue bar + conversion line overlay",
+      "description": "overlayFields moves conversion_pct to the secondary axis and renders it as a line on top of the bars. Note: in bar charts the SECOND value axis is conceptually 'x2' but spelled `y2*` in options for symmetry with column.",
+      "dataSources": { "primary": "ds_dualaxis" },
+      "options": {
+        "overlayFields": "conversion_pct",
+        "showOverlayY2Axis": true,
+        "seriesColorsByField": {
+          "revenue": "#00D9FF",
+          "conversion_pct": "#FF2D95"
+        },
+        "y2AxisTitleText": "Conversion (%)",
+        "xAxisTitleText": "Revenue ($)",
+        "xAxisAbbreviation": "auto",
+        "legendDisplay": "bottom",
+        "yAxisTitleVisibility": "hide",
+        "yAxisLabelVisibility": "auto",
+        "yAxisMajorTickVisibility": "hide"
+      }
+    },
+
+    "viz_split": {
+      "type": "splunk.bar",
+      "title": "11. Split series - independent x-ranges",
+      "description": "showSplitSeries=true breaks each metric into its own sub-chart. showIndependentYRanges=true (despite the name) gives each its own value scale - essential when comparing metrics with different magnitudes.",
+      "dataSources": { "primary": "ds_split" },
+      "options": {
+        "showSplitSeries": true,
+        "showIndependentYRanges": true,
+        "seriesColors": ["#FF2D95", "#FFB627", "#7AA2FF"],
+        "legendDisplay": "off",
+        "yAxisTitleVisibility": "hide",
+        "yAxisLabelVisibility": "auto",
+        "yAxisMajorTickVisibility": "hide"
+      }
+    },
+
+    "viz_hidden_chrome": {
+      "type": "splunk.bar",
+      "title": "12. Hidden chrome - sparkbar (everything off)",
+      "description": "Sparkbar pattern: all chrome off. Use inside KPI tiles or executive cards where the bar chart accompanies a single value.",
+      "dataSources": { "primary": "ds_minimal" },
+      "options": {
+        "seriesColors": ["#00D9FF"],
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "hide",
+        "xAxisMajorTickVisibility": "hide",
+        "yAxisTitleVisibility": "hide",
+        "yAxisLabelVisibility": "hide",
+        "yAxisMajorTickVisibility": "hide",
+        "showXMajorGridLines": false,
+        "legendDisplay": "off",
+        "backgroundColor": "transparent"
+      }
+    }
+
+  },
+
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 1820,
+      "display": "auto-scale"
+    },
+    "structure": [
+      { "item": "viz_title",         "type": "block", "position": { "x": 16,  "y": 16,   "w": 1408, "h": 64  } },
+
+      { "item": "viz_basic",         "type": "block", "position": { "x": 16,  "y": 96,   "w": 696,  "h": 280 } },
+      { "item": "viz_unstacked",     "type": "block", "position": { "x": 728, "y": 96,   "w": 696,  "h": 280 } },
+
+      { "item": "viz_stacked",       "type": "block", "position": { "x": 16,  "y": 392,  "w": 696,  "h": 280 } },
+      { "item": "viz_stacked100",    "type": "block", "position": { "x": 728, "y": 392,  "w": 696,  "h": 280 } },
+
+      { "item": "viz_sorted",        "type": "block", "position": { "x": 16,  "y": 688,  "w": 696,  "h": 280 } },
+      { "item": "viz_negative",      "type": "block", "position": { "x": 728, "y": 688,  "w": 696,  "h": 280 } },
+
+      { "item": "viz_labels_all",    "type": "block", "position": { "x": 16,  "y": 984,  "w": 696,  "h": 280 } },
+      { "item": "viz_tight",         "type": "block", "position": { "x": 728, "y": 984,  "w": 696,  "h": 280 } },
+
+      { "item": "viz_seriesspacing", "type": "block", "position": { "x": 16,  "y": 1280, "w": 696,  "h": 280 } },
+      { "item": "viz_dualaxis",      "type": "block", "position": { "x": 728, "y": 1280, "w": 696,  "h": 280 } },
+
+      { "item": "viz_split",         "type": "block", "position": { "x": 16,  "y": 1576, "w": 696,  "h": 200 } },
+      { "item": "viz_hidden_chrome", "type": "block", "position": { "x": 728, "y": 1576, "w": 696,  "h": 200 } }
+    ],
+    "globalInputs": []
+  }
+}
