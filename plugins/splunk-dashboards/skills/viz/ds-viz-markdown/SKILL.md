@@ -1,20 +1,220 @@
 ---
 name: ds-viz-markdown
-description: Reference for the splunk.markdown visualization. Read when adding section headers, instructions, kicker text, or any static prose to a dashboard. Covers fontFamily, fontSize, fontColor, alignment. Triggers on 'splunk.markdown', 'markdown panel', 'text block', 'section header'.
+description: |
+  splunk.markdown - the typographic backbone of every dashboard. Use markdown
+  panels for section headers, panel descriptions, KPI explanations, editorial
+  framing, runbook links, and inline documentation. Verified against the 10.4
+  Dashboard Studio docs.
+version: 1.0.0
+verified_against: SplunkCloud-10.4.2604-DashStudio
+test_dashboards:
+  - ds_viz_markdown_dark
+  - ds_viz_markdown_light
+related:
+  - ds-viz-image
+  - ds-viz-rectangle
+  - ds-viz-ellipse
 ---
 
-# ds-viz-markdown — `splunk.markdown`
+# splunk.markdown
 
-> Stub. Content will be migrated from `reference/ds-viz` in a follow-up commit.
+The unsung hero of every great dashboard. Markdown panels are how you go from
+"a wall of charts" to a **narrated, editorial dashboard** that someone can
+actually scan and understand.
 
-This skill will document the `splunk.markdown` visualization in detail:
+## When to use
 
-- Required and common options
-- Required SPL output columns
-- A minimal working JSON example
-- Known gotchas (Splunk 10.2.x)
-- Cross-references: `ds-pick-viz` (when to use), `ds-design-principles`
-  (whether to use), `ds-syntax` (JSON envelope and tokens).
+- **Section headers** that group related panels (instead of relying on the
+  visualization grid alone).
+- **Panel descriptions** that explain what a KPI means or how it was computed.
+- **Editorial framing** at the top of a dashboard (story, owner, audience,
+  refresh cadence).
+- **Runbook & link sidebars** - quick links to wikis, on-call pages, and
+  status pages.
+- **Inline documentation** - thresholds, color legends, footnotes, source
+  attributions.
+- **Status callouts** - colored "INCIDENT" or "ALL CLEAR" banners.
 
-Until migration is complete, see `reference/ds-viz/SKILL.md` for the
-monolithic version of this content.
+## When NOT to use
+
+- For dynamic content driven by SPL - markdown is **static text only**, no
+  token interpolation in the body.
+- For images - use `splunk.image` instead.
+- For shapes/dividers - use `splunk.rectangle` or `splunk.ellipse`.
+- For tabular data that needs sorting/paging - use `splunk.table`.
+
+## Data shape
+
+`splunk.markdown` does not take a data source. The `markdown` option is the
+entire content.
+
+## Options (10.4 PDF)
+
+| Option            | Type   | Values / range                                              | Notes                                              |
+| ----------------- | ------ | ----------------------------------------------------------- | -------------------------------------------------- |
+| `backgroundColor` | string | hex / `transparent`                                         | Panel background. Default is theme-dependent.      |
+| `fontColor`       | string | hex                                                         | Text color for the entire panel.                   |
+| `fontSize`        | enum   | `extraSmall` \| `small` \| `default` \| `large` \| `extraLarge` | Scales all text. Default is `default` (~14px).     |
+| `markdown`        | string | Markdown source                                             | The actual content. See supported syntax below.    |
+
+Also commonly used and supported by the renderer (not in the PDF table but
+present in the schema):
+
+| Option        | Type   | Notes                                                  |
+| ------------- | ------ | ------------------------------------------------------ |
+| `fontFamily`  | string | CSS font stack, e.g. `Georgia, serif`. Use sparingly.  |
+
+## Supported markdown syntax
+
+`splunk.markdown` supports **all standard Markdown except raw HTML**.
+Verified in the test bench:
+
+- **Headings** `# H1` ... `###### H6`
+- **Bold** `**text**`, **italic** `*text*`, ~~strikethrough~~ `~~text~~`
+- **Inline code** `` `code` `` and **fenced code blocks** ``` ``` ```
+- **Blockquotes** `> text`
+- **Unordered lists** with `-` or `*`, **ordered lists** with `1.`, **nested**
+- **Tables** with pipe syntax (`| col | col |`)
+- **Links** `[text](url)` and reference-style `[text][ref]`, `[ref]: url`
+- **Images** `![alt](url)` (use `splunk.image` for proper image panels)
+- **Horizontal rules** `---`
+
+What does **not** work:
+
+- Raw HTML (`<div>`, `<style>`, `<script>` etc. is stripped or escaped).
+- Markdown attributes / extensions like footnotes, definition lists.
+- Token interpolation in the markdown body (e.g., `$token$` is rendered as
+  literal text).
+
+## Verified patterns (test-dashboard reference)
+
+The patterns below are **all rendered and verified** in
+`ds_viz_markdown_dark` / `ds_viz_markdown_light`.
+
+| Panel | What it demonstrates                                  | Where to use                              |
+| ----- | ----------------------------------------------------- | ----------------------------------------- |
+| 1     | Default markdown - inherits theme defaults            | Baseline editorial copy                   |
+| 2     | All five `fontSize` values side-by-side               | Picking the right size for context        |
+| 3     | `fontSize=extraLarge` - hero callout                  | Dashboard subtitles, hero KPIs            |
+| 4     | `fontSize=extraSmall` - footnotes                     | Source attribution, disclaimers           |
+| 5     | `fontColor` only (transparent bg)                     | Single-message status panels              |
+| 6     | `backgroundColor` + custom text color                 | Section grouping, visual zones            |
+| 7     | Alert-style red-on-dark                               | Active incident banners (sparingly)       |
+| 8     | Lists - unordered, ordered, nested                    | Steps, regions, environments              |
+| 9     | Tables                                                | KPI quick-reference, threshold tables     |
+| 10    | Inline code + fenced code block                       | SPL snippets, runbooks                    |
+| 11    | Blockquote + bold + italic                            | "Why this matters" callouts               |
+| 12    | Links (inline + reference-style)                      | Sidebar of quick links                    |
+| 13    | `fontFamily=Georgia, serif`                           | Editorial / long-form story panels        |
+
+## Drilldown
+
+`splunk.markdown` does **not** have built-in drilldown handlers (no
+`onSelectionChanged` events) - it's a static content panel.
+
+To make markdown clickable, embed a markdown link:
+
+```markdown
+See the [SOC overview dashboard](https://splunk.example.com/dashboard/soc).
+```
+
+The link opens normally on click. There is no way to fire token updates from
+inside markdown - use a separate input panel (`splunk.input.dropdown` etc.)
+for interactivity.
+
+## Common gotchas
+
+1. **No token interpolation in the body**. Writing `Hello $user$` renders
+   literally as `Hello $user$`. If you need token-driven copy, the only
+   workaround is to maintain multiple markdown panels and toggle them via
+   layout visibility tokens (advanced).
+2. **Raw HTML is stripped.** If you paste `<div style="...">`, it
+   disappears or shows as escaped text. Use `fontColor`, `backgroundColor`,
+   `fontSize`, and `fontFamily` options instead.
+3. **`fontColor` applies to everything.** It overrides headings, links, and
+   code-inline color. If you want a colored heading on default-colored body,
+   you have to split it into two markdown panels.
+4. **`backgroundColor` is the entire panel**, not just the text. Padding is
+   minimal - colored backgrounds touch the panel border. Use a `splunk.rectangle`
+   behind the markdown if you want padded color blocks.
+5. **Code-block backgrounds are theme-controlled.** Inline `` `code` `` and
+   fenced ``` blocks ``` get a subtle grey tint that you can't override with
+   `backgroundColor` (which sets the panel, not the inline code).
+6. **Tables don't sort or paginate.** Markdown tables are visual only. If
+   you need interactivity, use `splunk.table` with a static `ds.test` data
+   source.
+7. **Long content scrolls.** If the markdown is taller than the panel
+   height, the panel becomes scrollable. Size your panels generously - hero
+   callouts especially.
+8. **Headings render bigger than `fontSize` suggests.** `fontSize=default`
+   is ~14px for body text, but `# H1` inside is still `H1`-sized. The five
+   `fontSize` values *scale* the entire hierarchy.
+9. **Whitespace matters.** Markdown needs a blank line between paragraphs,
+   between headings and lists, and between paragraphs and code blocks. JSON
+   string `\n\n` is your friend - single `\n` collapses to a soft break.
+10. **Reference-style links need a definition.** `[text][ref]` requires
+    `[ref]: url` somewhere in the same markdown string. Forgetting the
+    definition silently renders `[text][ref]` as literal text.
+
+## Quick recipes
+
+### Section header with subtle background
+
+```json
+{
+  "type": "splunk.markdown",
+  "options": {
+    "backgroundColor": "#1A2440",
+    "fontColor": "#E8E8E8",
+    "fontSize": "large",
+    "markdown": "## Service health\n\nLatency, error-rate, and saturation across the prod fleet."
+  }
+}
+```
+
+### Footer / source attribution
+
+```json
+{
+  "type": "splunk.markdown",
+  "options": {
+    "fontSize": "extraSmall",
+    "markdown": "*Source: operational data warehouse - refreshed every 15 min.*  \nMetric definitions: [runbooks/metrics.md](https://example.com/runbooks/metrics.md)"
+  }
+}
+```
+
+### Active-incident banner
+
+```json
+{
+  "type": "splunk.markdown",
+  "options": {
+    "backgroundColor": "#3D1E1E",
+    "fontColor": "#FF6B6B",
+    "fontSize": "large",
+    "markdown": "## INCIDENT\n\n`prod-eu-west` is degraded. **On-call**: Alex. **Runbook**: `runbooks/eu-west.md`"
+  }
+}
+```
+
+### Editorial story-frame (serif)
+
+```json
+{
+  "type": "splunk.markdown",
+  "options": {
+    "fontFamily": "Georgia, serif",
+    "fontSize": "large",
+    "markdown": "## What happened\n\n*\"At 09:42 UTC, latency in the EU region began climbing past 800 ms...\"*"
+  }
+}
+```
+
+## See also
+
+- `ds-viz-image` - for actual images (logos, screenshots)
+- `ds-viz-rectangle` / `ds-viz-ellipse` - for shapes, dividers, decorative
+  backgrounds
+- `ds-design-principles` - typography hierarchy, when to use markdown vs
+  panel titles

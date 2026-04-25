@@ -1,0 +1,145 @@
+{
+  "title": "ds-viz-markdown - option matrix (dark)",
+  "description": "Test bench for splunk.markdown. Verifies all options from the 10.4 PDF: backgroundColor, fontColor, fontSize (extraSmall|small|default|large|extraLarge), markdown content. Demonstrates basic text formatting, headings, lists, tables, code blocks, blockquotes, links, images, fontFamily, color combinations, and editorial layout patterns.",
+  "defaults": {
+    "dataSources": {
+      "global": { "options": { "queryParameters": { "earliest": "-24h@h", "latest": "now" } } }
+    },
+    "visualizations": {
+      "global": { "showProgressBar": false, "showLastUpdated": false }
+    }
+  },
+  "dataSources": {},
+  "visualizations": {
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# `splunk.markdown` - option matrix\n\nMarkdown panels are the **typographic backbone** of every dashboard - section headers, panel descriptions, KPI explanations, editorial framing, runbook links.\n\nFull options list from the **10.4 PDF**:\n- `backgroundColor`\n- `fontColor`\n- `fontSize` (`extraSmall` | `small` | `default` | `large` | `extraLarge`)\n- `markdown` (string content)\n\nAlso commonly used and supported by the renderer:\n- `fontFamily`\n\nMarkdown supports **all standard Markdown syntax** except raw HTML. See the panels below for verified patterns.",
+        "fontSize": "default"
+      }
+    },
+    "viz_default": {
+      "type": "splunk.markdown",
+      "title": "1. Default markdown",
+      "description": "No options set - inherits theme defaults.",
+      "options": {
+        "markdown": "This is the **default** markdown panel.\n\nNothing set: `fontColor` falls back to the theme default, `backgroundColor` is transparent, and `fontSize` is `default` (~14px for unformatted text).\n\nUse this as the *baseline* for editorial copy."
+      }
+    },
+    "viz_sizes": {
+      "type": "splunk.markdown",
+      "title": "2. fontSize - all five sizes",
+      "options": {
+        "markdown": "## extraSmall (10px)\n\nTiny print - footnotes and disclaimers.\n\n## small (12px)\n\nMetadata, source attribution, secondary copy.\n\n## default (14px)\n\nEverything else - the workhorse size.\n\n## large (16px)\n\nCallouts that should compete with panel headers.\n\n## extraLarge (18px)\n\nHero copy and dashboard subtitles."
+      }
+    },
+    "viz_extra_large": {
+      "type": "splunk.markdown",
+      "title": "3. fontSize=extraLarge",
+      "options": {
+        "fontSize": "extraLarge",
+        "markdown": "**Quarterly NPS is up 4 points.**\n\nAll formatting in this panel renders one step larger than the default."
+      }
+    },
+    "viz_extra_small": {
+      "type": "splunk.markdown",
+      "title": "4. fontSize=extraSmall",
+      "options": {
+        "fontSize": "extraSmall",
+        "markdown": "**Footnote**: Source - operational data warehouse.\n\nLast refreshed: 24h ago.\n\nMetric definitions are in the runbook under `https://example.com/runbooks/metrics`."
+      }
+    },
+    "viz_color_text": {
+      "type": "splunk.markdown",
+      "title": "5. Custom fontColor",
+      "options": {
+        "fontColor": "#26A69A",
+        "markdown": "## Status: All systems normal\n\nThis entire panel renders in `#26A69A` (brand teal) via `fontColor`.\n\nUse this for **single-message status panels** - the color *is* the signal."
+      }
+    },
+    "viz_color_background": {
+      "type": "splunk.markdown",
+      "title": "6. Custom backgroundColor",
+      "options": {
+        "backgroundColor": "#1A2540",
+        "fontColor": "#FFFFFF",
+        "markdown": "## Critical zone\n\nDarker `backgroundColor` makes this panel visually distinct from the dashboard grid.\n\nUseful for *grouping* related panels - put a colored markdown above them as a section title."
+      }
+    },
+    "viz_color_alert": {
+      "type": "splunk.markdown",
+      "title": "7. Alert-style colors",
+      "options": {
+        "backgroundColor": "#3D1E1E",
+        "fontColor": "#FF6B6B",
+        "markdown": "## INCIDENT\n\nServices in `prod-eu-west` are experiencing elevated 5xx rates.\n\n**On-call**: Alex Tan  \n**Runbook**: `runbooks/eu-west-incident.md`\n\n*Use red-on-dark sparingly - reserve it for actual incidents.*"
+      }
+    },
+    "viz_lists": {
+      "type": "splunk.markdown",
+      "title": "8. Lists (ordered, unordered, nested)",
+      "options": {
+        "markdown": "### Unordered list\n\n- North America\n- EMEA\n- APAC\n\n### Ordered list\n\n1. Receive alert\n2. Acknowledge in PagerDuty\n3. Open the runbook\n4. Follow the diagnostic flow\n5. Resolve or escalate\n\n### Nested\n\n- Production\n  - `prod-us-east`\n  - `prod-eu-west`\n  - `prod-apac`\n- Staging\n  - `stage-us-east`\n- Development"
+      }
+    },
+    "viz_table": {
+      "type": "splunk.markdown",
+      "title": "9. Table",
+      "options": {
+        "markdown": "### KPI quick reference\n\n| Metric | Threshold | Action |\n| --- | --- | --- |\n| Error rate | > 1% | Page on-call |\n| p95 latency | > 800 ms | Investigate |\n| CPU | > 85% | Scale out |\n| Disk | > 90% | Page SRE |\n| Saturation | > 80% | Pre-warn capacity team |\n\n*Note: tables can't be sorted or paginated - use `splunk.table` if interaction is needed.*"
+      }
+    },
+    "viz_code_inline": {
+      "type": "splunk.markdown",
+      "title": "10. Inline code + code block",
+      "options": {
+        "markdown": "Use `index=main sourcetype=access_combined` to filter web access logs.\n\n```\nindex=main sourcetype=access_combined status>=500\n| stats count BY host\n| sort - count\n| head 10\n```\n\nThe code block has syntax-friendly grey background that extends to the panel edge.\n\nInline `code` keeps the grey background tight to the token."
+      }
+    },
+    "viz_blockquote": {
+      "type": "splunk.markdown",
+      "title": "11. Blockquote + bold + italic",
+      "options": {
+        "markdown": "> **Why this matters**: every minute of downtime in `checkout` costs ~$8k. The on-call playbook below is *non-negotiable*.\n\n1. **Acknowledge** within 5 min.\n2. **Triage** using the runbook diagnostic tree.\n3. **Communicate** to the incident channel.\n4. **Resolve or escalate** within 15 min.\n\nReturn to *normal operations* once the green checkmark appears in the SLO panel."
+      }
+    },
+    "viz_links": {
+      "type": "splunk.markdown",
+      "title": "12. Links",
+      "options": {
+        "markdown": "### Quick links\n\n- [Runbook](https://example.com/runbook) - on-call diagnostic flow\n- [Dashboard catalog](https://example.com/dashboards) - all team dashboards\n- [Status page](https://status.example.com) - public-facing\n- [Incident channel](https://chat.example.com/incidents) - real-time coordination\n\nLinks open in a new tab when the dashboard is rendered. Use [reference-style](https://example.com) links for repeated URLs.\n\n[ref]: https://example.com\n\n[Same destination][ref] using the reference."
+      }
+    },
+    "viz_font_family": {
+      "type": "splunk.markdown",
+      "title": "13. fontFamily override",
+      "options": {
+        "fontFamily": "Georgia, serif",
+        "fontSize": "large",
+        "markdown": "## Editorial story-frame\n\n*\"At 09:42 UTC, latency in the EU region began climbing past the 800 ms warning threshold...\"*\n\nThis panel uses Georgia, a serif. Use serif fonts sparingly - they read as *editorial* or *long-form* against the platform's sans default."
+      }
+    }
+  },
+  "inputs": {},
+  "layout": {
+    "type": "absolute",
+    "options": { "width": 1440, "height": 3120, "display": "auto-scale", "backgroundColor": "#0F1729" },
+    "structure": [
+      { "item": "viz_title",            "type": "block", "position": { "x": 20,  "y": 20,   "w": 1400, "h": 280 } },
+      { "item": "viz_default",          "type": "block", "position": { "x": 20,  "y": 320,  "w": 690,  "h": 220 } },
+      { "item": "viz_sizes",            "type": "block", "position": { "x": 730, "y": 320,  "w": 690,  "h": 460 } },
+      { "item": "viz_extra_large",      "type": "block", "position": { "x": 20,  "y": 560,  "w": 690,  "h": 220 } },
+      { "item": "viz_extra_small",      "type": "block", "position": { "x": 20,  "y": 800,  "w": 690,  "h": 200 } },
+      { "item": "viz_color_text",       "type": "block", "position": { "x": 730, "y": 800,  "w": 690,  "h": 200 } },
+      { "item": "viz_color_background", "type": "block", "position": { "x": 20,  "y": 1020, "w": 690,  "h": 240 } },
+      { "item": "viz_color_alert",      "type": "block", "position": { "x": 730, "y": 1020, "w": 690,  "h": 240 } },
+      { "item": "viz_lists",            "type": "block", "position": { "x": 20,  "y": 1280, "w": 690,  "h": 460 } },
+      { "item": "viz_table",            "type": "block", "position": { "x": 730, "y": 1280, "w": 690,  "h": 460 } },
+      { "item": "viz_code_inline",      "type": "block", "position": { "x": 20,  "y": 1760, "w": 690,  "h": 320 } },
+      { "item": "viz_blockquote",       "type": "block", "position": { "x": 730, "y": 1760, "w": 690,  "h": 320 } },
+      { "item": "viz_links",            "type": "block", "position": { "x": 20,  "y": 2100, "w": 690,  "h": 320 } },
+      { "item": "viz_font_family",      "type": "block", "position": { "x": 730, "y": 2100, "w": 690,  "h": 320 } }
+    ],
+    "globalInputs": []
+  }
+}
