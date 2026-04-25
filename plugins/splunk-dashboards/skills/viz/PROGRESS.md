@@ -80,7 +80,7 @@ Legend: ✅ done · 🟡 in progress · ⬜ not started · ❌ blocked / known i
 | 22 | `splunk.choropleth.map`   | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | Confirm if this type id is actually accepted by 10.2.1 (was rejected earlier). |
 | 23 | `splunk.markdown`         | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | fontSize is a string enum (not int) — verified. fontFamily supported beyond PDF table. |
 | 24 | `splunk.image`            | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Splunk views handler rejects literal `\n` (0x0A) in JSON definition — must use `\\n` escape sequences when calling MCP. Tracked in `/tmp/dash_to_payload.py`. |
-| 25 | `splunk.rectangle`        | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | |
+| 25 | `splunk.rectangle`        | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. Canonical option names are fillColor/strokeColor (not fill/stroke as in some legacy PDF examples). Supports onSelectionChanged for hit-zone overlays. |
 | 26 | `splunk.ellipse`          | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | |
 
 ## Suggested order

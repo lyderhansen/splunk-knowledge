@@ -1,0 +1,387 @@
+{
+  "title": "ds-viz-rectangle - option matrix (light)",
+  "description": "Light-theme companion. Test bench for splunk.rectangle. Verifies every option from the 10.4 PDF: fillColor, fillOpacity, rx, ry, strokeColor, strokeDashStyle, strokeJoinStyle, strokeOpacity, strokeWidth. Demonstrates background cards, depth layers, pill shapes, dashed strokes, faint overlays, and KPI-card composition.",
+  "defaults": {
+    "dataSources": {
+      "global": {
+        "options": {
+          "queryParameters": {
+            "earliest": "-24h@h",
+            "latest": "now"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": false,
+        "showLastUpdated": false
+      }
+    }
+  },
+  "dataSources": {
+    "ds_kpi": {
+      "type": "ds.test",
+      "options": {
+        "data": {
+          "fields": [
+            {
+              "name": "value"
+            }
+          ],
+          "columns": [
+            [
+              "1284"
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "visualizations": {
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# `splunk.rectangle` - option matrix (light)\n\nRectangles are absolute-layout shapes with **9 options** total. They are the workhorse for **background cards**, **section dividers**, **depth layers**, **pill chips**, and **clickable hit-zones over images**.\n\nAll options from the **10.4 PDF**:\n- `fillColor` (string, hex; theme default)\n- `fillOpacity` (0 - 1)\n- `rx` (corner radius, integer or %)\n- `ry` (vertical corner radius, defaults to `rx`)\n- `strokeColor` (string, hex; theme default)\n- `strokeDashStyle` (number; pixel length of dashes & gaps; `0` = solid)\n- `strokeJoinStyle` (`miter` | `bevel` | `round` | `arcs` | `miter-clip`)\n- `strokeOpacity` (0 - 1)\n- `strokeWidth` (1 - 25 px)",
+        "fontSize": "default",
+        "backgroundColor": "transparent",
+        "fontColor": "#1A1A1A"
+      }
+    },
+    "viz_default": {
+      "type": "splunk.rectangle",
+      "title": "1. Default (theme defaults)",
+      "description": "No options set - uses theme.defaultFillColor / theme.defaultStrokeColor. Enterprise dark = #31373E fill, #3C444D stroke.",
+      "options": {}
+    },
+    "viz_fill_custom": {
+      "type": "splunk.rectangle",
+      "title": "2. Custom fillColor",
+      "description": "Solid card with a brand colour. Stroke transparent for a flat look. Most common usage.",
+      "options": {
+        "fillColor": "#D8E0F2",
+        "strokeColor": "transparent"
+      }
+    },
+    "viz_fill_opacity_full": {
+      "type": "splunk.rectangle",
+      "title": "3. fillOpacity = 1 (default)",
+      "description": "Fully opaque fill. Default behaviour.",
+      "options": {
+        "fillColor": "#0E7C70",
+        "fillOpacity": 1,
+        "strokeColor": "transparent"
+      }
+    },
+    "viz_fill_opacity_half": {
+      "type": "splunk.rectangle",
+      "title": "4. fillOpacity = 0.5",
+      "description": "50% fill - lets the background canvas bleed through. Useful for layered cards.",
+      "options": {
+        "fillColor": "#0E7C70",
+        "fillOpacity": 0.5,
+        "strokeColor": "transparent"
+      }
+    },
+    "viz_fill_opacity_faint": {
+      "type": "splunk.rectangle",
+      "title": "5. fillOpacity = 0.15 (faint)",
+      "description": "Near-transparent tint - section watermark or very subtle row stripe.",
+      "options": {
+        "fillColor": "#0E7C70",
+        "fillOpacity": 0.15,
+        "strokeColor": "transparent"
+      }
+    },
+    "viz_rounded_subtle": {
+      "type": "splunk.rectangle",
+      "title": "6. rx = 8 (subtle corners)",
+      "description": "Modern card - 8px radius is the most common choice for KPI cards and section backgrounds. ry inherits from rx by default.",
+      "options": {
+        "fillColor": "#EFE7D3",
+        "strokeColor": "transparent",
+        "rx": 8
+      }
+    },
+    "viz_rounded_pill": {
+      "type": "splunk.rectangle",
+      "title": "7. rx = 50 (pill / chip)",
+      "description": "Rectangle becomes a pill / chip when rx >= height/2. Useful for status badges.",
+      "options": {
+        "fillColor": "#7A45C2",
+        "strokeColor": "transparent",
+        "rx": 50
+      }
+    },
+    "viz_stroke_basic": {
+      "type": "splunk.rectangle",
+      "title": "8. strokeColor + strokeWidth",
+      "description": "Outlined card. strokeWidth=2 + a brand stroke colour. Fill transparent.",
+      "options": {
+        "fillColor": "transparent",
+        "strokeColor": "#0E7C70",
+        "strokeWidth": 2,
+        "rx": 6
+      }
+    },
+    "viz_stroke_thick": {
+      "type": "splunk.rectangle",
+      "title": "9. strokeWidth = 25 (max)",
+      "description": "Maximum stroke width per the PDF. Anything above 25 is clipped. Use sparingly.",
+      "options": {
+        "fillColor": "#FAEAD8",
+        "strokeColor": "#C2415A",
+        "strokeWidth": 25,
+        "rx": 4
+      }
+    },
+    "viz_stroke_dashed": {
+      "type": "splunk.rectangle",
+      "title": "10. strokeDashStyle = 6",
+      "description": "Dashes & gaps both 6px. Often used for empty / placeholder slots in dashboards.",
+      "options": {
+        "fillColor": "transparent",
+        "strokeColor": "#3C444D",
+        "strokeWidth": 2,
+        "strokeDashStyle": 6,
+        "rx": 4
+      }
+    },
+    "viz_stroke_join_round": {
+      "type": "splunk.rectangle",
+      "title": "11. strokeJoinStyle = round",
+      "description": "Rounded join at the corners of the stroke path. Visible only at large strokeWidth + rx=0.",
+      "options": {
+        "fillColor": "transparent",
+        "strokeColor": "#B58900",
+        "strokeWidth": 12,
+        "strokeJoinStyle": "round"
+      }
+    },
+    "viz_stroke_join_miter": {
+      "type": "splunk.rectangle",
+      "title": "12. strokeJoinStyle = miter (default)",
+      "description": "Sharp 90-degree corners. Default.",
+      "options": {
+        "fillColor": "transparent",
+        "strokeColor": "#B58900",
+        "strokeWidth": 12,
+        "strokeJoinStyle": "miter"
+      }
+    },
+    "viz_stroke_opacity": {
+      "type": "splunk.rectangle",
+      "title": "13. strokeOpacity = 0.4",
+      "description": "Strokes can be faded independently of fill. 40% stroke opacity gives a softer outlined card.",
+      "options": {
+        "fillColor": "#FAEAD8",
+        "strokeColor": "#0E7C70",
+        "strokeOpacity": 0.4,
+        "strokeWidth": 2,
+        "rx": 8
+      }
+    },
+    "viz_card_background": {
+      "type": "splunk.rectangle",
+      "title": "14. KPI card pattern",
+      "description": "Background card with a contrasting accent stroke and a singleValue layered on top. Demonstrates the canonical 'card + KPI' recipe.",
+      "options": {
+        "fillColor": "#EFE7D3",
+        "fillOpacity": 0.95,
+        "strokeColor": "#0E7C70",
+        "strokeOpacity": 0.5,
+        "strokeWidth": 1,
+        "rx": 8
+      }
+    },
+    "viz_card_kpi": {
+      "type": "splunk.singlevalue",
+      "title": "Throughput",
+      "description": "singleValue layered on top of viz_card_background.",
+      "dataSources": {
+        "primary": "ds_kpi"
+      },
+      "options": {
+        "majorColor": "#0E7C70",
+        "trendDisplay": "off",
+        "sparklineDisplay": "off",
+        "unitPosition": "after",
+        "unit": " req/s",
+        "backgroundColor": "transparent"
+      }
+    }
+  },
+  "inputs": {},
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 2080,
+      "display": "auto-scale",
+      "backgroundColor": "#FAEAD8"
+    },
+    "structure": [
+      {
+        "item": "viz_title",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 20,
+          "w": 1400,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_default",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 360,
+          "w": 340,
+          "h": 200
+        }
+      },
+      {
+        "item": "viz_fill_custom",
+        "type": "block",
+        "position": {
+          "x": 380,
+          "y": 360,
+          "w": 340,
+          "h": 200
+        }
+      },
+      {
+        "item": "viz_fill_opacity_full",
+        "type": "block",
+        "position": {
+          "x": 740,
+          "y": 360,
+          "w": 340,
+          "h": 200
+        }
+      },
+      {
+        "item": "viz_fill_opacity_half",
+        "type": "block",
+        "position": {
+          "x": 1100,
+          "y": 360,
+          "w": 320,
+          "h": 200
+        }
+      },
+      {
+        "item": "viz_fill_opacity_faint",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 580,
+          "w": 340,
+          "h": 200
+        }
+      },
+      {
+        "item": "viz_rounded_subtle",
+        "type": "block",
+        "position": {
+          "x": 380,
+          "y": 580,
+          "w": 340,
+          "h": 200
+        }
+      },
+      {
+        "item": "viz_rounded_pill",
+        "type": "block",
+        "position": {
+          "x": 740,
+          "y": 580,
+          "w": 340,
+          "h": 200
+        }
+      },
+      {
+        "item": "viz_stroke_basic",
+        "type": "block",
+        "position": {
+          "x": 1100,
+          "y": 580,
+          "w": 320,
+          "h": 200
+        }
+      },
+      {
+        "item": "viz_stroke_thick",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 800,
+          "w": 340,
+          "h": 200
+        }
+      },
+      {
+        "item": "viz_stroke_dashed",
+        "type": "block",
+        "position": {
+          "x": 380,
+          "y": 800,
+          "w": 340,
+          "h": 200
+        }
+      },
+      {
+        "item": "viz_stroke_join_round",
+        "type": "block",
+        "position": {
+          "x": 740,
+          "y": 800,
+          "w": 340,
+          "h": 200
+        }
+      },
+      {
+        "item": "viz_stroke_join_miter",
+        "type": "block",
+        "position": {
+          "x": 1100,
+          "y": 800,
+          "w": 320,
+          "h": 200
+        }
+      },
+      {
+        "item": "viz_stroke_opacity",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 1020,
+          "w": 340,
+          "h": 200
+        }
+      },
+      {
+        "item": "viz_card_background",
+        "type": "block",
+        "position": {
+          "x": 380,
+          "y": 1020,
+          "w": 1040,
+          "h": 200
+        }
+      },
+      {
+        "item": "viz_card_kpi",
+        "type": "block",
+        "position": {
+          "x": 1180,
+          "y": 1060,
+          "w": 220,
+          "h": 120
+        }
+      }
+    ],
+    "globalInputs": []
+  }
+}
