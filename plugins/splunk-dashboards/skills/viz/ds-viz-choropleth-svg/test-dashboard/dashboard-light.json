@@ -1,0 +1,122 @@
+{
+  "title": "ds-viz-choropleth-svg - option matrix (light)",
+  "description": "Test bench for splunk.choropleth.svg. Verifies all 5 documented options (svg, areaIds, areaValues, areaColors, backgroundColor). The SVG is a simple 5-region 'data center floor plan' with path IDs RACK-A..RACK-E; the data source binds each rack to a numeric metric.",
+  "defaults": {
+    "dataSources": {
+      "global": { "options": { "queryParameters": { "earliest": "-24h@h", "latest": "now" } } }
+    },
+    "visualizations": {
+      "global": { "showProgressBar": false, "showLastUpdated": false }
+    }
+  },
+  "dataSources": {
+    "ds_racks": {
+      "type": "ds.test",
+      "options": {
+        "data": {
+          "fields": [{ "name": "rack" }, { "name": "load" }],
+          "columns": [
+            ["RACK-A", "RACK-B", "RACK-C", "RACK-D", "RACK-E"],
+            [12, 47, 68, 85, 95]
+          ]
+        }
+      }
+    }
+  },
+  "visualizations": {
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# `splunk.choropleth.svg` - option matrix\n\nThe SVG choropleth fills regions of an arbitrary SVG image with colour driven by a metric. Use it for **floor plans**, **building schematics**, **device topology**, or any bespoke geometry that has no Leaflet basemap.\n\n**All options from the 10.4 PDF (5 total):**\n\n- `svg`* (required) - literal SVG markup string OR an `svg+xml` data URI. Web URLs are documented as **not supported** per the prerequisites, though the PDF's multiFormat() example uses one. Stick to literal / data-URI.\n- `areaIds` - DOS string binding the column whose values match `path id=` attributes in the SVG.\n- `areaValues` - DOS string binding the numeric column used for fill colour.\n- `areaColors` - DOS string for the fill colour mapping (typically `rangeValue` / `gradient` / `multiFormat`).\n- `backgroundColor` - panel background behind the SVG.\n\n**Data shape:** the search must return a string column matching path IDs and a numeric column for the metric. In this dashboard the SVG has 5 regions (`RACK-A` ... `RACK-E`) and the data source binds them to a `load` value 0-100.",
+        "fontSize": "default",
+        "backgroundColor": "transparent",
+        "fontColor": "#1A1A1A"
+      }
+    },
+    "viz_default_colors": {
+      "type": "splunk.choropleth.svg",
+      "title": "1. Default colours (rangeValue palette)",
+      "description": "areaIds + areaValues only. Default areaColors uses the built-in rangeValue palette. Verifies the minimal contract.",
+      "dataSources": { "primary": "ds_racks" },
+      "options": {
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 600 300\"><rect x=\"0\" y=\"0\" width=\"600\" height=\"300\" fill=\"#EFE7D3\"/><text x=\"300\" y=\"24\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"14\">Datacenter Floor</text><path id=\"RACK-A\" d=\"M40,60 h100 v180 h-100 z\" fill=\"#bbb\"/><path id=\"RACK-B\" d=\"M160,60 h100 v180 h-100 z\" fill=\"#bbb\"/><path id=\"RACK-C\" d=\"M280,60 h100 v180 h-100 z\" fill=\"#bbb\"/><path id=\"RACK-D\" d=\"M400,60 h100 v180 h-100 z\" fill=\"#bbb\"/><path id=\"RACK-E\" d=\"M520,60 h60 v180 h-60 z\" fill=\"#bbb\"/><text x=\"90\" y=\"160\" text-anchor=\"middle\" fill=\"#222\" font-family=\"sans-serif\" font-size=\"14\">A</text><text x=\"210\" y=\"160\" text-anchor=\"middle\" fill=\"#222\" font-family=\"sans-serif\" font-size=\"14\">B</text><text x=\"330\" y=\"160\" text-anchor=\"middle\" fill=\"#222\" font-family=\"sans-serif\" font-size=\"14\">C</text><text x=\"450\" y=\"160\" text-anchor=\"middle\" fill=\"#222\" font-family=\"sans-serif\" font-size=\"14\">D</text><text x=\"550\" y=\"160\" text-anchor=\"middle\" fill=\"#222\" font-family=\"sans-serif\" font-size=\"14\">E</text></svg>",
+        "areaIds": "> primary | seriesByName(\"rack\")",
+        "areaValues": "> primary | seriesByName(\"load\")"
+      }
+    },
+    "viz_range_colors": {
+      "type": "splunk.choropleth.svg",
+      "title": "2. Custom areaColors via rangeValue(thresholdConfig)",
+      "description": "Explicit threshold palette: green / yellow / red driven by load value.",
+      "dataSources": { "primary": "ds_racks" },
+      "options": {
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 600 300\"><rect x=\"0\" y=\"0\" width=\"600\" height=\"300\" fill=\"#EFE7D3\"/><path id=\"RACK-A\" d=\"M40,60 h100 v180 h-100 z\" fill=\"#bbb\"/><path id=\"RACK-B\" d=\"M160,60 h100 v180 h-100 z\" fill=\"#bbb\"/><path id=\"RACK-C\" d=\"M280,60 h100 v180 h-100 z\" fill=\"#bbb\"/><path id=\"RACK-D\" d=\"M400,60 h100 v180 h-100 z\" fill=\"#bbb\"/><path id=\"RACK-E\" d=\"M520,60 h60 v180 h-60 z\" fill=\"#bbb\"/></svg>",
+        "areaIds": "> primary | seriesByName(\"rack\")",
+        "areaValues": "> primary | seriesByName(\"load\")",
+        "areaColors": "> primary | seriesByName(\"load\") | rangeValue(thresholdConfig)"
+      },
+      "context": {
+        "thresholdConfig": [
+          { "from": 80,           "value": "#C2185B" },
+          { "from": 50, "to": 80, "value": "#E89A2C" },
+          {            "to": 50, "value": "#0E7C70" }
+        ]
+      }
+    },
+    "viz_gradient_colors": {
+      "type": "splunk.choropleth.svg",
+      "title": "3. areaColors via gradient(...)",
+      "description": "Smooth two-stop gradient between low and high. Useful for heatmap-style visualizations.",
+      "dataSources": { "primary": "ds_racks" },
+      "options": {
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 600 300\"><rect x=\"0\" y=\"0\" width=\"600\" height=\"300\" fill=\"#EFE7D3\"/><path id=\"RACK-A\" d=\"M40,60 h100 v180 h-100 z\" fill=\"#bbb\"/><path id=\"RACK-B\" d=\"M160,60 h100 v180 h-100 z\" fill=\"#bbb\"/><path id=\"RACK-C\" d=\"M280,60 h100 v180 h-100 z\" fill=\"#bbb\"/><path id=\"RACK-D\" d=\"M400,60 h100 v180 h-100 z\" fill=\"#bbb\"/><path id=\"RACK-E\" d=\"M520,60 h60 v180 h-60 z\" fill=\"#bbb\"/></svg>",
+        "areaIds": "> primary | seriesByName(\"rack\")",
+        "areaValues": "> primary | seriesByName(\"load\")",
+        "areaColors": "> primary | seriesByName(\"load\") | gradient(gradientConfig)"
+      },
+      "context": {
+        "gradientConfig": {
+          "colors": ["#0E7C70", "#E89A2C", "#C2185B"]
+        }
+      }
+    },
+    "viz_background": {
+      "type": "splunk.choropleth.svg",
+      "title": "4. backgroundColor override",
+      "description": "Custom backgroundColor visible behind the SVG. The SVG itself has no opaque rect so the panel BG bleeds through.",
+      "dataSources": { "primary": "ds_racks" },
+      "options": {
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 600 300\"><path id=\"RACK-A\" d=\"M40,60 h100 v180 h-100 z\"/><path id=\"RACK-B\" d=\"M160,60 h100 v180 h-100 z\"/><path id=\"RACK-C\" d=\"M280,60 h100 v180 h-100 z\"/><path id=\"RACK-D\" d=\"M400,60 h100 v180 h-100 z\"/><path id=\"RACK-E\" d=\"M520,60 h60 v180 h-60 z\"/></svg>",
+        "areaIds": "> primary | seriesByName(\"rack\")",
+        "areaValues": "> primary | seriesByName(\"load\")",
+        "areaColors": "> primary | seriesByName(\"load\") | rangeValue(thresholdConfig)",
+        "backgroundColor": "#D8E0F2"
+      },
+      "context": {
+        "thresholdConfig": [
+          { "from": 80,           "value": "#C2185B" },
+          { "from": 50, "to": 80, "value": "#E89A2C" },
+          {            "to": 50, "value": "#0E7C70" }
+        ]
+      }
+    }
+  },
+  "inputs": {},
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 1640,
+      "display": "auto-scale",
+      "backgroundColor": "#FAEAD8"
+    },
+    "structure": [
+      { "item": "viz_title",            "type": "block", "position": { "x": 20,  "y": 20,   "w": 1400, "h": 360 } },
+      { "item": "viz_default_colors",   "type": "block", "position": { "x": 20,  "y": 400,  "w": 690,  "h": 380 } },
+      { "item": "viz_range_colors",     "type": "block", "position": { "x": 730, "y": 400,  "w": 690,  "h": 380 } },
+      { "item": "viz_gradient_colors",  "type": "block", "position": { "x": 20,  "y": 800,  "w": 690,  "h": 380 } },
+      { "item": "viz_background",       "type": "block", "position": { "x": 730, "y": 800,  "w": 690,  "h": 380 } }
+    ],
+    "globalInputs": []
+  }
+}
