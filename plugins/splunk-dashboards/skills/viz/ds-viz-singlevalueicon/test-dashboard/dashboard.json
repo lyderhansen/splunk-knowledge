@@ -1,0 +1,317 @@
+{
+  "title": "ds-viz-singlevalueicon - option matrix",
+  "description": "Test bench for splunk.singlevalueicon. Each panel exercises one option group: icon (default vs. inline SVG data URI), iconColor + iconOpacity + iconPosition (before / after), majorValue + unit + underLabel, trendDisplay (absolute / percent / off), shouldAbbreviateTrendValue + thousand separators, showValue (icon-only mode), majorFontSize, dynamic colour via DOS / rangeValue. SPL is makeresults-based.",
+  "defaults": {
+    "dataSources": {
+      "global": {
+        "options": {
+          "queryParameters": {
+            "earliest": "-24h@h",
+            "latest": "now"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": false,
+        "showLastUpdated": false
+      }
+    }
+  },
+  "dataSources": {
+
+    "ds_revenue_trend": {
+      "type": "ds.search",
+      "name": "revenue trend - 24h",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval revenue = round(8000 + 2000*sin(i/4) + random()%500) | table _time revenue"
+      }
+    },
+
+    "ds_kpi_static": {
+      "type": "ds.search",
+      "name": "kpi - single number, no trend",
+      "options": {
+        "query": "| makeresults | eval orders = 1247 | table orders"
+      }
+    },
+
+    "ds_pct_kpi": {
+      "type": "ds.search",
+      "name": "percentage kpi - 24h trend",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval conversion_rate = round(2.5 + sin(i/4)*0.4 + random()%10/100, 2) | table _time conversion_rate"
+      }
+    },
+
+    "ds_currency_kpi": {
+      "type": "ds.search",
+      "name": "currency kpi - large value with trend",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval mrr = round(1245000 + i*1500 + random()%2000) | table _time mrr"
+      }
+    },
+
+    "ds_health_score": {
+      "type": "ds.search",
+      "name": "health score - dynamic colour ranges",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval health = round(85 + sin(i/4)*8 + random()%5) | table _time health"
+      }
+    },
+
+    "ds_error_count": {
+      "type": "ds.search",
+      "name": "error count - red on threshold",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval errors = round(12 + sin(i/3)*8 + random()%5) | table _time errors"
+      }
+    }
+
+  },
+
+  "visualizations": {
+
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# `splunk.singlevalueicon` - option matrix\n\nA `splunk.singlevalue` with a leading icon. The 10.4 reference exposes 16 options - the singlevalue option set MINUS `sparkline*` (no sparkline) and `backgroundColor` defaults to **transparent** (vs. theme background for singlevalue), PLUS four icon options: `icon`, `iconColor`, `iconOpacity`, `iconPosition`. **Only renders inside Absolute layout.** The `icon` value is either `\"default\"` (a generic Splunk square) or a `data:image/svg+xml;utf8,<svg ...>...</svg>` data URI.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default"
+      }
+    },
+
+    "viz_default_icon": {
+      "type": "splunk.singlevalueicon",
+      "title": "1. icon - default + showValue (default)",
+      "description": "icon = 'default' renders the generic Splunk square. showValue = true (default) renders the major value + trend below the icon.",
+      "dataSources": { "primary": "ds_revenue_trend" },
+      "options": {
+        "icon": "default",
+        "underLabel": "Revenue (24h)",
+        "unit": "$",
+        "unitPosition": "before",
+        "shouldAbbreviateTrendValue": true,
+        "trendDisplay": "percent"
+      }
+    },
+
+    "viz_svg_uri_check": {
+      "type": "splunk.singlevalueicon",
+      "title": "2. Inline SVG data URI - check / heart / lightning",
+      "description": "icon = data:image/svg+xml;utf8,<svg ...>. Use stroke='currentColor' so iconColor controls the colour. Anything renderable as inline SVG works (Lucide, Heroicons, Splunk Visual Library exports).",
+      "dataSources": { "primary": "ds_pct_kpi" },
+      "options": {
+        "icon": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>",
+        "iconColor": "#33FF99",
+        "underLabel": "Conversion rate",
+        "unit": "%",
+        "unitPosition": "after",
+        "numberPrecision": 2,
+        "trendDisplay": "percent"
+      }
+    },
+
+    "viz_icon_position_after": {
+      "type": "splunk.singlevalueicon",
+      "title": "3. iconPosition - after",
+      "description": "iconPosition = 'after' moves the icon to the right of the value. Default is 'before'. Use 'after' when the icon is a meaningful suffix (a units glyph, a state indicator).",
+      "dataSources": { "primary": "ds_currency_kpi" },
+      "options": {
+        "icon": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='17 6 23 6 23 12'/><polyline points='23 6 13.5 15.5 8.5 10.5 1 18'/></svg>",
+        "iconColor": "#33FF99",
+        "iconPosition": "after",
+        "underLabel": "MRR (icon = trend up)",
+        "unit": "$",
+        "unitPosition": "before",
+        "shouldAbbreviateTrendValue": true,
+        "trendDisplay": "percent"
+      }
+    },
+
+    "viz_icon_only": {
+      "type": "splunk.singlevalueicon",
+      "title": "4. showValue - false (icon-only)",
+      "description": "showValue = false hides BOTH the major value AND the trend - the panel is just the icon. Useful for status-light panels or visual breakers in a KPI strip.",
+      "dataSources": { "primary": "ds_kpi_static" },
+      "options": {
+        "icon": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><polyline points='12 6 12 12 16 14'/></svg>",
+        "iconColor": "#7AA2FF",
+        "showValue": false
+      }
+    },
+
+    "viz_dynamic_iconColor": {
+      "type": "splunk.singlevalueicon",
+      "title": "5. Dynamic iconColor via rangeValue",
+      "description": "iconColor uses Dynamic Options Syntax to map the current value to a colour. Pattern: `> primary | seriesByName(field) | lastPoint() | rangeValue(thresholds)`. Icon turns green / amber / red based on health score.",
+      "dataSources": { "primary": "ds_health_score" },
+      "options": {
+        "icon": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M22 11.08V12a10 10 0 1 1-5.93-9.14'/><polyline points='22 4 12 14.01 9 11.01'/></svg>",
+        "underLabel": "System health",
+        "unit": "/100",
+        "unitPosition": "after",
+        "trendDisplay": "absolute",
+        "iconColor": "> primary | seriesByName('health') | lastPoint() | rangeValue(thresholds)"
+      },
+      "context": {
+        "thresholds": [
+          { "to": 70,             "value": "#FF2D95" },
+          { "from": 70, "to": 90, "value": "#FFB627" },
+          { "from": 90,           "value": "#33FF99" }
+        ]
+      }
+    },
+
+    "viz_dynamic_majorColor": {
+      "type": "splunk.singlevalueicon",
+      "title": "6. Dynamic majorColor (number colour, fixed icon)",
+      "description": "iconColor stays a calm hue, majorColor flips on threshold. Reads as 'something is wrong with this metric' without losing the icon's identity. Common SOC pattern.",
+      "dataSources": { "primary": "ds_error_count" },
+      "options": {
+        "icon": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'/><line x1='12' y1='9' x2='12' y2='13'/><circle cx='12' cy='17' r='1' fill='currentColor'/></svg>",
+        "iconColor": "#7AA2FF",
+        "underLabel": "Errors / hour",
+        "trendDisplay": "absolute",
+        "majorColor": "> primary | seriesByName('errors') | lastPoint() | rangeValue(majorThresholds)"
+      },
+      "context": {
+        "majorThresholds": [
+          { "to": 15,             "value": "#33FF99" },
+          { "from": 15, "to": 25, "value": "#FFB627" },
+          { "from": 25,           "value": "#FF2D95" }
+        ]
+      }
+    },
+
+    "viz_iconOpacity": {
+      "type": "splunk.singlevalueicon",
+      "title": "7. iconOpacity 0.3 - muted secondary metric",
+      "description": "iconOpacity = 0.3 fades the icon. Use when the icon is decorative / categorisation rather than the message. The eye lands on the value first, the icon is context.",
+      "dataSources": { "primary": "ds_pct_kpi" },
+      "options": {
+        "icon": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><line x1='18' y1='20' x2='18' y2='10'/><line x1='12' y1='20' x2='12' y2='4'/><line x1='6' y1='20' x2='6' y2='14'/></svg>",
+        "iconColor": "#7AA2FF",
+        "iconOpacity": 0.3,
+        "underLabel": "Conversion rate",
+        "unit": "%",
+        "unitPosition": "after",
+        "numberPrecision": 2,
+        "trendDisplay": "percent"
+      }
+    },
+
+    "viz_no_trend": {
+      "type": "splunk.singlevalueicon",
+      "title": "8. trendDisplay - off (static KPI with icon)",
+      "description": "Single-row data source, no time dimension. trendDisplay = 'off' suppresses the delta. The icon supplies meaning without needing recent history.",
+      "dataSources": { "primary": "ds_kpi_static" },
+      "options": {
+        "icon": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M9 11H1l3-3-3-3M15 17h8l-3 3 3 3M22 11l-3-3-3 3M2 17l3 3 3-3'/></svg>",
+        "iconColor": "#33FF99",
+        "underLabel": "Orders today",
+        "trendDisplay": "off"
+      }
+    },
+
+    "viz_majorFontSize": {
+      "type": "splunk.singlevalueicon",
+      "title": "9. majorFontSize - 56 (compact KPI strip)",
+      "description": "majorFontSize = 56 locks the value font size. Icon stays auto-sized. Useful when a row of singlevalueicon tiles needs visual consistency regardless of underlying value magnitude.",
+      "dataSources": { "primary": "ds_currency_kpi" },
+      "options": {
+        "icon": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><line x1='12' y1='1' x2='12' y2='23'/><path d='M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6'/></svg>",
+        "iconColor": "#7AA2FF",
+        "underLabel": "MRR (fixed font)",
+        "unit": "$",
+        "unitPosition": "before",
+        "shouldAbbreviateTrendValue": true,
+        "trendDisplay": "percent",
+        "majorFontSize": 56
+      }
+    },
+
+    "viz_dynamic_bg": {
+      "type": "splunk.singlevalueicon",
+      "title": "10. Dynamic backgroundColor + locked majorColor",
+      "description": "Whole-tile background flips on threshold. majorColor + iconColor lock to white so the tile stays readable when the bg goes dark. Use sparingly - one or two of these is enough per dashboard.",
+      "dataSources": { "primary": "ds_error_count" },
+      "options": {
+        "icon": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><line x1='12' y1='8' x2='12' y2='12'/><circle cx='12' cy='16' r='1' fill='currentColor'/></svg>",
+        "iconColor": "#FFFFFF",
+        "majorColor": "#FFFFFF",
+        "underLabel": "Errors / hour",
+        "trendDisplay": "absolute",
+        "backgroundColor": "> primary | seriesByName('errors') | lastPoint() | rangeValue(bgThresholds)"
+      },
+      "context": {
+        "bgThresholds": [
+          { "to": 15,             "value": "#152034" },
+          { "from": 15, "to": 25, "value": "#A85A1F" },
+          { "from": 25,           "value": "#8B1F3A" }
+        ]
+      }
+    },
+
+    "viz_separators_off": {
+      "type": "splunk.singlevalueicon",
+      "title": "11. shouldUseThousandSeparators - false",
+      "description": "shouldUseThousandSeparators = false strips commas. Use for IDs, sequence numbers, version numbers. Numbers like build IDs (1245000) read as IDs, not quantities, when commas are absent.",
+      "dataSources": { "primary": "ds_currency_kpi" },
+      "options": {
+        "icon": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><polyline points='16 12 12 8 8 12'/><line x1='12' y1='16' x2='12' y2='8'/></svg>",
+        "iconColor": "#7AA2FF",
+        "underLabel": "Build ID",
+        "shouldUseThousandSeparators": false,
+        "trendDisplay": "off"
+      }
+    },
+
+    "viz_kpi_strip_compact": {
+      "type": "splunk.singlevalueicon",
+      "title": "12. Compact KPI strip pattern",
+      "description": "Transparent background + small majorFontSize + icon-after layout. Used for rows of small KPI tiles in a dense dashboard header strip. Combines several options at once.",
+      "dataSources": { "primary": "ds_pct_kpi" },
+      "options": {
+        "backgroundColor": "transparent",
+        "icon": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='23 6 13.5 15.5 8.5 10.5 1 18'/><polyline points='17 6 23 6 23 12'/></svg>",
+        "iconColor": "#33FF99",
+        "iconPosition": "after",
+        "underLabel": "Conv. rate",
+        "unit": "%",
+        "unitPosition": "after",
+        "numberPrecision": 1,
+        "shouldAbbreviateTrendValue": true,
+        "trendDisplay": "percent",
+        "majorFontSize": 36
+      }
+    }
+
+  },
+
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 1480,
+      "display": "auto-scale"
+    },
+    "structure": [
+      { "item": "viz_title",                "type": "block", "position": { "x": 16,   "y": 16,   "w": 1408, "h": 96 } },
+      { "item": "viz_default_icon",         "type": "block", "position": { "x": 16,   "y": 128,  "w": 460,  "h": 220 } },
+      { "item": "viz_svg_uri_check",        "type": "block", "position": { "x": 492,  "y": 128,  "w": 460,  "h": 220 } },
+      { "item": "viz_icon_position_after",  "type": "block", "position": { "x": 968,  "y": 128,  "w": 456,  "h": 220 } },
+      { "item": "viz_icon_only",            "type": "block", "position": { "x": 16,   "y": 364,  "w": 460,  "h": 220 } },
+      { "item": "viz_dynamic_iconColor",    "type": "block", "position": { "x": 492,  "y": 364,  "w": 460,  "h": 220 } },
+      { "item": "viz_dynamic_majorColor",   "type": "block", "position": { "x": 968,  "y": 364,  "w": 456,  "h": 220 } },
+      { "item": "viz_iconOpacity",          "type": "block", "position": { "x": 16,   "y": 600,  "w": 460,  "h": 220 } },
+      { "item": "viz_no_trend",             "type": "block", "position": { "x": 492,  "y": 600,  "w": 460,  "h": 220 } },
+      { "item": "viz_majorFontSize",        "type": "block", "position": { "x": 968,  "y": 600,  "w": 456,  "h": 220 } },
+      { "item": "viz_dynamic_bg",           "type": "block", "position": { "x": 16,   "y": 836,  "w": 460,  "h": 220 } },
+      { "item": "viz_separators_off",       "type": "block", "position": { "x": 492,  "y": 836,  "w": 460,  "h": 220 } },
+      { "item": "viz_kpi_strip_compact",    "type": "block", "position": { "x": 968,  "y": 836,  "w": 456,  "h": 220 } }
+    ],
+    "globalInputs": []
+  }
+}
