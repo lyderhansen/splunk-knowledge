@@ -75,7 +75,7 @@ Legend: ✅ done · 🟡 in progress · ⬜ not started · ❌ blocked / known i
 | 17 | `splunk.parallelcoordinates` | ✅    | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
 | 18 | `splunk.sankey`           | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. Validate skipped — module path issue. |
 | 19 | `splunk.linkgraph`        | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
-| 20 | `splunk.map`              | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | Known broken in ceo_boardroom — investigate. |
+| 20 | `splunk.map`              | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. Top-level options include `markerSize`. PDF source-editor table only enums marker/bubble for layer type but choropleth is fully supported and verified live. choropleth layers require `geom geo_*` in SPL and `areaIds`/`areaValues` per layer. `center` is `[lat,lon]`, not `[lon,lat]`. |
 | 21 | `splunk.choropleth.svg`   | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | |
 | 22 | `splunk.choropleth.map`   | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | Confirm if this type id is actually accepted by 10.2.1 (was rejected earlier). |
 | 23 | `splunk.markdown`         | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | fontSize is a string enum (not int) — verified. fontFamily supported beyond PDF table. |

@@ -1,0 +1,267 @@
+{
+  "title": "ds-viz-map - option matrix (dark)",
+  "description": "Test bench for splunk.map. Verifies all top-level options (backgroundColor, center, zoom, scaleUnit, showScale, baseLayerTileServer, baseLayerTileServerType) and per-layer options (type=marker|bubble|choropleth, latitude, longitude, bubbleSize, dataColors, seriesColors, additionalTooltipFields, resultLimit). Test data is synthesized inline via makeresults so no external lookups are required for marker/bubble panels.",
+  "defaults": {
+    "dataSources": {
+      "global": { "options": { "queryParameters": { "earliest": "-24h@h", "latest": "now" } } }
+    },
+    "visualizations": {
+      "global": { "showProgressBar": false, "showLastUpdated": false }
+    }
+  },
+  "dataSources": {
+    "ds_marker_synth": {
+      "type": "ds.search",
+      "name": "synthesized lat/lon/value rows for marker panels",
+      "options": {
+        "query": "| makeresults count=12 | streamstats count as i | eval lat=case(i==1,40.71,i==2,34.05,i==3,51.51,i==4,48.86,i==5,35.68,i==6,55.75,i==7,-33.87,i==8,-23.55,i==9,1.35,i==10,28.61,i==11,52.52,i==12,59.91), lon=case(i==1,-74.01,i==2,-118.24,i==3,-0.13,i==4,2.35,i==5,139.69,i==6,37.62,i==7,151.21,i==8,-46.63,i==9,103.82,i==10,77.21,i==11,13.40,i==12,10.75), city=case(i==1,\"New York\",i==2,\"Los Angeles\",i==3,\"London\",i==4,\"Paris\",i==5,\"Tokyo\",i==6,\"Moscow\",i==7,\"Sydney\",i==8,\"São Paulo\",i==9,\"Singapore\",i==10,\"Delhi\",i==11,\"Berlin\",i==12,\"Oslo\"), bytes=case(i==1,3500,i==2,2400,i==3,1800,i==4,2900,i==5,950,i==6,1500,i==7,800,i==8,2200,i==9,3100,i==10,1100,i==11,2700,i==12,600) | table city lat lon bytes"
+      }
+    },
+    "ds_bubble_synth": {
+      "type": "ds.search",
+      "name": "synthesized lat/lon/value rows for bubble panel",
+      "options": {
+        "query": "| makeresults count=12 | streamstats count as i | eval lat=case(i==1,40.71,i==2,34.05,i==3,51.51,i==4,48.86,i==5,35.68,i==6,55.75,i==7,-33.87,i==8,-23.55,i==9,1.35,i==10,28.61,i==11,52.52,i==12,59.91), lon=case(i==1,-74.01,i==2,-118.24,i==3,-0.13,i==4,2.35,i==5,139.69,i==6,37.62,i==7,151.21,i==8,-46.63,i==9,103.82,i==10,77.21,i==11,13.40,i==12,10.75), method=case((i%3)==0,\"GET\",(i%3)==1,\"POST\",(i%3)==2,\"DELETE\"), count=case(i==1,4200,i==2,3100,i==3,2700,i==4,3800,i==5,1100,i==6,2200,i==7,950,i==8,3300,i==9,4000,i==10,1300,i==11,3500,i==12,800) | table lat lon method count"
+      }
+    },
+    "ds_choropleth_synth": {
+      "type": "ds.search",
+      "name": "synthesized country counts (uses geom command - bundled with Splunk core)",
+      "options": {
+        "query": "| makeresults count=8 | streamstats count as i | eval featureId=case(i==1,\"US\",i==2,\"GB\",i==3,\"FR\",i==4,\"DE\",i==5,\"JP\",i==6,\"BR\",i==7,\"AU\",i==8,\"NO\"), count=case(i==1,520,i==2,310,i==3,180,i==4,420,i==5,140,i==6,260,i==7,90,i==8,75) | rename featureId as country | geom geo_countries featureIdField=country | table country count geom"
+      }
+    }
+  },
+  "visualizations": {
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# `splunk.map` - option matrix\n\nThe geographic map visualization. Renders interactive Leaflet-style maps with one or more **layers** (`marker`, `bubble`, `choropleth`) on top of a base tile server.\n\n**Top-level options (from the 10.4 PDF):**\n\n- `backgroundColor`, `center` (`[lat, lon]`), `zoom`, `scaleUnit` (`metric`|`imperial`), `showScale`\n- `baseLayerTileServer` (URL), `baseLayerTileServerType` (`vector`|`raster`)\n- `layers` (array of layer objects)\n\n**Per-layer options:**\n\n- `type` (`marker`|`bubble`|`choropleth`)\n- `latitude`, `longitude` (DOS bindings, e.g. `> primary | seriesByName(\"lat\")`)\n- `bubbleSize` (bubble layer only)\n- `areaIds`, `areaValues` (choropleth layer only)\n- `dataColors`, `seriesColors`, `additionalTooltipFields`, `resultLimit`\n\n**Note:** the source-editor PDF table for `type` lists only `marker`|`bubble`, but `choropleth` is a fully supported third type per the configuration panel docs and a dedicated PDF example. We test all three here.",
+        "fontSize": "default",
+        "backgroundColor": "transparent",
+        "fontColor": "#E8E8E8"
+      }
+    },
+    "viz_marker_default": {
+      "type": "splunk.map",
+      "title": "1. Marker layer - default (no center/zoom)",
+      "description": "Bare marker layer. center/zoom auto-fit from data. lat/lon bound by name.",
+      "dataSources": { "primary": "ds_marker_synth" },
+      "options": {
+        "layers": [
+          {
+            "type": "marker",
+            "latitude": "> primary | seriesByName(\"lat\")",
+            "longitude": "> primary | seriesByName(\"lon\")"
+          }
+        ]
+      }
+    },
+    "viz_marker_centered": {
+      "type": "splunk.map",
+      "title": "2. Marker layer - explicit center + zoom",
+      "description": "center=[20, 0] (mid-Atlantic), zoom=1.5. Explicit framing for repeatable views.",
+      "dataSources": { "primary": "ds_marker_synth" },
+      "options": {
+        "layers": [
+          {
+            "type": "marker",
+            "latitude": "> primary | seriesByName(\"lat\")",
+            "longitude": "> primary | seriesByName(\"lon\")",
+            "additionalTooltipFields": ["city", "bytes"]
+          }
+        ],
+        "center": [20, 0],
+        "zoom": 1.5
+      }
+    },
+    "viz_marker_colored": {
+      "type": "splunk.map",
+      "title": "3. Marker layer - dataColors via rangeValue(config)",
+      "description": "Marker fill driven by bytes value -> green / yellow / red. Demonstrates the canonical 'thresholded marker' recipe from the PDF.",
+      "dataSources": { "primary": "ds_marker_synth" },
+      "options": {
+        "layers": [
+          {
+            "type": "marker",
+            "latitude": "> primary | seriesByName(\"lat\")",
+            "longitude": "> primary | seriesByName(\"lon\")",
+            "dataColors": "> primary | seriesByName(\"bytes\") | rangeValue(thresholdConfig)",
+            "additionalTooltipFields": ["city", "bytes"]
+          }
+        ],
+        "center": [20, 10],
+        "zoom": 1.5
+      },
+      "context": {
+        "thresholdConfig": [
+          { "from": 3000,             "value": "#FF677B" },
+          { "from": 1500, "to": 3000, "value": "#FFD166" },
+          {              "to": 1500, "value": "#26A69A" }
+        ]
+      }
+    },
+    "viz_bubble": {
+      "type": "splunk.map",
+      "title": "4. Bubble layer - sized by `count`",
+      "description": "Bubble size encodes count; bubbles cluster on zoom-out (Splunk built-in clustering). Tooltip shows method.",
+      "dataSources": { "primary": "ds_bubble_synth" },
+      "options": {
+        "layers": [
+          {
+            "type": "bubble",
+            "latitude": "> primary | seriesByName(\"lat\")",
+            "longitude": "> primary | seriesByName(\"lon\")",
+            "bubbleSize": "> primary | seriesByName(\"count\")",
+            "additionalTooltipFields": ["method", "count"]
+          }
+        ],
+        "center": [20, 0],
+        "zoom": 1.3
+      }
+    },
+    "viz_choropleth": {
+      "type": "splunk.map",
+      "title": "5. Choropleth layer - country shading",
+      "description": "Choropleth via the bundled `geom geo_countries` lookup. areaIds + areaValues bind the country code and the metric.",
+      "dataSources": { "primary": "ds_choropleth_synth" },
+      "options": {
+        "layers": [
+          {
+            "type": "choropleth",
+            "areaIds": "> primary | seriesByName(\"country\")",
+            "areaValues": "> primary | seriesByName(\"count\")"
+          }
+        ],
+        "center": [20, 0],
+        "zoom": 1.3
+      }
+    },
+    "viz_imperial": {
+      "type": "splunk.map",
+      "title": "6. scaleUnit=imperial, showScale=true",
+      "description": "Bottom-left scale bar shows miles instead of metres.",
+      "dataSources": { "primary": "ds_marker_synth" },
+      "options": {
+        "layers": [
+          {
+            "type": "marker",
+            "latitude": "> primary | seriesByName(\"lat\")",
+            "longitude": "> primary | seriesByName(\"lon\")"
+          }
+        ],
+        "center": [40, -100],
+        "zoom": 3,
+        "scaleUnit": "imperial",
+        "showScale": true
+      }
+    },
+    "viz_no_scale": {
+      "type": "splunk.map",
+      "title": "7. showScale=false",
+      "description": "Hides the scale bar entirely - used for compact KPI maps where the scale would clutter the panel.",
+      "dataSources": { "primary": "ds_marker_synth" },
+      "options": {
+        "layers": [
+          {
+            "type": "marker",
+            "latitude": "> primary | seriesByName(\"lat\")",
+            "longitude": "> primary | seriesByName(\"lon\")"
+          }
+        ],
+        "center": [20, 0],
+        "zoom": 1.3,
+        "showScale": false
+      }
+    },
+    "viz_result_limit": {
+      "type": "splunk.map",
+      "title": "8. resultLimit=5",
+      "description": "Per-layer cap on rendered points. With 12 cities in the data source, only 5 markers should appear.",
+      "dataSources": { "primary": "ds_marker_synth" },
+      "options": {
+        "layers": [
+          {
+            "type": "marker",
+            "latitude": "> primary | seriesByName(\"lat\")",
+            "longitude": "> primary | seriesByName(\"lon\")",
+            "resultLimit": 5
+          }
+        ],
+        "center": [20, 0],
+        "zoom": 1.3
+      }
+    },
+    "viz_multi_layer": {
+      "type": "splunk.map",
+      "title": "9. Multi-layer (marker + bubble in one map)",
+      "description": "Two layers stacked - marker pins from one data source + bubbles from another. Demonstrates that `layers[]` can hold multiple objects.",
+      "dataSources": { "primary": "ds_marker_synth", "secondary": "ds_bubble_synth" },
+      "options": {
+        "layers": [
+          {
+            "type": "marker",
+            "latitude": "> primary | seriesByName(\"lat\")",
+            "longitude": "> primary | seriesByName(\"lon\")",
+            "additionalTooltipFields": ["city"]
+          },
+          {
+            "type": "bubble",
+            "latitude": "> secondary | seriesByName(\"lat\")",
+            "longitude": "> secondary | seriesByName(\"lon\")",
+            "bubbleSize": "> secondary | seriesByName(\"count\")"
+          }
+        ],
+        "center": [20, 0],
+        "zoom": 1.3
+      }
+    },
+    "viz_background_color": {
+      "type": "splunk.map",
+      "title": "10. backgroundColor",
+      "description": "Custom panel background colour visible behind the tile gaps. Subtle but useful for theming.",
+      "dataSources": { "primary": "ds_marker_synth" },
+      "options": {
+        "layers": [
+          {
+            "type": "marker",
+            "latitude": "> primary | seriesByName(\"lat\")",
+            "longitude": "> primary | seriesByName(\"lon\")"
+          }
+        ],
+        "center": [20, 0],
+        "zoom": 1.3,
+        "backgroundColor": "#1A2440"
+      }
+    }
+  },
+  "inputs": {},
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 2640,
+      "display": "auto-scale",
+      "backgroundColor": "#0F1729"
+    },
+    "structure": [
+      { "item": "viz_title",            "type": "block", "position": { "x": 20,  "y": 20,   "w": 1400, "h": 380 } },
+
+      { "item": "viz_marker_default",   "type": "block", "position": { "x": 20,  "y": 420,  "w": 690,  "h": 380 } },
+      { "item": "viz_marker_centered",  "type": "block", "position": { "x": 730, "y": 420,  "w": 690,  "h": 380 } },
+
+      { "item": "viz_marker_colored",   "type": "block", "position": { "x": 20,  "y": 820,  "w": 690,  "h": 380 } },
+      { "item": "viz_bubble",           "type": "block", "position": { "x": 730, "y": 820,  "w": 690,  "h": 380 } },
+
+      { "item": "viz_choropleth",       "type": "block", "position": { "x": 20,  "y": 1220, "w": 690,  "h": 380 } },
+      { "item": "viz_imperial",         "type": "block", "position": { "x": 730, "y": 1220, "w": 690,  "h": 380 } },
+
+      { "item": "viz_no_scale",         "type": "block", "position": { "x": 20,  "y": 1620, "w": 690,  "h": 380 } },
+      { "item": "viz_result_limit",     "type": "block", "position": { "x": 730, "y": 1620, "w": 690,  "h": 380 } },
+
+      { "item": "viz_multi_layer",      "type": "block", "position": { "x": 20,  "y": 2020, "w": 690,  "h": 380 } },
+      { "item": "viz_background_color", "type": "block", "position": { "x": 730, "y": 2020, "w": 690,  "h": 380 } }
+    ],
+    "globalInputs": []
+  }
+}
