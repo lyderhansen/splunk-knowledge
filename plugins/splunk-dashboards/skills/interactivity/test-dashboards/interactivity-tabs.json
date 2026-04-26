@@ -1,0 +1,129 @@
+{
+  "title": "ds-interactivity - tabs option matrix",
+  "description": "Test bench for tabbed layout. Tabs are mutually exclusive with absolute/grid layouts at the top level — they require their own dashboard. This bench has 3 tabs (Overview, Details, Threats), each with its own layoutDefinitions entry, sharing the dashboard's globalInputs and dataSources. Demonstrates: tabs.items, tabs.options.barPosition, tabs.options.showTabBar, layoutDefinitions per tab.",
+  "theme": "dark",
+  "defaults": {
+    "dataSources": {
+      "ds.search": {
+        "options": {
+          "queryParameters": {
+            "earliest": "$global_time.earliest$",
+            "latest": "$global_time.latest$"
+          }
+        }
+      }
+    }
+  },
+  "inputs": {
+    "input_global_time": {
+      "type": "input.timerange",
+      "title": "Time range",
+      "options": {"token": "global_time", "defaultValue": "-24h@h,now"}
+    }
+  },
+  "dataSources": {
+    "ds_overview": {
+      "type": "ds.search",
+      "options": {
+        "query": "| makeresults | eval count=42, label=\"Overview tab\" | table label count"
+      }
+    },
+    "ds_details": {
+      "type": "ds.search",
+      "options": {
+        "query": "| makeresults count=4 | streamstats count AS row | eval host=case(row=1,\"web-01\",row=2,\"web-02\",row=3,\"db-01\",row=4,\"app-01\"), bytes=row*512 | table host bytes"
+      }
+    },
+    "ds_threats": {
+      "type": "ds.search",
+      "options": {
+        "query": "| makeresults | eval level=\"medium\", count=7 | table level count"
+      }
+    }
+  },
+  "visualizations": {
+    "viz_overview_kpi": {
+      "type": "splunk.singlevalue",
+      "title": "Overview KPI",
+      "dataSources": {"primary": "ds_overview"},
+      "options": {
+        "majorValue": "> primary | seriesByName(\"count\") | lastPoint()",
+        "underLabel": "Total events"
+      }
+    },
+    "viz_overview_md": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## Overview tab\n\nFirst tab in `tabs.items[0]`. `layoutDefinitions.layout_overview` controls the panel grid here. The global time picker above the tab bar is shared across all tabs (declared in `layout.globalInputs`).",
+        "fontSize": "small"
+      }
+    },
+    "viz_details_table": {
+      "type": "splunk.table",
+      "title": "Details",
+      "dataSources": {"primary": "ds_details"},
+      "options": {"showInternalFields": false}
+    },
+    "viz_details_md": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## Details tab\n\nSecond tab — `tabs.items[1]`. Switching tabs unmounts this layout and mounts the one referenced by `layoutId`. Time picker stays.",
+        "fontSize": "small"
+      }
+    },
+    "viz_threats_kpi": {
+      "type": "splunk.singlevalue",
+      "title": "Active threats",
+      "dataSources": {"primary": "ds_threats"},
+      "options": {
+        "majorValue": "> primary | seriesByName(\"count\") | lastPoint()",
+        "majorColor": "#FF2D95",
+        "underLabel": "current"
+      }
+    },
+    "viz_threats_md": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## Threats tab\n\nThird tab — `tabs.items[2]`. Each tab references its own `layoutId` in `layoutDefinitions`. Tabs themselves are positioned via `tabs.options.barPosition` (`top` or `bottom`).",
+        "fontSize": "small"
+      }
+    }
+  },
+  "layout": {
+    "globalInputs": ["input_global_time"],
+    "tabs": {
+      "items": [
+        {"layoutId": "layout_overview", "label": "Overview"},
+        {"layoutId": "layout_details",  "label": "Details"},
+        {"layoutId": "layout_threats",  "label": "Threats"}
+      ],
+      "options": {
+        "barPosition": "top",
+        "showTabBar": true
+      }
+    },
+    "layoutDefinitions": {
+      "layout_overview": {
+        "type": "grid",
+        "structure": [
+          {"item": "viz_overview_md",  "type": "block", "position": {"x": 0,   "y": 0,   "w": 1440, "h": 200}},
+          {"item": "viz_overview_kpi", "type": "block", "position": {"x": 0,   "y": 220, "w": 720,  "h": 240}}
+        ]
+      },
+      "layout_details": {
+        "type": "grid",
+        "structure": [
+          {"item": "viz_details_md",    "type": "block", "position": {"x": 0, "y": 0,   "w": 1440, "h": 180}},
+          {"item": "viz_details_table", "type": "block", "position": {"x": 0, "y": 200, "w": 1440, "h": 280}}
+        ]
+      },
+      "layout_threats": {
+        "type": "grid",
+        "structure": [
+          {"item": "viz_threats_md",  "type": "block", "position": {"x": 0, "y": 0,   "w": 1440, "h": 200}},
+          {"item": "viz_threats_kpi", "type": "block", "position": {"x": 0, "y": 220, "w": 720,  "h": 240}}
+        ]
+      }
+    }
+  }
+}
