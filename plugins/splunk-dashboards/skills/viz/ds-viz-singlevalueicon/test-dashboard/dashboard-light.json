@@ -31,7 +31,7 @@
 
     "ds_kpi_static": {
       "type": "ds.search",
-      "name": "kpi - single number, no trend",
+      "name": "kpi - single number no trend",
       "options": {
         "query": "| makeresults | eval orders = 1247 | table orders"
       }

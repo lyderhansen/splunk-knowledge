@@ -22,14 +22,14 @@
   "dataSources": {
     "ds_incidents": {
       "type": "ds.search",
-      "name": "incidents - 12 events spread across 24h, 3 categories",
+      "name": "incidents - 12 events spread across 24h 3 categories",
       "options": {
         "query": "| makeresults count=12 | streamstats count AS rn | eval _time = relative_time(now(), \"-\" . tostring(24-rn*2) . \"h\") | eval category = case(rn%3==0,\"deploy\", rn%3==1,\"alert\", 1==1,\"audit\") | eval label = case(category==\"deploy\",\"web-\" . tostring(rn) . \" deployed\", category==\"alert\",\"alert: cpu > 90% on host-\" . tostring(rn), 1==1,\"user_login on host-\" . tostring(rn)) | eval severity = case(category==\"alert\",random()%3+1, 1==1,1) | table _time category label severity"
       }
     },
     "ds_deploys_only": {
       "type": "ds.search",
-      "name": "deploys only - one lane, simple timeline",
+      "name": "deploys only - one lane simple timeline",
       "options": {
         "query": "| makeresults count=8 | streamstats count AS rn | eval _time = relative_time(now(), \"-\" . tostring(20-rn*2) . \"h\") | eval env = case(rn%3==0,\"prod\", rn%3==1,\"staging\", 1==1,\"dev\") | eval label = \"deploy v1.\" . tostring(rn) | table _time env label"
       }

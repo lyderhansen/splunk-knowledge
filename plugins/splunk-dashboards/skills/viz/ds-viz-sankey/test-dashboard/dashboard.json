@@ -31,21 +31,21 @@
     },
     "ds_funnel": {
       "type": "ds.search",
-      "name": "ecommerce funnel - landing -> product -> cart -> checkout -> purchase",
+      "name": "ecommerce funnel - landing - product - cart - checkout - purchase",
       "options": {
         "query": "| makeresults count=5 | streamstats count AS rn | eval source = case(rn==1,\"Landing\", rn==2,\"Product\", rn==3,\"Cart\", rn==4,\"Checkout\", rn==5,\"Login\") | eval target = case(rn==1,\"Product\", rn==2,\"Cart\", rn==3,\"Checkout\", rn==4,\"Purchase\", rn==5,\"Cart\") | eval value = case(rn==1,1000, rn==2,420, rn==3,260, rn==4,180, rn==5,90) | table source target value"
       }
     },
     "ds_workflow": {
       "type": "ds.search",
-      "name": "support workflow - intake -> triage -> queue -> resolution",
+      "name": "support workflow - intake - triage - queue - resolution",
       "options": {
         "query": "| makeresults count=8 | streamstats count AS rn | eval source = case(rn==1,\"Intake\", rn==2,\"Intake\", rn==3,\"Triage\", rn==4,\"Triage\", rn==5,\"Queue-A\", rn==6,\"Queue-A\", rn==7,\"Queue-B\", rn==8,\"Queue-B\") | eval target = case(rn==1,\"Triage\", rn==2,\"Auto-Resolve\", rn==3,\"Queue-A\", rn==4,\"Queue-B\", rn==5,\"Resolved\", rn==6,\"Escalated\", rn==7,\"Resolved\", rn==8,\"Escalated\") | eval value = case(rn==1,500, rn==2,150, rn==3,300, rn==4,200, rn==5,260, rn==6,40, rn==7,170, rn==8,30) | table source target value"
       }
     },
     "ds_dynamic": {
       "type": "ds.search",
-      "name": "flow with severity - source target value severity (for dynamic coloring)",
+      "name": "flow with severity - source target value severity for dynamic coloring",
       "options": {
         "query": "| makeresults count=6 | streamstats count AS rn | eval source = case(rn==1,\"DC1\", rn==2,\"DC1\", rn==3,\"DC2\", rn==4,\"DC2\", rn==5,\"DC3\", rn==6,\"DC3\") | eval target = case(rn==1,\"App-A\", rn==2,\"App-B\", rn==3,\"App-A\", rn==4,\"App-C\", rn==5,\"App-B\", rn==6,\"App-C\") | eval value = case(rn==1,200, rn==2,80, rn==3,140, rn==4,60, rn==5,90, rn==6,50) | eval severity = case(rn==1,1, rn==2,3, rn==3,2, rn==4,5, rn==5,1, rn==6,4) | table source target value severity"
       }

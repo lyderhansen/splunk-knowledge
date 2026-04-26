@@ -55,7 +55,7 @@
 
     "ds_two": {
       "type": "ds.search",
-      "name": "two slices - allow / block",
+      "name": "two slices - allow block",
       "options": {
         "query": "| makeresults count=2 | streamstats count as i | eval action = case(i=1,\"allowed\", i=2,\"blocked\"), count = case(i=1,9420, i=2,580) | sort - count | table action count"
       }

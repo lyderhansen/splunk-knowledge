@@ -19,27 +19,27 @@
   "dataSources": {
     "ds_kpi_low": {
       "type": "ds.search",
-      "name": "kpi - low value (22)",
+      "name": "kpi - low value 22",
       "options": { "query": "| makeresults | eval value = 22 | table value" }
     },
     "ds_kpi_mid": {
       "type": "ds.search",
-      "name": "kpi - mid value (58)",
+      "name": "kpi - mid value 58",
       "options": { "query": "| makeresults | eval value = 58 | table value" }
     },
     "ds_kpi_high": {
       "type": "ds.search",
-      "name": "kpi - high value (94)",
+      "name": "kpi - high value 94",
       "options": { "query": "| makeresults | eval value = 94 | table value" }
     },
     "ds_disk_used": {
       "type": "ds.search",
-      "name": "disk used pct (78)",
+      "name": "disk used pct 78",
       "options": { "query": "| makeresults | eval value = 78 | table value" }
     },
     "ds_quota": {
       "type": "ds.search",
-      "name": "quota progress (640 of 1000)",
+      "name": "quota progress 640 of 1000",
       "options": { "query": "| makeresults | eval value = 640 | table value" }
     }
   },

@@ -22,7 +22,7 @@
   "dataSources": {
     "ds_xy_simple": {
       "type": "ds.search",
-      "name": "two-series xy - response_time vs requests, no category",
+      "name": "two-series xy - response_time vs requests no category",
       "options": {
         "query": "| makeresults count=30 | streamstats count AS rn | eval requests = round(50 + random()%450) | eval response_time = round(50 + (requests/5) + (random()%80)) | table requests response_time"
       }

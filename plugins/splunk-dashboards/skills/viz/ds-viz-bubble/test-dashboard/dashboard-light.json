@@ -22,14 +22,14 @@
   "dataSources": {
     "ds_three_dim": {
       "type": "ds.search",
-      "name": "three-dim simple - x, y, size",
+      "name": "three-dim simple - x y size",
       "options": {
         "query": "| makeresults count=20 | streamstats count AS rn | eval x_val = round(10 + random()%90) | eval y_val = round(20 + random()%180) | eval size_val = round(100 + random()%900) | table x_val y_val size_val"
       }
     },
     "ds_four_dim": {
       "type": "ds.search",
-      "name": "four-dim with category - latency vs throughput, size=requests, color=service",
+      "name": "four-dim with category - latency vs throughput size requests color service",
       "options": {
         "query": "| makeresults count=40 | streamstats count AS rn | eval service = case(rn%4==0,\"api\", rn%4==1,\"db\", rn%4==2,\"cache\", 1==1,\"queue\") | eval throughput = case(service==\"api\",100+random()%400, service==\"db\",50+random()%200, service==\"cache\",500+random()%1500, 1==1,200+random()%600) | eval latency = case(service==\"api\",20+random()%80, service==\"db\",100+random()%300, service==\"cache\",5+random()%20, 1==1,40+random()%120) | eval requests = round(1000 + random()%9000) | table throughput latency requests service"
       }

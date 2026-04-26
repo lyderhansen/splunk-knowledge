@@ -22,21 +22,21 @@
   "dataSources": {
     "ds_pct_high": {
       "type": "ds.search",
-      "name": "percent kpi - high (95)",
+      "name": "percent kpi - high 95",
       "options": {
         "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval pct = round(92 + sin(i/4)*3 + random()%4) | table _time pct"
       }
     },
     "ds_pct_mid": {
       "type": "ds.search",
-      "name": "percent kpi - mid (62)",
+      "name": "percent kpi - mid 62",
       "options": {
         "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval pct = round(58 + sin(i/4)*5 + random()%4) | table _time pct"
       }
     },
     "ds_pct_low": {
       "type": "ds.search",
-      "name": "percent kpi - low (32)",
+      "name": "percent kpi - low 32",
       "options": {
         "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval pct = round(28 + sin(i/4)*4 + random()%4) | table _time pct"
       }

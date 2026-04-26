@@ -19,7 +19,7 @@
   "dataSources": {
     "ds_basic": {
       "type": "ds.search",
-      "name": "basic - alerts (5 rows, 4 fields)",
+      "name": "basic - alerts 5 rows 4 fields",
       "options": {
         "query": "| makeresults count=5 | streamstats count AS rn | eval host = case(rn==1,\"web-01\",rn==2,\"web-02\",rn==3,\"db-01\",rn==4,\"app-03\",1==1,\"cache-02\") | eval severity = case(rn==1,\"critical\",rn==2,\"high\",rn==3,\"medium\",rn==4,\"low\",1==1,\"info\") | eval cpu = case(rn==1,94,rn==2,82,rn==3,71,rn==4,55,1==1,33) | eval message = case(rn==1,\"Disk full\",rn==2,\"High latency\",rn==3,\"Slow query\",rn==4,\"Job retry\",1==1,\"Healthy\") | table host severity cpu message"
       }

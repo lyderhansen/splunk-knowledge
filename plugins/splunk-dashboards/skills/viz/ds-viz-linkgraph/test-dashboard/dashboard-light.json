@@ -22,7 +22,7 @@
   "dataSources": {
     "ds_meals": {
       "type": "ds.test",
-      "name": "canonical PDF example - meals (Breakfast/Lunch/Dinner)",
+      "name": "canonical PDF example - meals Breakfast Lunch Dinner",
       "options": {
         "data": {
           "columns": [
@@ -138,7 +138,7 @@
     },
     "ds_wide": {
       "type": "ds.search",
-      "name": "wide data set to test resultLimit (>50 distinct nodes)",
+      "name": "wide data set to test resultLimit 50 distinct nodes",
       "options": {
         "query": "| makeresults count=80 | streamstats count AS rn | eval colA = \"A_\".tostring(rn%30) | eval colB = \"B_\".tostring(rn%25) | eval colC = \"C_\".tostring(rn%18) | table colA colB colC"
       }
