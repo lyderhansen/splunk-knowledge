@@ -144,3 +144,26 @@ See `REVIEW.md` (sibling file) for the detailed write-up. Summary:
 - **Deferred**: visual-QA pass against the live dashboards in
   `splunk-knowledge-testing`. The QA dark / QA light columns above are
   intentionally still ⬜.
+
+## Visual-QA todo: `dataSource.name` regex hygiene (2026-04-26)
+
+Splunk Dashboard Studio's editor enforces `^[A-Za-z0-9 \-_.]+$` on the
+user-facing `name` field of every dataSource. Letters, numbers, spaces,
+dashes, underscores, periods only. The REST deploy API does *not*
+enforce this (which is why our test dashboards were accepted), but the
+editor flags illegal names the moment a user opens the data source
+panel.
+
+**Audit count: 56 violations across 13 viz test-dashboards** (run
+`python3 plugins/splunk-dashboards/scripts/audit_data_source_names.py`
+from the repo root for the live list). Common offenders: `,` `(` `)`
+`/` `>` `:` and the descriptive `,` separating phrases.
+
+When the visual-QA pass touches each viz dashboard, also sanitize the
+`dataSource.name` fields on that dashboard (use the suggestion table in
+`pipeline/ds-create` SKILL.md). Re-run the audit after each fix; the
+QA columns above stay ⬜ until both the visual review *and* the audit
+are clean for that viz.
+
+The rule itself is documented in `reference/ds-syntax`,
+`pipeline/ds-create`, `pipeline/ds-validate`, and `interactivity/ds-inputs`.

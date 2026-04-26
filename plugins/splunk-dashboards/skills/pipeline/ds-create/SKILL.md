@@ -86,6 +86,32 @@ Panels in `layout.json` can carry a `drilldown` field:
 
 `ds-create` translates this into `options.drilldown = "all"` and `options.drilldownAction = <drilldown value>` on the matching visualization, enabling click-through behavior in the rendered dashboard.
 
+## Hard rule — dataSource `name` character set
+
+Every `dataSource.name` field this skill emits **must** match
+`^[A-Za-z0-9 \-_.]+$`. Splunk's Studio editor enforces this regex on
+the user-facing "Data source name" input — anything else is rejected at
+save time and `splunk_create_dashboard` fails. Allowed characters:
+**letters, numbers, spaces, dashes, underscores, periods**.
+
+When deriving a `name` from a question string in `data-sources.json`
+(e.g. `"What's the failure rate by host?"`), sanitize before writing:
+
+| Found | Replace with |
+|---|---|
+| `?` `!` `"` `'` smart quotes | drop |
+| `/` `:` `(` `)` `[` `]` `\|` `,` `&` `+` `*` `=` | space or dash |
+| accented letters (æøåéüñ etc.) | ASCII fold (`æ→ae`, `ø→o`, `å→a`, `é→e` …) |
+| consecutive spaces | single space |
+| leading/trailing whitespace | trim |
+
+This rule applies **only** to the `name` field. The JSON object key
+(`ds_1`, `ds_2`, …) is an internal ID and is not user-visible — it is
+not subject to this regex (the codebase convention is `ds_*` snake_case).
+
+`ds-validate` enforces this with `dataSource-name-illegal-chars` —
+catch it at `built`-stage rather than at deploy.
+
 ## Splunk Enterprise and Cloud compatibility
 
 `ds-create` emits **native Dashboard Studio v2 JSON only** — no custom CSS, no JavaScript, no app dependencies. Output runs unmodified on Splunk Enterprise (9.x+) and Splunk Cloud.

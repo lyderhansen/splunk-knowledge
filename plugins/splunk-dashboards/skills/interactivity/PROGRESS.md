@@ -33,6 +33,13 @@ Tabs need a separate dashboard because `layout.type: "absolute"` and
 - **Visual QA** — all four dashboards are deployed but not yet eyeballed
   in the Splunk UI. Same convention as `viz/PROGRESS.md`: QA columns
   remain `⬜` until a single review pass at the end.
+- **`dataSource.name` regex hygiene** — Splunk's Studio editor enforces
+  `^[A-Za-z0-9 \-_.]+$` on the user-facing `name` field. Run
+  `python3 plugins/splunk-dashboards/scripts/audit_data_source_names.py
+  plugins/splunk-dashboards/skills/interactivity/test-dashboards/`
+  during the QA pass; sanitize any hits per the suggestion table in
+  `pipeline/ds-create`. The interactivity-bench `name` fields are
+  short and likely clean, but verify before closing QA.
 - **Custom-URL host whitelist** — `drilldown.customUrl` accepts
   arbitrary URLs. If a future workspace policy requires a destination
   allow-list, that's an open governance question, not a skill bug.

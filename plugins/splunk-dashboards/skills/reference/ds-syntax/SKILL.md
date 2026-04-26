@@ -24,6 +24,32 @@ A Dashboard Studio definition is a JSON object with these keys:
 
 Each entry is a named search. The three common types:
 
+> **Hard rule — `name` field character set.** The user-facing
+> `name` field on every dataSource (`ds.search`, `ds.savedSearch`,
+> `ds.chain`, `ds.test`) is validated by the Studio editor against this
+> regex: `^[A-Za-z0-9 \-_.]+$`. Allowed characters are **letters,
+> numbers, spaces, dashes, underscores, and periods only**. Any other
+> character (slash, colon, parentheses, pipe, comma, accented letters,
+> emoji, brackets, `&`, `+`, etc.) is rejected — the editor refuses to
+> save and `splunk_create_dashboard` will reject the payload.
+>
+> This rule applies *only* to the `name` field. The JSON object key
+> (e.g. `"ds_base":`) is an internal ID with the broader JS-identifier
+> rules (the convention in this codebase is `ds_*` snake_case) and is
+> not user-visible. Don't confuse the two:
+>
+> ```json
+> "ds_alerts_table": {                        // <- object key (internal ID, ds_* snake_case)
+>   "type": "ds.search",
+>   "name": "basic - alerts (5 rows, 4 fields)",   // <- user-facing name; obeys [A-Za-z0-9 \-_.]+
+>   "options": { "query": "..." }
+> }
+> ```
+>
+> Common rejected substrings to scrub before deploy: `/`, `:`, `()`,
+> `[]`, `|`, `,`, `?`, `!`, `&`, `+`, `*`, `=`, `'`, `"`, smart quotes,
+> non-ASCII (æøåéüñ etc.). Replace with space, dash, or underscore.
+
 ### `ds.search` (SPL)
 
 ```json

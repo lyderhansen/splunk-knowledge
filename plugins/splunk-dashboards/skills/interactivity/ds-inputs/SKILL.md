@@ -257,6 +257,13 @@ See `ds-tabs`.
 
 ## Common gotchas
 
+- **Bound dataSource `name` is regex-validated.** A dynamic dropdown
+  references a `dataSource` (e.g. `ds_hosts` above). That dataSource's
+  user-facing `name` field must match `^[A-Za-z0-9 \-_.]+$` — letters,
+  numbers, spaces, dashes, underscores, periods only. Common offenders
+  in question-driven names: `,` `(` `)` `/` `>` `:`. The Studio editor
+  rejects illegal names on save. See `reference/ds-syntax` and
+  `pipeline/ds-validate` (`dataSource-name-illegal-chars`).
 - **Multiselect default must be an array.** A string default silently
   breaks; the input appears empty on first render.
 - **Dynamic dropdown freezes if `enableSmartSources` is off** on the

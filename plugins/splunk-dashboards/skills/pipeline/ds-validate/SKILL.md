@@ -14,11 +14,18 @@ After `ds-create` has produced `dashboard.json` and advanced state to `built`. A
 | Check | Severity | What it catches |
 |---|---|---|
 | `ds.search-missing-name` | error | A `ds.search` without a `name` field (Dashboard Studio UI won't show the search) |
+| `dataSource-name-illegal-chars` | error | A dataSource `name` field contains characters outside `[A-Za-z0-9 \-_.]+`. Splunk's editor rejects the save and `splunk_create_dashboard` errors out. Allowed: letters, numbers, spaces, dashes, underscores, periods. Common offenders: `/ : ( ) [ ] \| , ? ! & + * = ' "`, smart quotes, non-ASCII (æøåéüñ etc.) |
 | `viz-unknown-data-source` | error | A panel's `dataSources.primary` points to a dataSource id that isn't defined |
 | `token-undeclared` | warning | SPL references `$some_token$` that isn't declared in `inputs` or `defaults` (may still work if the runtime injects it, but fragile) |
 | `drilldown-unknown-target` | warning | A `link.viz` drilldown targets a visualization id that doesn't exist |
 
 **Errors** block the stage advance. **Warnings** are reported but do not block.
+
+> **Note — `name` vs object key.** `dataSource-name-illegal-chars`
+> only checks the user-facing `name` field. The JSON object key
+> (e.g. `"ds_base":`) is an internal ID with the broader JS-identifier
+> rules and is not subject to this regex. See `reference/ds-syntax` for
+> the full rule.
 
 ## How to invoke
 
@@ -26,6 +33,25 @@ After `ds-create` has produced `dashboard.json` and advanced state to `built`. A
 PYTHONPATH=<repo-root>/plugins/splunk-dashboards/src \
 python3 -m splunk_dashboards.validate check <project-name>
 ```
+
+### Interim: standalone audit for `dataSource-name-illegal-chars`
+
+While the full validator (`splunk_dashboards.validate`) is still under
+construction, you can run the standalone `name`-field audit on its own:
+
+```bash
+python3 plugins/splunk-dashboards/scripts/audit_data_source_names.py \
+    [path/to/dashboard.json | path/to/dir ...]
+```
+
+With no arguments it walks `plugins/splunk-dashboards/skills/`. Output
+is one tab-separated row per violation: `<file>\t<ds_id>\t<bad_chars>\t<name>`.
+Exit code is 0 if clean, 1 if any violations. Pipe through `cut`/`sort`
+to triage.
+
+When the Python validator lands, this rule will be wired in as
+`dataSource-name-illegal-chars` and the standalone script will remain
+as a faster precommit hook.
 
 Output:
 
