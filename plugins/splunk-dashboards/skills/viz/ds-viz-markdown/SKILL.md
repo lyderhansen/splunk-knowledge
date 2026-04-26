@@ -123,9 +123,14 @@ The patterns below are **all rendered and verified** in
 | 10    | Inline code + fenced code block                       | SPL snippets, runbooks                    |
 | 11    | Blockquote + bold + italic                            | "Why this matters" callouts               |
 | 12    | Links (inline + reference-style)                      | Sidebar of quick links                    |
-| 13a   | `fontFamily=Times New Roman` (only allowed serif)     | Editorial / long-form story panels        |
-| 13b   | `fontFamily=Splunk Platform Mono`                     | Log excerpts, code-leaning copy           |
-| 13c   | `fontFamily=Splunk Data Sans`                         | KPI annotations, tabular numbers          |
+| 13    | Intro panel + same paragraph rendered in seven fonts  | Direct font comparison, no narrative      |
+| 13a   | `fontFamily=Splunk Platform Sans` (default)           | The implicit default - rarely set         |
+| 13b   | `fontFamily=Splunk Data Sans`                         | KPI annotations, tabular numbers          |
+| 13c   | `fontFamily=Splunk Platform Mono`                     | Log excerpts, code-leaning copy           |
+| 13d   | `fontFamily=Arial`                                    | Portable sans fallback (Windows-leaning)  |
+| 13e   | `fontFamily=Helvetica`                                | Portable sans fallback (macOS-leaning)    |
+| 13f   | `fontFamily=Times New Roman` (only allowed serif)     | Editorial / long-form story panels        |
+| 13g   | `fontFamily=Comic Sans MS`                            | Parody / Friday demos - **not production** |
 
 ## Drilldown
 

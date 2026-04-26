@@ -127,38 +127,82 @@
         "markdown": "### Quick links\n\n- [Runbook](https://example.com/runbook) - on-call diagnostic flow\n- [Dashboard catalog](https://example.com/dashboards) - all team dashboards\n- [Status page](https://status.example.com) - public-facing\n- [Incident channel](https://chat.example.com/incidents) - real-time coordination\n\nLinks open in a new tab when the dashboard is rendered. Use [reference-style](https://example.com) links for repeated URLs.\n\n[ref]: https://example.com\n\n[Same destination][ref] using the reference."
       }
     },
-    "viz_font_family_serif": {
+    "viz_font_family_intro": {
       "type": "splunk.markdown",
-      "title": "13a. fontFamily=Times New Roman",
+      "title": "13. fontFamily - all seven allowed values",
       "options": {
-        "fontFamily": "Times New Roman",
-        "fontSize": "large",
-        "markdown": "## Editorial story-frame\n\n*\"At 09:42 UTC, latency in the EU region began climbing past the 800 ms warning threshold...\"*\n\nThis panel uses Times New Roman, the only serif in the allowed list. Reads as *editorial* against the platform's sans default."
+        "fontSize": "default",
+        "markdown": "Schema accepts only **seven literal font names** plus DOS tokens. Every other value (`Georgia, serif`, `Inter`, `system-ui`, web-font URLs) is rejected by the editor with `must match a schema in anyOf`. Each panel below renders the **same paragraph** so you can compare letter shape, x-height, and rhythm side-by-side. Same paragraph rendered in seven fonts:\n\n*The quick brown fox jumps over the lazy dog.* `1234567890` &mdash; **bold**, *italic*, `code`."
       }
     },
-    "viz_font_family_mono": {
+    "viz_font_platform_sans": {
       "type": "splunk.markdown",
-      "title": "13b. fontFamily=Splunk Platform Mono",
+      "title": "13a. Splunk Platform Sans (default)",
+      "options": {
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default",
+        "markdown": "**Splunk Platform Sans**\n\n*The quick brown fox jumps over the lazy dog.* `1234567890` &mdash; **bold**, *italic*, `code`.\n\n_Use case_: the default UI typeface. You almost never need to set this explicitly &mdash; it's what every panel inherits."
+      }
+    },
+    "viz_font_data_sans": {
+      "type": "splunk.markdown",
+      "title": "13b. Splunk Data Sans",
+      "options": {
+        "fontFamily": "Splunk Data Sans",
+        "fontSize": "default",
+        "markdown": "**Splunk Data Sans**\n\n*The quick brown fox jumps over the lazy dog.* `1234567890` &mdash; **bold**, *italic*, `code`.\n\n_Use case_: tabular numeric callouts, KPI annotations &mdash; the digits have wider, clearer strokes than Platform Sans."
+      }
+    },
+    "viz_font_platform_mono": {
+      "type": "splunk.markdown",
+      "title": "13c. Splunk Platform Mono",
       "options": {
         "fontFamily": "Splunk Platform Mono",
         "fontSize": "default",
-        "markdown": "## Runbook excerpt\n\n```\n2025-04-26T09:42:18Z latency=842ms region=eu-west\n2025-04-26T09:42:21Z latency=901ms region=eu-west\n2025-04-26T09:42:24Z latency=1024ms region=eu-west\n```\n\nMono-spaced font for log excerpts and code-leaning copy."
+        "markdown": "**Splunk Platform Mono**\n\n*The quick brown fox jumps over the lazy dog.* `1234567890` &mdash; **bold**, *italic*, `code`.\n\n_Use case_: log lines, runbook excerpts, copy-pastable SPL snippets. Every glyph occupies the same width."
       }
     },
-    "viz_font_family_data": {
+    "viz_font_arial": {
       "type": "splunk.markdown",
-      "title": "13c. fontFamily=Splunk Data Sans",
+      "title": "13d. Arial",
       "options": {
-        "fontFamily": "Splunk Data Sans",
-        "fontSize": "large",
-        "markdown": "## Splunk Data Sans\n\nThe number-friendly variant of the Splunk type system. Use for KPI annotations and tabular numeric callouts."
+        "fontFamily": "Arial",
+        "fontSize": "default",
+        "markdown": "**Arial**\n\n*The quick brown fox jumps over the lazy dog.* `1234567890` &mdash; **bold**, *italic*, `code`.\n\n_Use case_: portable sans fallback for embedded / exported dashboards where Splunk fonts may not be available."
+      }
+    },
+    "viz_font_helvetica": {
+      "type": "splunk.markdown",
+      "title": "13e. Helvetica",
+      "options": {
+        "fontFamily": "Helvetica",
+        "fontSize": "default",
+        "markdown": "**Helvetica**\n\n*The quick brown fox jumps over the lazy dog.* `1234567890` &mdash; **bold**, *italic*, `code`.\n\n_Use case_: macOS-leaning sans fallback. Renders identical to Arial on Windows; differs subtly on macOS / iOS."
+      }
+    },
+    "viz_font_times": {
+      "type": "splunk.markdown",
+      "title": "13f. Times New Roman",
+      "options": {
+        "fontFamily": "Times New Roman",
+        "fontSize": "default",
+        "markdown": "**Times New Roman**\n\n*The quick brown fox jumps over the lazy dog.* `1234567890` &mdash; **bold**, *italic*, `code`.\n\n_Use case_: the **only allowed serif**. Reads as *editorial* / *long-form*. Reserve for narrative dashboard sections."
+      }
+    },
+    "viz_font_comic": {
+      "type": "splunk.markdown",
+      "title": "13g. Comic Sans MS",
+      "options": {
+        "fontFamily": "Comic Sans MS",
+        "fontSize": "default",
+        "markdown": "**Comic Sans MS**\n\n*The quick brown fox jumps over the lazy dog.* `1234567890` &mdash; **bold**, *italic*, `code`.\n\n_Use case_: parody / Friday-afternoon demos. **Avoid in production dashboards.** Listed here for completeness because the schema allows it."
       }
     }
   },
   "inputs": {},
   "layout": {
     "type": "absolute",
-    "options": { "width": 1440, "height": 3360, "display": "auto-scale", "backgroundColor": "#0F1729" },
+    "options": { "width": 1440, "height": 3680, "display": "auto-scale", "backgroundColor": "#0F1729" },
     "structure": [
       { "item": "viz_title",            "type": "block", "position": { "x": 20,   "y": 20,   "w": 1400, "h": 320 } },
 
@@ -182,9 +226,17 @@
 
       { "item": "viz_links",            "type": "block", "position": { "x": 20,   "y": 2220, "w": 1400, "h": 280 } },
 
-      { "item": "viz_font_family_serif", "type": "block", "position": { "x": 20,   "y": 2520, "w": 460,  "h": 320 } },
-      { "item": "viz_font_family_mono",  "type": "block", "position": { "x": 490,  "y": 2520, "w": 460,  "h": 320 } },
-      { "item": "viz_font_family_data",  "type": "block", "position": { "x": 960,  "y": 2520, "w": 460,  "h": 320 } }
+      { "item": "viz_font_family_intro", "type": "block", "position": { "x": 20,   "y": 2520, "w": 1400, "h": 200 } },
+
+      { "item": "viz_font_platform_sans", "type": "block", "position": { "x": 20,   "y": 2740, "w": 460,  "h": 280 } },
+      { "item": "viz_font_data_sans",     "type": "block", "position": { "x": 490,  "y": 2740, "w": 460,  "h": 280 } },
+      { "item": "viz_font_platform_mono", "type": "block", "position": { "x": 960,  "y": 2740, "w": 460,  "h": 280 } },
+
+      { "item": "viz_font_arial",         "type": "block", "position": { "x": 20,   "y": 3040, "w": 460,  "h": 280 } },
+      { "item": "viz_font_helvetica",     "type": "block", "position": { "x": 490,  "y": 3040, "w": 460,  "h": 280 } },
+      { "item": "viz_font_times",         "type": "block", "position": { "x": 960,  "y": 3040, "w": 460,  "h": 280 } },
+
+      { "item": "viz_font_comic",         "type": "block", "position": { "x": 20,   "y": 3340, "w": 1400, "h": 280 } }
     ],
     "globalInputs": []
   }

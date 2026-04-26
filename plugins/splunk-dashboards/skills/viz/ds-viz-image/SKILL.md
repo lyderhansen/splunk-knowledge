@@ -106,16 +106,31 @@ How:
 
 Caveats:
 
-- The URL **domain must be on the dashboards image allow list**. Splunk
-  blocks unlisted domains as a security control.
-  - Configure in `web.conf` -> `dashboards_image_allow_list`.
+- The URL **domain must be on the Dashboards Trusted Domains List**.
+  Splunk blocks unlisted domains as a security control. The exact error
+  message Studio shows is:
+
+  > "External image URLs must now have their domains listed in the
+  > Dashboards Trusted Domains List by working with your administrator.
+  > Alternatively, you can upload the image directly into the dashboard."
+
+  Configure on **Splunk Enterprise** in `web.conf`:
+
+  ```
+  [settings]
+  dashboards_trusted_external_domains = www.splunk.com, cdn.example.com
+  ```
+
+  On **Splunk Cloud**, the list is editable under
+  **Settings &rarr; Dashboards Trusted Domains List** (admin only).
 - **External URL images do NOT render in PDF/PNG export.** This silently
   breaks scheduled PDF deliveries.
 - Splunk-bundled paths (`/en-US/static/app/<app>/...`) are always
   allow-listed.
 
 Rule of thumb: for **dashboards that get exported as PDF**, always upload.
-For internal-only views, URLs are fine.
+For internal-only views, URLs are fine - **provided the domain is on the
+trusted list**.
 
 ## Layout: absolute only
 
@@ -178,18 +193,19 @@ The patterns below are **all rendered and verified** in
 
 | Panel | What it demonstrates                                  | Where to use                                |
 | ----- | ----------------------------------------------------- | ------------------------------------------- |
+| -     | Trusted-Domains-List warning panel (literal Studio error string + remediation steps) | Pin near image panels in any dashboard relying on external URLs |
 | 1     | Default `preserveAspectRatio=false` (stretches)       | Backgrounds where distortion is OK          |
 | 2     | `preserveAspectRatio=true` (letterboxes)              | Logos, photos, diagrams                     |
 | 3     | Logo in a square panel                                | Header logos in fixed corners               |
 | 4     | Same logo in a wide panel                             | Demonstrates panel-driven aspect ratio      |
 | 5     | Local Splunk-bundled `/en-US/static/...` path         | Always allow-listed; renders in PDF         |
-| 6     | External CDN URL                                      | Requires allow-list; **no** PDF export      |
-| 7     | SVG image                                             | Diagrams, logos, anything that scales       |
+| 6     | External CDN URL (PNG, splunk.com domain)             | Requires Trusted Domains entry; **no** PDF export |
+| 7     | PNG asset (resolution-bound)                          | Caveat panel: prefer SVG when scaling      |
 | 8     | Image as background layer                             | Branded section backdrops                   |
 | 9     | KPI overlay on top of background image                | Hero callouts, floor plan sensors           |
 | 10    | Faint watermark layer (pre-faded asset)               | "DEMO DATA", "CONFIDENTIAL"                 |
 | 11    | Markdown fallback panel for missing `src`             | Empty-state pattern (no image yet)          |
-| 12    | SVG architecture diagram                              | Crisp at any panel size                     |
+| 12    | Diagram slot (placeholder)                            | Architecture diagrams - upload SVG to KV   |
 | 13    | Datacenter floor plan                                 | Layer rectangles/sensors on top             |
 
 ## Drilldown
@@ -210,9 +226,16 @@ If you need clickable regions over an image (floor plans, maps, diagrams):
 1. **External URL images don't render in PDF/PNG export.** Scheduled PDF
    reports will silently show blank panels where the image was. Upload to
    KV store for any dashboard that gets exported.
-2. **`src` must be on the dashboards image allow list.** Otherwise the
-   panel shows the placeholder image and the browser console logs a CSP
-   violation. Configure in `web.conf` -> `dashboards_image_allow_list`.
+2. **`src` must be on the Dashboards Trusted Domains List.** Otherwise
+   the panel renders the placeholder image and Studio shows the literal
+   message _"External image URLs must now have their domains listed in
+   the Dashboards Trusted Domains List by working with your
+   administrator. Alternatively, you can upload the image directly into
+   the dashboard."_ Configure in `web.conf` ->
+   `dashboards_trusted_external_domains` (Splunk Enterprise) or
+   **Settings &rarr; Dashboards Trusted Domains List** (Splunk Cloud).
+   The legacy `dashboards_image_allow_list` setting was renamed - if you
+   see it in older docs, treat it as a synonym.
 3. **No grid-layout support.** The dashboard must be absolute layout.
    Pasting an image panel into a grid dashboard fails to render.
 4. **No opacity option.** To make a faint watermark, **bake the opacity

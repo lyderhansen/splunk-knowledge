@@ -1,6 +1,6 @@
 {
   "title": "ds-viz-image - option matrix (light)",
-  "description": "Light-theme companion. Test bench for splunk.image. Verifies all options from the 10.4 PDF: src (string URL, all browser-supported formats), preserveAspectRatio (boolean). Demonstrates URL reference vs uploaded images, aspect-ratio modes, layering (image-as-background, image-as-watermark), sizing patterns, and the absolute-layout-only constraint.",
+  "description": "Test bench for splunk.image. Verifies all options from the 10.4 PDF: src (string URL, all browser-supported formats), preserveAspectRatio (boolean). Demonstrates URL reference vs uploaded images, aspect-ratio modes, layering (image-as-background, image-as-watermark), sizing patterns, and the absolute-layout-only constraint.",
   "defaults": {
     "dataSources": {
       "global": {
@@ -42,9 +42,18 @@
     "viz_title": {
       "type": "splunk.markdown",
       "options": {
-        "markdown": "# `splunk.image` - option matrix (light)\n\nImages are an absolute-layout-only feature. Use them for **logos**, **diagrams**, **background canvases**, **watermarks**, and **icon overlays**.\n\nFull options list from the **10.4 PDF**:\n- `src` (URL of an image; **png / jpeg / gif / webp / svg** supported)\n- `preserveAspectRatio` (default `false` - the image stretches to fill the panel)\n\nTwo ways to source an image:\n1. **Uploaded to KV store** (Enterprise admins, Cloud `sc_admins`, power users) - rendered in PDF/PNG exports.\n2. **Referenced by URL** - any user, but **NOT** included in PDF/PNG exports and the URL domain must be in the **dashboards image allow list**.",
+        "markdown": "# `splunk.image` - option matrix\n\nImages are an absolute-layout-only feature. Use them for **logos**, **diagrams**, **background canvases**, **watermarks**, and **icon overlays**.\n\nFull options list from the **10.4 PDF**:\n- `src` (URL of an image; **png / jpeg / gif / webp / svg** supported)\n- `preserveAspectRatio` (default `false` - the image stretches to fill the panel)\n\nTwo ways to source an image:\n1. **Uploaded to KV store** (Enterprise admins, Cloud `sc_admins`, power users) - rendered in PDF/PNG exports.\n2. **Referenced by URL** - any user, but **NOT** included in PDF/PNG exports.",
         "fontSize": "default",
         "backgroundColor": "transparent"
+      }
+    },
+    "viz_trusted_domains_warning": {
+      "type": "splunk.markdown",
+      "title": "Trusted Domains List - required for external URLs",
+      "options": {
+        "backgroundColor": "#F4D9D9",
+        "fontColor": "#B91C1C",
+        "markdown": "**External image URLs must now have their domains listed in the Dashboards Trusted Domains List by working with your administrator. Alternatively, you can upload the image directly into the dashboard.**\n\nThis is a Splunk-side security control - panels referencing un-listed domains render as the placeholder image, even though the URL works in a normal browser tab. The `splunk.com` domain used for the panels in this bench is whitelisted by default in this lab. In your own environment you must either:\n\n- Add the domain to `web.conf` &rarr; `dashboards_trusted_external_domains` (Splunk Enterprise), or to **Settings &rarr; Dashboards Trusted Domains List** (Splunk Cloud), **or**\n- Upload the image into the dashboard's KV store (recommended - also fixes PDF export)."
       }
     },
     "viz_default": {
@@ -69,7 +78,7 @@
       "title": "3. Logo in a square panel",
       "description": "Square panel + preserveAspectRatio=true => logo centers cleanly with empty space on the longer axis.",
       "options": {
-        "src": "https://www.splunk.com/etc.clientlibs/splunk2/clientlibs/clientlib-base/resources/Splunk_Logo.svg",
+        "src": "https://www.splunk.com/content/dam/splunk2/images/logos/splunk/splunk-black-white-bg.png",
         "preserveAspectRatio": true
       }
     },
@@ -78,7 +87,7 @@
       "title": "4. Logo in a wide panel",
       "description": "Wide panel + preserveAspectRatio=true => same logo, different aspect ratio. Demonstrates that the panel size, not the option, drives the visual.",
       "options": {
-        "src": "https://www.splunk.com/etc.clientlibs/splunk2/clientlibs/clientlib-base/resources/Splunk_Logo.svg",
+        "src": "https://www.splunk.com/content/dam/splunk2/images/logos/splunk/splunk-black-white-bg.png",
         "preserveAspectRatio": true
       }
     },
@@ -93,19 +102,19 @@
     },
     "viz_external_cdn": {
       "type": "splunk.image",
-      "title": "6. External CDN URL",
-      "description": "External URLs require the domain to be in the dashboards image allow list. They will NOT render in PDF/PNG export.",
+      "title": "6. External CDN URL (PNG over HTTPS)",
+      "description": "External URL on an allow-listed domain. Renders in the browser, but will NOT render in PDF/PNG export. Replace with a KV-uploaded image for any dashboard that gets exported.",
       "options": {
-        "src": "https://www.splunk.com/etc.clientlibs/splunk2/clientlibs/clientlib-base/resources/Splunk_Logo.svg",
+        "src": "https://www.splunk.com/content/dam/splunk2/images/logos/splunk/splunk-black-white-bg.png",
         "preserveAspectRatio": true
       }
     },
     "viz_svg": {
       "type": "splunk.image",
-      "title": "7. SVG image",
-      "description": "Browsers render SVG natively, so `splunk.image` accepts it. Resolution-independent - perfect for logos, icons, diagrams.",
+      "title": "7. PNG asset (resolution-bound)",
+      "description": "Same external PNG. Note this asset is bitmap, not vector - it will pixelate if scaled to a much larger panel. For logos and diagrams that scale, prefer SVG and upload it to KV store (external SVG URLs are blocked by the trusted-domains list in many environments).",
       "options": {
-        "src": "https://www.splunk.com/etc.clientlibs/splunk2/clientlibs/clientlib-base/resources/Splunk_Logo.svg",
+        "src": "https://www.splunk.com/content/dam/splunk2/images/logos/splunk/splunk-black-white-bg.png",
         "preserveAspectRatio": true
       }
     },
@@ -126,7 +135,7 @@
         "primary": "ds_overlay_kpi"
       },
       "options": {
-        "majorColor": "#26A69A",
+        "majorColor": "#0E7C70",
         "trendDisplay": "off",
         "sparklineDisplay": "off",
         "unitPosition": "after",
@@ -138,7 +147,7 @@
       "title": "9. Faint watermark layer",
       "description": "Logo with low opacity - achieved by uploading a pre-faded PNG/SVG. `splunk.image` itself has no opacity option, so you must bake it into the asset.",
       "options": {
-        "src": "https://www.splunk.com/etc.clientlibs/splunk2/clientlibs/clientlib-base/resources/Splunk_Logo.svg",
+        "src": "https://www.splunk.com/content/dam/splunk2/images/logos/splunk/splunk-black-white-bg.png",
         "preserveAspectRatio": true
       }
     },
@@ -149,15 +158,15 @@
       "options": {
         "markdown": "**Image not configured.** Set `options.src` to a KV-store-uploaded image or an allow-listed URL.\n\nSupported formats:\n- `png`\n- `jpeg`\n- `gif`\n- `webp`\n- `svg` (via URL reference)",
         "backgroundColor": "#EFE7D3",
-        "fontColor": "#1A1A1A"
+        "fontColor": "#3C444D"
       }
     },
     "viz_diagram": {
       "type": "splunk.image",
-      "title": "11. Architecture diagram",
-      "description": "SVG architecture diagrams render crisply at any panel size. Use SVG over PNG for diagrams.",
+      "title": "11. Diagram slot (placeholder)",
+      "description": "In production, drop your architecture diagram here - prefer SVG uploaded to KV store so it scales crisply and survives PDF export. The bench currently shows the same allow-listed PNG as a stand-in.",
       "options": {
-        "src": "https://www.splunk.com/etc.clientlibs/splunk2/clientlibs/clientlib-base/resources/Splunk_Logo.svg",
+        "src": "https://www.splunk.com/content/dam/splunk2/images/logos/splunk/splunk-black-white-bg.png",
         "preserveAspectRatio": true
       }
     },
@@ -176,7 +185,7 @@
     "type": "absolute",
     "options": {
       "width": 1440,
-      "height": 2520,
+      "height": 2120,
       "display": "auto-scale",
       "backgroundColor": "#FAEAD8"
     },
@@ -188,7 +197,17 @@
           "x": 20,
           "y": 20,
           "w": 1400,
-          "h": 280
+          "h": 260
+        }
+      },
+      {
+        "item": "viz_trusted_domains_warning",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 300,
+          "w": 1400,
+          "h": 220
         }
       },
       {
@@ -196,7 +215,7 @@
         "type": "block",
         "position": {
           "x": 20,
-          "y": 320,
+          "y": 540,
           "w": 690,
           "h": 240
         }
@@ -206,7 +225,7 @@
         "type": "block",
         "position": {
           "x": 730,
-          "y": 320,
+          "y": 540,
           "w": 690,
           "h": 240
         }
@@ -216,7 +235,7 @@
         "type": "block",
         "position": {
           "x": 20,
-          "y": 580,
+          "y": 800,
           "w": 240,
           "h": 240
         }
@@ -226,7 +245,7 @@
         "type": "block",
         "position": {
           "x": 280,
-          "y": 580,
+          "y": 800,
           "w": 1140,
           "h": 240
         }
@@ -236,7 +255,7 @@
         "type": "block",
         "position": {
           "x": 20,
-          "y": 840,
+          "y": 1060,
           "w": 690,
           "h": 240
         }
@@ -246,7 +265,7 @@
         "type": "block",
         "position": {
           "x": 730,
-          "y": 840,
+          "y": 1060,
           "w": 690,
           "h": 240
         }
@@ -256,7 +275,7 @@
         "type": "block",
         "position": {
           "x": 20,
-          "y": 1100,
+          "y": 1320,
           "w": 690,
           "h": 240
         }
@@ -266,7 +285,7 @@
         "type": "block",
         "position": {
           "x": 730,
-          "y": 1100,
+          "y": 1320,
           "w": 690,
           "h": 240
         }
@@ -276,7 +295,7 @@
         "type": "block",
         "position": {
           "x": 950,
-          "y": 1180,
+          "y": 1400,
           "w": 240,
           "h": 80
         }
@@ -286,7 +305,7 @@
         "type": "block",
         "position": {
           "x": 20,
-          "y": 1360,
+          "y": 1580,
           "w": 690,
           "h": 240
         }
@@ -296,7 +315,7 @@
         "type": "block",
         "position": {
           "x": 730,
-          "y": 1360,
+          "y": 1580,
           "w": 690,
           "h": 240
         }
@@ -306,7 +325,7 @@
         "type": "block",
         "position": {
           "x": 20,
-          "y": 1620,
+          "y": 1840,
           "w": 690,
           "h": 240
         }
@@ -316,12 +335,13 @@
         "type": "block",
         "position": {
           "x": 730,
-          "y": 1620,
+          "y": 1840,
           "w": 690,
           "h": 240
         }
       }
     ],
     "globalInputs": []
-  }
+  },
+  "theme": "light"
 }
