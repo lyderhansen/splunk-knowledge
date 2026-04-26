@@ -18,6 +18,27 @@
           "columns": [["98.7"]]
         }
       }
+    },
+    "ds_health_low": {
+      "type": "ds.search",
+      "name": "health - low value 20",
+      "options": {
+        "query": "| makeresults | eval health = 20 | table health"
+      }
+    },
+    "ds_health_mid": {
+      "type": "ds.search",
+      "name": "health - mid value 60",
+      "options": {
+        "query": "| makeresults | eval health = 60 | table health"
+      }
+    },
+    "ds_health_high": {
+      "type": "ds.search",
+      "name": "health - high value 95",
+      "options": {
+        "query": "| makeresults | eval health = 95 | table health"
+      }
     }
   },
   "visualizations": {
@@ -166,14 +187,131 @@
         "unitPosition": "after",
         "backgroundColor": "transparent"
       }
+    },
+
+    "viz_section_dos": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## Data-bound colour (DOS / `rangeValue`)\n\nDOS = **Dynamic Options Syntax** — Splunk's pipe-language for binding any option string to a dataSource. The PDF says of `fillColor` and `strokeColor`: *\"You may use a dataSource to apply the color.\"* This is the **status-dot** pattern: an ellipse whose colour flips based on a metric without any text overlay.\n\n**Canonical editor form** (panels 12-15):\n\n```\noptions.fillColor    = \"> fillDataValue | rangeValue(fillColorEditorConfig)\"\ncontext.fillDataValue        = \"> primary | seriesByType(\\\"number\\\") | lastPoint()\"\ncontext.fillColorEditorConfig = [ { from, to, value }, ... ]\n```\n\nKey rules: (1) the picker (`seriesByName` / `seriesByType`) returns a *series*, but `rangeValue` needs a *single number* — always reduce with `lastPoint()` (or `max()`, `min()`). (2) Splunk Studio's editor always writes the alias-in-`context` form; direct pipelines in `fillColor` won't roundtrip through the editor cleanly. (3) Threshold buckets in `context` are evaluated top-down — first match wins.\n\nPanels 12-14 show three identical ellipses bound to three different `ds_health_*` searches (values 20 / 60 / 95) and the same threshold table. Same options, different data, different colour.",
+        "fontSize": "default",
+        "backgroundColor": "transparent",
+        "fontColor": "#E8E8E8"
+      }
+    },
+
+    "viz_dos_dot_low": {
+      "type": "splunk.ellipse",
+      "title": "12. DOS fillColor - health = 20 (red)",
+      "description": "Status dot whose fill is bound to the search via DOS rangeValue. Editor form: alias 'fillDataValue' in context with seriesByType + lastPoint(), then rangeValue(fillColorEditorConfig). Value 20 hits the < 70 bucket -> red.",
+      "dataSources": { "primary": "ds_health_low" },
+      "options": {
+        "fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)",
+        "strokeColor": "transparent"
+      },
+      "context": {
+        "fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
+        "fillColorEditorConfig": [
+          { "to": 70,             "value": "#FF2D95" },
+          { "from": 70, "to": 90, "value": "#FFB627" },
+          { "from": 90,           "value": "#33FF99" }
+        ]
+      }
+    },
+
+    "viz_dos_dot_mid": {
+      "type": "splunk.ellipse",
+      "title": "13. DOS fillColor - health = 60 (still red)",
+      "description": "Same DOS pattern, value 60. Demonstrates that the first matching bucket wins - 60 is still < 70.",
+      "dataSources": { "primary": "ds_health_mid" },
+      "options": {
+        "fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)",
+        "strokeColor": "transparent"
+      },
+      "context": {
+        "fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
+        "fillColorEditorConfig": [
+          { "to": 70,             "value": "#FF2D95" },
+          { "from": 70, "to": 90, "value": "#FFB627" },
+          { "from": 90,           "value": "#33FF99" }
+        ]
+      }
+    },
+
+    "viz_dos_dot_high": {
+      "type": "splunk.ellipse",
+      "title": "14. DOS fillColor - health = 95 (green)",
+      "description": "Same DOS pattern, value 95. Hits the >= 90 bucket -> green. Note the seriesByName('health') alternative picker here - identical effect to seriesByType because there is only one numeric column.",
+      "dataSources": { "primary": "ds_health_high" },
+      "options": {
+        "fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)",
+        "strokeColor": "transparent"
+      },
+      "context": {
+        "fillDataValue": "> primary | seriesByName(\"health\") | lastPoint()",
+        "fillColorEditorConfig": [
+          { "to": 70,             "value": "#FF2D95" },
+          { "from": 70, "to": 90, "value": "#FFB627" },
+          { "from": 90,           "value": "#33FF99" }
+        ]
+      }
+    },
+
+    "viz_dos_ring": {
+      "type": "splunk.ellipse",
+      "title": "15. DOS fill + stroke - both bound (high = green)",
+      "description": "Both fill and stroke DOS-bound to the same search. Each option has its own alias and its own threshold table. Result is a 'donut-style' ring: tinted fill plus a coloured outline. Useful for KPI rings whose colour reflects the underlying KPI.",
+      "dataSources": { "primary": "ds_health_high" },
+      "options": {
+        "fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)",
+        "strokeColor": "> strokeDataValue | rangeValue(strokeColorEditorConfig)",
+        "strokeWidth": 4
+      },
+      "context": {
+        "fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
+        "strokeDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
+        "fillColorEditorConfig": [
+          { "to": 70,             "value": "#FF2D95" },
+          { "from": 70, "to": 90, "value": "#FFB627" },
+          { "from": 90,           "value": "#33FF99" }
+        ],
+        "strokeColorEditorConfig": [
+          { "to": 70,             "value": "#FF6B6B" },
+          { "from": 70,           "value": "#E8E8E8" }
+        ]
+      }
+    },
+
+    "viz_dos_token": {
+      "type": "splunk.ellipse",
+      "title": "16. Token-driven fillColor - dropdown flips colour",
+      "description": "fillColor reads from a dashboard token via $colour_token$ interpolation. The dropdown below the legend lets the viewer flip the dot between OK / WARN / CRIT without touching any data source.",
+      "options": {
+        "fillColor": "$colour_token$",
+        "strokeColor": "transparent"
+      }
     }
   },
-  "inputs": {},
+  "inputs": {
+    "input_colour_token": {
+      "options": {
+        "defaultValue": "#26A69A",
+        "items": [
+          { "label": "OK (green)",   "value": "#33FF99" },
+          { "label": "WARN (amber)", "value": "#FFB627" },
+          { "label": "CRIT (red)",   "value": "#FF2D95" },
+          { "label": "Teal (default)", "value": "#26A69A" }
+        ],
+        "token": "colour_token"
+      },
+      "title": "Token: dot colour",
+      "type": "input.dropdown"
+    }
+  },
   "layout": {
     "type": "absolute",
     "options": {
       "width": 1440,
-      "height": 1980,
+      "height": 2520,
       "display": "auto-scale",
       "backgroundColor": "#0F1729"
     },
@@ -196,8 +334,16 @@
       { "item": "viz_status_dot_crit",   "type": "block", "position": { "x": 180,  "y": 840,  "w": 60,   "h": 60 } },
 
       { "item": "viz_kpi_ring",          "type": "block", "position": { "x": 280,  "y": 840,  "w": 280,  "h": 280 } },
-      { "item": "viz_kpi_value",         "type": "block", "position": { "x": 320,  "y": 900,  "w": 200,  "h": 160 } }
+      { "item": "viz_kpi_value",         "type": "block", "position": { "x": 320,  "y": 900,  "w": 200,  "h": 160 } },
+
+      { "item": "viz_section_dos",       "type": "block", "position": { "x": 20,   "y": 1180, "w": 1400, "h": 240 } },
+
+      { "item": "viz_dos_dot_low",       "type": "block", "position": { "x": 20,   "y": 1440, "w": 220,  "h": 220 } },
+      { "item": "viz_dos_dot_mid",       "type": "block", "position": { "x": 260,  "y": 1440, "w": 220,  "h": 220 } },
+      { "item": "viz_dos_dot_high",      "type": "block", "position": { "x": 500,  "y": 1440, "w": 220,  "h": 220 } },
+      { "item": "viz_dos_ring",          "type": "block", "position": { "x": 740,  "y": 1440, "w": 280,  "h": 280 } },
+      { "item": "viz_dos_token",         "type": "block", "position": { "x": 1060, "y": 1440, "w": 220,  "h": 220 } }
     ],
-    "globalInputs": []
+    "globalInputs": ["input_colour_token"]
   }
 }

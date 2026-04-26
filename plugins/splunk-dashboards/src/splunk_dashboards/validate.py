@@ -207,6 +207,145 @@ def check_rangevalue_dos_signatures(dashboard: dict) -> list[Finding]:
     return findings
 
 
+def check_input_types(dashboard: dict) -> list[Finding]:
+    """Reject input ``type`` values not on the Splunk 10.4 PDF allow-list.
+
+    Per the Splunk Cloud 10.4.2604 Dashboard Studio reference, only five input
+    types are valid:
+
+    - ``input.text``
+    - ``input.dropdown``
+    - ``input.multiselect``
+    - ``input.checkbox``
+    - ``input.timerange``
+
+    Common mistakes that produce ``/inputs/<id>/type: must be equal to one of
+    the allowed values`` at render time:
+
+    - ``input.radio`` — does not exist; use ``input.dropdown`` for single-select.
+    - ``input.number``, ``input.date``, ``input.search`` — not in the schema.
+    """
+    ALLOWED = {
+        "input.text",
+        "input.dropdown",
+        "input.multiselect",
+        "input.checkbox",
+        "input.timerange",
+    }
+    findings: list[Finding] = []
+    for input_id, inp in (dashboard.get("inputs") or {}).items():
+        type_ = inp.get("type")
+        if type_ is None:
+            findings.append(Finding(
+                severity="error",
+                code="input-missing-type",
+                message=f"input '{input_id}' is missing required 'type' field",
+            ))
+            continue
+        if type_ not in ALLOWED:
+            allowed_str = ", ".join(sorted(ALLOWED))
+            hint = ""
+            if type_ == "input.radio":
+                hint = " — use 'input.dropdown' for single-select."
+            findings.append(Finding(
+                severity="error",
+                code="input-invalid-type",
+                message=(
+                    f"input '{input_id}' has type '{type_}' which is not in the "
+                    f"Splunk 10.4 allow-list ({allowed_str}).{hint}"
+                ),
+            ))
+    return findings
+
+
+def check_rangevalue_needs_reducer(dashboard: dict) -> list[Finding]:
+    """Flag ``rangeValue`` DOS expressions that operate on a series without reducing.
+
+    ``rangeValue(thresholds)`` requires a single number as input. Pickers like
+    ``seriesByName(...)`` and ``seriesByType(...)`` return a *series* — they
+    must be reduced with ``lastPoint()`` (or ``min()``, ``max()``, ``count()``,
+    ``sum()``) before being piped into ``rangeValue``.
+
+    A pipeline such as::
+
+        > primary | seriesByType("number") | rangeValue(cfg)
+
+    will silently render grey because ``rangeValue`` cannot match a series
+    against numeric thresholds. Splunk Studio's editor always emits the
+    canonical alias-in-context form::
+
+        context.dataAlias = "> primary | seriesByType(\\"number\\") | lastPoint()"
+        options.fillColor = "> dataAlias | rangeValue(colorConfig)"
+
+    This check warns on any ``rangeValue`` expression where the upstream
+    pipeline contains a series picker but no reducer.
+
+    Both inline (``options.fillColor``) and context-alias forms are checked.
+    """
+    SERIES_PICKERS = ("seriesByName", "seriesByType", "seriesByIndex")
+    REDUCERS = ("lastPoint", "max", "min", "count", "sum", "first", "last")
+
+    def _expression_needs_reducer(expr: str) -> bool:
+        if "rangeValue(" not in expr:
+            return False
+        if not any(p in expr for p in SERIES_PICKERS):
+            return False
+        if any(f"{r}(" in expr for r in REDUCERS):
+            return False
+        return True
+
+    findings: list[Finding] = []
+    for viz_id, viz in (dashboard.get("visualizations") or {}).items():
+        # Inline form: options.<name> = "> primary | seriesByType(...) | rangeValue(...)"
+        for opt_name, opt_value in (viz.get("options") or {}).items():
+            if isinstance(opt_value, str) and _expression_needs_reducer(opt_value):
+                findings.append(Finding(
+                    severity="warning",
+                    code="rangevalue-missing-reducer",
+                    message=(
+                        f"visualization '{viz_id}' option '{opt_name}' pipes a "
+                        f"series picker into rangeValue() without reducing to a "
+                        f"single value. Add ' | lastPoint()' (or max/min) before "
+                        f"rangeValue, or use the canonical alias-in-context form."
+                    ),
+                ))
+
+        # Alias form: context aliases that are referenced by an option, but the
+        # alias pipeline itself has a series picker without a reducer. The
+        # `rangeValue` call lives in the option string, the `seriesBy*` lives
+        # in the context alias — combine them.
+        ctx = viz.get("context") or {}
+        if not ctx:
+            continue
+        # collect aliases that are used somewhere in options as `> alias | rangeValue(...)`
+        used_aliases: dict[str, str] = {}  # alias_name -> option name where it is used
+        for opt_name, opt_value in (viz.get("options") or {}).items():
+            if not isinstance(opt_value, str) or "rangeValue(" not in opt_value:
+                continue
+            m = re.match(r"\s*>\s*(\w+)\s*\|\s*rangeValue", opt_value)
+            if m:
+                used_aliases[m.group(1)] = opt_name
+        for alias, opt_name in used_aliases.items():
+            alias_expr = ctx.get(alias)
+            if not isinstance(alias_expr, str):
+                continue
+            if any(p in alias_expr for p in SERIES_PICKERS) and not any(
+                f"{r}(" in alias_expr for r in REDUCERS
+            ):
+                findings.append(Finding(
+                    severity="warning",
+                    code="rangevalue-alias-missing-reducer",
+                    message=(
+                        f"visualization '{viz_id}' option '{opt_name}' references "
+                        f"context alias '{alias}' which uses a series picker "
+                        f"({alias_expr!r}) without a reducer. Append "
+                        f"' | lastPoint()' to the alias so rangeValue receives a "
+                        f"single number."
+                    ),
+                ))
+    return findings
+
+
 def check_all(dashboard: dict) -> list[Finding]:
     findings: list[Finding] = []
     findings.extend(check_data_source_names(dashboard))
@@ -214,8 +353,10 @@ def check_all(dashboard: dict) -> list[Finding]:
     findings.extend(check_token_references(dashboard))
     findings.extend(check_drilldown_targets(dashboard))
     findings.extend(check_timerange_default_value(dashboard))
+    findings.extend(check_input_types(dashboard))
     findings.extend(check_singlevalue_invalid_options(dashboard))
     findings.extend(check_rangevalue_dos_signatures(dashboard))
+    findings.extend(check_rangevalue_needs_reducer(dashboard))
     return findings
 
 

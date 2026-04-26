@@ -1,6 +1,6 @@
 {
   "title": "ds-viz-rectangle - option matrix (light)",
-  "description": "Light-theme companion. Test bench for splunk.rectangle. Verifies every option from the 10.4 PDF: fillColor, fillOpacity, rx, ry, strokeColor, strokeDashStyle, strokeJoinStyle, strokeOpacity, strokeWidth. Demonstrates background cards, depth layers, pill shapes, dashed strokes, faint overlays, and KPI-card composition.",
+  "description": "Test bench for splunk.rectangle. Verifies every option from the 10.4 PDF: fillColor, fillOpacity, rx, ry, strokeColor, strokeDashStyle, strokeJoinStyle, strokeOpacity, strokeWidth. Demonstrates background cards, depth layers, pill shapes, dashed strokes, faint overlays, and KPI-card composition.",
   "defaults": {
     "dataSources": {
       "global": {
@@ -36,16 +36,37 @@
           ]
         }
       }
+    },
+    "ds_health_low": {
+      "type": "ds.search",
+      "name": "health - low value 20",
+      "options": {
+        "query": "| makeresults | eval health = 20 | table health"
+      }
+    },
+    "ds_health_mid": {
+      "type": "ds.search",
+      "name": "health - mid value 60",
+      "options": {
+        "query": "| makeresults | eval health = 60 | table health"
+      }
+    },
+    "ds_health_high": {
+      "type": "ds.search",
+      "name": "health - high value 95",
+      "options": {
+        "query": "| makeresults | eval health = 95 | table health"
+      }
     }
   },
   "visualizations": {
     "viz_title": {
       "type": "splunk.markdown",
       "options": {
-        "markdown": "# `splunk.rectangle` - option matrix (light)\n\nRectangles are absolute-layout shapes with **9 options** total. They are the workhorse for **background cards**, **section dividers**, **depth layers**, **pill chips**, and **clickable hit-zones over images**.\n\nAll options from the **10.4 PDF**:\n- `fillColor` (string, hex; theme default)\n- `fillOpacity` (0 - 1)\n- `rx` (corner radius, integer or %)\n- `ry` (vertical corner radius, defaults to `rx`)\n- `strokeColor` (string, hex; theme default)\n- `strokeDashStyle` (number; pixel length of dashes & gaps; `0` = solid)\n- `strokeJoinStyle` (`miter` | `bevel` | `round` | `arcs` | `miter-clip`)\n- `strokeOpacity` (0 - 1)\n- `strokeWidth` (1 - 25 px)",
+        "markdown": "# `splunk.rectangle` - option matrix\n\nRectangles are absolute-layout shapes with **9 options** total. They are the workhorse for **background cards**, **section dividers**, **depth layers**, **pill chips**, and **clickable hit-zones over images**.\n\nAll options from the **10.4 PDF**:\n- `fillColor` (string, hex; theme default)\n- `fillOpacity` (0 - 1)\n- `rx` (corner radius, integer or %)\n- `ry` (vertical corner radius, defaults to `rx`)\n- `strokeColor` (string, hex; theme default)\n- `strokeDashStyle` (number; pixel length of dashes & gaps; `0` = solid)\n- `strokeJoinStyle` (`miter` | `bevel` | `round` | `arcs` | `miter-clip`)\n- `strokeOpacity` (0 - 1)\n- `strokeWidth` (1 - 25 px)",
         "fontSize": "default",
         "backgroundColor": "transparent",
-        "fontColor": "#1A1A1A"
+        "fontColor": "#3C444D"
       }
     },
     "viz_default": {
@@ -108,7 +129,7 @@
       "title": "7. rx = 50 (pill / chip)",
       "description": "Rectangle becomes a pill / chip when rx >= height/2. Useful for status badges.",
       "options": {
-        "fillColor": "#7A45C2",
+        "fillColor": "#7B49B7",
         "strokeColor": "transparent",
         "rx": 50
       }
@@ -130,7 +151,7 @@
       "description": "Maximum stroke width per the PDF. Anything above 25 is clipped. Use sparingly.",
       "options": {
         "fillColor": "#FAEAD8",
-        "strokeColor": "#C2415A",
+        "strokeColor": "#C62368",
         "strokeWidth": 25,
         "rx": 4
       }
@@ -153,7 +174,7 @@
       "description": "Rounded join at the corners of the stroke path. Visible only at large strokeWidth + rx=0.",
       "options": {
         "fillColor": "transparent",
-        "strokeColor": "#B58900",
+        "strokeColor": "#B36B00",
         "strokeWidth": 12,
         "strokeJoinStyle": "round"
       }
@@ -164,7 +185,7 @@
       "description": "Sharp 90-degree corners. Default.",
       "options": {
         "fillColor": "transparent",
-        "strokeColor": "#B58900",
+        "strokeColor": "#B36B00",
         "strokeWidth": 12,
         "strokeJoinStyle": "miter"
       }
@@ -209,14 +230,228 @@
         "unit": " req/s",
         "backgroundColor": "transparent"
       }
+    },
+    "viz_section_dos": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## Data-bound colour (DOS / `rangeValue`)\n\nDOS = **Dynamic Options Syntax** \u2014 Splunk's pipe-language for binding any option string to a dataSource. The PDF says of `fillColor` and `strokeColor`: *\"You may use a dataSource to apply the color.\"* This is the **status-card** pattern: a rectangle whose colour flips based on a metric (health, latency, error count) without any markdown / singlevalue overlay.\n\n**Canonical editor form** (panels 15-19):\n\n```\noptions.fillColor    = \"> fillDataValue | rangeValue(fillColorEditorConfig)\"\ncontext.fillDataValue        = \"> primary | seriesByType(\\\"number\\\") | lastPoint()\"\ncontext.fillColorEditorConfig = [ { from, to, value }, ... ]\n```\n\nKey rules: (1) the picker (`seriesByName` / `seriesByType`) returns a *series*, but `rangeValue` needs a *single number* \u2014 always reduce with `lastPoint()` (or `max()`, `min()`). (2) Splunk Studio's editor always writes the alias-in-`context` form; direct pipelines in `fillColor` won't roundtrip through the editor cleanly. (3) Threshold buckets in `context` are evaluated top-down \u2014 first match wins.\n\nThresholds across panels 15-17: red (< 70), amber (70-90), green (>= 90). All three feed the same config, only the dataSource differs (low=20 / mid=60 / high=95).",
+        "fontSize": "default",
+        "backgroundColor": "transparent",
+        "fontColor": "#3C444D"
+      }
+    },
+    "viz_dos_fill_low": {
+      "type": "splunk.rectangle",
+      "title": "15. DOS fillColor - health = 20 (red)",
+      "description": "fillColor bound to the search via DOS. Value 20 hits the < 70 bucket -> red. Editor form: alias 'fillDataValue' in context with seriesByType + lastPoint(), then rangeValue(fillColorEditorConfig).",
+      "dataSources": {
+        "primary": "ds_health_low"
+      },
+      "options": {
+        "fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)",
+        "strokeColor": "transparent",
+        "rx": 8
+      },
+      "context": {
+        "fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
+        "fillColorEditorConfig": [
+          {
+            "to": 70,
+            "value": "#C2185B"
+          },
+          {
+            "from": 70,
+            "to": 90,
+            "value": "#E89A2C"
+          },
+          {
+            "from": 90,
+            "value": "#2E8B57"
+          }
+        ]
+      }
+    },
+    "viz_dos_fill_mid": {
+      "type": "splunk.rectangle",
+      "title": "16. DOS fillColor - health = 60 (still red, edge case)",
+      "description": "Same DOS pattern, value 60. The first bucket {to: 70} matches everything below 70, so 60 also renders red. Demonstrates that overlapping rangeValue buckets are evaluated top-down.",
+      "dataSources": {
+        "primary": "ds_health_mid"
+      },
+      "options": {
+        "fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)",
+        "strokeColor": "transparent",
+        "rx": 8
+      },
+      "context": {
+        "fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
+        "fillColorEditorConfig": [
+          {
+            "to": 70,
+            "value": "#C2185B"
+          },
+          {
+            "from": 70,
+            "to": 90,
+            "value": "#E89A2C"
+          },
+          {
+            "from": 90,
+            "value": "#2E8B57"
+          }
+        ]
+      }
+    },
+    "viz_dos_fill_high": {
+      "type": "splunk.rectangle",
+      "title": "17. DOS fillColor - health = 95 (green)",
+      "description": "Same DOS pattern, value 95. Hits the >= 90 bucket -> green. Note the seriesByName('health') alternative picker in the alias - identical effect to seriesByType because there is only one numeric column.",
+      "dataSources": {
+        "primary": "ds_health_high"
+      },
+      "options": {
+        "fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)",
+        "strokeColor": "transparent",
+        "rx": 8
+      },
+      "context": {
+        "fillDataValue": "> primary | seriesByName(\"health\") | lastPoint()",
+        "fillColorEditorConfig": [
+          {
+            "to": 70,
+            "value": "#C2185B"
+          },
+          {
+            "from": 70,
+            "to": 90,
+            "value": "#E89A2C"
+          },
+          {
+            "from": 90,
+            "value": "#2E8B57"
+          }
+        ]
+      }
+    },
+    "viz_dos_stroke": {
+      "type": "splunk.rectangle",
+      "title": "18. DOS strokeColor - bound to health (95 -> green outline)",
+      "description": "Same pattern but applied to the stroke alone. Useful for outlined status badges where the fill is your brand neutral. Note: the alias is named 'strokeDataValue' here so fill/stroke aliases never collide when both are bound.",
+      "dataSources": {
+        "primary": "ds_health_high"
+      },
+      "options": {
+        "fillColor": "transparent",
+        "strokeColor": "> strokeDataValue | rangeValue(strokeColorEditorConfig)",
+        "strokeWidth": 3,
+        "rx": 8
+      },
+      "context": {
+        "strokeDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
+        "strokeColorEditorConfig": [
+          {
+            "to": 70,
+            "value": "#C2185B"
+          },
+          {
+            "from": 70,
+            "to": 90,
+            "value": "#E89A2C"
+          },
+          {
+            "from": 90,
+            "value": "#2E8B57"
+          }
+        ]
+      }
+    },
+    "viz_dos_both": {
+      "type": "splunk.rectangle",
+      "title": "19. DOS fill + stroke - both bound (mid = red fill, light stroke)",
+      "description": "Fill and stroke both DOS-bound to the same dataSource. Each option has its own alias and its own threshold table so they can flip independently. Value 60 hits the < 70 bucket on fill (red) and the >= 50 bucket on stroke (light grey). This is the canonical 'card with outlined emphasis' pattern.",
+      "dataSources": {
+        "primary": "ds_health_mid"
+      },
+      "options": {
+        "fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)",
+        "strokeColor": "> strokeDataValue | rangeValue(strokeColorEditorConfig)",
+        "strokeWidth": 2,
+        "rx": 8
+      },
+      "context": {
+        "fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
+        "strokeDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
+        "fillColorEditorConfig": [
+          {
+            "to": 70,
+            "value": "#C2185B"
+          },
+          {
+            "from": 70,
+            "to": 90,
+            "value": "#E89A2C"
+          },
+          {
+            "from": 90,
+            "value": "#2E8B57"
+          }
+        ],
+        "strokeColorEditorConfig": [
+          {
+            "to": 50,
+            "value": "#B91C1C"
+          },
+          {
+            "from": 50,
+            "value": "#3C444D"
+          }
+        ]
+      }
+    },
+    "viz_dos_token": {
+      "type": "splunk.rectangle",
+      "title": "20. Token-driven fillColor - input flips colour",
+      "description": "fillColor reads from a dashboard token via $colour_token$ interpolation. The dropdown above lets the viewer flip the card between red / amber / green without touching any data source. Useful for design previews and brand colour pickers.",
+      "options": {
+        "fillColor": "$colour_token$",
+        "strokeColor": "transparent",
+        "rx": 8
+      }
     }
   },
-  "inputs": {},
+  "inputs": {
+    "input_colour_token": {
+      "options": {
+        "defaultValue": "#0E7C70",
+        "items": [
+          {
+            "label": "Red",
+            "value": "#C2185B"
+          },
+          {
+            "label": "Amber",
+            "value": "#E89A2C"
+          },
+          {
+            "label": "Green",
+            "value": "#2E8B57"
+          },
+          {
+            "label": "Teal (default)",
+            "value": "#0E7C70"
+          }
+        ],
+        "token": "colour_token"
+      },
+      "title": "Token: card colour",
+      "type": "input.dropdown"
+    }
+  },
   "layout": {
     "type": "absolute",
     "options": {
       "width": 1440,
-      "height": 2080,
+      "height": 2620,
       "display": "auto-scale",
       "backgroundColor": "#FAEAD8"
     },
@@ -380,8 +615,81 @@
           "w": 220,
           "h": 120
         }
+      },
+      {
+        "item": "viz_section_dos",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 1260,
+          "w": 1400,
+          "h": 240
+        }
+      },
+      {
+        "item": "viz_dos_fill_low",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 1520,
+          "w": 340,
+          "h": 200
+        }
+      },
+      {
+        "item": "viz_dos_fill_mid",
+        "type": "block",
+        "position": {
+          "x": 380,
+          "y": 1520,
+          "w": 340,
+          "h": 200
+        }
+      },
+      {
+        "item": "viz_dos_fill_high",
+        "type": "block",
+        "position": {
+          "x": 740,
+          "y": 1520,
+          "w": 340,
+          "h": 200
+        }
+      },
+      {
+        "item": "viz_dos_stroke",
+        "type": "block",
+        "position": {
+          "x": 1100,
+          "y": 1520,
+          "w": 320,
+          "h": 200
+        }
+      },
+      {
+        "item": "viz_dos_both",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 1740,
+          "w": 460,
+          "h": 200
+        }
+      },
+      {
+        "item": "viz_dos_token",
+        "type": "block",
+        "position": {
+          "x": 500,
+          "y": 1740,
+          "w": 920,
+          "h": 200
+        }
       }
     ],
-    "globalInputs": []
-  }
+    "globalInputs": [
+      "input_colour_token"
+    ]
+  },
+  "theme": "light"
 }

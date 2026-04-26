@@ -4,7 +4,7 @@ description: |
   splunk.ellipse - the circular shape primitive for status dots, KPI accent
   rings, donut outlines, and faint background blobs. Absolute layout only.
   Verified against the 10.4 Dashboard Studio docs.
-version: 1.0.0
+version: 1.1.0
 verified_against: SplunkCloud-10.4.2604-DashStudio
 test_dashboards:
   - ds_viz_ellipse_dark
@@ -46,15 +46,157 @@ accent rings, donut outlines, and circular swatches.
 
 ## Data shape
 
-`splunk.ellipse` does not require a data source. The shape is purely a
-styling primitive. As with rectangles, the PDF says of `fillColor` /
-`strokeColor`:
+`splunk.ellipse` does not _require_ a data source - the shape is a
+styling primitive and most ellipses ship with static colours.
+
+But the PDF explicitly says of `fillColor` / `strokeColor`:
 
 > "You may use a dataSource to apply the color."
 
-So you _can_ bind colour to a search via DOS - e.g. a status dot whose
-fill changes from green to red based on `> primary | rangeValue(...)`.
-This is uncommon. Most ellipses ship with static colours.
+That makes ellipses a first-class **status-dot primitive**. The dot
+flips green / amber / red based on a metric, with no overlay needed.
+Three colour-source patterns are documented and verified in the
+test-dashboard:
+
+### 1. Static colour (most common)
+
+```json
+"options": { "fillColor": "#0E7C70" }
+```
+
+### 2. DOS-bound colour (data-driven status dot)
+
+> **DOS = Dynamic Options Syntax.** It's the small expression language
+> Splunk Dashboard Studio uses to compute viz options from a data
+> source. Every DOS expression starts with `>` and is a pipeline of
+> picker → reducer → formatter functions. See the [DOS quick reference](#dos-dynamic-options-syntax-quick-reference)
+> below.
+
+There are **two ways** to write a DOS-bound colour, both verified
+against `ds_viz_ellipse_dark` / `_light`:
+
+#### 2a. Canonical alias-in-context form (what the editor produces)
+
+```json
+"viz_health_dot": {
+  "type": "splunk.ellipse",
+  "dataSources": { "primary": "ds_health" },
+  "context": {
+    "fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
+    "fillColorEditorConfig": [
+      { "to": 70,             "value": "#FF2D95" },
+      { "from": 70, "to": 90, "value": "#FFB627" },
+      { "from": 90,           "value": "#33FF99" }
+    ]
+  },
+  "options": {
+    "fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)",
+    "strokeColor": "transparent"
+  }
+}
+```
+
+This is what Splunk Studio's visual editor emits and round-trips. Two
+ideas:
+
+1. **`fillDataValue` (in `context`) reduces the data series to one
+   number** with `lastPoint()` (or `max()`, `min()`, `sum()`, `count()`,
+   `first()`, `last()`).
+2. **`fillColor` (in `options`) references that alias** and pipes it
+   through `rangeValue(<thresholdsVar>)`.
+
+The editor uses the names `fillDataValue` / `strokeDataValue` for the
+source-value aliases and `fillColorEditorConfig` /
+`strokeColorEditorConfig` for the threshold arrays. You can name them
+anything — but using these names means the visual editor will recognise
+and edit the panel without re-writing your JSON.
+
+#### 2b. Inline form (compact, hand-written)
+
+```json
+"options": {
+  "fillColor": "> primary | seriesByType(\"number\") | lastPoint() | rangeValue(thresholds)",
+  "strokeColor": "transparent"
+},
+"context": {
+  "thresholds": [
+    { "to": 70,             "value": "#FF2D95" },
+    { "from": 70, "to": 90, "value": "#FFB627" },
+    { "from": 90,           "value": "#33FF99" }
+  ]
+}
+```
+
+Same pipeline, fewer keys. The Studio editor will silently rewrite this
+to the alias-in-context form on save.
+
+#### Picker choice (`seriesByName` vs `seriesByType`)
+
+| Picker                           | When to use                                                       |
+| -------------------------------- | ----------------------------------------------------------------- |
+| `seriesByName('health')`         | Explicit field name. Use when the result has multiple numerics.   |
+| `seriesByType("number")`         | First numeric column. Shorter; fine when there is only one.       |
+
+Both produce identical output when the SPL ends with `| table health`
+(only one numeric). The Splunk UI generates `seriesByType` by default,
+hand-edited dashboards more often write `seriesByName` for clarity.
+
+#### `lastPoint()` is required
+
+`rangeValue` operates on **a single number**, not on a series. The
+pickers `seriesByName` / `seriesByType` return a series, so they must
+be reduced before `rangeValue` sees the value. Use one of:
+
+- `lastPoint()` — most recent point. The default for status dots.
+- `max()` / `min()` — for "worst" / "best" of the window.
+- `sum()` / `count()` — for aggregate metrics.
+- `first()` / `last()` — for ordered series.
+
+A pipeline missing the reducer (e.g. `> primary | seriesByType("number") | rangeValue(cfg)`)
+**silently renders grey** — the renderer can't match a series against
+numeric thresholds, so it falls back to the default colour. This is the
+single most common reason a DOS-bound ellipse "looks broken". The
+validator (`pipeline/ds-validate`) flags this as
+`rangevalue-missing-reducer` / `rangevalue-alias-missing-reducer`.
+
+#### Top-down threshold evaluation
+
+`rangeValue(<thresholdsVar>)` evaluates buckets **top-down** — the first
+matching `{from?, to?}` wins. Open-ended buckets catch the tails.
+
+You can bind **both** `fillColor` and `strokeColor` to the same data
+source with **different** threshold tables — the donut becomes a
+"colour-on-colour" KPI ring that flips on the same metric but at
+different boundaries.
+
+### 3. Token-driven colour (input-driven status dot)
+
+```json
+"options": { "fillColor": "$colour_token$" }
+```
+
+A `$token$` reference reads from a dashboard input. Use for design
+previews, brand-colour pickers, or "viewer-pinned" overrides. The token
+must produce a valid hex string.
+
+Pair with an `input.dropdown` (not `input.radio` — that type does **not
+exist** in Dashboard Studio v2; see `interactivity/ds-inputs`):
+
+```json
+"input_colour_token": {
+  "type": "input.dropdown",
+  "title": "Dot colour",
+  "options": {
+    "token": "dot_colour",
+    "defaultValue": "#33FF99",
+    "items": [
+      { "label": "OK",   "value": "#33FF99" },
+      { "label": "Warn", "value": "#FFB627" },
+      { "label": "Crit", "value": "#FF2D95" }
+    ]
+  }
+}
+```
 
 ## Options (10.4 PDF)
 
@@ -132,19 +274,24 @@ This is the same drilldown limitation as `splunk.rectangle`.
 The patterns below are **all rendered and verified** in
 `ds_viz_ellipse_dark` / `ds_viz_ellipse_light`.
 
-| Panel | What it demonstrates                                             | Where to use                                  |
-| ----- | ---------------------------------------------------------------- | --------------------------------------------- |
-| 1     | Default fill + stroke (theme defaults)                           | Quick placeholder                             |
-| 2     | Circle - solid fill, transparent stroke (square panel)           | Standard circular badge                       |
-| 3     | Oval - same options, wide panel                                  | Decorative hero shape                         |
-| 4     | `fillOpacity = 0.5`                                              | Layered shapes on coloured canvas             |
-| 5     | `fillOpacity = 0.15`                                             | Decorative background blob / watermark        |
-| 6     | Outlined ring - transparent fill + branded stroke                | "Donut accent"                                |
-| 7     | `strokeWidth = 25` (max)                                         | Demo of upper bound                           |
-| 8     | `strokeDashStyle = 6` dashed ring                                | Empty-state placeholder                       |
-| 9     | `strokeOpacity = 0.4`                                            | Soft KPI surround                             |
-| 10    | Tiny status dots (60 x 60 panels)                                | Inline health indicators next to labels       |
-| 11    | KPI accent ring with singleValue overlay                         | Canonical "ring + KPI" recipe                 |
+| Panel | What it demonstrates                                                              | Where to use                                  |
+| ----- | --------------------------------------------------------------------------------- | --------------------------------------------- |
+| 1     | Default fill + stroke (theme defaults)                                            | Quick placeholder                             |
+| 2     | Circle - solid fill, transparent stroke (square panel)                            | Standard circular badge                       |
+| 3     | Oval - same options, wide panel                                                   | Decorative hero shape                         |
+| 4     | `fillOpacity = 0.5`                                                               | Layered shapes on coloured canvas             |
+| 5     | `fillOpacity = 0.15`                                                              | Decorative background blob / watermark        |
+| 6     | Outlined ring - transparent fill + branded stroke                                 | "Donut accent"                                |
+| 7     | `strokeWidth = 25` (max)                                                          | Demo of upper bound                           |
+| 8     | `strokeDashStyle = 6` dashed ring                                                 | Empty-state placeholder                       |
+| 9     | `strokeOpacity = 0.4`                                                             | Soft KPI surround                             |
+| 10    | Tiny status dots (60 x 60 panels)                                                 | Inline health indicators next to labels       |
+| 11    | KPI accent ring with singleValue overlay                                          | Canonical "ring + KPI" recipe                 |
+| 12    | Alias-in-context DOS `fillColor` + `rangeValue` (health low → red)                | Status dot that flips on a metric             |
+| 13    | Alias-in-context DOS `fillColor` (health mid → amber)                             | Demonstrates top-down bucket evaluation       |
+| 14    | Alias-in-context DOS `fillColor` with `seriesByType("number")` (health high → green) | Equivalent picker form                     |
+| 15    | DOS `fillColor` + DOS `strokeColor` with separate `*EditorConfig` tables          | KPI donut ring that reflects the metric       |
+| 16    | Token-driven `fillColor` via `$colour_token$` + `input.dropdown`                  | Design previews, brand-colour pickers         |
 
 ## Common gotchas
 
@@ -273,6 +420,123 @@ markdown. Z-order: render before any KPI panels (so it sits behind).
   }
 }
 ```
+
+### Data-driven status dot (canonical alias-in-context form)
+
+```json
+"viz_health_dot": {
+  "type": "splunk.ellipse",
+  "dataSources": { "primary": "ds_service_health" },
+  "context": {
+    "fillDataValue": "> primary | seriesByName(\"health\") | lastPoint()",
+    "fillColorEditorConfig": [
+      { "to": 70,             "value": "#FF2D95" },
+      { "from": 70, "to": 90, "value": "#FFB627" },
+      { "from": 90,           "value": "#33FF99" }
+    ]
+  },
+  "options": {
+    "fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)",
+    "strokeColor": "transparent"
+  }
+}
+```
+
+Layout: `{ "x": 20, "y": 20, "w": 16, "h": 16 }` next to a markdown
+label. Pair multiple status dots in a row for a service-grid view.
+
+> **Don't forget `lastPoint()`** between the picker and `rangeValue`,
+> or the dot silently renders grey. See `pipeline/ds-validate`
+> (`rangevalue-missing-reducer`).
+
+The inline shorthand `"> primary | seriesByType(\"number\") | lastPoint() | rangeValue(thresholds)"`
+also works, but Studio rewrites it on save.
+
+### Donut KPI ring with both fill and stroke bound
+
+```json
+"viz_kpi_donut": {
+  "type": "splunk.ellipse",
+  "dataSources": { "primary": "ds_service_health" },
+  "context": {
+    "fillDataValue":   "> primary | seriesByName(\"health\") | lastPoint()",
+    "strokeDataValue": "> primary | seriesByName(\"health\") | lastPoint()",
+    "fillColorEditorConfig": [
+      { "to": 70,             "value": "#FF2D95" },
+      { "from": 70, "to": 90, "value": "#FFB627" },
+      { "from": 90,           "value": "#33FF99" }
+    ],
+    "strokeColorEditorConfig": [
+      { "to": 70,             "value": "#FF6B6B" },
+      { "from": 70,           "value": "#E8E8E8" }
+    ]
+  },
+  "options": {
+    "fillColor":   "> fillDataValue   | rangeValue(fillColorEditorConfig)",
+    "strokeColor": "> strokeDataValue | rangeValue(strokeColorEditorConfig)",
+    "strokeWidth": 4
+  }
+}
+```
+
+Both fill and stroke bound to the same source, but with separate
+threshold tables — the fill flips between three colours, the stroke
+flips between two. Place a `splunk.singlevalue` on top with
+`backgroundColor: "transparent"` for the canonical "self-coloured KPI
+ring" recipe.
+
+### Token-driven status dot (input flips colour)
+
+```json
+"inputs": {
+  "input_dot_colour": {
+    "type": "input.dropdown",
+    "title": "Dot colour",
+    "options": {
+      "token": "dot_colour",
+      "defaultValue": "#33FF99",
+      "items": [
+        { "label": "OK",   "value": "#33FF99" },
+        { "label": "Warn", "value": "#FFB627" },
+        { "label": "Crit", "value": "#FF2D95" }
+      ]
+    }
+  }
+},
+"visualizations": {
+  "viz_dot": {
+    "type": "splunk.ellipse",
+    "options": {
+      "fillColor": "$dot_colour$",
+      "strokeColor": "transparent"
+    }
+  }
+}
+```
+
+Use for design previews, A/B branding, and "viewer-pinned" overrides.
+Use `input.dropdown` (not `input.radio` — that type does not exist in
+Dashboard Studio v2).
+
+## DOS (Dynamic Options Syntax) quick reference
+
+DOS is the small expression language Studio uses to compute viz options
+from a `dataSource` or another option. Every DOS expression starts with
+`>` and is a pipeline of operators separated by `|`.
+
+| Stage         | Common operators                                                 | Returns                  |
+| ------------- | ---------------------------------------------------------------- | ------------------------ |
+| **Source**    | `primary`, `<datasource_id>`, `<context_alias>`                  | series or value          |
+| **Picker**    | `seriesByName("col")`, `seriesByType("number")`, `seriesByIndex(0)` | series                |
+| **Reducer**   | `lastPoint()`, `max()`, `min()`, `sum()`, `count()`, `first()`, `last()` | single value     |
+| **Selector**  | `rangeValue(<cfg>)`, `pickValue(<map>)`, `gradient(<cfg>)`       | colour / value           |
+| **Format**    | `formatByType(<cfg>)`, `frame(...)`, `objects()`, `prepend(...)` | shaped data              |
+
+Composition: every option binding follows a `Source | Picker | Reducer
+| Selector` shape. `seriesByX` always needs a reducer before
+`rangeValue`. Aliases declared in `context` can hold either source data
+(`> primary | seriesBy... | lastPoint()`) or config arrays
+(`[{from, to, value}]`); options reference them by bare name.
 
 ## See also
 

@@ -1,8 +1,8 @@
 ---
 name: ds-inputs
-description: Inputs are the user-facing widgets — time pickers, dropdowns, multiselects, text fields, checkboxes, radios, number sliders — that write tokens consumed by every search and option on the dashboard. Read when adding a filter to a dashboard, when wiring a global time picker, when building a dynamic dropdown driven by SPL, or when a layout is missing a search filter widget. Triggers on 'input', 'time picker', 'dropdown', 'multiselect', 'global filter', 'how do I let users pick a value', 'dynamic dropdown'.
-version: 1.0
-verified_against: Splunk Enterprise 10.2.1
+description: Inputs are the user-facing widgets — time pickers, dropdowns, multiselects, text fields, checkboxes — that write tokens consumed by every search and option on the dashboard. Read when adding a filter to a dashboard, when wiring a global time picker, when building a dynamic dropdown driven by SPL, or when a layout is missing a search filter widget. Triggers on 'input', 'time picker', 'dropdown', 'multiselect', 'global filter', 'how do I let users pick a value', 'dynamic dropdown'.
+version: 1.1
+verified_against: Splunk Cloud 10.4.2604, Splunk Enterprise 10.2.1
 test_dashboards:
   - splunk-knowledge-testing/ds_interactivity_core_dark (§1)
   - splunk-knowledge-testing/ds_interactivity_core_light (§1)
@@ -21,7 +21,11 @@ An input renders a widget at the top of the dashboard (or inside a tab via
 user changes its value. Every panel or option that reads `$token$` then
 re-evaluates. See `ds-tokens` for the consumption side.
 
-## The 7 flavours
+## The 5 flavours
+
+Per the Splunk Cloud 10.4.2604 Dashboard Studio reference, **only these
+five `type` values are accepted** — anything else fails schema validation
+with `/inputs/<id>/type: must be equal to one of the allowed values`.
 
 | Type | Token shape | Common use |
 |---|---|---|
@@ -29,12 +33,16 @@ re-evaluates. See `ds-tokens` for the consumption side.
 | `input.dropdown` | string | Single-pick filter (index, host, severity) |
 | `input.multiselect` | array → `IN()` | Status codes, categories, tags |
 | `input.text` | string | Free-text search keyword |
-| `input.checkbox` | string | One-of-many, tri-state-style filters |
-| `input.radio` | string | Mutually exclusive small set |
-| `input.number` | number (slider/spinner) | Threshold, top-N |
+| `input.checkbox` | string | Tri-state / on-off filter |
 
 The core test bench exercises the first four plus the dynamic-dropdown
 pattern (which is `input.dropdown` with SPL-driven `items`).
+
+> **Common mistakes:** `input.radio`, `input.number`, `input.date`, and
+> `input.search` are **not valid** in Dashboard Studio v2 — there is no
+> radio widget and no number slider. For a single-select use
+> `input.dropdown`; for a numeric threshold use `input.text` and parse
+> in SPL with `tonumber()`.
 
 ## Required shape
 
@@ -57,11 +65,11 @@ Every input has the same skeleton:
 
 | Field | Required | Notes |
 |---|---|---|
-| `type` | yes | One of the 7 above. |
+| `type` | yes | One of the 5 above. |
 | `title` | yes for layout | What renders above the widget. |
 | `options.token` | yes | Token name written on change. No leading `$`. |
 | `options.defaultValue` | strongly recommended | What the token resolves to before any user interaction. |
-| `options.items` | type-dependent | Array for dropdown/multiselect/checkbox/radio; DOS expression for dynamic. |
+| `options.items` | type-dependent | Array for dropdown/multiselect/checkbox; DOS expression for dynamic. |
 
 To make the input *actually render*, list its key in either:
 
@@ -198,29 +206,42 @@ substring search candidates only:
 …and even then, allow-list characters where you can. Prefer dropdowns
 when the value space is enumerable.
 
-## `input.checkbox` / `input.radio` — small enums
-
-Same shape as dropdown (`items: [{label, value}]`), but the widget shape
-differs. Use radio for ≤4 mutually exclusive options, checkbox for "this
-or nothing" toggles.
-
-## `input.number`
+## `input.checkbox` — tri-state toggle
 
 ```json
-"input_topn": {
-  "type": "input.number",
+"input_only_errors": {
+  "type": "input.checkbox",
+  "title": "Only errors",
   "options": {
-    "token": "topn",
-    "defaultValue": 10,
-    "min": 1,
-    "max": 100,
-    "step": 1
+    "token": "only_errors",
+    "defaultValue": "false",
+    "items": [
+      {"label": "Errors only", "value": "true"}
+    ]
   }
 }
 ```
 
-`min` / `max` / `step` are optional but recommended — without them the
-widget is a free-form numeric.
+The token receives the `value` of the checked item, or the empty string
+when unchecked. Don't try to use this as a multi-pick — Splunk treats it
+as a single tri-state. For multi-pick use `input.multiselect`.
+
+## "I want a numeric input" — the workaround
+
+There is **no `input.number`** in Dashboard Studio v2. To get a numeric
+threshold or top-N value:
+
+1. Use `input.text` with a sensible `defaultValue` (e.g. `"10"`).
+2. Coerce in SPL: `| eval threshold = tonumber($topn$)`.
+3. If the value space is small, prefer `input.dropdown` with explicit
+   numeric labels — it gives users a discrete list instead of a free
+   textbox.
+
+## "I want a radio button group" — the workaround
+
+There is **no `input.radio`**. The validator (`check_input_types`)
+rejects it. Use `input.dropdown` with the same `items` array — it is
+the canonical single-select widget in Dashboard Studio v2.
 
 ## Layout placement
 
@@ -257,6 +278,12 @@ See `ds-tabs`.
 
 ## Common gotchas
 
+- **Only 5 input types exist in Dashboard Studio v2.** `input.radio`,
+  `input.number`, `input.date`, `input.search` are **not valid** and
+  fail schema validation with
+  `/inputs/<id>/type: must be equal to one of the allowed values`.
+  See "The 5 flavours" above and `pipeline/ds-validate`
+  (`input-invalid-type`).
 - **Bound dataSource `name` is regex-validated.** A dynamic dropdown
   references a `dataSource` (e.g. `ds_hosts` above). That dataSource's
   user-facing `name` field must match `^[A-Za-z0-9 \-_.]+$` — letters,
