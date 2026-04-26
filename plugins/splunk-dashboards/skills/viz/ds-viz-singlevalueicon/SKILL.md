@@ -55,7 +55,7 @@ The minimum viable input is one number. Everything else (trend, dynamic colour) 
 
 ## The icon — two valid forms
 
-The `icon` property accepts exactly two value shapes:
+The `icon` property accepts exactly two value shapes that render on Splunk Enterprise 10.2.1:
 
 ### 1. The literal string `"default"`
 
@@ -63,28 +63,37 @@ The `icon` property accepts exactly two value shapes:
 "options": { "icon": "default" }
 ```
 
-Renders the generic Splunk square. Useful when you want an icon-prefixed tile for visual consistency but don't need a specific glyph.
+Renders the generic Splunk square. Works everywhere, no upload needed. The only form that's portable across Splunk instances without setup.
 
-### 2. A `data:image/svg+xml;utf8,<svg ...>...</svg>` data URI
+### 2. A `splunk-enterprise-kvstore://<icon-name>__<UUID>.svg` URL
 
 ```json
 "options": {
-  "icon": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>"
+  "icon": "splunk-enterprise-kvstore://icon-check__e29f784a-31a2-4544-813f-efce24d5be32.svg"
 }
 ```
 
-Anything renderable as inline SVG works — Lucide, Heroicons, Splunk Visual Library exports. Two rules that make it Just Work:
+The icon is an SVG already uploaded to the `splunk_dashboard_icons` KV-store collection on this Splunk instance. **The UUID is generated at upload time and cannot be invented** — there is no programmatic enumeration path; you obtain a real URL only by uploading or picking an icon through the **Dashboard Studio editor's icon picker** (in the panel's *Configuration* → *Icon* control). Once you've picked the icon there, switch to source view and copy the resulting `splunk-enterprise-kvstore://...` URL into your JSON.
 
-- Use **single quotes inside the SVG** (the data URI lives inside a JSON string with double quotes).
-- Use **`stroke="currentColor"`** (or `fill="currentColor"`) on the SVG so `iconColor` controls the colour. If you hard-code a `stroke="#FF2D95"`, `iconColor` becomes a no-op.
+`iconColor` still applies because Splunk-uploaded icons carry `currentColor` strokes.
 
-URL-encoding is *not* required — the `;utf8,` form passes the SVG verbatim. Keep paths short; some browsers truncate very long data URIs.
+> **Per-instance footgun.** Icon URLs are *not* portable. The UUID is unique per upload per instance. A dashboard authored on instance A and shipped to instance B will silently lose its icons unless the same SVGs are re-uploaded on B (which mints new UUIDs) and the URLs are rewritten. Plan for this when packaging a dashboard for distribution: ship a list of required icons + the source SVGs alongside the dashboard JSON, and re-pick on each target instance. For portable artefacts, prefer `"icon": "default"`.
+
+### Forms that do **not** render on this build
+
+Tested and confirmed broken on Splunk Enterprise 10.2.1 (the panel value renders without a glyph):
+
+- `data:image/svg+xml;utf8,<svg ...>` data URIs — inline SVG. Documented in earlier reference material; does not render here.
+- `splunk-enterprise-kvstore://abcd1234abcd1234abcd1234` — bare 24-hex MongoDB-style ObjectId without the filename prefix or `.svg` suffix.
+- Bare named tokens (`thermometerFull`, `check`, etc.) — undocumented but seen in some forum examples; treated as a literal filename and 404s.
+
+If you see a `splunk.singlevalueicon` panel rendering only the value without an icon, the `icon` URL is the suspect — copy a fresh one from the editor's icon picker.
 
 ---
 
 ## 12 verified patterns (all live in `splunk-knowledge-testing`)
 
-Each pattern below is a single `splunk.singlevalueicon` panel from the test dashboard. Copy the `options` block.
+Each pattern below is a single `splunk.singlevalueicon` panel from the test dashboard. Copy the `options` block. Every non-default snippet uses the same uploaded check icon — replace the `icon` URL with one you've copied from your own instance's icon picker to vary the glyph.
 
 ### 1. Default icon + value
 
@@ -99,11 +108,13 @@ Each pattern below is a single `splunk.singlevalueicon` panel from the test dash
 }
 ```
 
-### 2. Inline SVG data URI (check icon)
+### 2. Uploaded kvstore icon (check)
+
+The `icon` URL is whatever the editor's icon picker generated when this SVG was uploaded — it is per-instance. The example below is the URL from the `splunk-knowledge-testing` instance; on yours it will be a different UUID.
 
 ```json
 "options": {
-  "icon": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>",
+  "icon": "splunk-enterprise-kvstore://icon-check__e29f784a-31a2-4544-813f-efce24d5be32.svg",
   "iconColor": "#33FF99",
   "underLabel": "Conversion rate",
   "unit": "%",
@@ -119,7 +130,7 @@ Move the icon to the right of the value. Default is `"before"`. Use `"after"` wh
 
 ```json
 "options": {
-  "icon": "<svg ...>",
+  "icon": "splunk-enterprise-kvstore://icon-check__e29f784a-31a2-4544-813f-efce24d5be32.svg",
   "iconColor": "#33FF99",
   "iconPosition": "after",
   "underLabel": "MRR",
@@ -135,7 +146,7 @@ Hides **both** the major value and the trend. The panel is just the icon. Useful
 
 ```json
 "options": {
-  "icon": "<svg ...>",
+  "icon": "splunk-enterprise-kvstore://icon-check__e29f784a-31a2-4544-813f-efce24d5be32.svg",
   "iconColor": "#7AA2FF",
   "showValue": false
 }
@@ -147,7 +158,7 @@ Icon colour traffic-lights based on the data. Pattern: `> primary | seriesByName
 
 ```json
 "options": {
-  "icon": "<svg with stroke='currentColor'>",
+  "icon": "splunk-enterprise-kvstore://icon-check__e29f784a-31a2-4544-813f-efce24d5be32.svg",
   "underLabel": "System health",
   "unit": "/100",
   "unitPosition": "after",
@@ -156,12 +167,19 @@ Icon colour traffic-lights based on the data. Pattern: `> primary | seriesByName
 },
 "context": {
   "thresholds": [
-    { "to": 70,             "value": "#FF2D95" },
-    { "from": 70, "to": 90, "value": "#FFB627" },
-    { "from": 90,           "value": "#33FF99" }
+    { "to": 60,             "value": "#FF2D95" },
+    { "from": 60, "to": 80, "value": "#FFB627" },
+    { "from": 80,           "value": "#33FF99" }
   ]
 }
 ```
+
+> **Threshold semantics — read once, then every time.** `from` is **inclusive** (`>=`), `to` is **exclusive** (`<`), and `rangeValue` evaluates buckets **top-down** (first match wins). That makes overlapping buckets a silent footgun:
+>
+> - **Bug:** `[{to:70}, {from:70, to:90}, {from:90}]` — looks like RAG but the boundary value 70 lands in amber, **not** red, because `to` is exclusive. If your demo data is 65 you also never see amber.
+> - **Fix (canonical RAG):** `[{to:60}, {from:60, to:80}, {from:80}]` — disjoint, gap-free, top-down-safe. The value 60 lands in amber, 80 lands in green, anything below 60 is red.
+>
+> Verify with at least one demo value per bucket (e.g. health = 20 / 60 / 95 against thresholds 60 / 80) — otherwise you're not actually exercising the middle bucket on render.
 
 ### 6. Dynamic `majorColor` (icon stays calm, number flips)
 
@@ -169,7 +187,7 @@ A common SOC pattern: the icon stays a calm hue (it's identity), the number flip
 
 ```json
 "options": {
-  "icon": "<svg ...>",
+  "icon": "splunk-enterprise-kvstore://icon-check__e29f784a-31a2-4544-813f-efce24d5be32.svg",
   "iconColor": "#7AA2FF",
   "underLabel": "Errors / hour",
   "trendDisplay": "absolute",
@@ -177,9 +195,9 @@ A common SOC pattern: the icon stays a calm hue (it's identity), the number flip
 },
 "context": {
   "majorThresholds": [
-    { "to": 15,             "value": "#33FF99" },
-    { "from": 15, "to": 25, "value": "#FFB627" },
-    { "from": 25,           "value": "#FF2D95" }
+    { "to": 10,             "value": "#33FF99" },
+    { "from": 10, "to": 20, "value": "#FFB627" },
+    { "from": 20,           "value": "#FF2D95" }
   ]
 }
 ```
@@ -190,7 +208,7 @@ A common SOC pattern: the icon stays a calm hue (it's identity), the number flip
 
 ```json
 "options": {
-  "icon": "<svg ...>",
+  "icon": "splunk-enterprise-kvstore://icon-check__e29f784a-31a2-4544-813f-efce24d5be32.svg",
   "iconColor": "#7AA2FF",
   "iconOpacity": 0.3,
   "underLabel": "Conversion rate",
@@ -206,7 +224,7 @@ Single-row data source, no time dimension. The icon supplies meaning without nee
 
 ```json
 "options": {
-  "icon": "<svg ...>",
+  "icon": "splunk-enterprise-kvstore://icon-check__e29f784a-31a2-4544-813f-efce24d5be32.svg",
   "iconColor": "#33FF99",
   "underLabel": "Orders today",
   "trendDisplay": "off"
@@ -219,7 +237,7 @@ Locks the number font size so a row of tiles stays visually consistent regardles
 
 ```json
 "options": {
-  "icon": "<svg ...>",
+  "icon": "splunk-enterprise-kvstore://icon-check__e29f784a-31a2-4544-813f-efce24d5be32.svg",
   "iconColor": "#7AA2FF",
   "underLabel": "MRR",
   "unit": "$",
@@ -235,7 +253,7 @@ Whole-tile background flips on threshold. **Lock `iconColor` and `majorColor` to
 
 ```json
 "options": {
-  "icon": "<svg ...>",
+  "icon": "splunk-enterprise-kvstore://icon-check__e29f784a-31a2-4544-813f-efce24d5be32.svg",
   "iconColor": "#FFFFFF",
   "majorColor": "#FFFFFF",
   "underLabel": "Errors / hour",
@@ -244,9 +262,9 @@ Whole-tile background flips on threshold. **Lock `iconColor` and `majorColor` to
 },
 "context": {
   "bgThresholds": [
-    { "to": 15,             "value": "#152034" },
-    { "from": 15, "to": 25, "value": "#A85A1F" },
-    { "from": 25,           "value": "#8B1F3A" }
+    { "to": 10,             "value": "#152034" },
+    { "from": 10, "to": 20, "value": "#A85A1F" },
+    { "from": 20,           "value": "#8B1F3A" }
   ]
 }
 ```
@@ -259,7 +277,7 @@ Strips commas. Use for IDs, sequence numbers, version numbers — `1245000` read
 
 ```json
 "options": {
-  "icon": "<svg ...>",
+  "icon": "splunk-enterprise-kvstore://icon-check__e29f784a-31a2-4544-813f-efce24d5be32.svg",
   "iconColor": "#7AA2FF",
   "underLabel": "Build ID",
   "shouldUseThousandSeparators": false,
@@ -274,7 +292,7 @@ Transparent background + small `majorFontSize` + `iconPosition: "after"`. Used f
 ```json
 "options": {
   "backgroundColor": "transparent",
-  "icon": "<svg ...>",
+  "icon": "splunk-enterprise-kvstore://icon-check__e29f784a-31a2-4544-813f-efce24d5be32.svg",
   "iconColor": "#33FF99",
   "iconPosition": "after",
   "underLabel": "Conv. rate",
@@ -297,8 +315,8 @@ Transparent background + small `majorFontSize` + `iconPosition: "after"`. Used f
 
 | Option | Type | Default | Purpose |
 |---|---|---|---|
-| `icon` | `"default"` \| `data:image/svg+xml;utf8,<svg...>` | `"default"` | The icon. Two valid forms — see *The icon* section above. |
-| `iconColor` | hex / theme token / DOS expression | theme accent | Icon stroke / fill colour. Requires SVG to use `stroke="currentColor"` to take effect. |
+| `icon` | `"default"` \| `splunk-enterprise-kvstore://<name>__<UUID>.svg` | `"default"` | The icon. Two valid forms — see *The icon* section above. The kvstore URL is per-instance and obtained via the editor's icon picker. |
+| `iconColor` | hex / theme token / DOS expression | theme accent | Icon stroke / fill colour. Splunk-uploaded SVGs carry `currentColor` strokes so `iconColor` controls them. Custom-uploaded SVGs need `stroke="currentColor"` (or `fill="currentColor"`) to honour this option. |
 | `iconOpacity` | number `0.0`–`1.0` | `1` | Icon transparency. Use `0.3`–`0.5` when the icon is decorative. |
 | `iconPosition` | `"before"` \| `"after"` | `"before"` | Icon left or right of the value. |
 
@@ -350,14 +368,15 @@ It also does **not** support: legend, axes, `dataValuesDisplay` — the same con
 
 ## Gotchas
 
-1. **`stroke="currentColor"` is mandatory** for `iconColor` to do anything. Hard-coding a stroke colour in the SVG silently disables the option.
-2. **Single quotes inside the SVG**, double quotes around the JSON string. JSON-escaping nested double quotes works but produces a wall of `\"` that's hard to maintain.
-3. **`backgroundColor` defaults to `"transparent"` here**, not theme background. If you want the tile to look like a `splunk.singlevalue`, set `"backgroundColor": "#1A1A1A"` (or your theme's panel colour) explicitly.
-4. **Absolute layout only.** In Grid layout the panel falls back to a plain singlevalue without the icon.
-5. **No sparkline.** Don't try `sparklineDisplay` here — it's silently ignored. Use `splunk.singlevalue` if you need a tile with a sparkline.
-6. **`iconOpacity` is a number, not a percent.** `0.3` not `30`.
-7. **Long data URIs** — keep SVGs under ~2KB. Optimise with SVGO before embedding.
+1. **`icon` URLs are per-instance.** The UUID in `splunk-enterprise-kvstore://<name>__<UUID>.svg` is generated when the SVG is uploaded; the same icon on two instances will have two different UUIDs. There is no SPL command to enumerate available icons — use the Dashboard Studio editor's icon picker, copy the URL from source view, paste into your JSON. When packaging for distribution, ship the source SVGs and re-pick on each target instance.
+2. **Don't try `data:image/svg+xml;utf8,...` data URIs on this build.** Earlier reference material documents inline data URIs as a valid form; on Splunk Enterprise 10.2.1 they do not render. Same for bare 24-hex ObjectIds and bare named tokens. Stick to `"default"` or the kvstore filename URL.
+3. **`iconColor` requires `currentColor` strokes.** Splunk-uploaded icons already use `currentColor`, so `iconColor` Just Works. If you upload a custom SVG and `iconColor` does nothing, open the SVG and confirm the stroke / fill is `currentColor` rather than a hard-coded hex.
+4. **`backgroundColor` defaults to `"transparent"` here**, not theme background. If you want the tile to look like a `splunk.singlevalue`, set `"backgroundColor": "#1A1A1A"` (or your theme's panel colour) explicitly.
+5. **Absolute layout only.** In Grid layout the panel falls back to a plain singlevalue without the icon.
+6. **No sparkline.** Don't try `sparklineDisplay` here — it's silently ignored. Use `splunk.singlevalue` if you need a tile with a sparkline.
+7. **`iconOpacity` is a number, not a percent.** `0.3` not `30`.
 8. **Light theme readability.** When `backgroundColor` flips to a light tone via `rangeValue`, lock `iconColor` and `majorColor` to a dark hex (`#1A1A1A`). The default theme text colour will be light and disappear on the light bg.
+9. **`rangeValue` thresholds are top-down with `from` inclusive and `to` exclusive.** Overlapping buckets like `[{to:70}, {from:70, to:90}, {from:90}]` silently mis-route values: the boundary value 70 lands in amber (not red), and any value in (70, 90) hits the first bucket if you swap order. Always design **disjoint, gap-free** buckets (e.g. `[{to:60}, {from:60, to:80}, {from:80}]`) and verify with at least one demo value per bucket. See pattern 5 above.
 
 ---
 

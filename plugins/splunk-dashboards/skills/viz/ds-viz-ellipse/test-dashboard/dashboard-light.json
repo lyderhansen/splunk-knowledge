@@ -220,7 +220,7 @@
     "viz_dos_dot_low": {
       "type": "splunk.ellipse",
       "title": "12. DOS fillColor - health = 20 (red)",
-      "description": "Status dot whose fill is bound to the search via DOS rangeValue. Editor form: alias 'fillDataValue' in context with seriesByType + lastPoint(), then rangeValue(fillColorEditorConfig). Value 20 hits the < 70 bucket -> red.",
+      "description": "Status dot whose fill is bound to the search via DOS rangeValue. Editor form: alias 'fillDataValue' in context with seriesByType + lastPoint(), then rangeValue(fillColorEditorConfig). Value 20 falls below 60 -> red. Buckets are disjoint (from inclusive, to exclusive) so each value lands in exactly one bucket.",
       "dataSources": {
         "primary": "ds_health_low"
       },
@@ -232,16 +232,16 @@
         "fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
         "fillColorEditorConfig": [
           {
-            "to": 70,
+            "to": 60,
             "value": "#C2185B"
           },
           {
-            "from": 70,
-            "to": 90,
+            "from": 60,
+            "to": 80,
             "value": "#E89A2C"
           },
           {
-            "from": 90,
+            "from": 80,
             "value": "#2E8B57"
           }
         ]
@@ -249,8 +249,8 @@
     },
     "viz_dos_dot_mid": {
       "type": "splunk.ellipse",
-      "title": "13. DOS fillColor - health = 60 (still red)",
-      "description": "Same DOS pattern, value 60. Demonstrates that the first matching bucket wins - 60 is still < 70.",
+      "title": "13. DOS fillColor - health = 60 (amber)",
+      "description": "Same DOS pattern, value 60. With disjoint buckets {to:60} | {from:60, to:80} | {from:80}, 60 lands in the middle bucket -> amber. 'to' is exclusive (< to), 'from' is inclusive (>= from), so the boundary value 60 falls into the second bucket.",
       "dataSources": {
         "primary": "ds_health_mid"
       },
@@ -262,16 +262,16 @@
         "fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
         "fillColorEditorConfig": [
           {
-            "to": 70,
+            "to": 60,
             "value": "#C2185B"
           },
           {
-            "from": 70,
-            "to": 90,
+            "from": 60,
+            "to": 80,
             "value": "#E89A2C"
           },
           {
-            "from": 90,
+            "from": 80,
             "value": "#2E8B57"
           }
         ]
@@ -280,7 +280,7 @@
     "viz_dos_dot_high": {
       "type": "splunk.ellipse",
       "title": "14. DOS fillColor - health = 95 (green)",
-      "description": "Same DOS pattern, value 95. Hits the >= 90 bucket -> green. Note the seriesByName('health') alternative picker here - identical effect to seriesByType because there is only one numeric column.",
+      "description": "Same DOS pattern, value 95. Hits the >= 80 bucket -> green. Note the seriesByName('health') alternative picker here - identical effect to seriesByType because there is only one numeric column.",
       "dataSources": {
         "primary": "ds_health_high"
       },
@@ -292,16 +292,16 @@
         "fillDataValue": "> primary | seriesByName(\"health\") | lastPoint()",
         "fillColorEditorConfig": [
           {
-            "to": 70,
+            "to": 60,
             "value": "#C2185B"
           },
           {
-            "from": 70,
-            "to": 90,
+            "from": 60,
+            "to": 80,
             "value": "#E89A2C"
           },
           {
-            "from": 90,
+            "from": 80,
             "value": "#2E8B57"
           }
         ]
@@ -324,26 +324,26 @@
         "strokeDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
         "fillColorEditorConfig": [
           {
-            "to": 70,
+            "to": 60,
             "value": "#C2185B"
           },
           {
-            "from": 70,
-            "to": 90,
+            "from": 60,
+            "to": 80,
             "value": "#E89A2C"
           },
           {
-            "from": 90,
+            "from": 80,
             "value": "#2E8B57"
           }
         ],
         "strokeColorEditorConfig": [
           {
-            "to": 70,
+            "to": 60,
             "value": "#B91C1C"
           },
           {
-            "from": 70,
+            "from": 60,
             "value": "#3C444D"
           }
         ]

@@ -209,13 +209,155 @@
         "backgroundColor": "#1B0E1F",
         "orientation": "horizontal"
       }
+    },
+
+    "viz_compact_intro": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## Compact tile patterns\n\nThe Studio editor refuses to resize a `splunk.markergauge` panel below ~200x300 (vertical) or ~200x100 (horizontal). The trick to get a denser KPI bank: **set `backgroundColor: \"transparent\"` and place panels at the minimum size, edge-to-edge.** The panel chrome disappears and only the gauge artwork remains, so four gauges side-by-side read as one tight unit. Below: a 4-up vertical bank (panels 13-16) and a stacked horizontal bank (panels 17-20). Compare with panels 1-3 which use the default opaque chrome.\n\n**Rules:**\n- Vertical: 200x300 minimum. Use `labelDisplay: \"off\"` + `valueDisplay: \"off\"` to recover vertical space and let a sibling singlevalue carry the number.\n- Horizontal: 200x100 minimum. Stack with 4-8 px gap so the gauges feel related but not glued.\n- `backgroundColor: \"transparent\"` is the unlock. Without it you see the surface card and the trick fails.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default"
+      }
+    },
+    "viz_compact_v1": {
+      "type": "splunk.markergauge",
+      "title": "CPU",
+      "description": "Compact vertical tile - 200x300, transparent bg, value/label off. Lives inside a 4-up bank (panels 13-16). The marker plus the bands carry the message; the value would be carried by a sibling number tile.",
+      "dataSources": { "primary": "ds_kpi_low" },
+      "options": {
+        "gaugeRanges": [
+          { "from": 0,  "to": 50,  "value": "#33FF99" },
+          { "from": 50, "to": 80,  "value": "#FFB627" },
+          { "from": 80, "to": 100, "value": "#FF2D95" }
+        ],
+        "labelDisplay": "off",
+        "valueDisplay": "off",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_compact_v2": {
+      "type": "splunk.markergauge",
+      "title": "MEM",
+      "description": "Same options, mid value. Side-by-side with panel 13 the four gauges read as one unit, no inner padding.",
+      "dataSources": { "primary": "ds_kpi_mid" },
+      "options": {
+        "gaugeRanges": [
+          { "from": 0,  "to": 50,  "value": "#33FF99" },
+          { "from": 50, "to": 80,  "value": "#FFB627" },
+          { "from": 80, "to": 100, "value": "#FF2D95" }
+        ],
+        "labelDisplay": "off",
+        "valueDisplay": "off",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_compact_v3": {
+      "type": "splunk.markergauge",
+      "title": "DISK",
+      "description": "Same options, high value. The marker hits the top band - red zone reads instantly.",
+      "dataSources": { "primary": "ds_kpi_high" },
+      "options": {
+        "gaugeRanges": [
+          { "from": 0,  "to": 50,  "value": "#33FF99" },
+          { "from": 50, "to": 80,  "value": "#FFB627" },
+          { "from": 80, "to": 100, "value": "#FF2D95" }
+        ],
+        "labelDisplay": "off",
+        "valueDisplay": "off",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_compact_v4": {
+      "type": "splunk.markergauge",
+      "title": "NET",
+      "description": "Fourth tile. The bank reads top-to-bottom in priority: green / amber / red. Use `labelDisplay: \"off\"` to make the bands themselves the eye-anchor.",
+      "dataSources": { "primary": "ds_kpi_mid" },
+      "options": {
+        "gaugeRanges": [
+          { "from": 0,  "to": 50,  "value": "#33FF99" },
+          { "from": 50, "to": 80,  "value": "#FFB627" },
+          { "from": 80, "to": 100, "value": "#FF2D95" }
+        ],
+        "labelDisplay": "off",
+        "valueDisplay": "off",
+        "backgroundColor": "transparent"
+      }
+    },
+
+    "viz_compact_h1": {
+      "type": "splunk.markergauge",
+      "title": "p50 latency",
+      "description": "Horizontal compact tile - 200x100, transparent bg. The marker on the bar shows where the value sits within the SLO bands.",
+      "dataSources": { "primary": "ds_kpi_low" },
+      "options": {
+        "gaugeRanges": [
+          { "from": 0,   "to": 200,  "value": "#33FF99" },
+          { "from": 200, "to": 500,  "value": "#FFB627" },
+          { "from": 500, "to": 1000, "value": "#FF2D95" }
+        ],
+        "labelDisplay": "off",
+        "valueDisplay": "off",
+        "orientation": "horizontal",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_compact_h2": {
+      "type": "splunk.markergauge",
+      "title": "p95 latency",
+      "description": "Stacked under panel 17 with a 4 px gap. The vertical rhythm makes them read as a small SLO panel.",
+      "dataSources": { "primary": "ds_kpi_mid" },
+      "options": {
+        "gaugeRanges": [
+          { "from": 0,   "to": 200,  "value": "#33FF99" },
+          { "from": 200, "to": 500,  "value": "#FFB627" },
+          { "from": 500, "to": 1000, "value": "#FF2D95" }
+        ],
+        "labelDisplay": "off",
+        "valueDisplay": "off",
+        "orientation": "horizontal",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_compact_h3": {
+      "type": "splunk.markergauge",
+      "title": "p99 latency",
+      "description": "Third row in the SLO stack. Same bands - scanning vertically you see all three percentiles at once.",
+      "dataSources": { "primary": "ds_kpi_high" },
+      "options": {
+        "gaugeRanges": [
+          { "from": 0,   "to": 200,  "value": "#33FF99" },
+          { "from": 200, "to": 500,  "value": "#FFB627" },
+          { "from": 500, "to": 1000, "value": "#FF2D95" }
+        ],
+        "labelDisplay": "off",
+        "valueDisplay": "off",
+        "orientation": "horizontal",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_compact_h4": {
+      "type": "splunk.markergauge",
+      "title": "max latency",
+      "description": "Bottom of the stack. Together panels 17-20 form a 4-row latency profile in 800x108 of vertical space - dense, but legible because the bars share a scale.",
+      "dataSources": { "primary": "ds_kpi_mid" },
+      "options": {
+        "gaugeRanges": [
+          { "from": 0,   "to": 200,  "value": "#33FF99" },
+          { "from": 200, "to": 500,  "value": "#FFB627" },
+          { "from": 500, "to": 1000, "value": "#FF2D95" }
+        ],
+        "labelDisplay": "off",
+        "valueDisplay": "off",
+        "orientation": "horizontal",
+        "backgroundColor": "transparent"
+      }
     }
   },
   "layout": {
     "type": "absolute",
     "options": {
       "width": 1440,
-      "height": 1480,
+      "height": 1900,
       "display": "auto-scale"
     },
     "structure": [
@@ -231,7 +373,18 @@
       { "item": "viz_csat_small",       "type": "block", "position": { "x": 968, "y": 660, "w": 456,  "h": 220 } },
       { "item": "viz_label_off",        "type": "block", "position": { "x": 16,  "y": 896, "w": 460,  "h": 220 } },
       { "item": "viz_label_percentage", "type": "block", "position": { "x": 492, "y": 896, "w": 460,  "h": 220 } },
-      { "item": "viz_majortick",        "type": "block", "position": { "x": 968, "y": 896, "w": 456,  "h": 220 } }
+      { "item": "viz_majortick",        "type": "block", "position": { "x": 968, "y": 896, "w": 456,  "h": 220 } },
+
+      { "item": "viz_compact_intro",    "type": "block", "position": { "x": 16,   "y": 1140, "w": 1408, "h": 220 } },
+      { "item": "viz_compact_v1",       "type": "block", "position": { "x": 16,   "y": 1380, "w": 200,  "h": 320 } },
+      { "item": "viz_compact_v2",       "type": "block", "position": { "x": 216,  "y": 1380, "w": 200,  "h": 320 } },
+      { "item": "viz_compact_v3",       "type": "block", "position": { "x": 416,  "y": 1380, "w": 200,  "h": 320 } },
+      { "item": "viz_compact_v4",       "type": "block", "position": { "x": 616,  "y": 1380, "w": 200,  "h": 320 } },
+
+      { "item": "viz_compact_h1",       "type": "block", "position": { "x": 856,  "y": 1380, "w": 220,  "h": 100 } },
+      { "item": "viz_compact_h2",       "type": "block", "position": { "x": 856,  "y": 1488, "w": 220,  "h": 100 } },
+      { "item": "viz_compact_h3",       "type": "block", "position": { "x": 856,  "y": 1596, "w": 220,  "h": 100 } },
+      { "item": "viz_compact_h4",       "type": "block", "position": { "x": 856,  "y": 1704, "w": 220,  "h": 100 } }
     ],
     "globalInputs": []
   }

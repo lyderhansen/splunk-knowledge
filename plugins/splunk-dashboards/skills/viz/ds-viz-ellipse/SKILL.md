@@ -4,7 +4,7 @@ description: |
   splunk.ellipse - the circular shape primitive for status dots, KPI accent
   rings, donut outlines, and faint background blobs. Absolute layout only.
   Verified against the 10.4 Dashboard Studio docs.
-version: 1.1.0
+version: 1.2.0
 verified_against: SplunkCloud-10.4.2604-DashStudio
 test_dashboards:
   - ds_viz_ellipse_dark
@@ -14,6 +14,10 @@ related:
   - ds-viz-singlevalue
   - ds-viz-markdown
   - ds-design-principles
+lessons:
+  - "rangeValue bucket semantics: 'from' is inclusive (>=), 'to' is exclusive (<). The boundary value 60 lands in {from:60, to:80}, not in {to:60}."
+  - "Top-down evaluation means overlapping buckets silently mis-route values. Bug surfaced as 'amber dot rendered red' in test panels because {to:70} caught everything below 70 first."
+  - "Demo verification: drive each bucket with at least one value in its interior. Three buckets need three test values."
 ---
 
 # splunk.ellipse
@@ -84,9 +88,9 @@ against `ds_viz_ellipse_dark` / `_light`:
   "context": {
     "fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
     "fillColorEditorConfig": [
-      { "to": 70,             "value": "#FF2D95" },
-      { "from": 70, "to": 90, "value": "#FFB627" },
-      { "from": 90,           "value": "#33FF99" }
+      { "to": 60,             "value": "#FF2D95" },
+      { "from": 60, "to": 80, "value": "#FFB627" },
+      { "from": 80,           "value": "#33FF99" }
     ]
   },
   "options": {
@@ -120,9 +124,9 @@ and edit the panel without re-writing your JSON.
 },
 "context": {
   "thresholds": [
-    { "to": 70,             "value": "#FF2D95" },
-    { "from": 70, "to": 90, "value": "#FFB627" },
-    { "from": 90,           "value": "#33FF99" }
+    { "to": 60,             "value": "#FF2D95" },
+    { "from": 60, "to": 80, "value": "#FFB627" },
+    { "from": 80,           "value": "#33FF99" }
   ]
 }
 ```
@@ -159,10 +163,84 @@ single most common reason a DOS-bound ellipse "looks broken". The
 validator (`pipeline/ds-validate`) flags this as
 `rangevalue-missing-reducer` / `rangevalue-alias-missing-reducer`.
 
-#### Top-down threshold evaluation
+#### Threshold buckets — semantics and pitfalls
 
-`rangeValue(<thresholdsVar>)` evaluates buckets **top-down** — the first
-matching `{from?, to?}` wins. Open-ended buckets catch the tails.
+Each bucket is `{ "from": <num>, "to": <num>, "value": "<colour>" }`
+where:
+
+- `from` is the **inclusive** lower bound. A value `x` matches when `x >= from`.
+- `to` is the **exclusive** upper bound. A value `x` matches when `x < to`.
+- Either side may be omitted: `{ "to": 60 }` means `x < 60`, and
+  `{ "from": 80 }` means `x >= 80`.
+
+This is verified against the Dashboard Studio 10.4 PDF (page 51,
+trendColor example): "below 0" matches `{ to: 0 }`, "0 or higher"
+matches `{ from: 0 }`. Combined with the rule that `rangeValue`
+evaluates buckets **top-down** (first match wins), this means **bucket
+order changes the result** when buckets overlap.
+
+**Three failure modes to design around:**
+
+**1. Overlapping buckets** — the most common bug. Two buckets that
+both match the same value. The first one wins, the second is dead.
+This is what causes "amber values render red".
+
+```json
+// BUG: 60 matches the FIRST bucket because to:70 is exclusive of 70 but
+// inclusive of everything below it. 60 < 70, so 60 -> red, not amber.
+[
+  { "to": 70,             "value": "#FF2D95" },
+  { "from": 60, "to": 80, "value": "#FFB627" },
+  { "from": 80,           "value": "#33FF99" }
+]
+```
+
+```json
+// FIX: disjoint buckets. 60 falls into the middle bucket -> amber.
+[
+  { "to": 60,             "value": "#FF2D95" },
+  { "from": 60, "to": 80, "value": "#FFB627" },
+  { "from": 80,           "value": "#33FF99" }
+]
+```
+
+**2. Threshold values that don't match the data domain.** If the data
+ranges 0-100 but your buckets only flip at 70 and 90, every value
+below 70 is the same colour. That's correct semantics but bad demo
+design — the middle bucket has zero pedagogical value. Always pick
+buckets so each *meaningful* segment of the data domain falls into
+its own bucket.
+
+**3. Gaps between buckets.** A value can fall outside every bucket
+when the upper bound of one and the lower bound of the next don't
+meet. The viz silently falls back to the default colour (typically
+gray).
+
+```json
+// BUG: 80 matches NO bucket. {to:80} excludes 80, {from:81} excludes <=80.
+// Result: 80 -> default colour (often gray).
+[
+  { "to": 60,             "value": "#FF2D95" },
+  { "from": 60, "to": 80, "value": "#FFB627" },
+  { "from": 81,           "value": "#33FF99" }
+]
+```
+
+**Rule of thumb (RAG status dot):** for three colours covering domain
+`[0, 100]` with critical < 60, warning 60-80, healthy >= 80:
+
+```json
+[
+  { "to": 60,             "value": "#FF2D95" },   // x < 60          -> red
+  { "from": 60, "to": 80, "value": "#FFB627" },   // 60 <= x < 80    -> amber
+  { "from": 80,           "value": "#33FF99" }    // 80 <= x         -> green
+]
+```
+
+This is the canonical disjoint shape: contiguous, non-overlapping,
+domain-covering. The validator (`pipeline/ds-validate`) flags
+overlapping ranges as `rangevalue-bucket-overlap` and gaps as
+`rangevalue-bucket-gap`.
 
 You can bind **both** `fillColor` and `strokeColor` to the same data
 source with **different** threshold tables — the donut becomes a
@@ -288,7 +366,7 @@ The patterns below are **all rendered and verified** in
 | 10    | Tiny status dots (60 x 60 panels)                                                 | Inline health indicators next to labels       |
 | 11    | KPI accent ring with singleValue overlay                                          | Canonical "ring + KPI" recipe                 |
 | 12    | Alias-in-context DOS `fillColor` + `rangeValue` (health low → red)                | Status dot that flips on a metric             |
-| 13    | Alias-in-context DOS `fillColor` (health mid → amber)                             | Demonstrates top-down bucket evaluation       |
+| 13    | Alias-in-context DOS `fillColor` (health mid → amber)                             | Demonstrates disjoint buckets — boundary value lands in middle |
 | 14    | Alias-in-context DOS `fillColor` with `seriesByType("number")` (health high → green) | Equivalent picker form                     |
 | 15    | DOS `fillColor` + DOS `strokeColor` with separate `*EditorConfig` tables          | KPI donut ring that reflects the metric       |
 | 16    | Token-driven `fillColor` via `$colour_token$` + `input.dropdown`                  | Design previews, brand-colour pickers         |
@@ -319,6 +397,18 @@ The patterns below are **all rendered and verified** in
     A 12 x 12 status dot is fine on a laptop but invisible on a
     wall-mounted SOC display - bump to 20 x 20 minimum if the dashboard
     is meant for big screens.
+11. **`rangeValue` thresholds: `from` is inclusive, `to` is exclusive,
+    and buckets are evaluated top-down.** When two buckets both match
+    a value (e.g. `{to: 70}` and `{from: 60, to: 80}` both match 65),
+    the first one wins and the second is dead. Always design buckets
+    to be **disjoint** (no overlap) and **gap-free** (no value falls
+    outside every bucket). See "Threshold buckets — semantics and
+    pitfalls" above for the canonical RAG shape.
+12. **Demo data must align with the threshold domain.** If you build a
+    3-bucket RAG dot but only test it with two values, you're not
+    actually verifying the middle bucket. Drive the demo with at least
+    one value per bucket (e.g. health = 20 / 60 / 95 against thresholds
+    60 / 80) so each bucket is exercised on render.
 
 ## Quick recipes
 
@@ -430,9 +520,9 @@ markdown. Z-order: render before any KPI panels (so it sits behind).
   "context": {
     "fillDataValue": "> primary | seriesByName(\"health\") | lastPoint()",
     "fillColorEditorConfig": [
-      { "to": 70,             "value": "#FF2D95" },
-      { "from": 70, "to": 90, "value": "#FFB627" },
-      { "from": 90,           "value": "#33FF99" }
+      { "to": 60,             "value": "#FF2D95" },
+      { "from": 60, "to": 80, "value": "#FFB627" },
+      { "from": 80,           "value": "#33FF99" }
     ]
   },
   "options": {
@@ -462,13 +552,13 @@ also works, but Studio rewrites it on save.
     "fillDataValue":   "> primary | seriesByName(\"health\") | lastPoint()",
     "strokeDataValue": "> primary | seriesByName(\"health\") | lastPoint()",
     "fillColorEditorConfig": [
-      { "to": 70,             "value": "#FF2D95" },
-      { "from": 70, "to": 90, "value": "#FFB627" },
-      { "from": 90,           "value": "#33FF99" }
+      { "to": 60,             "value": "#FF2D95" },
+      { "from": 60, "to": 80, "value": "#FFB627" },
+      { "from": 80,           "value": "#33FF99" }
     ],
     "strokeColorEditorConfig": [
-      { "to": 70,             "value": "#FF6B6B" },
-      { "from": 70,           "value": "#E8E8E8" }
+      { "to": 60,             "value": "#FF6B6B" },
+      { "from": 60,           "value": "#E8E8E8" }
     ]
   },
   "options": {

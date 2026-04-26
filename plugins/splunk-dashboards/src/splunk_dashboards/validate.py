@@ -346,6 +346,123 @@ def check_rangevalue_needs_reducer(dashboard: dict) -> list[Finding]:
     return findings
 
 
+def check_threshold_buckets(dashboard: dict) -> list[Finding]:
+    """Flag ``rangeValue`` threshold arrays whose buckets overlap or have gaps.
+
+    ``rangeValue`` evaluates buckets **top-down** (first match wins), with
+    ``from`` inclusive (``>=``) and ``to`` exclusive (``<``). The boundary
+    semantics make the following classes of bug silent footguns:
+
+    1. **Overlap (top-down dead bucket).** ::
+
+           [{ "to": 70 }, { "from": 60, "to": 80 }, { "from": 80 }]
+
+       Any value below 70 hits the first bucket; the second bucket only fires
+       in [70, 80). The first 10 units of the "amber" range are dead — values
+       of 60–69 render as red even though the dashboard author intended amber.
+
+    2. **Gap.** ::
+
+           [{ "to": 60 }, { "from": 70, "to": 80 }, { "from": 80 }]
+
+       Values in [60, 70) match no bucket and render as the theme default
+       (usually grey), which reads as "data missing" to a SOC operator.
+
+    3. **Inverted bounds.** ::
+
+           [{ "from": 80, "to": 60 }]
+
+       ``to <= from`` defines an empty interval that can never match.
+
+    Sources scanned:
+
+    - ``visualizations.<id>.context.<name>`` — context arrays referenced by
+      DOS expressions like ``rangeValue(thresholds)``.
+    - ``visualizations.<id>.options.<name>EditorConfig`` — inline shape-viz
+      threshold tables for ``fillColor`` / ``strokeColor``.
+    """
+    findings: list[Finding] = []
+
+    def _looks_like_threshold_array(value) -> bool:
+        if not isinstance(value, list) or not value:
+            return False
+        for item in value:
+            if not isinstance(item, dict):
+                return False
+            if "value" not in item:
+                return False
+            if "from" not in item and "to" not in item:
+                return False
+        return True
+
+    def _scan_bucket_array(viz_id: str, source: str, name: str, arr: list) -> None:
+        for idx, bucket in enumerate(arr):
+            frm = bucket.get("from")
+            to = bucket.get("to")
+            if isinstance(frm, (int, float)) and isinstance(to, (int, float)) and to <= frm:
+                findings.append(Finding(
+                    severity="error",
+                    code="threshold-inverted-bounds",
+                    message=(
+                        f"visualization '{viz_id}' {source} '{name}' bucket {idx} "
+                        f"has to ({to}) <= from ({frm}); this defines an empty "
+                        f"interval that never matches."
+                    ),
+                ))
+
+        for idx in range(len(arr) - 1):
+            cur = arr[idx]
+            nxt = arr[idx + 1]
+            cur_to = cur.get("to")
+            nxt_from = nxt.get("from")
+            if not isinstance(cur_to, (int, float)) or not isinstance(nxt_from, (int, float)):
+                continue
+            if nxt_from < cur_to:
+                findings.append(Finding(
+                    severity="error",
+                    code="threshold-buckets-overlap",
+                    message=(
+                        f"visualization '{viz_id}' {source} '{name}' buckets "
+                        f"{idx} and {idx + 1} overlap: bucket {idx} ends at "
+                        f"to={cur_to} but bucket {idx + 1} starts at "
+                        f"from={nxt_from} (< {cur_to}). rangeValue is top-down: "
+                        f"values in [{nxt_from}, {cur_to}) match the earlier "
+                        f"bucket and the later bucket is partially dead. "
+                        f"Use disjoint buckets like "
+                        f"[{{to: X}}, {{from: X, to: Y}}, {{from: Y}}]."
+                    ),
+                ))
+            elif nxt_from > cur_to:
+                findings.append(Finding(
+                    severity="warning",
+                    code="threshold-buckets-gap",
+                    message=(
+                        f"visualization '{viz_id}' {source} '{name}' has a gap "
+                        f"between buckets {idx} and {idx + 1}: bucket {idx} "
+                        f"ends at to={cur_to} but bucket {idx + 1} starts at "
+                        f"from={nxt_from}. Values in [{cur_to}, {nxt_from}) "
+                        f"match no bucket and render as theme default. "
+                        f"Make buckets contiguous: set bucket {idx + 1} "
+                        f"from={cur_to}."
+                    ),
+                ))
+
+    for viz_id, viz in (dashboard.get("visualizations") or {}).items():
+        ctx = viz.get("context") or {}
+        for name, value in ctx.items():
+            if _looks_like_threshold_array(value):
+                _scan_bucket_array(viz_id, "context", name, value)
+
+        options = viz.get("options") or {}
+        for opt_name, opt_value in options.items():
+            if not opt_name.endswith("EditorConfig"):
+                continue
+            if _looks_like_threshold_array(opt_value):
+                _scan_bucket_array(viz_id, "options", opt_name, opt_value)
+
+    return findings
+
+
 def check_all(dashboard: dict) -> list[Finding]:
     findings: list[Finding] = []
     findings.extend(check_data_source_names(dashboard))
@@ -357,6 +474,7 @@ def check_all(dashboard: dict) -> list[Finding]:
     findings.extend(check_singlevalue_invalid_options(dashboard))
     findings.extend(check_rangevalue_dos_signatures(dashboard))
     findings.extend(check_rangevalue_needs_reducer(dashboard))
+    findings.extend(check_threshold_buckets(dashboard))
     return findings
 
 

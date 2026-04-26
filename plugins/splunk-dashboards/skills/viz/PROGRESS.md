@@ -63,11 +63,11 @@ Legend: ✅ done · 🟡 in progress · ⬜ not started · ❌ blocked / known i
 | 5 | `splunk.pie`              | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
 | 6 | `splunk.scatter`          | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
 | 7 | `splunk.bubble`           | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
-| 8 | `splunk.singlevalue`      | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
-| 9 | `splunk.singlevalueicon`  | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
-| 10 | `splunk.singlevalueradial` | ✅      | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
-| 11 | `splunk.markergauge`      | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. gaugeRanges syntax verified in ceo_boardroom (#D41F1F / #CBA700 / #4fa484). |
-| 12 | `splunk.fillergauge`      | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
+| 8 | `splunk.singlevalue`      | ✅       | ✅        | ✅         | ✅        | ✅       | ✅      | ✅       | ✅       | QA 2026-04-26: rangeValue thresholds reworked to disjoint, gap-free buckets `[{"to":60}, {"from":60,"to":80}, {"from":80}]`; SPL `health` query rewritten to swing 38-97 across all RAG buckets; panel 5/6 descriptions corrected to match. SKILL.md adds "Threshold semantics" note. |
+| 9 | `splunk.singlevalueicon`  | ✅       | ✅        | ✅         | ✅        | ✅       | ✅      | ✅       | ✅       | QA 2026-04-26: same rangeValue / health-swing fixes as `splunk.singlevalue`. Panels 5, 6, and 10 descriptions updated to declare disjoint thresholds explicitly. SKILL.md adds "Threshold semantics" note. |
+| 10 | `splunk.singlevalueradial` | ✅      | ✅        | ✅         | ✅        | ✅       | ✅      | ✅       | ✅       | QA 2026-04-26: added `ds_health_swing` (27-96) for panels 5+6 so all 3 RAG buckets demo on reload; rewrote `ds_disk_usage` SPL to swing 158-860 so panels 9+10 demo all RAG buckets. Panel descriptions updated to declare disjoint thresholds + data ranges explicitly. SKILL.md adds "Threshold semantics" note. |
+| 11 | `splunk.markergauge`      | ✅       | ✅        | ✅         | ✅        | ✅       | ✅      | ✅       | ✅       | QA 2026-04-26: gaugeRanges are display bands (not threshold buckets) — static-value test data is correct because the marker movement IS the message. Panels 1-3 (low/mid/high) prove the marker tracks the value. Bands documented as "MUST be contiguous" in the skill. No data-swing fix needed. |
+| 12 | `splunk.fillergauge`      | ✅       | ✅        | ✅         | ✅        | ✅       | ✅      | ✅       | ✅       | QA 2026-04-26: added `ds_health_swing` for panel 7 and rewrote `ds_disk_used` to swing 30-95 for panel 8 so all 3 RAG buckets demo on reload. Disjoint, gap-free thresholds already canonical. SKILL.md adds "Threshold semantics" note. |
 | 13 | `splunk.table`            | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. showInternalFields:false convention verified. tableFormat / columnFormat patterns covered. |
 | 14 | `splunk.events`           | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
 | 15 | `splunk.timeline`         | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
@@ -167,3 +167,20 @@ are clean for that viz.
 
 The rule itself is documented in `reference/ds-syntax`,
 `pipeline/ds-create`, `pipeline/ds-validate`, and `interactivity/ds-inputs`.
+
+### Single-value family audit (2026-04-26): clean
+
+```
+$ python3 plugins/splunk-dashboards/scripts/audit_data_source_names.py \
+    plugins/splunk-dashboards/skills/viz/ds-viz-singlevalue/test-dashboard \
+    plugins/splunk-dashboards/skills/viz/ds-viz-singlevalueicon/test-dashboard \
+    plugins/splunk-dashboards/skills/viz/ds-viz-singlevalueradial/test-dashboard \
+    plugins/splunk-dashboards/skills/viz/ds-viz-markergauge/test-dashboard \
+    plugins/splunk-dashboards/skills/viz/ds-viz-fillergauge/test-dashboard
+OK: 10 files scanned, no violations.
+```
+
+All 5 single-value-family viz (rows 8-12) are now ✅ on every column
+including `dataSource.name` regex hygiene. The remaining 56 violations
+are concentrated in chart, table/event, distribution, flow, geo, and
+shape families — those land in subsequent QA passes.

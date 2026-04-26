@@ -45,7 +45,14 @@
       "type": "ds.search",
       "name": "disk usage - dynamic colour",
       "options": {
-        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval used_gb = round(420 + i*8 + random()%20) | table _time used_gb"
+        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval used_gb = round(500 + 350*sin(i/4) + random()%30) | table _time used_gb"
+      }
+    },
+    "ds_health_swing": {
+      "type": "ds.search",
+      "name": "health score - swings across RAG buckets",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval pct = round(60 + 35*sin(i/4) + random()%5) | table _time pct"
       }
     },
     "ds_quota_progress": {
@@ -124,8 +131,8 @@
     "viz_dynamic_arc": {
       "type": "splunk.singlevalueradial",
       "title": "5. Dynamic radialStrokeColor via rangeValue",
-      "description": "radialStrokeColor uses Dynamic Options Syntax to traffic-light the arc. Pattern: `> primary | seriesByName(field) | lastPoint() | rangeValue(thresholds)`. Arc colour follows the value; majorColor stays neutral so the number doesn't compete.",
-      "dataSources": { "primary": "ds_pct_low" },
+      "description": "radialStrokeColor uses Dynamic Options Syntax to traffic-light the arc: green >= 80, amber 50-80, red < 50. Pattern: '> primary | seriesByName(field) | lastPoint() | rangeValue(thresholds)'. Disjoint, gap-free buckets - 'to' is exclusive (< X), 'from' is inclusive (>= X). The data swings 25-95 so all three buckets demo on reload.",
+      "dataSources": { "primary": "ds_health_swing" },
       "options": {
         "underLabel": "Backup completion",
         "unit": "%",
@@ -144,8 +151,8 @@
     "viz_dynamic_major": {
       "type": "splunk.singlevalueradial",
       "title": "6. Dynamic majorColor (number colour, fixed arc)",
-      "description": "Inverse pattern to #5: arc stays a calm hue, number flips on threshold. Reads as 'this value is in trouble' without redrawing the arc geometry.",
-      "dataSources": { "primary": "ds_pct_low" },
+      "description": "Inverse pattern to #5: arc stays a calm hue, number flips on threshold. Note thresholds run inverse here - lower is better, so green is the 'to' bucket: green < 40, amber 40-70, red >= 70. Common pattern for capacity-used metrics where high is bad.",
+      "dataSources": { "primary": "ds_health_swing" },
       "options": {
         "underLabel": "Capacity used",
         "unit": "%",
@@ -191,7 +198,7 @@
     "viz_disk_dynamic": {
       "type": "splunk.singlevalueradial",
       "title": "9. Disk usage - both arc + number flip",
-      "description": "Combines #5 and #6. Both `radialStrokeColor` AND `majorColor` are DOS-driven against the same thresholds. maxValue = 1000 (GB). Use sparingly - it's a strong visual but multiple of these compete on the same dashboard.",
+      "description": "Combines #5 and #6. Both 'radialStrokeColor' AND 'majorColor' are DOS-driven against the same thresholds: green < 600, amber 600-800, red >= 800 GB. maxValue = 1000 (GB). Data swings 150-850 so all three buckets demo on reload. Use sparingly - it's a strong visual but multiple of these compete on the same dashboard.",
       "dataSources": { "primary": "ds_disk_usage" },
       "options": {
         "maxValue": 1000,
@@ -212,7 +219,7 @@
     "viz_dynamic_bg": {
       "type": "splunk.singlevalueradial",
       "title": "10. Dynamic backgroundColor (whole tile)",
-      "description": "backgroundColor flips the entire tile on threshold. Lock majorColor + radialStrokeColor to a contrast colour so the radial stays readable when the bg goes dark. Use sparingly - one alarm tile per dashboard.",
+      "description": "Whole-tile background flips on threshold: dark < 600, amber 600-800, red >= 800 GB. Lock majorColor + radialStrokeColor to white so the radial stays readable when the bg goes dark. Use sparingly - one alarm tile per dashboard.",
       "dataSources": { "primary": "ds_disk_usage" },
       "options": {
         "maxValue": 1000,

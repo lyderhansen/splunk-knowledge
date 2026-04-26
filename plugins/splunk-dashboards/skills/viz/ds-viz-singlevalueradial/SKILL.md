@@ -123,6 +123,12 @@ The arc colour traffic-lights based on the data. Pattern: `> primary | seriesByN
 
 Arc colour follows the value; `majorColor` stays neutral so the number doesn't compete with the arc.
 
+> **Threshold semantics — the rule that breaks dashboards.** `from` is **inclusive** (`>=`), `to` is **exclusive** (`<`), and `rangeValue` evaluates buckets **top-down** (first match wins). The buckets above are *disjoint and gap-free*: a value of 50 lands in amber (not red), 80 lands in green (not amber), and any value below 50 is red.
+>
+> **Common bug:** `[{to:70}, {from:70, to:90}, {from:90}]` looks like a tidy 70/90 split, but the value 70 lands in amber (because `to:70` is exclusive), so a "boundary" demo value never demonstrates the red bucket. If you need 70 to read as red, use `{to: 71}` or pick a domain where the boundary case matters less.
+>
+> **Verify with at least one demo value per bucket** — for the example above, exercise the panel with pct = 30 (red) / 65 (amber) / 95 (green) so all three bucket transitions are visible on render.
+
 ### 6. Dynamic `majorColor` (number flips, fixed arc)
 
 Inverse pattern to #5: arc stays a calm hue, the number flips on threshold. Reads as *"this value is in trouble"* without redrawing the arc geometry.
@@ -266,6 +272,7 @@ It also does **not** support: legend, axes, `dataValuesDisplay` — same constra
 6. **Light theme readability.** When `backgroundColor` flips to a light tone via `rangeValue`, lock `majorColor` and `radialStrokeColor` to a dark hex (`#1A1A1A`). The default theme text colour will be light and disappear on the light bg.
 7. **`trendDisplay: "off"`** is the right choice when the data source is a single static row — otherwise Splunk renders `+0` or NaN where the trend should be.
 8. **Aspect ratio.** The radial wants roughly square panels. Long rectangular panels squash the arc. Recommended panel size: `460×220` (the test dashboard standard) up to `460×360`.
+9. **`rangeValue` thresholds are top-down with `from` inclusive and `to` exclusive.** Overlapping buckets like `[{to:70}, {from:70, to:90}, {from:90}]` silently mis-route values: the boundary value 70 lands in amber (not red), because `to` is exclusive. Always design **disjoint, gap-free** buckets (e.g. `[{to:50}, {from:50, to:80}, {from:80}]`) and verify with at least one demo value per bucket. See pattern 5 above.
 
 ---
 

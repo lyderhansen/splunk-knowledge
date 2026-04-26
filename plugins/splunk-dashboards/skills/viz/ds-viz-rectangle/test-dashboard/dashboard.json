@@ -225,7 +225,7 @@
     "viz_dos_fill_low": {
       "type": "splunk.rectangle",
       "title": "15. DOS fillColor - health = 20 (red)",
-      "description": "fillColor bound to the search via DOS. Value 20 hits the < 70 bucket -> red. Editor form: alias 'fillDataValue' in context with seriesByType + lastPoint(), then rangeValue(fillColorEditorConfig).",
+      "description": "fillColor bound to the search via DOS. Value 20 falls below 60 -> red. Editor form: alias 'fillDataValue' in context with seriesByType + lastPoint(), then rangeValue(fillColorEditorConfig). Threshold buckets are disjoint (from inclusive, to exclusive) so each value lands in exactly one bucket regardless of order.",
       "dataSources": { "primary": "ds_health_low" },
       "options": {
         "fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)",
@@ -235,17 +235,17 @@
       "context": {
         "fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
         "fillColorEditorConfig": [
-          { "to": 70,             "value": "#FF2D95" },
-          { "from": 70, "to": 90, "value": "#FFB627" },
-          { "from": 90,           "value": "#33FF99" }
+          { "to": 60,             "value": "#FF2D95" },
+          { "from": 60, "to": 80, "value": "#FFB627" },
+          { "from": 80,           "value": "#33FF99" }
         ]
       }
     },
 
     "viz_dos_fill_mid": {
       "type": "splunk.rectangle",
-      "title": "16. DOS fillColor - health = 60 (still red, edge case)",
-      "description": "Same DOS pattern, value 60. The first bucket {to: 70} matches everything below 70, so 60 also renders red. Demonstrates that overlapping rangeValue buckets are evaluated top-down.",
+      "title": "16. DOS fillColor - health = 60 (amber)",
+      "description": "Same DOS pattern, value 60. With disjoint buckets {to:60} | {from:60, to:80} | {from:80}, 60 lands in the middle bucket -> amber. This is the correct shape: 'to' is exclusive (< to), 'from' is inclusive (>= from), so the boundary value 60 falls into the second bucket, not the first.",
       "dataSources": { "primary": "ds_health_mid" },
       "options": {
         "fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)",
@@ -255,9 +255,9 @@
       "context": {
         "fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
         "fillColorEditorConfig": [
-          { "to": 70,             "value": "#FF2D95" },
-          { "from": 70, "to": 90, "value": "#FFB627" },
-          { "from": 90,           "value": "#33FF99" }
+          { "to": 60,             "value": "#FF2D95" },
+          { "from": 60, "to": 80, "value": "#FFB627" },
+          { "from": 80,           "value": "#33FF99" }
         ]
       }
     },
@@ -265,7 +265,7 @@
     "viz_dos_fill_high": {
       "type": "splunk.rectangle",
       "title": "17. DOS fillColor - health = 95 (green)",
-      "description": "Same DOS pattern, value 95. Hits the >= 90 bucket -> green. Note the seriesByName('health') alternative picker in the alias - identical effect to seriesByType because there is only one numeric column.",
+      "description": "Same DOS pattern, value 95. Hits the >= 80 bucket -> green. Note the seriesByName('health') alternative picker in the alias - identical effect to seriesByType because there is only one numeric column.",
       "dataSources": { "primary": "ds_health_high" },
       "options": {
         "fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)",
@@ -275,9 +275,9 @@
       "context": {
         "fillDataValue": "> primary | seriesByName(\"health\") | lastPoint()",
         "fillColorEditorConfig": [
-          { "to": 70,             "value": "#FF2D95" },
-          { "from": 70, "to": 90, "value": "#FFB627" },
-          { "from": 90,           "value": "#33FF99" }
+          { "to": 60,             "value": "#FF2D95" },
+          { "from": 60, "to": 80, "value": "#FFB627" },
+          { "from": 80,           "value": "#33FF99" }
         ]
       }
     },
@@ -296,17 +296,17 @@
       "context": {
         "strokeDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
         "strokeColorEditorConfig": [
-          { "to": 70,             "value": "#FF2D95" },
-          { "from": 70, "to": 90, "value": "#FFB627" },
-          { "from": 90,           "value": "#33FF99" }
+          { "to": 60,             "value": "#FF2D95" },
+          { "from": 60, "to": 80, "value": "#FFB627" },
+          { "from": 80,           "value": "#33FF99" }
         ]
       }
     },
 
     "viz_dos_both": {
       "type": "splunk.rectangle",
-      "title": "19. DOS fill + stroke - both bound (mid = red fill, light stroke)",
-      "description": "Fill and stroke both DOS-bound to the same dataSource. Each option has its own alias and its own threshold table so they can flip independently. Value 60 hits the < 70 bucket on fill (red) and the >= 50 bucket on stroke (light grey). This is the canonical 'card with outlined emphasis' pattern.",
+      "title": "19. DOS fill + stroke - both bound (mid = amber fill, light stroke)",
+      "description": "Fill and stroke both DOS-bound to the same dataSource. Each option has its own alias and its own threshold table so they can flip independently. Value 60 lands in the {from:60, to:80} bucket on fill -> amber, and in the {from:60} bucket on stroke -> light grey. This is the canonical 'card with outlined emphasis' pattern.",
       "dataSources": { "primary": "ds_health_mid" },
       "options": {
         "fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)",
@@ -318,13 +318,13 @@
         "fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
         "strokeDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
         "fillColorEditorConfig": [
-          { "to": 70,             "value": "#FF2D95" },
-          { "from": 70, "to": 90, "value": "#FFB627" },
-          { "from": 90,           "value": "#33FF99" }
+          { "to": 60,             "value": "#FF2D95" },
+          { "from": 60, "to": 80, "value": "#FFB627" },
+          { "from": 80,           "value": "#33FF99" }
         ],
         "strokeColorEditorConfig": [
-          { "to": 50,             "value": "#FF6B6B" },
-          { "from": 50,           "value": "#E8E8E8" }
+          { "to": 60,             "value": "#FF6B6B" },
+          { "from": 60,           "value": "#E8E8E8" }
         ]
       }
     },

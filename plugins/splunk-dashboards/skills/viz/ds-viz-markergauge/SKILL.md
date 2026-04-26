@@ -43,6 +43,36 @@ Multiple rows over time are fine — only the last numeric point is used.
 
 Works in both Absolute and Grid layouts. Best results in roughly square panels (`460×280` vertical) or wide rows (`460×220` horizontal).
 
+### Minimum panel sizes (and how to defeat them)
+
+The Studio editor refuses to resize a `splunk.markergauge` panel below the gauge artwork's intrinsic minimum:
+
+| Orientation | Editor minimum (w × h) | Sweet spot |
+|-------------|-----------------------|------------|
+| `vertical`  | **200 × 300**          | 460 × 280  |
+| `horizontal`| **200 × 100**          | 460 × 220  |
+
+For dense KPI banks you can pack tiles tighter than the editor suggests by using **transparent panel chrome**:
+
+```json
+"options": {
+  "backgroundColor": "transparent",
+  "labelDisplay": "off",
+  "valueDisplay": "off",
+  ...gaugeRanges...
+}
+```
+
+`backgroundColor: "transparent"` removes the surface card so adjacent tiles stop looking like separate panels and start reading as one banded indicator strip. `labelDisplay: "off"` + `valueDisplay: "off"` recovers vertical/horizontal space — let a sibling `splunk.singlevalue` carry the number when you need it.
+
+**Rules of thumb when packing:**
+
+- Keep a 4–8 px gap between tiles. Edge-to-edge looks glued; >8 px loses the "one unit" reading.
+- Don't drop below the editor minimum (200 × 300 / 200 × 100). The marker artwork breaks below that, even with transparent chrome.
+- Use `gaugeRanges` consistently across the bank. Different bands per tile destroys the at-a-glance pattern.
+
+See pattern 13–20 below for two live examples (4-up vertical CPU/MEM/DISK/NET bank; stacked horizontal latency profile).
+
 ---
 
 ## 12 verified patterns (all live in `splunk-knowledge-testing`)
@@ -141,6 +171,45 @@ Both render as percentages of the total range. With `from:0,to:100` they're iden
 
 `majorTickInterval` is **in pixels** — pin it when auto layout produces too few or too many ticks. `backgroundColor` is theme-driven by default but accepts any hex; useful for highlighting alarm tiles without losing the bands.
 
+### 13–16. Compact vertical bank (4-up CPU/MEM/DISK/NET)
+
+Four 200 × 300 vertical gauges with transparent chrome, side-by-side at the editor minimum. Each tile is a system metric; the four together read as one host snapshot.
+
+```json
+"options": {
+  "gaugeRanges": [
+    { "from": 0,  "to": 50,  "value": "#33FF99" },
+    { "from": 50, "to": 80,  "value": "#FFB627" },
+    { "from": 80, "to": 100, "value": "#FF2D95" }
+  ],
+  "labelDisplay": "off",
+  "valueDisplay": "off",
+  "backgroundColor": "transparent"
+}
+```
+
+Layout (in absolute structure): four blocks at `y: 1380, h: 320`, with `x` stepping `16 → 216 → 416 → 616`, `w: 200`. The 16 px gap absorbs the panel chrome margin so the gauges read edge-to-edge without overlapping.
+
+### 17–20. Stacked horizontal latency profile
+
+Four 220 × 100 horizontal gauges stacked vertically with an 8 px gap, sharing latency SLO bands. Together they form a p50/p95/p99/max profile in `~800 × 432` of space — dense, but legible because every bar shares a scale.
+
+```json
+"options": {
+  "gaugeRanges": [
+    { "from": 0,   "to": 200,  "value": "#33FF99" },
+    { "from": 200, "to": 500,  "value": "#FFB627" },
+    { "from": 500, "to": 1000, "value": "#FF2D95" }
+  ],
+  "orientation": "horizontal",
+  "labelDisplay": "off",
+  "valueDisplay": "off",
+  "backgroundColor": "transparent"
+}
+```
+
+Layout: four blocks at `x: 856, w: 220, h: 100`, `y` stepping `1380 → 1488 → 1596 → 1704` (108 px row height = 100 px tile + 8 px gap). Title attribute on each panel becomes the row label since `labelDisplay` is off.
+
 ---
 
 ## Options reference (7 total — verified against 10.4.2604)
@@ -178,6 +247,7 @@ Both render as percentages of the total range. With `from:0,to:100` they're iden
 6. **`valueDisplay: "percentage"` is relative to the gauge total range, not 100.** With `gaugeRanges` summing to `1000`, a value of `320` displays as `32%`. Confused designers expect `32` to display as `32%` — set the total span to 100 if you need that mapping.
 7. **No `splunk.markergauge` inside Trellis.** The viz does not implement `splitByLayout` — keep it out of trellis layouts.
 8. **Layout aspect ratio.** Vertical wants ~1.5:1 height:width or taller. Horizontal wants ~2:1 width:height or wider. Square panels squash the marker.
+9. **Editor minimum is 200 × 300 vertical / 200 × 100 horizontal.** Below that the gauge artwork breaks. To pack tiles tighter than the editor's default chrome implies, set `backgroundColor: "transparent"` on each tile so adjacent panels stop looking like separate cards and read as one bank — see patterns 13–20 and the *Minimum panel sizes* section above.
 
 ---
 

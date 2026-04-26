@@ -185,15 +185,22 @@ Single-row data source with no time dimension. Disable both `trendDisplay` and `
   },
   "context": {
     "thresholds": [
-      { "to": 70,             "value": "#FF2D95" },
-      { "from": 70, "to": 90, "value": "#FFB627" },
-      { "from": 90,           "value": "#33FF99" }
+      { "to": 60,             "value": "#FF2D95" },
+      { "from": 60, "to": 80, "value": "#FFB627" },
+      { "from": 80,           "value": "#33FF99" }
     ]
   }
 }
 ```
 
-The DOS expression resolves the current value, then `rangeValue` picks a colour based on the `thresholds` array in `context`. The headline number turns green at `>=90`, amber at `70-90`, red below `70`. Universal SOC/ops vocabulary — use whenever the value has a meaningful "good / warn / bad" range.
+The DOS expression resolves the current value, then `rangeValue` picks a colour based on the `thresholds` array in `context`. With these buckets the headline turns red below 60, amber from 60 up to (but not including) 80, and green at 80 or above — universal SOC/ops vocabulary.
+
+> **Threshold semantics — read this once, then every time.** `from` is **inclusive** (`>=`), `to` is **exclusive** (`<`), and `rangeValue` evaluates buckets **top-down** (first match wins). That makes overlapping buckets a silent footgun:
+>
+> - **Bug:** `[{to:70}, {from:70, to:90}, {from:90}]` — looks like RAG but the value 65 hits the first bucket (red) and the second bucket only fires for `>=70`, so the boundary case 70 itself is amber, not red. If your demo data is 65 you never see amber.
+> - **Fix (canonical RAG):** `[{to:60}, {from:60, to:80}, {from:80}]` — disjoint, gap-free, top-down-safe. The value 60 lands in amber, 80 lands in green, anything below 60 is red.
+>
+> **Verify with at least one value per bucket** (e.g. health = 20 / 60 / 95 against thresholds 60 / 80) — otherwise you're not actually exercising the middle bucket on render.
 
 ### 6. Dynamic `backgroundColor` — whole tile flips red
 
@@ -207,9 +214,9 @@ The DOS expression resolves the current value, then `rangeValue` picks a colour 
   },
   "context": {
     "bgThresholds": [
-      { "to": 15,             "value": "#152034" },
-      { "from": 15, "to": 25, "value": "#A85A1F" },
-      { "from": 25,           "value": "#8B1F3A" }
+      { "to": 10,             "value": "#152034" },
+      { "from": 10, "to": 20, "value": "#A85A1F" },
+      { "from": 20,           "value": "#8B1F3A" }
     ]
   }
 }
@@ -338,6 +345,7 @@ Puts the sparkline to the right of the value. Layout choice for wide, short pane
 - **`numberPrecision: 0` does not round the headline** if the underlying value is already a fractional number — it just suppresses the decimal display. The trend delta IS rounded by `numberPrecision`.
 - **Single-row data sources need both `trendDisplay: "off"` and `sparklineDisplay: "off"`.** Otherwise the engine tries to compute `delta(-2)` from a one-point series, which renders as `--` or empty.
 - **Dynamic `backgroundColor` requires explicit `majorColor`** — when the tile flips dark, the default theme font colour is unchanged, so a dark-on-dark tile becomes unreadable. Always lock `majorColor` to a high-contrast value when driving `backgroundColor` dynamically.
+- **`rangeValue` thresholds are top-down with `from` inclusive and `to` exclusive.** Overlapping buckets silently break: `[{to:70}, {from:70, to:90}, {from:90}]` looks like RAG but the value 65 hits the **first** bucket (red), and 70 lands in amber (not red), because evaluation is top-down and `to` is exclusive. Always design **disjoint, gap-free** buckets like `[{to:60}, {from:60, to:80}, {from:80}]` and verify with at least one demo value per bucket. See pattern 5 above.
 - **`majorFontSize` ignores panel resize.** Once you set an explicit pixel size, the engine will NOT resize on panel resize. Skip it unless you have a fixed-size KPI strip.
 
 ---

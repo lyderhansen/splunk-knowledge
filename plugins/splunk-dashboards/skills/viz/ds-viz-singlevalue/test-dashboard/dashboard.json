@@ -57,7 +57,7 @@
       "type": "ds.search",
       "name": "health score - dynamic colour ranges",
       "options": {
-        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval health = round(85 + sin(i/4)*8 + random()%5) | table _time health"
+        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval health = round(65 + 28*sin(i/4) + random()%5) | table _time health"
       }
     },
 
@@ -143,7 +143,7 @@
     "viz_dynamic_color_health": {
       "type": "splunk.singlevalue",
       "title": "5. Dynamic majorColor via rangeValue",
-      "description": "majorColor uses Dynamic Options Syntax to map the current value to a colour: green >= 90, amber 70-90, red < 70. Pattern: '> primary | seriesByName(field) | lastPoint() | rangeValue(thresholds)'.",
+      "description": "majorColor uses Dynamic Options Syntax to map the current value to a colour: green >= 80, amber 60-80, red < 60. Pattern: '> primary | seriesByName(field) | lastPoint() | rangeValue(thresholds)'. Disjoint, gap-free buckets: 'to' is exclusive (< X), 'from' is inclusive (>= X).",
       "dataSources": { "primary": "ds_health_score" },
       "options": {
         "underLabel": "System health",
@@ -154,9 +154,9 @@
       },
       "context": {
         "thresholds": [
-          { "to": 70,            "value": "#FF2D95" },
-          { "from": 70, "to": 90,"value": "#FFB627" },
-          { "from": 90,          "value": "#33FF99" }
+          { "to": 60,            "value": "#FF2D95" },
+          { "from": 60, "to": 80,"value": "#FFB627" },
+          { "from": 80,          "value": "#33FF99" }
         ]
       }
     },
@@ -164,7 +164,7 @@
     "viz_dynamic_bg": {
       "type": "splunk.singlevalue",
       "title": "6. Dynamic backgroundColor - red tile on errors",
-      "description": "Same DOS pattern but applied to backgroundColor. Tile flips red when errors > 15. Use sparingly - whole-tile red is jarring; usually majorColor is enough.",
+      "description": "Same DOS pattern but applied to backgroundColor. Tile flips red when errors >= 20, amber 10-20, dark below 10. Use sparingly - whole-tile red is jarring; usually majorColor is enough.",
       "dataSources": { "primary": "ds_error_count" },
       "options": {
         "underLabel": "Errors / hour",
@@ -174,9 +174,9 @@
       },
       "context": {
         "bgThresholds": [
-          { "to": 15,             "value": "#152034" },
-          { "from": 15, "to": 25, "value": "#A85A1F" },
-          { "from": 25,           "value": "#8B1F3A" }
+          { "to": 10,             "value": "#152034" },
+          { "from": 10, "to": 20, "value": "#A85A1F" },
+          { "from": 20,           "value": "#8B1F3A" }
         ]
       }
     },

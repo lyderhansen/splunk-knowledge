@@ -52,12 +52,36 @@ Default scale is `0-100`. There is **no `maxValue`** option (unlike `splunk.sing
 
 Filler gauges read fine in fairly compact panels. Recommended sizing:
 
-| Orientation | Min size (w x h) | Sweet spot |
-| ----------- | ---------------- | ---------- |
-| `vertical`  | 200 x 240        | 280 x 300  |
-| `horizontal`| 320 x 140        | 460 x 220  |
+| Orientation | Editor minimum (w × h) | Sweet spot |
+| ----------- | ---------------------- | ---------- |
+| `vertical`  | **200 × 150**           | 280 × 300  |
+| `horizontal`| **200 × 100**           | 460 × 220  |
 
 In KPI rows of 4-6 tiles, prefer `horizontal` so labels don't crop.
+
+### Packing tighter than the editor allows
+
+The Studio editor refuses to drag a fillergauge below the minimums above. To get a denser KPI bank — the kind where four bars side-by-side read as one host-status indicator — use **transparent panel chrome**:
+
+```json
+"options": {
+  "gaugeColor": "#33FF99",
+  "labelDisplay": "off",
+  "valueDisplay": "off",
+  "backgroundColor": "transparent"
+}
+```
+
+Why it works: the surface card around each panel disappears, so adjacent tiles stop looking like separate panels. With `labelDisplay: "off"` and `valueDisplay: "off"` the bar artwork itself is the panel content — at 200 × 150 vertical or 200 × 100 horizontal it's plenty.
+
+**Rules of thumb:**
+
+- Don't drop below the editor minimum — the bar artwork breaks below that even with transparent chrome.
+- 4–8 px gap between tiles. Edge-to-edge looks glued; >8 px loses the "one unit" reading.
+- Use `gaugeColor` consistently across the bank, OR vary it deliberately to encode severity (green/amber/red ramp). Random colours destroy the at-a-glance grouping.
+- For dynamic colour inside a compact tile, the same DOS `rangeValue` pattern from the *Threshold colouring with DOS* section works — the threshold lookup is colour-only, no chrome change needed.
+
+See patterns 13–20 for live examples (4-up vertical CPU/MEM/DISK/NET bank; stacked horizontal queue depth panel).
 
 ## All 7 options (10.4 reference)
 
@@ -75,7 +99,9 @@ That is the complete option set. There is **no `maxValue`, no `gaugeRanges`, no 
 
 ## Verified patterns (test dashboard `ds_viz_fillergauge_dark`)
 
-The test dashboard has 12 panels covering every option:
+The test dashboard has 20 panels covering every option:
+
+**Option matrix (panels 1–12):**
 
 1. Default vertical, low value (22) - bar fills 22% from bottom.
 2. Default vertical, mid (58) - fill reaches the middle.
@@ -90,7 +116,24 @@ The test dashboard has 12 panels covering every option:
 11. `labelDisplay: off`, `valueDisplay: off` - pure visual fill, no chrome.
 12. `majorTickInterval: 25` plus custom `backgroundColor` panel tint.
 
-The light-theme companion `ds_viz_fillergauge_light` uses the same 12 patterns with the light palette (blue / amber / rose).
+**Compact tile bank (panels 13–20):**
+
+13–16. **4-up vertical bank** at 200 × 150 each, transparent chrome, severity-coloured fills (`#33FF99` / `#FFB627` / `#FF2D95` / `#7AA2FF` for CPU/MEM/DISK/NET). Layout: blocks at `y: 1380, h: 200, w: 200`, `x` stepping `16 → 216 → 416 → 616`. The panel `title` carries each metric label since `labelDisplay` is off.
+
+17–20. **Stacked horizontal queue panel** at 220 × 100 each, transparent chrome, severity-coloured fills representing ingest / search / indexer / forwarder queues. Layout: blocks at `x: 856, w: 220, h: 100`, `y` stepping `1380 → 1488 → 1596 → 1704` (108 px row height = 100 px tile + 8 px gap).
+
+The `options` block for every compact tile is the same shape — only `gaugeColor`, `dataSources.primary`, and (for horizontal) `orientation` change:
+
+```json
+"options": {
+  "gaugeColor": "#33FF99",
+  "labelDisplay": "off",
+  "valueDisplay": "off",
+  "backgroundColor": "transparent"
+}
+```
+
+The light-theme companion `ds_viz_fillergauge_light` uses the same 20 patterns with the light palette (blue / amber / rose).
 
 ## Threshold colouring with DOS
 
@@ -120,7 +163,26 @@ The pipeline:
 - `lastPoint()` returns the latest scalar (since fillergauge is single-value, this is the only value).
 - `rangeValue(thresholds)` resolves the scalar against the bands and returns the matching colour string.
 
-Bands MUST be contiguous. Leave a gap and the missing range falls back to the theme primary, not transparent.
+### Threshold semantics (the trap that bit us in v1)
+
+`rangeValue` evaluates the bucket array **top-down** and uses **half-open** intervals:
+
+- `to: X` is **exclusive** — matches values strictly **less than** X.
+- `from: X` is **inclusive** — matches values **>= X**.
+
+If you write `[{"to": 70}, {"from": 50, "to": 80}, {"from": 70}]` (overlapping) the second bucket is unreachable for any value < 70 because the first bucket already matched, and you get red where you intended amber. **Always write disjoint, gap-free buckets**, with each bucket's lower bound equal to the previous bucket's upper bound:
+
+```json
+[
+  { "to": 50,             "value": "#FF2D95" },
+  { "from": 50, "to": 80, "value": "#FFB627" },
+  { "from": 80,           "value": "#33FF99" }
+]
+```
+
+Read this as: "red below 50, amber 50 to 80, green at or above 80." The first bucket has no `from` (means -infinity); the last has no `to` (means +infinity).
+
+If you also leave a gap (e.g. `to:50` then `from:60`) the missing range (50-60) doesn't pick up *any* bucket and `gaugeColor` falls back to the theme primary, which on most dark themes is purple-ish — not what you want.
 
 ## Gotchas
 
@@ -130,6 +192,7 @@ Bands MUST be contiguous. Leave a gap and the missing range falls back to the th
 - **`majorTickInterval` is in pixels, not values.** `25` means "tick every 25px along the gauge axis", not "tick every 25 units of value".
 - **`labelDisplay` and `valueDisplay` accept `percentage` only when the source value range matches.** With a 0-100 scale, `percentage` and `number` render identically. The mode becomes meaningful only when the source units differ from the gauge scale.
 - **`backgroundColor` must contrast with `gaugeColor`.** Dark fill on dark bg disappears. Pick from the theme palette or use a tinted near-black for alarm tiles.
+- **Editor minimum is 200 × 150 vertical / 200 × 100 horizontal.** Below that the bar artwork breaks. To pack tiles tighter than the editor's chrome implies, set `backgroundColor: "transparent"` on each tile so adjacent panels stop reading as separate cards — see patterns 13–20 and the *Packing tighter* section above.
 - **No annotations, no overlay, no trend line.** Use a sibling `splunk.singlevalue` with a sparkline if you need history alongside the fill.
 
 ## Cross-references

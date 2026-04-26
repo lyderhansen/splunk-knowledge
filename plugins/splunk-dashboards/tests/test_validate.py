@@ -18,6 +18,7 @@ from splunk_dashboards.validate import (
     check_timerange_default_value,
     check_singlevalue_invalid_options,
     check_rangevalue_dos_signatures,
+    check_threshold_buckets,
     check_all,
 )
 
@@ -241,6 +242,132 @@ def test_check_drilldown_targets_flags_unknown_viz_target():
     # Only flags when action.type == link.viz and target doesn't match a known viz
     assert len(findings) == 1
     assert findings[0].severity == "warning"
+
+
+def test_threshold_buckets_overlap_in_context_flagged():
+    """The 70/90 RAG-with-overlap pattern that surfaced as 'amber rendered red'."""
+    d = {
+        "visualizations": {
+            "viz_h": {
+                "type": "splunk.singlevalue",
+                "context": {
+                    "thresholds": [
+                        {"to": 70, "value": "#FF2D95"},
+                        {"from": 60, "to": 80, "value": "#FFB627"},
+                        {"from": 80, "value": "#33FF99"},
+                    ]
+                },
+            }
+        }
+    }
+    findings = check_threshold_buckets(d)
+    assert len(findings) == 1
+    assert findings[0].severity == "error"
+    assert findings[0].code == "threshold-buckets-overlap"
+    assert "viz_h" in findings[0].message
+    assert "thresholds" in findings[0].message
+
+
+def test_threshold_buckets_disjoint_passes():
+    """Canonical RAG: [{to:60}, {from:60, to:80}, {from:80}] has no overlap or gap."""
+    d = {
+        "visualizations": {
+            "viz_h": {
+                "type": "splunk.singlevalue",
+                "context": {
+                    "thresholds": [
+                        {"to": 60, "value": "#FF2D95"},
+                        {"from": 60, "to": 80, "value": "#FFB627"},
+                        {"from": 80, "value": "#33FF99"},
+                    ]
+                },
+            }
+        }
+    }
+    assert check_threshold_buckets(d) == []
+
+
+def test_threshold_buckets_gap_flagged_as_warning():
+    """Values in the gap render as theme default — warn, don't error."""
+    d = {
+        "visualizations": {
+            "viz_h": {
+                "type": "splunk.singlevalue",
+                "context": {
+                    "thresholds": [
+                        {"to": 60, "value": "#FF2D95"},
+                        {"from": 70, "to": 80, "value": "#FFB627"},
+                        {"from": 80, "value": "#33FF99"},
+                    ]
+                },
+            }
+        }
+    }
+    findings = check_threshold_buckets(d)
+    assert len(findings) == 1
+    assert findings[0].severity == "warning"
+    assert findings[0].code == "threshold-buckets-gap"
+
+
+def test_threshold_buckets_inverted_bounds_flagged():
+    """to <= from defines an empty interval that never matches."""
+    d = {
+        "visualizations": {
+            "viz_h": {
+                "type": "splunk.singlevalue",
+                "context": {
+                    "thresholds": [
+                        {"from": 80, "to": 60, "value": "#FFB627"},
+                    ]
+                },
+            }
+        }
+    }
+    findings = check_threshold_buckets(d)
+    assert len(findings) == 1
+    assert findings[0].severity == "error"
+    assert findings[0].code == "threshold-inverted-bounds"
+
+
+def test_threshold_buckets_options_editor_config_scanned():
+    """Shape vizes use options.fillColorEditorConfig instead of context.thresholds."""
+    d = {
+        "visualizations": {
+            "viz_rect": {
+                "type": "splunk.rectangle",
+                "options": {
+                    "fillColor": "> primary | seriesByType('number') | lastPoint() | rangeValue(fillColorEditorConfig)",
+                    "fillColorEditorConfig": [
+                        {"to": 70, "value": "#FF2D95"},
+                        {"from": 60, "to": 80, "value": "#FFB627"},
+                        {"from": 80, "value": "#33FF99"},
+                    ],
+                },
+            }
+        }
+    }
+    findings = check_threshold_buckets(d)
+    assert len(findings) == 1
+    assert findings[0].severity == "error"
+    assert findings[0].code == "threshold-buckets-overlap"
+    assert "fillColorEditorConfig" in findings[0].message
+
+
+def test_threshold_buckets_ignores_non_threshold_arrays():
+    """Other context arrays (e.g. domain hints) shouldn't be misread as thresholds."""
+    d = {
+        "visualizations": {
+            "viz_h": {
+                "type": "splunk.line",
+                "context": {
+                    "domain": [0, 100],
+                    "labels": ["a", "b", "c"],
+                    "irrelevant": [{"foo": "bar"}],
+                },
+            }
+        }
+    }
+    assert check_threshold_buckets(d) == []
 
 
 def test_check_all_aggregates_all_findings():

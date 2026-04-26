@@ -45,7 +45,14 @@
       "type": "ds.search",
       "name": "disk usage - dynamic colour",
       "options": {
-        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval used_gb = round(420 + i*8 + random()%20) | table _time used_gb"
+        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval used_gb = round(500 + 350*sin(i/4) + random()%30) | table _time used_gb"
+      }
+    },
+    "ds_health_swing": {
+      "type": "ds.search",
+      "name": "health score - swings across RAG buckets",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval pct = round(60 + 35*sin(i/4) + random()%5) | table _time pct"
       }
     },
     "ds_quota_progress": {
@@ -67,7 +74,7 @@
     "viz_title": {
       "type": "splunk.markdown",
       "options": {
-        "markdown": "# `splunk.singlevalueradial` - option matrix (light)\n\nLight-theme companion to `ds_viz_singlevalueradial_dark`. Track / arc / number colours retuned for light backgrounds.",
+        "markdown": "# `splunk.singlevalueradial` - option matrix\n\nA single value rendered as a radial fill (a ring). The 10.4 reference exposes 16 options - the singlevalue value+trend+chrome groups MINUS sparklines / icons / font-size locks, PLUS three radial-specific options: `maxValue` (the fill ceiling, default 100), `radialBackgroundColor` (the track), `radialStrokeColor` (the filled arc, defaults to `majorColor`). Use it for *percentage of a known whole* \u2014 quotas, capacity, completion. **Only renders inside Absolute layout.**",
         "fontFamily": "Splunk Platform Sans",
         "fontSize": "default"
       }
@@ -132,9 +139,9 @@
     "viz_dynamic_arc": {
       "type": "splunk.singlevalueradial",
       "title": "5. Dynamic radialStrokeColor via rangeValue",
-      "description": "radialStrokeColor uses Dynamic Options Syntax to traffic-light the arc. Pattern: `> primary | seriesByName(field) | lastPoint() | rangeValue(thresholds)`. Arc colour follows the value; majorColor stays neutral so the number doesn't compete.",
+      "description": "radialStrokeColor uses Dynamic Options Syntax to traffic-light the arc: green >= 80, amber 50-80, red < 50. Pattern: '> primary | seriesByName(field) | lastPoint() | rangeValue(thresholds)'. Disjoint, gap-free buckets - 'to' is exclusive (< X), 'from' is inclusive (>= X). The data swings 25-95 so all three buckets demo on reload.",
       "dataSources": {
-        "primary": "ds_pct_low"
+        "primary": "ds_health_swing"
       },
       "options": {
         "underLabel": "Backup completion",
@@ -156,7 +163,7 @@
           },
           {
             "from": 80,
-            "value": "#1F77B4"
+            "value": "#2E8B57"
           }
         ]
       }
@@ -164,9 +171,9 @@
     "viz_dynamic_major": {
       "type": "splunk.singlevalueradial",
       "title": "6. Dynamic majorColor (number colour, fixed arc)",
-      "description": "Inverse pattern to #5: arc stays a calm hue, number flips on threshold. Reads as 'this value is in trouble' without redrawing the arc geometry.",
+      "description": "Inverse pattern to #5: arc stays a calm hue, number flips on threshold. Note thresholds run inverse here - lower is better, so green is the 'to' bucket: green < 40, amber 40-70, red >= 70. Common pattern for capacity-used metrics where high is bad.",
       "dataSources": {
-        "primary": "ds_pct_low"
+        "primary": "ds_health_swing"
       },
       "options": {
         "underLabel": "Capacity used",
@@ -180,7 +187,7 @@
         "majorThresholds": [
           {
             "to": 40,
-            "value": "#1F77B4"
+            "value": "#2E8B57"
           },
           {
             "from": 40,
@@ -206,8 +213,8 @@
         "unit": "%",
         "unitPosition": "after",
         "trendDisplay": "percent",
-        "radialBackgroundColor": "rgba(63, 111, 183, 0.15)",
-        "radialStrokeColor": "#1F77B4"
+        "radialBackgroundColor": "rgba(122, 162, 255, 0.15)",
+        "radialStrokeColor": "#2E8B57"
       }
     },
     "viz_no_trend": {
@@ -227,7 +234,7 @@
     "viz_disk_dynamic": {
       "type": "splunk.singlevalueradial",
       "title": "9. Disk usage - both arc + number flip",
-      "description": "Combines #5 and #6. Both `radialStrokeColor` AND `majorColor` are DOS-driven against the same thresholds. maxValue = 1000 (GB). Use sparingly - it's a strong visual but multiple of these compete on the same dashboard.",
+      "description": "Combines #5 and #6. Both 'radialStrokeColor' AND 'majorColor' are DOS-driven against the same thresholds: green < 600, amber 600-800, red >= 800 GB. maxValue = 1000 (GB). Data swings 150-850 so all three buckets demo on reload. Use sparingly - it's a strong visual but multiple of these compete on the same dashboard.",
       "dataSources": {
         "primary": "ds_disk_usage"
       },
@@ -243,7 +250,7 @@
         "diskThresholds": [
           {
             "to": 600,
-            "value": "#1F77B4"
+            "value": "#2E8B57"
           },
           {
             "from": 600,
@@ -260,7 +267,7 @@
     "viz_dynamic_bg": {
       "type": "splunk.singlevalueradial",
       "title": "10. Dynamic backgroundColor (whole tile)",
-      "description": "backgroundColor flips the entire tile on threshold. Lock majorColor + radialStrokeColor to a contrast colour so the radial stays readable when the bg goes dark. Use sparingly - one alarm tile per dashboard.",
+      "description": "Whole-tile background flips on threshold: cream < 600, amber 600-800, rose >= 800 GB. Lock majorColor + radialStrokeColor to a dark contrast colour so the radial stays readable when the bg flips. Use sparingly - one alarm tile per dashboard.",
       "dataSources": {
         "primary": "ds_disk_usage"
       },
@@ -271,23 +278,23 @@
         "shouldAbbreviateTrendValue": true,
         "majorColor": "#1A1A1A",
         "radialStrokeColor": "#1A1A1A",
-        "radialBackgroundColor": "rgba(26, 26, 26, 0.2)",
+        "radialBackgroundColor": "rgba(255, 255, 255, 0.2)",
         "backgroundColor": "> primary | seriesByName('used_gb') | lastPoint() | rangeValue(bgThresholds)"
       },
       "context": {
         "bgThresholds": [
           {
             "to": 600,
-            "value": "#E8F1F8"
+            "value": "#F6F1E4"
           },
           {
             "from": 600,
             "to": 800,
-            "value": "#F8E4C8"
+            "value": "#F4D9A8"
           },
           {
             "from": 800,
-            "value": "#F5D6E0"
+            "value": "#F4B5B5"
           }
         ]
       }
@@ -463,5 +470,6 @@
       }
     ],
     "globalInputs": []
-  }
+  },
+  "theme": "light"
 }

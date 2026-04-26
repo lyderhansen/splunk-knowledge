@@ -34,13 +34,18 @@
     },
     "ds_disk_used": {
       "type": "ds.search",
-      "name": "disk used pct 78",
-      "options": { "query": "| makeresults | eval value = 78 | table value" }
+      "name": "disk used pct - swings 30 to 95",
+      "options": { "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval value = round(60 + 32*sin(i/4) + random()%5) | table _time value" }
     },
     "ds_quota": {
       "type": "ds.search",
       "name": "quota progress 640 of 1000",
       "options": { "query": "| makeresults | eval value = 640 | table value" }
+    },
+    "ds_health_swing": {
+      "type": "ds.search",
+      "name": "health score - swings across RAG buckets",
+      "options": { "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval value = round(60 + 35*sin(i/4) + random()%5) | table _time value" }
     }
   },
   "visualizations": {
@@ -100,8 +105,8 @@
     "viz_dynamic_color": {
       "type": "splunk.fillergauge",
       "title": "7. gaugeColor dynamic via rangeValue",
-      "description": "DOS expression flips the fill colour on threshold. Pattern: `> primary | seriesByName(field) | lastPoint() | rangeValue(thresholds)`. The fill colour follows the value - red below 50, amber 50-80, green above 80. This is the closest fillergauge gets to a banded gauge.",
-      "dataSources": { "primary": "ds_kpi_low" },
+      "description": "DOS expression flips the fill colour on threshold. Pattern: '> primary | seriesByName(field) | lastPoint() | rangeValue(thresholds)'. Disjoint, gap-free buckets - 'to' is exclusive (< X), 'from' is inclusive (>= X). Red < 50, amber 50-80, green >= 80. Data swings 25-95 so all three buckets demo on reload.",
+      "dataSources": { "primary": "ds_health_swing" },
       "options": {
         "gaugeColor": "> primary | seriesByName('value') | lastPoint() | rangeValue(thresholds)",
         "orientation": "horizontal"
@@ -117,7 +122,7 @@
     "viz_disk_used": {
       "type": "splunk.fillergauge",
       "title": "8. Disk used (high=bad inverse thresholds)",
-      "description": "Inverse semantics: high value is BAD. Same DOS pattern, thresholds flipped - green below 60, amber 60-85, red above 85. The visual fill area reads as 'space consumed'.",
+      "description": "Inverse semantics: high value is BAD. Same DOS pattern, thresholds flipped - green < 60, amber 60-85, red >= 85. Disjoint, gap-free buckets - 'to' is exclusive, 'from' is inclusive. Data swings 30-95 so all three buckets demo on reload. The visual fill area reads as 'space consumed'.",
       "dataSources": { "primary": "ds_disk_used" },
       "options": {
         "gaugeColor": "> primary | seriesByName('value') | lastPoint() | rangeValue(diskThresholds)",
@@ -176,13 +181,123 @@
         "backgroundColor": "#1B0E1F",
         "orientation": "horizontal"
       }
+    },
+
+    "viz_compact_intro": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## Compact tile patterns\n\nThe Studio editor refuses to resize a `splunk.fillergauge` panel below ~200x150 (vertical) or ~200x100 (horizontal). The trick to get a denser KPI bank: **set `backgroundColor: \"transparent\"` and place panels at the minimum size, edge-to-edge.** The panel chrome disappears and only the bar artwork remains, so four bars side-by-side read as one tight unit. Below: a 4-up vertical bank (panels 13-16) and a stacked horizontal bank (panels 17-20). Compare with panels 1-3 which use the default opaque chrome.\n\n**Rules:**\n- Vertical: 200x150 minimum (lower than markergauge - the bar doesn't need band labels). Use `labelDisplay: \"off\"` + `valueDisplay: \"off\"` and let a sibling singlevalue carry the number.\n- Horizontal: 200x100 minimum.\n- `backgroundColor: \"transparent\"` is the unlock - without it the surface card swamps the bar.\n- For dynamic colour use the same DOS pattern as panels 7-8 - threshold-driven `gaugeColor` works inside compact tiles.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default"
+      }
+    },
+    "viz_compact_v1": {
+      "type": "splunk.fillergauge",
+      "title": "CPU",
+      "description": "Compact vertical tile - 200x150, transparent bg, value/label off. The fill height alone carries the message; sibling number tiles can carry the percentage.",
+      "dataSources": { "primary": "ds_kpi_low" },
+      "options": {
+        "gaugeColor": "#33FF99",
+        "labelDisplay": "off",
+        "valueDisplay": "off",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_compact_v2": {
+      "type": "splunk.fillergauge",
+      "title": "MEM",
+      "description": "Mid value - the bar is half-filled. Static gaugeColor here; production might use the dynamic-rangeValue pattern from panel 7.",
+      "dataSources": { "primary": "ds_kpi_mid" },
+      "options": {
+        "gaugeColor": "#FFB627",
+        "labelDisplay": "off",
+        "valueDisplay": "off",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_compact_v3": {
+      "type": "splunk.fillergauge",
+      "title": "DISK",
+      "description": "High value - the bar is nearly full. Red gaugeColor signals trouble; the eye reads 'almost full + red' as one signal.",
+      "dataSources": { "primary": "ds_kpi_high" },
+      "options": {
+        "gaugeColor": "#FF2D95",
+        "labelDisplay": "off",
+        "valueDisplay": "off",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_compact_v4": {
+      "type": "splunk.fillergauge",
+      "title": "NET",
+      "description": "Fourth tile. The four-up bank read together as a CPU/MEM/DISK/NET strip - dense, no panel chrome, fills do the talking.",
+      "dataSources": { "primary": "ds_kpi_mid" },
+      "options": {
+        "gaugeColor": "#7AA2FF",
+        "labelDisplay": "off",
+        "valueDisplay": "off",
+        "backgroundColor": "transparent"
+      }
+    },
+
+    "viz_compact_h1": {
+      "type": "splunk.fillergauge",
+      "title": "ingest queue",
+      "description": "Horizontal compact tile - 200x100, transparent bg. The fill grows left-to-right.",
+      "dataSources": { "primary": "ds_kpi_low" },
+      "options": {
+        "gaugeColor": "#33FF99",
+        "labelDisplay": "off",
+        "valueDisplay": "off",
+        "orientation": "horizontal",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_compact_h2": {
+      "type": "splunk.fillergauge",
+      "title": "search queue",
+      "description": "Stacked under panel 17 with an 8 px gap. The vertical rhythm groups them as a queue panel.",
+      "dataSources": { "primary": "ds_kpi_mid" },
+      "options": {
+        "gaugeColor": "#FFB627",
+        "labelDisplay": "off",
+        "valueDisplay": "off",
+        "orientation": "horizontal",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_compact_h3": {
+      "type": "splunk.fillergauge",
+      "title": "indexer queue",
+      "description": "Third row - high value, red. The colour ramp green-amber-red carries severity.",
+      "dataSources": { "primary": "ds_kpi_high" },
+      "options": {
+        "gaugeColor": "#FF2D95",
+        "labelDisplay": "off",
+        "valueDisplay": "off",
+        "orientation": "horizontal",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_compact_h4": {
+      "type": "splunk.fillergauge",
+      "title": "fwd queue",
+      "description": "Bottom row. Together panels 17-20 fit in 220x424 - more vertical than the markergauge equivalent because fillergauge horizontal min is the same 100h.",
+      "dataSources": { "primary": "ds_kpi_mid" },
+      "options": {
+        "gaugeColor": "#7AA2FF",
+        "labelDisplay": "off",
+        "valueDisplay": "off",
+        "orientation": "horizontal",
+        "backgroundColor": "transparent"
+      }
     }
   },
   "layout": {
     "type": "absolute",
     "options": {
       "width": 1440,
-      "height": 1480,
+      "height": 1900,
       "display": "auto-scale"
     },
     "structure": [
@@ -198,7 +313,18 @@
       { "item": "viz_quota",             "type": "block", "position": { "x": 968, "y": 660, "w": 456,  "h": 220 } },
       { "item": "viz_percentage_labels", "type": "block", "position": { "x": 16,  "y": 896, "w": 460,  "h": 220 } },
       { "item": "viz_label_off",         "type": "block", "position": { "x": 492, "y": 896, "w": 460,  "h": 220 } },
-      { "item": "viz_majortick_bg",      "type": "block", "position": { "x": 968, "y": 896, "w": 456,  "h": 220 } }
+      { "item": "viz_majortick_bg",      "type": "block", "position": { "x": 968, "y": 896, "w": 456,  "h": 220 } },
+
+      { "item": "viz_compact_intro",     "type": "block", "position": { "x": 16,   "y": 1140, "w": 1408, "h": 220 } },
+      { "item": "viz_compact_v1",        "type": "block", "position": { "x": 16,   "y": 1380, "w": 200,  "h": 200 } },
+      { "item": "viz_compact_v2",        "type": "block", "position": { "x": 216,  "y": 1380, "w": 200,  "h": 200 } },
+      { "item": "viz_compact_v3",        "type": "block", "position": { "x": 416,  "y": 1380, "w": 200,  "h": 200 } },
+      { "item": "viz_compact_v4",        "type": "block", "position": { "x": 616,  "y": 1380, "w": 200,  "h": 200 } },
+
+      { "item": "viz_compact_h1",        "type": "block", "position": { "x": 856,  "y": 1380, "w": 220,  "h": 100 } },
+      { "item": "viz_compact_h2",        "type": "block", "position": { "x": 856,  "y": 1488, "w": 220,  "h": 100 } },
+      { "item": "viz_compact_h3",        "type": "block", "position": { "x": 856,  "y": 1596, "w": 220,  "h": 100 } },
+      { "item": "viz_compact_h4",        "type": "block", "position": { "x": 856,  "y": 1704, "w": 220,  "h": 100 } }
     ],
     "globalInputs": []
   }
