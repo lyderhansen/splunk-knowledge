@@ -113,4 +113,4 @@ Standard panel options also apply:
 - [`ds-viz-events`](../ds-viz-events/SKILL.md) - for showing the raw events with field metadata
 - [`ds-viz-line`](../ds-viz-line/SKILL.md) - for continuous time series with annotations
 - [`ds-viz-column`](../ds-viz-column/SKILL.md) - when you want event counts over time
-- [`ds-design-principles`](../../design/ds-design-principles/SKILL.md) - investigation/SOC patterns
+- [`ds-design-principles`](../../reference/ds-design-principles/SKILL.md) - investigation/SOC patterns

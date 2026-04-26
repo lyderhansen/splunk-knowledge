@@ -300,8 +300,11 @@ JSON:
 
 ## See also
 
-- `ds-viz-choropleth-map` - dedicated thematic-map visualization without
-  the Leaflet basemap; better fit for "single country, no zoom" views.
+- `ds-viz-choropleth-map` - **disambiguation skill**, not a separate viz
+  type. `splunk.choropleth.map` does not exist in Dashboard Studio; the
+  skill exists to redirect users back here (the canonical Studio
+  pattern is a `choropleth`-typed layer inside `splunk.map`, as shown
+  above).
 - `ds-viz-choropleth-svg` - polygon shading on an arbitrary SVG file.
   Use when you need an unusual map (a building floorplan, a custom
   region) that has no Leaflet basemap.

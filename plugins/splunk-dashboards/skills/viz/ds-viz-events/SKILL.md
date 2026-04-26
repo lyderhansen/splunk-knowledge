@@ -120,4 +120,4 @@ Pair with `primary.click` drilldowns at the panel level to wire the action to a 
 
 - [`ds-viz-table`](../ds-viz-table/SKILL.md) - for tabular data without the `_raw` payload
 - [`ds-viz-timeline`](../ds-viz-timeline/SKILL.md) - for time-ordered records visualised as a chart
-- [`ds-design-principles`](../../design/ds-design-principles/SKILL.md) - investigation/SOC patterns
+- [`ds-design-principles`](../../reference/ds-design-principles/SKILL.md) - investigation/SOC patterns

@@ -57,18 +57,18 @@ Legend: ✅ done · 🟡 in progress · ⬜ not started · ❌ blocked / known i
 | # | Viz                       | PDF read | Dark JSON | Light JSON | Validated | Deployed | QA dark | QA light | SKILL.md | Notes |
 |---|---------------------------|----------|-----------|------------|-----------|----------|---------|----------|----------|-------|
 | 1 | `splunk.line`             | ✅       | ✅        | ✅         | ✅        | ✅       | ✅      | ✅       | ✅       | Reference implementation. |
-| 2 | `splunk.area`             | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ⬜       | Awaiting QA. |
-| 3 | `splunk.column`           | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ⬜       | Awaiting QA. |
-| 4 | `splunk.bar`              | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ⬜       | Awaiting QA. annotation* options listed in PDF text but not in option table — omitted from test bench. |
-| 5 | `splunk.pie`              | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | |
+| 2 | `splunk.area`             | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
+| 3 | `splunk.column`           | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
+| 4 | `splunk.bar`              | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. annotation* options listed in PDF text but not in option table — omitted from test bench. |
+| 5 | `splunk.pie`              | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
 | 6 | `splunk.scatter`          | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
 | 7 | `splunk.bubble`           | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
-| 8 | `splunk.singlevalue`      | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | |
-| 9 | `splunk.singlevalueicon`  | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | |
-| 10 | `splunk.singlevalueradial` | ⬜      | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | |
-| 11 | `splunk.markergauge`      | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | gaugeRanges syntax verified in ceo_boardroom (#D41F1F / #CBA700 / #4fa484). |
-| 12 | `splunk.fillergauge`      | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | |
-| 13 | `splunk.table`            | ⬜       | ⬜        | ⬜         | ⬜        | ⬜       | ⬜      | ⬜       | ⬜       | showInternalFields:false convention verified. tableFormat / columnFormat patterns covered. |
+| 8 | `splunk.singlevalue`      | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
+| 9 | `splunk.singlevalueicon`  | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
+| 10 | `splunk.singlevalueradial` | ✅      | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
+| 11 | `splunk.markergauge`      | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. gaugeRanges syntax verified in ceo_boardroom (#D41F1F / #CBA700 / #4fa484). |
+| 12 | `splunk.fillergauge`      | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
+| 13 | `splunk.table`            | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. showInternalFields:false convention verified. tableFormat / columnFormat patterns covered. |
 | 14 | `splunk.events`           | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
 | 15 | `splunk.timeline`         | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
 | 16 | `splunk.punchcard`        | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
@@ -88,27 +88,32 @@ Legend: ✅ done · 🟡 in progress · ⬜ not started · ❌ blocked / known i
 Group by category so we build up a mental model viz-family at a time, instead
 of jumping around.
 
-**Charts (already started):**
-1. line ✅ → 2. area 🟡 → 3. column 🟡 → 4. bar 🟡 → 5. pie
+**Charts:**
+1. line ✅ → 2. area ✅ → 3. column ✅ → 4. bar ✅ → 5. pie ✅
 
 **Single-value family:**
-6. singlevalue → 7. singlevalueicon → 8. singlevalueradial →
-9. markergauge → 10. fillergauge
+6. singlevalue ✅ → 7. singlevalueicon ✅ → 8. singlevalueradial ✅ →
+9. markergauge ✅ → 10. fillergauge ✅
 
 **Tabular / event:**
-11. table → 12. events → 13. timeline
+11. table ✅ → 12. events ✅ → 13. timeline ✅
 
 **Distribution / correlation:**
-14. scatter → 15. bubble → 16. punchcard → 17. parallelcoordinates
+14. scatter ✅ → 15. bubble ✅ → 16. punchcard ✅ → 17. parallelcoordinates ✅
 
 **Flow / network:**
-18. sankey → 19. linkgraph
+18. sankey ✅ → 19. linkgraph ✅
 
 **Static / shape (minimal options):**
-20. markdown → 21. image → 22. rectangle → 23. ellipse
+20. markdown ✅ → 21. image ✅ → 22. rectangle ✅ → 23. ellipse ✅
 
-**Geo (last — most likely to have rendering issues):**
-24. map → 25. choropleth.svg → 26. choropleth.map
+**Geo:**
+24. map ✅ → 25. choropleth.svg ✅ → 26. choropleth.map ✅ (disambiguation)
+
+All 26 build columns are ✅. Final `splunk.<viz>` build pass is
+**complete**. The remaining ⬜ are the QA columns — those land in the
+visual-QA pass against the deployed `splunk-knowledge-testing`
+dashboards.
 
 ## Cross-cutting notes
 
@@ -121,3 +126,21 @@ skill (or its successor) once we've verified them on enough viz:
 - DOS (Dynamic Options Syntax) for conditional colours on every viz that
   supports `seriesColors` / `dataValues` / `tableFormat`
 - Per the user: dashboards SHOULD ship in dark + light variants by default
+
+## Final review-pass findings (2026-04-25)
+
+See `REVIEW.md` (sibling file) for the detailed write-up. Summary:
+
+- **Fixed**: 5 broken cross-references (`../../design/...` →
+  `../../reference/...`).
+- **Fixed**: 3 stale `ds-viz-choropleth-map` references that described
+  it as a separate viz instead of a disambiguation skill.
+- **Reconciled**: this PROGRESS.md was significantly out of date —
+  every actually-completed viz is now marked ✅.
+- **Deferred**: 6 interactivity skills (`ds-defaults`, `ds-tokens`,
+  `ds-inputs`, `ds-tabs`, `ds-drilldowns`, `ds-visibility`) are still
+  stubs pointing at the legacy `reference/ds-syntax` / `reference/ds-viz`
+  monoliths. Out of scope for the viz iteration; tracked separately.
+- **Deferred**: visual-QA pass against the live dashboards in
+  `splunk-knowledge-testing`. The QA dark / QA light columns above are
+  intentionally still ⬜.

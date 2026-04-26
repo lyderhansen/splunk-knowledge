@@ -171,4 +171,4 @@ index=_internal sourcetype=splunkd_access
 - [`ds-viz-line`](../ds-viz-line/SKILL.md) - when x is `_time`
 - [`ds-viz-punchcard`](../ds-viz-punchcard/SKILL.md) - categorical x and y with intensity
 - [`ds-viz-parallelcoordinates`](../ds-viz-parallelcoordinates/SKILL.md) - more than three dimensions
-- [`ds-design-principles`](../../design/ds-design-principles/SKILL.md) - chart selection table
+- [`ds-design-principles`](../../reference/ds-design-principles/SKILL.md) - chart selection table

@@ -261,10 +261,13 @@ Then bind `areaIds` to `floor_id` and `areaValues` to `color_value`.
 ## See also
 
 - `ds-viz-map` - the proper geographic map (Leaflet basemap, lat/lon,
-  optional choropleth layer over `geom geo_countries`).
-- `ds-viz-choropleth-map` - dedicated thematic country / state map
-  without the Leaflet basemap; the right fit when your data is
-  political-boundary keyed (no custom SVG).
+  optional choropleth layer over `geom geo_countries`). Use this for
+  political-boundary shading (countries / US states); Studio renders
+  that as a `choropleth`-typed layer inside `splunk.map`.
+- `ds-viz-choropleth-map` - **disambiguation skill**, not a separate
+  viz. `splunk.choropleth.map` does not exist in Dashboard Studio;
+  the skill exists to route users to either `ds-viz-map` (real-map
+  shading) or this skill (custom-SVG shading).
 - `ds-viz-singlevalue` - layer KPIs on top of an SVG choropleth for
   "highest-load rack" hero panels.
 - `ds-design-principles` - when an SVG choropleth is the right answer

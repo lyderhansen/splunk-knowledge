@@ -195,4 +195,4 @@ The trend column must be a multivalue array of numeric strings.
 
 - [`ds-viz-events`](../ds-viz-events/SKILL.md) - for raw `_raw` event payloads
 - [`ds-viz-timeline`](../ds-viz-timeline/SKILL.md) - for time-ordered records
-- [`ds-design-principles`](../../design/ds-design-principles/SKILL.md) - heatmap and severity colour conventions
+- [`ds-design-principles`](../../reference/ds-design-principles/SKILL.md) - heatmap and severity colour conventions

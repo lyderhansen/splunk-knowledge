@@ -44,9 +44,9 @@ If two rows could fit, prefer the one with the **lower data-cardinality requirem
 | Compare categories, long category labels | `bar` (horizontal) | category + numeric | Not `column`: long x-axis labels rotate and become unreadable |
 | Part-of-whole, ≤5 slices | `pie` | category + numeric | With > 5 slices use `bar` — slices become unreadable |
 | Tabular data with per-row formatting / drilldown | `table` | any | Not chart: exact values + drilldown require table |
-| Geographic distribution by country/state polygon | `choropleth-svg` | region code + value | Not `map`: needs lat/lon; choropleth fills polygons |
-| Geographic distribution with point markers | `map` | `lat` + `lon` (+ optional value) | Not `choropleth-svg`: map shows individual points, not regions |
-| Geographic distribution by US state | `choropleth-map` | state code + value | Not `choropleth-svg`: built-in US-only; svg is for any region |
+| Geographic distribution with point markers / bubbles | `map` | `lat` + `lon` (+ optional value) | Not choropleth: map plots individual points; choropleth fills regions |
+| Geographic distribution by country / US state on a real map | `map` (with `choropleth` layer) | region code + value, plus `geom geo_countries` / `geom geo_us_states` in SPL | In Studio, country / state shading is a layer **inside** `splunk.map` — there is no `splunk.choropleth.map` viz type |
+| Custom-region shading (floor plan, schematic, non-political polygons) | `choropleth-svg` | region id + value, plus an SVG with matching path ids | Not `map`: there is no Leaflet basemap for custom geometry — SVG is the escape hatch |
 | Flow between stages (funnel, attribution, network paths) | `sankey` | source + target + value | Not stacked bar: Sankey shows path, stacked bar shows totals |
 | Metric vs threshold, headroom matters | `markergauge` | numeric + thresholds | Not `singlevalue`: marker shows distance to threshold |
 | 0–100 % progress / capacity fullness | `fillergauge` | numeric (0–100) | Not `markergauge`: filler implies a continuum, marker implies a target |
@@ -69,7 +69,8 @@ If the user asks for something that maps to one of these, push back instead of r
 - **Pie with > 5 slices** → recommend `bar` (sorted, top-N) and explain that slices become unreadable.
 - **Line with > 6 series** → recommend top-N filter in SPL plus `line`, or `table` with sparkline columns.
 - **3D pie / 3D column / any 3D effect** → never. There is no 3D option in Dashboard Studio and emulating it via skewed shapes is bad practice.
-- **Map of countries with `lat`/`lon` coordinates only** → if the user wants country-level shading, recommend `choropleth-svg`. `map` is for individual point distributions.
+- **Map of countries with `lat`/`lon` coordinates only** → if the user wants country-level shading, recommend `map` with a `choropleth`-typed layer (and `geom geo_countries` in the SPL); plain markers show individual points, not regional totals.
+- **`splunk.choropleth.map` as a viz type** → does not exist in Dashboard Studio. Country / state shading is a `choropleth` **layer** inside `splunk.map`. See `ds-viz-choropleth-map` for the disambiguation.
 - **Singlevalue + threshold without color/icon** → upgrade to `singlevalueicon` or `markergauge`; numeric alone forces the operator to do mental threshold math.
 - **Stacked bar to show flow** → recommend `sankey` instead; stacked bar shows category totals, not movement.
 
