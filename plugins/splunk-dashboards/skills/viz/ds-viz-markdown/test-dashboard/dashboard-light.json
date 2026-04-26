@@ -1,6 +1,6 @@
 {
   "title": "ds-viz-markdown - option matrix (light)",
-  "description": "Light-theme companion. Test bench for splunk.markdown. Verifies all options from the 10.4 PDF: backgroundColor, fontColor, fontSize (extraSmall|small|default|large|extraLarge), markdown content. Demonstrates basic text formatting, headings, lists, tables, code blocks, blockquotes, links, images, fontFamily, color combinations, and editorial layout patterns.",
+  "description": "Test bench for splunk.markdown. Verifies all options from the 10.4 PDF: backgroundColor, fontColor, fontSize (extraSmall|small|default|large|extraLarge), markdown content. Demonstrates basic text formatting, headings, lists, tables, code blocks, blockquotes, links, images, fontFamily, color combinations, and editorial layout patterns.",
   "defaults": {
     "dataSources": {
       "global": {
@@ -24,7 +24,7 @@
     "viz_title": {
       "type": "splunk.markdown",
       "options": {
-        "markdown": "# `splunk.markdown` - option matrix (light)\n\nMarkdown panels are the **typographic backbone** of every dashboard - section headers, panel descriptions, KPI explanations, editorial framing, runbook links.\n\nFull options list from the **10.4 PDF**:\n- `backgroundColor`\n- `fontColor`\n- `fontSize` (`extraSmall` | `small` | `default` | `large` | `extraLarge`)\n- `markdown` (string content)\n\nAlso commonly used and supported by the renderer:\n- `fontFamily`\n\nMarkdown supports **all standard Markdown syntax** except raw HTML. See the panels below for verified patterns.",
+        "markdown": "# `splunk.markdown` - option matrix\n\nMarkdown panels are the **typographic backbone** of every dashboard - section headers, panel descriptions, KPI explanations, editorial framing, runbook links.\n\nFull options list from the **10.4 PDF**:\n- `backgroundColor`\n- `fontColor`\n- `fontSize` (`extraSmall` | `small` | `default` | `large` | `extraLarge`)\n- `markdown` (string content)\n\nAlso supported by the renderer (schema-validated):\n- `fontFamily` - one of seven named fonts: `Splunk Platform Sans`, `Splunk Data Sans`, `Splunk Platform Mono`, `Arial`, `Helvetica`, `Times New Roman`, `Comic Sans MS` (or a DOS token). CSS stacks like `Georgia, serif` are **rejected**.\n\n**Important**: `fontSize`, `fontColor`, and `fontFamily` apply to the **entire panel uniformly**. There is no way to mix sizes/fonts/colors inside a single markdown body - use multiple panels for that.\n\nMarkdown supports **all standard Markdown syntax** except raw HTML. See the panels below for verified patterns.",
         "fontSize": "default"
       }
     },
@@ -36,35 +36,52 @@
         "markdown": "This is the **default** markdown panel.\n\nNothing set: `fontColor` falls back to the theme default, `backgroundColor` is transparent, and `fontSize` is `default` (~14px for unformatted text).\n\nUse this as the *baseline* for editorial copy."
       }
     },
-    "viz_sizes": {
+    "viz_sizes_xs": {
       "type": "splunk.markdown",
-      "title": "2. fontSize - all five sizes",
-      "options": {
-        "markdown": "## extraSmall (10px)\n\nTiny print - footnotes and disclaimers.\n\n## small (12px)\n\nMetadata, source attribution, secondary copy.\n\n## default (14px)\n\nEverything else - the workhorse size.\n\n## large (16px)\n\nCallouts that should compete with panel headers.\n\n## extraLarge (18px)\n\nHero copy and dashboard subtitles."
-      }
-    },
-    "viz_extra_large": {
-      "type": "splunk.markdown",
-      "title": "3. fontSize=extraLarge",
-      "options": {
-        "fontSize": "extraLarge",
-        "markdown": "**Quarterly NPS is up 4 points.**\n\nAll formatting in this panel renders one step larger than the default."
-      }
-    },
-    "viz_extra_small": {
-      "type": "splunk.markdown",
-      "title": "4. fontSize=extraSmall",
+      "title": "2a. fontSize=extraSmall",
       "options": {
         "fontSize": "extraSmall",
-        "markdown": "**Footnote**: Source - operational data warehouse.\n\nLast refreshed: 24h ago.\n\nMetric definitions are in the runbook under `https://example.com/runbooks/metrics`."
+        "markdown": "## Heading on extraSmall\n\nTiny print - footnotes and disclaimers.\n\nNote: `fontSize` scales the **entire panel uniformly**. To get five sizes side-by-side you need five separate panels (this panel and the four below)."
+      }
+    },
+    "viz_sizes_s": {
+      "type": "splunk.markdown",
+      "title": "2b. fontSize=small",
+      "options": {
+        "fontSize": "small",
+        "markdown": "## Heading on small\n\nMetadata, source attribution, secondary copy."
+      }
+    },
+    "viz_sizes_d": {
+      "type": "splunk.markdown",
+      "title": "2c. fontSize=default",
+      "options": {
+        "fontSize": "default",
+        "markdown": "## Heading on default\n\nEverything else - the workhorse size."
+      }
+    },
+    "viz_sizes_l": {
+      "type": "splunk.markdown",
+      "title": "2d. fontSize=large",
+      "options": {
+        "fontSize": "large",
+        "markdown": "## Heading on large\n\nCallouts that should compete with panel headers."
+      }
+    },
+    "viz_sizes_xl": {
+      "type": "splunk.markdown",
+      "title": "2e. fontSize=extraLarge",
+      "options": {
+        "fontSize": "extraLarge",
+        "markdown": "## Heading on extraLarge\n\nHero copy and dashboard subtitles."
       }
     },
     "viz_color_text": {
       "type": "splunk.markdown",
       "title": "5. Custom fontColor",
       "options": {
-        "fontColor": "#26A69A",
-        "markdown": "## Status: All systems normal\n\nThis entire panel renders in `#26A69A` (brand teal) via `fontColor`.\n\nUse this for **single-message status panels** - the color *is* the signal."
+        "fontColor": "#0E7C70",
+        "markdown": "## Status: All systems normal\n\nThis entire panel renders in `#0E7C70` (brand teal) via `fontColor`.\n\nUse this for **single-message status panels** - the color *is* the signal."
       }
     },
     "viz_color_background": {
@@ -80,8 +97,8 @@
       "type": "splunk.markdown",
       "title": "7. Alert-style colors",
       "options": {
-        "backgroundColor": "#3D1E1E",
-        "fontColor": "#FF6B6B",
+        "backgroundColor": "#F4D9D9",
+        "fontColor": "#B91C1C",
         "markdown": "## INCIDENT\n\nServices in `prod-eu-west` are experiencing elevated 5xx rates.\n\n**On-call**: Alex Tan  \n**Runbook**: `runbooks/eu-west-incident.md`\n\n*Use red-on-dark sparingly - reserve it for actual incidents.*"
       }
     },
@@ -120,13 +137,31 @@
         "markdown": "### Quick links\n\n- [Runbook](https://example.com/runbook) - on-call diagnostic flow\n- [Dashboard catalog](https://example.com/dashboards) - all team dashboards\n- [Status page](https://status.example.com) - public-facing\n- [Incident channel](https://chat.example.com/incidents) - real-time coordination\n\nLinks open in a new tab when the dashboard is rendered. Use [reference-style](https://example.com) links for repeated URLs.\n\n[ref]: https://example.com\n\n[Same destination][ref] using the reference."
       }
     },
-    "viz_font_family": {
+    "viz_font_family_serif": {
       "type": "splunk.markdown",
-      "title": "13. fontFamily override",
+      "title": "13a. fontFamily=Times New Roman",
       "options": {
-        "fontFamily": "Georgia, serif",
+        "fontFamily": "Times New Roman",
         "fontSize": "large",
-        "markdown": "## Editorial story-frame\n\n*\"At 09:42 UTC, latency in the EU region began climbing past the 800 ms warning threshold...\"*\n\nThis panel uses Georgia, a serif. Use serif fonts sparingly - they read as *editorial* or *long-form* against the platform's sans default."
+        "markdown": "## Editorial story-frame\n\n*\"At 09:42 UTC, latency in the EU region began climbing past the 800 ms warning threshold...\"*\n\nThis panel uses Times New Roman, the only serif in the allowed list. Reads as *editorial* against the platform's sans default."
+      }
+    },
+    "viz_font_family_mono": {
+      "type": "splunk.markdown",
+      "title": "13b. fontFamily=Splunk Platform Mono",
+      "options": {
+        "fontFamily": "Splunk Platform Mono",
+        "fontSize": "default",
+        "markdown": "## Runbook excerpt\n\n```\n2025-04-26T09:42:18Z latency=842ms region=eu-west\n2025-04-26T09:42:21Z latency=901ms region=eu-west\n2025-04-26T09:42:24Z latency=1024ms region=eu-west\n```\n\nMono-spaced font for log excerpts and code-leaning copy."
+      }
+    },
+    "viz_font_family_data": {
+      "type": "splunk.markdown",
+      "title": "13c. fontFamily=Splunk Data Sans",
+      "options": {
+        "fontFamily": "Splunk Data Sans",
+        "fontSize": "large",
+        "markdown": "## Splunk Data Sans\n\nThe number-friendly variant of the Splunk type system. Use for KPI annotations and tabular numeric callouts."
       }
     }
   },
@@ -135,7 +170,7 @@
     "type": "absolute",
     "options": {
       "width": 1440,
-      "height": 3120,
+      "height": 3360,
       "display": "auto-scale",
       "backgroundColor": "#FAEAD8"
     },
@@ -147,7 +182,7 @@
           "x": 20,
           "y": 20,
           "w": 1400,
-          "h": 280
+          "h": 320
         }
       },
       {
@@ -155,69 +190,89 @@
         "type": "block",
         "position": {
           "x": 20,
-          "y": 320,
-          "w": 690,
-          "h": 220
-        }
-      },
-      {
-        "item": "viz_sizes",
-        "type": "block",
-        "position": {
-          "x": 730,
-          "y": 320,
-          "w": 690,
-          "h": 460
-        }
-      },
-      {
-        "item": "viz_extra_large",
-        "type": "block",
-        "position": {
-          "x": 20,
-          "y": 560,
-          "w": 690,
-          "h": 220
-        }
-      },
-      {
-        "item": "viz_extra_small",
-        "type": "block",
-        "position": {
-          "x": 20,
-          "y": 800,
-          "w": 690,
+          "y": 360,
+          "w": 1400,
           "h": 200
+        }
+      },
+      {
+        "item": "viz_sizes_xs",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 580,
+          "w": 270,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_sizes_s",
+        "type": "block",
+        "position": {
+          "x": 305,
+          "y": 580,
+          "w": 270,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_sizes_d",
+        "type": "block",
+        "position": {
+          "x": 590,
+          "y": 580,
+          "w": 270,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_sizes_l",
+        "type": "block",
+        "position": {
+          "x": 875,
+          "y": 580,
+          "w": 270,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_sizes_xl",
+        "type": "block",
+        "position": {
+          "x": 1160,
+          "y": 580,
+          "w": 260,
+          "h": 280
         }
       },
       {
         "item": "viz_color_text",
         "type": "block",
         "position": {
-          "x": 730,
-          "y": 800,
+          "x": 20,
+          "y": 880,
           "w": 690,
-          "h": 200
+          "h": 220
         }
       },
       {
         "item": "viz_color_background",
         "type": "block",
         "position": {
-          "x": 20,
-          "y": 1020,
+          "x": 730,
+          "y": 880,
           "w": 690,
-          "h": 240
+          "h": 220
         }
       },
       {
         "item": "viz_color_alert",
         "type": "block",
         "position": {
-          "x": 730,
-          "y": 1020,
-          "w": 690,
-          "h": 240
+          "x": 20,
+          "y": 1120,
+          "w": 1400,
+          "h": 220
         }
       },
       {
@@ -225,9 +280,9 @@
         "type": "block",
         "position": {
           "x": 20,
-          "y": 1280,
+          "y": 1360,
           "w": 690,
-          "h": 460
+          "h": 480
         }
       },
       {
@@ -235,9 +290,9 @@
         "type": "block",
         "position": {
           "x": 730,
-          "y": 1280,
+          "y": 1360,
           "w": 690,
-          "h": 460
+          "h": 480
         }
       },
       {
@@ -245,9 +300,9 @@
         "type": "block",
         "position": {
           "x": 20,
-          "y": 1760,
+          "y": 1860,
           "w": 690,
-          "h": 320
+          "h": 340
         }
       },
       {
@@ -255,9 +310,9 @@
         "type": "block",
         "position": {
           "x": 730,
-          "y": 1760,
+          "y": 1860,
           "w": 690,
-          "h": 320
+          "h": 340
         }
       },
       {
@@ -265,22 +320,43 @@
         "type": "block",
         "position": {
           "x": 20,
-          "y": 2100,
-          "w": 690,
+          "y": 2220,
+          "w": 1400,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_font_family_serif",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 2520,
+          "w": 460,
           "h": 320
         }
       },
       {
-        "item": "viz_font_family",
+        "item": "viz_font_family_mono",
         "type": "block",
         "position": {
-          "x": 730,
-          "y": 2100,
-          "w": 690,
+          "x": 490,
+          "y": 2520,
+          "w": 460,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_font_family_data",
+        "type": "block",
+        "position": {
+          "x": 960,
+          "y": 2520,
+          "w": 460,
           "h": 320
         }
       }
     ],
     "globalInputs": []
-  }
+  },
+  "theme": "light"
 }

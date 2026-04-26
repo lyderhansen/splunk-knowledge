@@ -44,9 +44,12 @@ COLOR_MAP: dict[str, str] = {
     # Backgrounds and chrome
     "#0F1729": "#FAEAD8",  # dark canvas -> warm light canvas
     "#1A2440": "#EFE7D3",
+    "#1A2540": "#EFE7D3",  # near-twin of #1A2440
     "#151B3A": "#EFE7D3",
     "#1B0E1F": "#FAEAD8",
     "#1F3A5F": "#D8E0F2",
+    "#3D1E1E": "#F4D9D9",  # alert-red bg dark -> alert-red bg light tint
+    "#FF6B6B": "#B91C1C",  # alert-red text dark -> dark red text on light
 
     # Text
     "#FFFFFF": "#1A1A1A",
@@ -74,8 +77,13 @@ def make_light(src: Path, dst: Path) -> None:
     data = json.loads(raw)
     data["theme"] = "light"
     title = data.get("title", "")
-    if title and not title.endswith("(light)"):
-        data["title"] = f"{title} (light)"
+    if title:
+        normalized = title
+        if normalized.endswith("(dark)"):
+            normalized = normalized[: -len("(dark)")].rstrip()
+        if not normalized.endswith("(light)"):
+            normalized = f"{normalized} (light)"
+        data["title"] = normalized
     serialized = json.dumps(data, indent=2)
     serialized = remap_colors(serialized)
     dst.write_text(serialized + "\n")

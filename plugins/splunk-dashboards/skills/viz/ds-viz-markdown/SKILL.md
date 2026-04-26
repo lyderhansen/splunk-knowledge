@@ -62,7 +62,27 @@ present in the schema):
 
 | Option        | Type   | Notes                                                  |
 | ------------- | ------ | ------------------------------------------------------ |
-| `fontFamily`  | string | CSS font stack, e.g. `Georgia, serif`. Use sparingly.  |
+| `fontFamily`  | enum   | One of seven named fonts (see below) **or** a token.   |
+
+### `fontFamily` — allowed values
+
+The schema rejects arbitrary CSS font stacks like `"Georgia, serif"`. Only
+seven literal font names are accepted, plus DOS token interpolation:
+
+| Allowed value          | Class      | Use for                                          |
+| ---------------------- | ---------- | ------------------------------------------------ |
+| `Splunk Platform Sans` | sans (UI)  | Default UI typeface — usually no need to set.    |
+| `Splunk Data Sans`     | sans (data)| Number-friendly variant, KPI annotations.        |
+| `Splunk Platform Mono` | mono       | Log lines, inline code, runbook excerpts.        |
+| `Arial`                | sans       | Generic fallback for portable copy.              |
+| `Helvetica`            | sans       | macOS-leaning sans fallback.                     |
+| `Times New Roman`      | serif      | The **only** allowed serif. Editorial story copy.|
+| `Comic Sans MS`        | display    | Avoid in production. Useful for parody / demos.  |
+
+Plus token interpolation via DOS: `$myFont$`, `$primary:fontName|s$`, etc.
+
+If you set anything else (`Georgia, serif`, `Inter`, `system-ui`, web fonts),
+the editor rejects the panel with `must match a schema in anyOf`.
 
 ## Supported markdown syntax
 
@@ -94,9 +114,7 @@ The patterns below are **all rendered and verified** in
 | Panel | What it demonstrates                                  | Where to use                              |
 | ----- | ----------------------------------------------------- | ----------------------------------------- |
 | 1     | Default markdown - inherits theme defaults            | Baseline editorial copy                   |
-| 2     | All five `fontSize` values side-by-side               | Picking the right size for context        |
-| 3     | `fontSize=extraLarge` - hero callout                  | Dashboard subtitles, hero KPIs            |
-| 4     | `fontSize=extraSmall` - footnotes                     | Source attribution, disclaimers           |
+| 2a-2e | Each `fontSize` value in its own panel                | Picking the right size for context        |
 | 5     | `fontColor` only (transparent bg)                     | Single-message status panels              |
 | 6     | `backgroundColor` + custom text color                 | Section grouping, visual zones            |
 | 7     | Alert-style red-on-dark                               | Active incident banners (sparingly)       |
@@ -105,7 +123,9 @@ The patterns below are **all rendered and verified** in
 | 10    | Inline code + fenced code block                       | SPL snippets, runbooks                    |
 | 11    | Blockquote + bold + italic                            | "Why this matters" callouts               |
 | 12    | Links (inline + reference-style)                      | Sidebar of quick links                    |
-| 13    | `fontFamily=Georgia, serif`                           | Editorial / long-form story panels        |
+| 13a   | `fontFamily=Times New Roman` (only allowed serif)     | Editorial / long-form story panels        |
+| 13b   | `fontFamily=Splunk Platform Mono`                     | Log excerpts, code-leaning copy           |
+| 13c   | `fontFamily=Splunk Data Sans`                         | KPI annotations, tabular numbers          |
 
 ## Drilldown
 
@@ -149,6 +169,13 @@ for interactivity.
 8. **Headings render bigger than `fontSize` suggests.** `fontSize=default`
    is ~14px for body text, but `# H1` inside is still `H1`-sized. The five
    `fontSize` values *scale* the entire hierarchy.
+8b. **`fontSize` is uniform per panel.** There is **no way** to mix sizes
+   inside one markdown panel — `fontSize` scales every line, every heading,
+   every table cell uniformly. If you want hero copy next to footnotes,
+   you must use **two markdown panels**, each with its own `fontSize`.
+   Same constraint applies to `fontColor` and `fontFamily`: one value per
+   panel, no inline overrides. (Markdown's own `**bold**` and `# heading`
+   syntax still bumps weight and relative size *within* the panel's scale.)
 9. **Whitespace matters.** Markdown needs a blank line between paragraphs,
    between headings and lists, and between paragraphs and code blocks. JSON
    string `\n\n` is your friend - single `\n` collapses to a soft break.
@@ -204,12 +231,16 @@ for interactivity.
 {
   "type": "splunk.markdown",
   "options": {
-    "fontFamily": "Georgia, serif",
+    "fontFamily": "Times New Roman",
     "fontSize": "large",
     "markdown": "## What happened\n\n*\"At 09:42 UTC, latency in the EU region began climbing past 800 ms...\"*"
   }
 }
 ```
+
+`Times New Roman` is the only allowed serif. Web fonts and CSS stacks
+(`Georgia`, `Inter`, `system-ui`, `serif`) are rejected by the schema —
+see the `fontFamily` allowed values table above.
 
 ## See also
 
