@@ -1,6 +1,6 @@
 {
   "title": "ds-viz-table - option matrix (light)",
-  "description": "Light-theme companion to ds_viz_table_dark. Same 12 patterns, palette retuned for light backgrounds.",
+  "description": "Test bench for splunk.table. Walks every documented option group: chrome (count, font, fontSize, headerVisibility, showRowNumbers, showInternalFields, backgroundColor), tableFormat (align, cellTypes incl. SparklineCell, rowBackgroundColors, rowColors, headerBackgroundColor, headerColor, sparklineColors, sparklineAreaColors, sparklineTypes), and columnFormat (per-column align, cellTypes, width, rowBackgroundColors, rowColors, sparklineColors). Includes heatmap row-shading via _color_rank rank field + seriesByName + rangeValue.",
   "defaults": {
     "dataSources": {
       "global": {
@@ -43,9 +43,9 @@
     },
     "ds_sparkline": {
       "type": "ds.search",
-      "name": "sparkline - hosts with cpu trend",
+      "name": "sparkline - hosts with cpu mem req err trends",
       "options": {
-        "query": "| makeresults count=4 | streamstats count AS rn | eval host = case(rn==1,\"web-01\",rn==2,\"web-02\",rn==3,\"db-01\",1==1,\"app-03\") | eval current_cpu = case(rn==1,94,rn==2,72,rn==3,55,1==1,28) | eval trend = mvappend(case(rn==1,\"60\",rn==2,\"40\",rn==3,\"30\",1==1,\"22\"),case(rn==1,\"72\",rn==2,\"55\",rn==3,\"45\",1==1,\"24\"),case(rn==1,\"81\",rn==2,\"68\",rn==3,\"52\",1==1,\"26\"),case(rn==1,\"88\",rn==2,\"70\",rn==3,\"54\",1==1,\"27\"),case(rn==1,\"94\",rn==2,\"72\",rn==3,\"55\",1==1,\"28\")) | table host current_cpu trend"
+        "query": "| makeresults count=288 | streamstats count AS rn | eval _time = relative_time(now(), \"-\" . tostring((288-rn)*5) . \"m\") | eval host = case((rn-1) % 4 == 0, \"web-01\", (rn-1) % 4 == 1, \"web-02\", (rn-1) % 4 == 2, \"db-01\", 1==1, \"app-03\") | eval base_cpu = case(host==\"web-01\",75,host==\"web-02\",55,host==\"db-01\",45,1==1,28) | eval base_mem = case(host==\"web-01\",68,host==\"web-02\",50,host==\"db-01\",72,1==1,32) | eval base_req = case(host==\"web-01\",1400,host==\"web-02\",640,host==\"db-01\",240,1==1,80) | eval base_err = case(host==\"web-01\",18,host==\"web-02\",4,host==\"db-01\",2,1==1,1) | eval cpu = base_cpu + (rn % 25) - 12 | eval mem = base_mem + (rn % 18) - 8 | eval req = base_req + (rn % 80) * 4 - 160 | eval err = base_err + (rn % 7) - 3 | stats latest(cpu) AS current_cpu, sparkline(avg(cpu), 30m) AS trend_cpu, sparkline(avg(mem), 30m) AS trend_mem, sparkline(sum(req), 30m) AS trend_req, sparkline(sum(err), 30m) AS trend_err by host"
       }
     },
     "ds_align": {
@@ -60,7 +60,7 @@
     "viz_title": {
       "type": "splunk.markdown",
       "options": {
-        "markdown": "# `splunk.table` - option matrix (light)\n\nLight-theme companion. Same 12 patterns; rowBackgroundColors / headerBackgroundColor / sparklineColors retuned for light backgrounds (warm pastel rows, cool blue accents).",
+        "markdown": "# `splunk.table` - option matrix\n\nThe go-to viz for showing rows and columns. Comes with three layered formatting tiers:\n\n1. **Global chrome** in `options` (font, headers, count, backgroundColor)\n2. **`tableFormat`** for whole-table effects (align grid, cell renderers, row tinting, header colours, sparklines)\n3. **`columnFormat`** for per-column overrides (width, align, cell type, rowBackgroundColors of one column)\n\nDynamic options live in `context` and are referenced via DOS expressions: `> table | seriesByName('rank_field') | rangeValue(bands)`.\n\n**Always set `showInternalFields: false`** to hide rank fields like `_color_rank` from the rendered output.",
         "fontFamily": "Splunk Platform Sans",
         "fontSize": "default"
       }
@@ -142,8 +142,8 @@
       },
       "options": {
         "tableFormat": {
-          "headerBackgroundColor": "#FAEAD8",
-          "headerColor": "#C2185B"
+          "headerBackgroundColor": "#3A1B5C",
+          "headerColor": "#E89A2C"
         },
         "showInternalFields": false
       }
@@ -151,16 +151,14 @@
     "viz_heatmap": {
       "type": "splunk.table",
       "title": "7. Heatmap rows via _color_rank + rangeValue (severity tinting)",
-      "description": "The classic pattern. Compute a numeric rank field upstream (`_color_rank`), keep `showInternalFields: false`, and feed the rank into `tableFormat.rowBackgroundColors` and `rowColors` via DOS. The bands in `context` map rank to colour. Notice critical row reads RED end-to-end without explicit row-by-row config.",
+      "description": "The classic pattern. Compute a numeric rank field upstream (`_color_rank`), keep `showInternalFields: false`, and feed the rank into `tableFormat.rowBackgroundColors` and `rowColors` via DOS. The bands in `context` map rank to colour. Notice critical row reads RED end-to-end without explicit row-by-row config. Header colours are intentionally NOT overridden here so they fall back to `themes.defaultHeaderBackgroundColor` and stay readable in both dark and light theme.",
       "dataSources": {
         "primary": "ds_heatmap"
       },
       "options": {
         "tableFormat": {
           "rowBackgroundColors": "> table | seriesByName('_color_rank') | rangeValue(severityRowBg)",
-          "rowColors": "> table | seriesByName('_color_rank') | rangeValue(severityRowFg)",
-          "headerBackgroundColor": "#EFE7D3",
-          "headerColor": "#6B5E48"
+          "rowColors": "> table | seriesByName('_color_rank') | rangeValue(severityRowFg)"
         },
         "showInternalFields": false
       },
@@ -168,26 +166,26 @@
         "severityRowBg": [
           {
             "to": 1.5,
-            "value": "#F8C7CF"
+            "value": "#4a1722"
           },
           {
             "from": 1.5,
             "to": 2.5,
-            "value": "#FCE3B3"
+            "value": "#4a2d17"
           },
           {
             "from": 2.5,
             "to": 3.5,
-            "value": "#F1E1A8"
+            "value": "#45391a"
           },
           {
             "from": 3.5,
             "to": 4.5,
-            "value": "#C8E5D2"
+            "value": "#173d2b"
           },
           {
             "from": 4.5,
-            "value": "#D8E0F2"
+            "value": "#EFE7D3"
           }
         ],
         "severityRowFg": [
@@ -197,37 +195,85 @@
           },
           {
             "from": 4.5,
-            "value": "#5A5C66"
+            "value": "#A8A8B3"
           }
         ]
       }
     },
     "viz_sparkline": {
       "type": "splunk.table",
-      "title": "8. cellTypes: SparklineCell on the trend column",
-      "description": "Convert one column to inline sparklines. Pattern: an array column (`trend` is mvappend()'d into 5 numeric strings) plus columnFormat.cellTypes = ['SparklineCell']. Pair with sparklineColors / sparklineTypes to control the rendering.",
+      "title": "8. SparklineCell - canonical `stats sparkline()` pattern",
+      "description": "Inline sparklines per row. Two things must be right at once: (1) the SPL must produce REAL multivalue fields with enough datapoints across the dashboard's time window. `| makeresults count=288 | eval _time = relative_time(now(), \"-\" . tostring((288-rn)*5) . \"m\") | ... | stats latest(...) AS current_x, sparkline(avg(x), 30m) AS trend_x by host` gives 51 datapoints per host across `-24h@h, now`. With too few datapoints (or all-zero buckets), Splunk falls back to a flat default colour and only row 1 looks right. (2) `columnFormat.<col>.sparklineColors` and `sparklineTypes` are `string[]` where each element styles ONE row of that column - if you have 4 rows you pass 4 entries. Splunk auto-detects multivalue columns as SparklineCell via the default `tableFormat.cellTypes` DOS, so no need to set `cellTypes` per column. Anti-pattern: faking mv with `eval x=\"a,b,c\" | makemv delim/tokenizer x` produces strings, not multivalue fields.",
       "dataSources": {
         "primary": "ds_sparkline"
       },
       "options": {
         "columnFormat": {
-          "trend": {
-            "cellTypes": [
-              "SparklineCell"
-            ],
+          "host": {
+            "width": 130
+          },
+          "current_cpu": {
+            "width": 110
+          },
+          "trend_cpu": {
             "sparklineColors": [
-              "#1F77B4"
+              "#2E8B57",
+              "#2E8B57",
+              "#2E8B57",
+              "#2E8B57"
             ],
             "sparklineTypes": [
+              "area",
+              "area",
+              "area",
               "area"
             ],
             "width": 200
           },
-          "host": {
-            "width": 140
+          "trend_mem": {
+            "sparklineColors": [
+              "#3F6FB7",
+              "#3F6FB7",
+              "#3F6FB7",
+              "#3F6FB7"
+            ],
+            "sparklineTypes": [
+              "line",
+              "line",
+              "line",
+              "line"
+            ],
+            "width": 200
           },
-          "current_cpu": {
-            "width": 130
+          "trend_req": {
+            "sparklineColors": [
+              "#E89A2C",
+              "#E89A2C",
+              "#E89A2C",
+              "#E89A2C"
+            ],
+            "sparklineTypes": [
+              "area",
+              "area",
+              "area",
+              "area"
+            ],
+            "width": 220
+          },
+          "trend_err": {
+            "sparklineColors": [
+              "#C2185B",
+              "#C2185B",
+              "#C2185B",
+              "#C2185B"
+            ],
+            "sparklineTypes": [
+              "line",
+              "line",
+              "line",
+              "line"
+            ],
+            "width": 200
           }
         }
       }
@@ -294,7 +340,7 @@
     "type": "absolute",
     "options": {
       "width": 1440,
-      "height": 2480,
+      "height": 2820,
       "display": "auto-scale"
     },
     "structure": [
@@ -374,7 +420,7 @@
         "position": {
           "x": 16,
           "y": 1060,
-          "w": 696,
+          "w": 1408,
           "h": 320
         }
       },
@@ -382,10 +428,10 @@
         "item": "viz_sparkline",
         "type": "block",
         "position": {
-          "x": 728,
-          "y": 1060,
-          "w": 696,
-          "h": 320
+          "x": 16,
+          "y": 1396,
+          "w": 1408,
+          "h": 360
         }
       },
       {
@@ -393,7 +439,7 @@
         "type": "block",
         "position": {
           "x": 16,
-          "y": 1396,
+          "y": 1772,
           "w": 696,
           "h": 200
         }
@@ -403,7 +449,7 @@
         "type": "block",
         "position": {
           "x": 728,
-          "y": 1396,
+          "y": 1772,
           "w": 696,
           "h": 200
         }
@@ -413,7 +459,7 @@
         "type": "block",
         "position": {
           "x": 16,
-          "y": 1612,
+          "y": 1988,
           "w": 696,
           "h": 320
         }
@@ -423,12 +469,13 @@
         "type": "block",
         "position": {
           "x": 728,
-          "y": 1612,
+          "y": 1988,
           "w": 696,
           "h": 320
         }
       }
     ],
     "globalInputs": []
-  }
+  },
+  "theme": "light"
 }

@@ -175,6 +175,57 @@ Pattern - drill into the underlying events:
 - The chart defaults to `dynamic` color even if you provide a fourth
   column - you must explicitly set `colorMode: "categorical"`.
 
+## Sizing for large panels
+
+**The default `bubbleRadiusMax: 15` is calibrated for compact tiles
+(~400-700 px wide). On big panels - full-width hero rows or wallboards -
+bubbles either feel lost in whitespace, or, more dangerously, the
+*largest* cells balloon and overlap their neighbors. Tune sizing to the
+panel's rendered size, not just to the data.
+
+| Rendered panel width | Suggested `bubbleRadiusMax` | Notes |
+| -------------------- | --------------------------- | ----- |
+| `<= 480 px` (compact tile) | 12-15 (default-ish) | The published default. |
+| 480-800 px (mid panel)     | 18-22                | Headline-friendly. |
+| 800-1200 px (full row)     | 22-28                | Pair with `bubbleRadiusMin: 3-4` so low cells stay legible. |
+| `>= 1200 px` (wallboard)   | 26-32                | Confirm by eye - wider grid spacing tolerates bigger bubbles. |
+
+**Always raise `bubbleRadiusMin` when you raise `Max`.** If you push
+`bubbleRadiusMax: 28` while leaving `bubbleRadiusMin: 1`, the dynamic
+range becomes so wide that mid-value cells render almost invisibly while
+peak cells dominate the grid.
+
+**Watch `showDynamicBubbleSize: false` on dense grids.** When every
+bubble renders at `bubbleRadiusMax`, neighboring cells overlap and the
+hover tooltip can land between two bubbles - users either get the wrong
+tooltip or no tooltip at all. The pattern is fine for small grids
+(`<= 8` cells per row) but on a 24-hour-by-7-day grid you must drop
+`bubbleRadiusMax` to ~8-10 to keep cells readable. This is the failure
+mode in panel 9 of the test bench: 24 columns x same-size bubbles =
+unreadable centers.
+
+**Categorical color + static size on dense grids.** When you combine
+`showDynamicBubbleSize: false` with `colorMode: "categorical"` (panel
+10 of the test bench), the chart becomes a *categorical heatmap*. Same
+overlap rule applies - keep `bubbleRadiusMax` small (`<= 10`) so each
+cell stays a distinct dot.
+
+## Minimum readable panel size
+
+**Don't render a punchcard in a panel smaller than ~500 x 300 px.** Below
+that threshold the bubbles render correctly, but the hover-tooltip
+hit-area shrinks faster than the visible bubble - the tooltip lands in
+the wrong cell, or doesn't surface at all, and the user can't read off
+the value. This is hardest to spot on dense grids (24h x 7d) where
+neighboring bubbles are already close together.
+
+If your layout forces a smaller tile, prefer one of these instead:
+
+- A **`splunk.singlevalue`** if the user only needs the headline number.
+- A **`splunk.line`** of the metric over time if the cyclic pattern
+  isn't critical.
+- A larger panel reached via drilldown from a smaller indicator.
+
 ## Reference
 
 Verified against `SplunkCloud-10.4.2604-DashStudio` PDF.

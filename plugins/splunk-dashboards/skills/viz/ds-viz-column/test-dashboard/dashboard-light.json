@@ -1,6 +1,6 @@
 {
   "title": "ds-viz-column - option matrix (light)",
-  "description": "[LIGHT THEME] Test bench for splunk.column. Each panel exercises a distinct option group: stack modes, columnGrouping, columnSpacing/seriesSpacing, dataValuesDisplay, xAxisLabelRotation, annotations, dual y-axis, split sub-charts, sparkbar pattern. SPL is makeresults-based so this dashboard runs in any Splunk instance with no setup. Same axis convention as line/area: hide x-axis title (the word _time / category-name is noise when the title repeats it), keep labels visible (auto), hide major tick marks.",
+  "description": "Test bench for splunk.column. Each panel exercises a distinct option group: stack modes, columnGrouping, columnSpacing/seriesSpacing, dataValuesDisplay, xAxisLabelRotation, annotations, dual y-axis, split sub-charts, sparkbar pattern. SPL is makeresults-based so this dashboard runs in any Splunk instance with no setup. Same axis convention as line/area: hide x-axis title (the word _time / category-name is noise when the title repeats it), keep labels visible (auto), hide major tick marks.",
   "defaults": {
     "dataSources": {
       "global": {
@@ -78,16 +78,16 @@
     },
     "ds_annotations_data": {
       "type": "ds.search",
-      "name": "main column for annotation panel",
+      "name": "main column for annotation panel - hourly traffic",
       "options": {
-        "query": "| makeresults count=12 | streamstats count as i | eval month = case(i=1,\"Jan\",i=2,\"Feb\",i=3,\"Mar\",i=4,\"Apr\",i=5,\"May\",i=6,\"Jun\",i=7,\"Jul\",i=8,\"Aug\",i=9,\"Sep\",i=10,\"Oct\",i=11,\"Nov\",1==1,\"Dec\"), revenue = round(100000 + 30000*sin(i/3) + (i*5000) + random()%10000) | table month revenue"
+        "query": "| makeresults count=12 | streamstats count as i | eval _time = relative_time(now(), \"-\" . (12-i) . \"h\") | eval visits = round(8000 + 2500*sin(i/2) + (i*150) + random()%500) | table _time visits"
       }
     },
     "ds_annotations_marks": {
       "type": "ds.search",
-      "name": "annotation marks - month label color",
+      "name": "annotation marks - deploy and incident events",
       "options": {
-        "query": "| makeresults count=2 | streamstats count as i | eval annotationX = case(i=1,\"Mar\",1==1,\"Nov\"), annotationLabel = case(i=1,\"Product Launch\",1==1,\"Black Friday\"), annotationColor = case(i=1,\"#B36B00\",1==1,\"#C62368\") | table annotationX annotationLabel annotationColor"
+        "query": "| makeresults count=3 | streamstats count as i | eval _time = case(i=1, relative_time(now(), \"-9h\"), i=2, relative_time(now(), \"-5h\"), 1==1, relative_time(now(), \"-2h\")) | eval annotationLabel = case(i=1,\"v4.2 deploy\", i=2,\"DB failover\", 1==1,\"Cache warm-up\") | eval annotationColor = case(i=1,\"#2E8B57\", i=2,\"#C2185B\", 1==1,\"#E89A2C\") | table _time annotationLabel annotationColor"
       }
     },
     "ds_dualaxis": {
@@ -116,7 +116,7 @@
     "viz_title": {
       "type": "splunk.markdown",
       "options": {
-        "markdown": "# `splunk.column` - option matrix (light theme)\n\nVertical bars - **categorical x-axis, value y-axis**. Each panel exercises one option group. **Convention:** `xAxisTitleVisibility:\"hide\"` (avoid repeating the category name), `xAxisLabelVisibility:\"auto\"`, `xAxisMajorTickVisibility:\"hide\"`. **Column-specific:** `columnGrouping` (`auto`/`overlay`), `columnSpacing`, `seriesSpacing`, `xAxisLabelRotation` (-90/-45/0/45/90), `dataValuesDisplay` (off/all/minmax). Annotations are supported.",
+        "markdown": "# `splunk.column` - option matrix\n\nVertical bars - **categorical x-axis, value y-axis**. Each panel exercises one option group. **Convention:** `xAxisTitleVisibility:\"hide\"` (avoid repeating the category name), `xAxisLabelVisibility:\"auto\"`, `xAxisMajorTickVisibility:\"hide\"`. **Column-specific:** `columnGrouping` (`auto`/`overlay`), `columnSpacing`, `seriesSpacing`, `xAxisLabelRotation` (-90/-45/0/45/90), `dataValuesDisplay` (off/all/minmax). Annotations are supported.",
         "fontFamily": "Splunk Platform Sans",
         "fontSize": "default"
       }
@@ -130,7 +130,7 @@
       },
       "options": {
         "seriesColors": [
-          "#0066B3"
+          "#1F77B4"
         ],
         "yAxisTitleText": "Requests",
         "xAxisTitleVisibility": "hide",
@@ -147,9 +147,9 @@
       },
       "options": {
         "seriesColors": [
-          "#0066B3",
-          "#C62368",
-          "#B36B00"
+          "#1F77B4",
+          "#C2185B",
+          "#E89A2C"
         ],
         "legendDisplay": "bottom",
         "yAxisTitleText": "Requests / day",
@@ -168,9 +168,9 @@
       "options": {
         "stackMode": "stacked",
         "seriesColorsByField": {
-          "frontend": "#0066B3",
-          "backend": "#4A6BD9",
-          "database": "#7B47CC"
+          "frontend": "#1F77B4",
+          "backend": "#3F6FB7",
+          "database": "#7B49B7"
         },
         "legendDisplay": "bottom",
         "yAxisTitleText": "CPU cores used",
@@ -189,9 +189,9 @@
       "options": {
         "stackMode": "stacked100",
         "seriesColorsByField": {
-          "mobile": "#0066B3",
-          "desktop": "#4A6BD9",
-          "tablet": "#B36B00"
+          "mobile": "#1F77B4",
+          "desktop": "#3F6FB7",
+          "tablet": "#E89A2C"
         },
         "legendDisplay": "bottom",
         "yAxisTitleText": "Traffic share (%)",
@@ -211,8 +211,8 @@
       "options": {
         "columnGrouping": "overlay",
         "seriesColorsByField": {
-          "target": "#4A6BD9",
-          "actual": "#0066B3"
+          "target": "#3F6FB7",
+          "actual": "#1F77B4"
         },
         "legendDisplay": "bottom",
         "yAxisTitleText": "Requests / day",
@@ -232,7 +232,7 @@
       },
       "options": {
         "seriesColors": [
-          "#1F8C5E"
+          "#2E8B57"
         ],
         "showYAxisWithZero": true,
         "yAxisTitleText": "Week-over-week change (%)",
@@ -251,7 +251,7 @@
       },
       "options": {
         "seriesColors": [
-          "#4A6BD9"
+          "#3F6FB7"
         ],
         "dataValuesDisplay": "minmax",
         "yAxisTitleText": "Count",
@@ -269,7 +269,7 @@
       },
       "options": {
         "seriesColors": [
-          "#B36B00"
+          "#E89A2C"
         ],
         "xAxisLabelRotation": -45,
         "legendTruncation": "ellipsisMiddle",
@@ -283,19 +283,19 @@
     "viz_annotations": {
       "type": "splunk.column",
       "title": "9. Event annotations - second dataSource",
-      "description": "Column charts support the same annotation pattern as line/area: a separate dataSource with annotationX/Label/Color fields. annotationX must match a category value present in the primary search.",
+      "description": "Column charts support the same annotation pattern as line/area: a separate dataSource with `annotationX` (a `_time` value matching the primary x-axis), `annotationLabel`, and `annotationColor`. Annotations render as colored vertical flags with a hover tooltip - here three deploy/incident markers across 12 hours of traffic.",
       "dataSources": {
         "primary": "ds_annotations_data",
         "annotation": "ds_annotations_marks"
       },
       "options": {
         "seriesColors": [
-          "#0066B3"
+          "#1F77B4"
         ],
-        "annotationX": "> annotation | seriesByName('annotationX')",
+        "annotationX": "> annotation | seriesByName('_time')",
         "annotationLabel": "> annotation | seriesByName('annotationLabel')",
         "annotationColor": "> annotation | seriesByName('annotationColor')",
-        "yAxisTitleText": "Revenue ($)",
+        "yAxisTitleText": "Visits",
         "yAxisAbbreviation": "auto",
         "xAxisTitleVisibility": "hide",
         "xAxisLabelVisibility": "auto",
@@ -313,8 +313,8 @@
         "overlayFields": "conversion_pct",
         "showOverlayY2Axis": true,
         "seriesColorsByField": {
-          "visits": "#0066B3",
-          "conversion_pct": "#C62368"
+          "visits": "#1F77B4",
+          "conversion_pct": "#C2185B"
         },
         "y2AxisTitleText": "Conversion (%)",
         "yAxisTitleText": "Visits / day",
@@ -336,9 +336,9 @@
         "showSplitSeries": true,
         "showIndependentYRanges": true,
         "seriesColors": [
-          "#0066B3",
-          "#C62368",
-          "#B36B00"
+          "#1F77B4",
+          "#C2185B",
+          "#E89A2C"
         ],
         "legendDisplay": "off",
         "xAxisTitleVisibility": "hide",
@@ -355,7 +355,7 @@
       },
       "options": {
         "seriesColors": [
-          "#0066B3"
+          "#1F77B4"
         ],
         "xAxisTitleVisibility": "hide",
         "xAxisLabelVisibility": "hide",
@@ -509,5 +509,6 @@
       }
     ],
     "globalInputs": []
-  }
+  },
+  "theme": "light"
 }

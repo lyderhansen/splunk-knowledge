@@ -54,8 +54,10 @@ Filler gauges read fine in fairly compact panels. Recommended sizing:
 
 | Orientation | Editor minimum (w × h) | Sweet spot |
 | ----------- | ---------------------- | ---------- |
-| `vertical`  | **200 × 150**           | 280 × 300  |
-| `horizontal`| **200 × 100**           | 460 × 220  |
+| `vertical`  | **200 × 200**           | 280 × 300  |
+| `horizontal`| **200 × 150**           | 460 × 220  |
+
+(Verified on Splunk Enterprise 10.2.1. Below these the bar artwork clips and the value/label readouts collide.)
 
 In KPI rows of 4-6 tiles, prefer `horizontal` so labels don't crop.
 
@@ -72,7 +74,7 @@ The Studio editor refuses to drag a fillergauge below the minimums above. To get
 }
 ```
 
-Why it works: the surface card around each panel disappears, so adjacent tiles stop looking like separate panels. With `labelDisplay: "off"` and `valueDisplay: "off"` the bar artwork itself is the panel content — at 200 × 150 vertical or 200 × 100 horizontal it's plenty.
+Why it works: the surface card around each panel disappears, so adjacent tiles stop looking like separate panels. With `labelDisplay: "off"` and `valueDisplay: "off"` the bar artwork itself is the panel content — at 200 × 200 vertical or 220 × 150 horizontal it's plenty.
 
 **Rules of thumb:**
 
@@ -118,9 +120,9 @@ The test dashboard has 20 panels covering every option:
 
 **Compact tile bank (panels 13–20):**
 
-13–16. **4-up vertical bank** at 200 × 150 each, transparent chrome, severity-coloured fills (`#33FF99` / `#FFB627` / `#FF2D95` / `#7AA2FF` for CPU/MEM/DISK/NET). Layout: blocks at `y: 1380, h: 200, w: 200`, `x` stepping `16 → 216 → 416 → 616`. The panel `title` carries each metric label since `labelDisplay` is off.
+13–16. **4-up vertical bank** at 200 × 200 each, transparent chrome, severity-coloured fills (`#33FF99` / `#FFB627` / `#FF2D95` / `#7AA2FF` for CPU/MEM/DISK/NET). Layout: blocks at `y: 1380, h: 200, w: 200`, `x` stepping `16 → 216 → 416 → 616`. The panel `title` carries each metric label since `labelDisplay` is off.
 
-17–20. **Stacked horizontal queue panel** at 220 × 100 each, transparent chrome, severity-coloured fills representing ingest / search / indexer / forwarder queues. Layout: blocks at `x: 856, w: 220, h: 100`, `y` stepping `1380 → 1488 → 1596 → 1704` (108 px row height = 100 px tile + 8 px gap).
+17–20. **Stacked horizontal queue panel** at 220 × 150 each, transparent chrome, severity-coloured fills representing ingest / search / indexer / forwarder queues. Layout: blocks at `x: 856, w: 220, h: 150`, `y` stepping `1380 → 1538 → 1696 → 1854` (158 px row height = 150 px tile + 8 px gap).
 
 The `options` block for every compact tile is the same shape — only `gaugeColor`, `dataSources.primary`, and (for horizontal) `orientation` change:
 
@@ -192,7 +194,7 @@ If you also leave a gap (e.g. `to:50` then `from:60`) the missing range (50-60) 
 - **`majorTickInterval` is in pixels, not values.** `25` means "tick every 25px along the gauge axis", not "tick every 25 units of value".
 - **`labelDisplay` and `valueDisplay` accept `percentage` only when the source value range matches.** With a 0-100 scale, `percentage` and `number` render identically. The mode becomes meaningful only when the source units differ from the gauge scale.
 - **`backgroundColor` must contrast with `gaugeColor`.** Dark fill on dark bg disappears. Pick from the theme palette or use a tinted near-black for alarm tiles.
-- **Editor minimum is 200 × 150 vertical / 200 × 100 horizontal.** Below that the bar artwork breaks. To pack tiles tighter than the editor's chrome implies, set `backgroundColor: "transparent"` on each tile so adjacent panels stop reading as separate cards — see patterns 13–20 and the *Packing tighter* section above.
+- **Editor minimum is 200 × 200 vertical / 200 × 150 horizontal** (verified on Splunk Enterprise 10.2.1). Below that the bar artwork breaks. To pack tiles tighter than the editor's chrome implies, set `backgroundColor: "transparent"` on each tile so adjacent panels stop reading as separate cards — see patterns 13–20 and the *Packing tighter* section above.
 - **No annotations, no overlay, no trend line.** Use a sibling `splunk.singlevalue` with a sparkline if you need history alongside the fill.
 
 ## Cross-references

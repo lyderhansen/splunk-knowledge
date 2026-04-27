@@ -178,6 +178,18 @@ Same surface as `splunk.scatter`:
 - **Time on x is wrong tool.** Bubble axes are linear/log numeric. For `_time`, switch to `splunk.line` with `markerDisplay` for size effects.
 - **`resultLimit: 50000` is high.** Pre-aggregate with `stats` before plotting if your SPL returns 100k+ rows.
 - **Log scale with zero/negative values fails.** When `*AxisScale: "log"`, exclude `<= 0` values upstream.
+- **Bubble sizing scales with absolute pixels, not panel width.** `bubbleSizeMin: 10 / Max: 50` is calibrated for compact tiles. On a wide hero panel (>= 1200 px), the largest bubbles can balloon and overlap neighbors. On a tiny tile (<= 400 px), they obscure the whole plot. Tune sizing to the rendered panel size, not the data alone:
+
+  | Rendered panel width | Suggested `bubbleSizeMin` / `Max` |
+  | -------------------- | --------------------------------- |
+  | `<= 400 px` (compact)         | 4 / 18                |
+  | 400-700 px (mid)              | 6 / 28                |
+  | 700-1100 px (full row)        | 8 / 40 (default-ish)  |
+  | `>= 1100 px` (hero / board)   | 10 / 60               |
+
+  Always lift `bubbleSizeMin` when you lift `bubbleSizeMax` - otherwise
+  the dynamic range becomes so wide that mid-value bubbles disappear
+  while one peak fills the panel.
 
 ## Cross-references
 

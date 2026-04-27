@@ -1,6 +1,6 @@
 {
   "title": "ds-viz-bar - option matrix (light)",
-  "description": "[LIGHT THEME] Test bench for splunk.bar (HORIZONTAL bars). IMPORTANT: bars are horizontal so the value axis is the x-axis and the category axis is the y-axis - the opposite of splunk.column. Each panel exercises a distinct option group: stack modes, barSpacing, seriesSpacing, dataValuesDisplay, dual-axis (xAxis2 in spirit, but uses overlayFields like the others), split sub-charts, and the sparkbar pattern. SPL is makeresults-based so this dashboard runs in any Splunk instance with no setup. Convention: hide y-axis title (the category name is already visible in labels), keep labels visible (auto), hide major tick marks.",
+  "description": "Test bench for splunk.bar (HORIZONTAL bars). IMPORTANT: bars are horizontal so the value axis is the x-axis and the category axis is the y-axis - the opposite of splunk.column. Each panel exercises a distinct option group: stack modes, barSpacing, seriesSpacing, dataValuesDisplay, dual-axis (xAxis2 in spirit, but uses overlayFields like the others), split sub-charts, and the sparkbar pattern. SPL is makeresults-based so this dashboard runs in any Splunk instance with no setup. Convention: hide y-axis title (the category name is already visible in labels), keep labels visible (auto), hide major tick marks.",
   "defaults": {
     "dataSources": {
       "global": {
@@ -109,7 +109,7 @@
     "viz_title": {
       "type": "splunk.markdown",
       "options": {
-        "markdown": "# `splunk.bar` - option matrix (light theme)\n\n**Horizontal bars - the axes are flipped vs. splunk.column.** Categories on the y-axis, values on the x-axis. So `xAxis*` controls the value axis and `yAxis*` controls the category axis. **Convention:** `yAxisTitleVisibility:\"hide\"` (category name is in the labels), `yAxisLabelVisibility:\"auto\"`, `yAxisMajorTickVisibility:\"hide\"`. **Bar-specific:** `barSpacing` (between categories), `seriesSpacing` (within a category, between series), `stackMode` (auto/stacked/stacked100). Bar does NOT have `columnGrouping` (column-only). Per the 10.4 reference, `annotation*` options are listed as supported on bar but not in the option table - tested in column instead.",
+        "markdown": "# `splunk.bar` - option matrix\n\n**Horizontal bars - the axes are flipped vs. splunk.column.** Categories on the y-axis, values on the x-axis. So `xAxis*` controls the value axis and `yAxis*` controls the category axis. **Convention:** `yAxisTitleVisibility:\"hide\"` (category name is in the labels), `yAxisLabelVisibility:\"auto\"`, `yAxisMajorTickVisibility:\"hide\"`. **Bar-specific:** `barSpacing` (between categories), `seriesSpacing` (within a category, between series), `stackMode` (auto/stacked/stacked100). Bar does NOT have `columnGrouping` (column-only). Per the 10.4 reference, `annotation*` options are listed as supported on bar but not in the option table - tested in column instead.",
         "fontFamily": "Splunk Platform Sans",
         "fontSize": "default"
       }
@@ -123,7 +123,7 @@
       },
       "options": {
         "seriesColors": [
-          "#0066B3"
+          "#1F77B4"
         ],
         "xAxisTitleText": "Requests",
         "yAxisTitleVisibility": "hide",
@@ -140,9 +140,9 @@
       },
       "options": {
         "seriesColors": [
-          "#1F8C5E",
-          "#B36B00",
-          "#C62368"
+          "#2E8B57",
+          "#E89A2C",
+          "#C2185B"
         ],
         "legendDisplay": "bottom",
         "xAxisTitleText": "Latency (ms)",
@@ -161,9 +161,9 @@
       "options": {
         "stackMode": "stacked",
         "seriesColorsByField": {
-          "errors_4xx": "#B36B00",
-          "errors_5xx": "#C62368",
-          "timeouts": "#7B47CC"
+          "errors_4xx": "#E89A2C",
+          "errors_5xx": "#C2185B",
+          "timeouts": "#7B49B7"
         },
         "legendDisplay": "bottom",
         "xAxisTitleText": "Errors / 5min",
@@ -182,9 +182,9 @@
       "options": {
         "stackMode": "stacked100",
         "seriesColorsByField": {
-          "success": "#1F8C5E",
-          "retried": "#B36B00",
-          "failed": "#C62368"
+          "success": "#2E8B57",
+          "retried": "#E89A2C",
+          "failed": "#C2185B"
         },
         "legendDisplay": "bottom",
         "xAxisTitleText": "Outcome share (%)",
@@ -203,7 +203,7 @@
       },
       "options": {
         "seriesColors": [
-          "#0066B3"
+          "#1F77B4"
         ],
         "dataValuesDisplay": "all",
         "xAxisTitleText": "Revenue ($)",
@@ -223,7 +223,7 @@
       },
       "options": {
         "seriesColors": [
-          "#1F8C5E"
+          "#2E8B57"
         ],
         "showXAxisWithZero": true,
         "xAxisTitleText": "Week-over-week change (%)",
@@ -241,7 +241,7 @@
       },
       "options": {
         "seriesColors": [
-          "#4A6BD9"
+          "#3F6FB7"
         ],
         "dataValuesDisplay": "all",
         "xAxisTitleVisibility": "hide",
@@ -263,7 +263,7 @@
       },
       "options": {
         "seriesColors": [
-          "#0066B3"
+          "#1F77B4"
         ],
         "barSpacing": 1,
         "xAxisTitleText": "Count",
@@ -282,8 +282,8 @@
       },
       "options": {
         "seriesColors": [
-          "#4A6BD9",
-          "#C62368"
+          "#3F6FB7",
+          "#C2185B"
         ],
         "seriesSpacing": 4,
         "legendDisplay": "bottom",
@@ -304,8 +304,8 @@
         "overlayFields": "conversion_pct",
         "showOverlayY2Axis": true,
         "seriesColorsByField": {
-          "revenue": "#0066B3",
-          "conversion_pct": "#C62368"
+          "revenue": "#1F77B4",
+          "conversion_pct": "#C2185B"
         },
         "y2AxisTitleText": "Conversion (%)",
         "xAxisTitleText": "Revenue ($)",
@@ -327,9 +327,9 @@
         "showSplitSeries": true,
         "showIndependentYRanges": true,
         "seriesColors": [
-          "#C62368",
-          "#B36B00",
-          "#4A6BD9"
+          "#C2185B",
+          "#E89A2C",
+          "#3F6FB7"
         ],
         "legendDisplay": "off",
         "yAxisTitleVisibility": "hide",
@@ -340,13 +340,13 @@
     "viz_hidden_chrome": {
       "type": "splunk.bar",
       "title": "12. Hidden chrome - sparkbar (everything off)",
-      "description": "Sparkbar pattern: all chrome off. Use inside KPI tiles or executive cards where the bar chart accompanies a single value.",
+      "description": "Sparkbar pattern: all chrome off. **`showYMajorGridLines` defaults to `true` on bar** (the y-axis is the category axis but the option still draws horizontal grid lines), so it must be set to `false` for a true sparkbar. Use inside KPI tiles or executive cards where the bar chart accompanies a single value.",
       "dataSources": {
         "primary": "ds_minimal"
       },
       "options": {
         "seriesColors": [
-          "#0066B3"
+          "#1F77B4"
         ],
         "xAxisTitleVisibility": "hide",
         "xAxisLabelVisibility": "hide",
@@ -355,6 +355,7 @@
         "yAxisLabelVisibility": "hide",
         "yAxisMajorTickVisibility": "hide",
         "showXMajorGridLines": false,
+        "showYMajorGridLines": false,
         "legendDisplay": "off",
         "backgroundColor": "transparent"
       }
@@ -500,5 +501,6 @@
       }
     ],
     "globalInputs": []
-  }
+  },
+  "theme": "light"
 }

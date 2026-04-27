@@ -214,7 +214,7 @@
     "viz_compact_intro": {
       "type": "splunk.markdown",
       "options": {
-        "markdown": "## Compact tile patterns\n\nThe Studio editor refuses to resize a `splunk.markergauge` panel below ~200x300 (vertical) or ~200x100 (horizontal). The trick to get a denser KPI bank: **set `backgroundColor: \"transparent\"` and place panels at the minimum size, edge-to-edge.** The panel chrome disappears and only the gauge artwork remains, so four gauges side-by-side read as one tight unit. Below: a 4-up vertical bank (panels 13-16) and a stacked horizontal bank (panels 17-20). Compare with panels 1-3 which use the default opaque chrome.\n\n**Rules:**\n- Vertical: 200x300 minimum. Use `labelDisplay: \"off\"` + `valueDisplay: \"off\"` to recover vertical space and let a sibling singlevalue carry the number.\n- Horizontal: 200x100 minimum. Stack with 4-8 px gap so the gauges feel related but not glued.\n- `backgroundColor: \"transparent\"` is the unlock. Without it you see the surface card and the trick fails.",
+        "markdown": "## Compact tile patterns\n\nThe Studio editor refuses to resize a `splunk.markergauge` panel below 200x200 (vertical) or 200x150 (horizontal) on Splunk Enterprise 10.2.1. The trick to get a denser KPI bank: **set `backgroundColor: \"transparent\"` and place panels at the minimum size, edge-to-edge.** The panel chrome disappears and only the gauge artwork remains, so four gauges side-by-side read as one tight unit. Below: a 4-up vertical bank (panels 13-16) and a stacked horizontal bank (panels 17-20). Compare with panels 1-3 which use the default opaque chrome.\n\n**Rules:**\n- Vertical: 200x200 minimum. Use `labelDisplay: \"off\"` + `valueDisplay: \"off\"` to recover vertical space and let a sibling singlevalue carry the number.\n- Horizontal: 200x150 minimum. Stack with 4-8 px gap so the gauges feel related but not glued.\n- `backgroundColor: \"transparent\"` is the unlock. Without it you see the surface card and the trick fails.",
         "fontFamily": "Splunk Platform Sans",
         "fontSize": "default"
       }
@@ -222,7 +222,7 @@
     "viz_compact_v1": {
       "type": "splunk.markergauge",
       "title": "CPU",
-      "description": "Compact vertical tile - 200x300, transparent bg, value/label off. Lives inside a 4-up bank (panels 13-16). The marker plus the bands carry the message; the value would be carried by a sibling number tile.",
+      "description": "Compact vertical tile - 200x200, transparent bg, value/label off. Lives inside a 4-up bank (panels 13-16). The marker plus the bands carry the message; the value would be carried by a sibling number tile.",
       "dataSources": { "primary": "ds_kpi_low" },
       "options": {
         "gaugeRanges": [
@@ -287,7 +287,7 @@
     "viz_compact_h1": {
       "type": "splunk.markergauge",
       "title": "p50 latency",
-      "description": "Horizontal compact tile - 200x100, transparent bg. The marker on the bar shows where the value sits within the SLO bands.",
+      "description": "Horizontal compact tile - 220x150, transparent bg. The marker on the bar shows where the value sits within the SLO bands.",
       "dataSources": { "primary": "ds_kpi_low" },
       "options": {
         "gaugeRanges": [
@@ -338,7 +338,7 @@
     "viz_compact_h4": {
       "type": "splunk.markergauge",
       "title": "max latency",
-      "description": "Bottom of the stack. Together panels 17-20 form a 4-row latency profile in 800x108 of vertical space - dense, but legible because the bars share a scale.",
+      "description": "Bottom of the stack. Together panels 17-20 form a 4-row latency profile inside ~620 px vertical space (4 x 150 px + 3 x 8 px gaps) - dense, but legible because the bars share a scale.",
       "dataSources": { "primary": "ds_kpi_mid" },
       "options": {
         "gaugeRanges": [
@@ -357,7 +357,7 @@
     "type": "absolute",
     "options": {
       "width": 1440,
-      "height": 1900,
+      "height": 2040,
       "display": "auto-scale"
     },
     "structure": [
@@ -376,15 +376,15 @@
       { "item": "viz_majortick",        "type": "block", "position": { "x": 968, "y": 896, "w": 456,  "h": 220 } },
 
       { "item": "viz_compact_intro",    "type": "block", "position": { "x": 16,   "y": 1140, "w": 1408, "h": 220 } },
-      { "item": "viz_compact_v1",       "type": "block", "position": { "x": 16,   "y": 1380, "w": 200,  "h": 320 } },
-      { "item": "viz_compact_v2",       "type": "block", "position": { "x": 216,  "y": 1380, "w": 200,  "h": 320 } },
-      { "item": "viz_compact_v3",       "type": "block", "position": { "x": 416,  "y": 1380, "w": 200,  "h": 320 } },
-      { "item": "viz_compact_v4",       "type": "block", "position": { "x": 616,  "y": 1380, "w": 200,  "h": 320 } },
+      { "item": "viz_compact_v1",       "type": "block", "position": { "x": 16,   "y": 1380, "w": 200,  "h": 200 } },
+      { "item": "viz_compact_v2",       "type": "block", "position": { "x": 216,  "y": 1380, "w": 200,  "h": 200 } },
+      { "item": "viz_compact_v3",       "type": "block", "position": { "x": 416,  "y": 1380, "w": 200,  "h": 200 } },
+      { "item": "viz_compact_v4",       "type": "block", "position": { "x": 616,  "y": 1380, "w": 200,  "h": 200 } },
 
-      { "item": "viz_compact_h1",       "type": "block", "position": { "x": 856,  "y": 1380, "w": 220,  "h": 100 } },
-      { "item": "viz_compact_h2",       "type": "block", "position": { "x": 856,  "y": 1488, "w": 220,  "h": 100 } },
-      { "item": "viz_compact_h3",       "type": "block", "position": { "x": 856,  "y": 1596, "w": 220,  "h": 100 } },
-      { "item": "viz_compact_h4",       "type": "block", "position": { "x": 856,  "y": 1704, "w": 220,  "h": 100 } }
+      { "item": "viz_compact_h1",       "type": "block", "position": { "x": 856,  "y": 1380, "w": 220,  "h": 150 } },
+      { "item": "viz_compact_h2",       "type": "block", "position": { "x": 856,  "y": 1538, "w": 220,  "h": 150 } },
+      { "item": "viz_compact_h3",       "type": "block", "position": { "x": 856,  "y": 1696, "w": 220,  "h": 150 } },
+      { "item": "viz_compact_h4",       "type": "block", "position": { "x": 856,  "y": 1854, "w": 220,  "h": 150 } }
     ],
     "globalInputs": []
   }

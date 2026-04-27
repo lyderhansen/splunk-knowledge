@@ -87,17 +87,17 @@
 
     "ds_annotations_data": {
       "type": "ds.search",
-      "name": "main column for annotation panel",
+      "name": "main column for annotation panel - hourly traffic",
       "options": {
-        "query": "| makeresults count=12 | streamstats count as i | eval month = case(i=1,\"Jan\",i=2,\"Feb\",i=3,\"Mar\",i=4,\"Apr\",i=5,\"May\",i=6,\"Jun\",i=7,\"Jul\",i=8,\"Aug\",i=9,\"Sep\",i=10,\"Oct\",i=11,\"Nov\",1==1,\"Dec\"), revenue = round(100000 + 30000*sin(i/3) + (i*5000) + random()%10000) | table month revenue"
+        "query": "| makeresults count=12 | streamstats count as i | eval _time = relative_time(now(), \"-\" . (12-i) . \"h\") | eval visits = round(8000 + 2500*sin(i/2) + (i*150) + random()%500) | table _time visits"
       }
     },
 
     "ds_annotations_marks": {
       "type": "ds.search",
-      "name": "annotation marks - month label color",
+      "name": "annotation marks - deploy and incident events",
       "options": {
-        "query": "| makeresults count=2 | streamstats count as i | eval annotationX = case(i=1,\"Mar\",1==1,\"Nov\"), annotationLabel = case(i=1,\"Product Launch\",1==1,\"Black Friday\"), annotationColor = case(i=1,\"#FFB627\",1==1,\"#FF2D95\") | table annotationX annotationLabel annotationColor"
+        "query": "| makeresults count=3 | streamstats count as i | eval _time = case(i=1, relative_time(now(), \"-9h\"), i=2, relative_time(now(), \"-5h\"), 1==1, relative_time(now(), \"-2h\")) | eval annotationLabel = case(i=1,\"v4.2 deploy\", i=2,\"DB failover\", 1==1,\"Cache warm-up\") | eval annotationColor = case(i=1,\"#33FF99\", i=2,\"#FF2D95\", 1==1,\"#FFB627\") | table _time annotationLabel annotationColor"
       }
     },
 
@@ -280,17 +280,17 @@
     "viz_annotations": {
       "type": "splunk.column",
       "title": "9. Event annotations - second dataSource",
-      "description": "Column charts support the same annotation pattern as line/area: a separate dataSource with annotationX/Label/Color fields. annotationX must match a category value present in the primary search.",
+      "description": "Column charts support the same annotation pattern as line/area: a separate dataSource with `annotationX` (a `_time` value matching the primary x-axis), `annotationLabel`, and `annotationColor`. Annotations render as colored vertical flags with a hover tooltip - here three deploy/incident markers across 12 hours of traffic.",
       "dataSources": {
         "primary": "ds_annotations_data",
         "annotation": "ds_annotations_marks"
       },
       "options": {
         "seriesColors": ["#00D9FF"],
-        "annotationX": "> annotation | seriesByName('annotationX')",
+        "annotationX": "> annotation | seriesByName('_time')",
         "annotationLabel": "> annotation | seriesByName('annotationLabel')",
         "annotationColor": "> annotation | seriesByName('annotationColor')",
-        "yAxisTitleText": "Revenue ($)",
+        "yAxisTitleText": "Visits",
         "yAxisAbbreviation": "auto",
         "xAxisTitleVisibility": "hide",
         "xAxisLabelVisibility": "auto",

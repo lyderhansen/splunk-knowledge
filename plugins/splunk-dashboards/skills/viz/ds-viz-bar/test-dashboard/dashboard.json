@@ -324,7 +324,7 @@
     "viz_hidden_chrome": {
       "type": "splunk.bar",
       "title": "12. Hidden chrome - sparkbar (everything off)",
-      "description": "Sparkbar pattern: all chrome off. Use inside KPI tiles or executive cards where the bar chart accompanies a single value.",
+      "description": "Sparkbar pattern: all chrome off. **`showYMajorGridLines` defaults to `true` on bar** (the y-axis is the category axis but the option still draws horizontal grid lines), so it must be set to `false` for a true sparkbar. Use inside KPI tiles or executive cards where the bar chart accompanies a single value.",
       "dataSources": { "primary": "ds_minimal" },
       "options": {
         "seriesColors": ["#00D9FF"],
@@ -335,6 +335,7 @@
         "yAxisLabelVisibility": "hide",
         "yAxisMajorTickVisibility": "hide",
         "showXMajorGridLines": false,
+        "showYMajorGridLines": false,
         "legendDisplay": "off",
         "backgroundColor": "transparent"
       }

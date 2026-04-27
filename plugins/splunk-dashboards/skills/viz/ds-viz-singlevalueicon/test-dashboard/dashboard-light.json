@@ -72,6 +72,15 @@
         "fontSize": "default"
       }
     },
+    "viz_default_icon_header": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "**1. icon - default + showValue (default)**  \nicon = 'default' renders the generic Splunk square. showValue = true (default) renders the major value + trend below the icon. This is the only icon form that needs no per-instance upload.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default",
+        "backgroundColor": "transparent"
+      }
+    },
     "viz_default_icon": {
       "type": "splunk.singlevalueicon",
       "title": "1. icon - default + showValue (default)",
@@ -86,6 +95,15 @@
         "unitPosition": "before",
         "shouldAbbreviateTrendValue": true,
         "trendDisplay": "percent"
+      }
+    },
+    "viz_kvstore_check_header": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "**2. kvstore filename URL - uploaded SVG**  \nicon = splunk-enterprise-kvstore://<name>__<UUID>.svg. This is the only non-default form that renders on this build. The UUID is generated when you upload the SVG via the Dashboard Studio editor's icon picker. iconColor still applies because Splunk-uploaded icons carry currentColor strokes.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default",
+        "backgroundColor": "transparent"
       }
     },
     "viz_kvstore_check": {
@@ -103,6 +121,15 @@
         "unitPosition": "after",
         "numberPrecision": 2,
         "trendDisplay": "percent"
+      }
+    },
+    "viz_icon_position_after_header": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "**3. iconPosition - after**  \niconPosition = 'after' moves the icon to the right of the value. Default is 'before'. Use 'after' when the icon is a meaningful suffix - a units glyph, a state indicator. Same uploaded check icon, just on the right side.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default",
+        "backgroundColor": "transparent"
       }
     },
     "viz_icon_position_after": {
@@ -123,6 +150,15 @@
         "trendDisplay": "percent"
       }
     },
+    "viz_icon_only_header": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "**4. showValue - false (icon-only)**  \nshowValue = false hides BOTH the major value AND the trend - the panel is just the icon. Useful for status-light panels or visual breakers in a KPI strip. Note the uploaded check icon still renders large; the underlying glyph design controls the icon size, not the panel.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default",
+        "backgroundColor": "transparent"
+      }
+    },
     "viz_icon_only": {
       "type": "splunk.singlevalueicon",
       "title": "4. showValue - false (icon-only)",
@@ -134,6 +170,15 @@
         "icon": "splunk-enterprise-kvstore://icon-check__e29f784a-31a2-4544-813f-efce24d5be32.svg",
         "iconColor": "#3F6FB7",
         "showValue": false
+      }
+    },
+    "viz_dynamic_iconColor_header": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "**5. Dynamic iconColor via rangeValue**  \niconColor uses Dynamic Options Syntax to map the current value to a colour: green >= 80, amber 60-80, red < 60. Pattern: '> primary | seriesByName(field) | lastPoint() | rangeValue(thresholds)'. Disjoint, gap-free buckets: 'to' is exclusive (< X), 'from' is inclusive (>= X). The kvstore icon retains currentColor on its stroke so iconColor takes effect.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default",
+        "backgroundColor": "transparent"
       }
     },
     "viz_dynamic_iconColor": {
@@ -169,6 +214,15 @@
         ]
       }
     },
+    "viz_dynamic_majorColor_header": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "**6. Dynamic majorColor (number colour, fixed icon)**  \niconColor stays a calm hue, majorColor flips on threshold: green < 10, amber 10-20, red >= 20 errors. Note thresholds run inverse here - lower is better, so green is the 'to' bucket. Reads as 'something is wrong with this metric' without losing the icon's identity. Common SOC pattern.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default",
+        "backgroundColor": "transparent"
+      }
+    },
     "viz_dynamic_majorColor": {
       "type": "splunk.singlevalueicon",
       "title": "6. Dynamic majorColor (number colour, fixed icon)",
@@ -201,6 +255,15 @@
         ]
       }
     },
+    "viz_iconOpacity_header": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "**7. iconOpacity 0.3 - muted secondary metric**  \niconOpacity = 0.3 fades the icon. Use when the icon is decorative / categorisation rather than the message. The eye lands on the value first, the icon is context.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default",
+        "backgroundColor": "transparent"
+      }
+    },
     "viz_iconOpacity": {
       "type": "splunk.singlevalueicon",
       "title": "7. iconOpacity 0.3 - muted secondary metric",
@@ -219,6 +282,15 @@
         "trendDisplay": "percent"
       }
     },
+    "viz_no_trend_header": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "**8. trendDisplay - off (static KPI with icon)**  \nSingle-row data source, no time dimension. trendDisplay = 'off' suppresses the delta. The icon supplies meaning without needing recent history.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default",
+        "backgroundColor": "transparent"
+      }
+    },
     "viz_no_trend": {
       "type": "splunk.singlevalueicon",
       "title": "8. trendDisplay - off (static KPI with icon)",
@@ -231,6 +303,15 @@
         "iconColor": "#2E8B57",
         "underLabel": "Orders today",
         "trendDisplay": "off"
+      }
+    },
+    "viz_majorFontSize_header": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "**9. majorFontSize - 56 (compact KPI strip)**  \nmajorFontSize = 56 locks the value font size. Icon stays auto-sized. Useful when a row of singlevalueicon tiles needs visual consistency regardless of underlying value magnitude.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default",
+        "backgroundColor": "transparent"
       }
     },
     "viz_majorFontSize": {
@@ -249,6 +330,15 @@
         "shouldAbbreviateTrendValue": true,
         "trendDisplay": "percent",
         "majorFontSize": 56
+      }
+    },
+    "viz_dynamic_bg_header": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "**10. Dynamic backgroundColor + locked majorColor**  \nWhole-tile background flips on threshold: dark < 10, amber 10-20, red >= 20 errors. majorColor + iconColor lock to white so the tile stays readable when the bg goes dark. Use sparingly - one or two of these is enough per dashboard.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default",
+        "backgroundColor": "transparent"
       }
     },
     "viz_dynamic_bg": {
@@ -284,6 +374,15 @@
         ]
       }
     },
+    "viz_separators_off_header": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "**11. shouldUseThousandSeparators - false**  \nshouldUseThousandSeparators = false strips commas. Use for IDs, sequence numbers, version numbers. Numbers like build IDs (1245000) read as IDs, not quantities, when commas are absent.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default",
+        "backgroundColor": "transparent"
+      }
+    },
     "viz_separators_off": {
       "type": "splunk.singlevalueicon",
       "title": "11. shouldUseThousandSeparators - false",
@@ -297,6 +396,15 @@
         "underLabel": "Build ID",
         "shouldUseThousandSeparators": false,
         "trendDisplay": "off"
+      }
+    },
+    "viz_kpi_strip_compact_header": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "**12. Compact KPI strip pattern**  \nTransparent background + small majorFontSize + icon-after layout. Used for rows of small KPI tiles in a dense dashboard header strip. Combines several options at once.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default",
+        "backgroundColor": "transparent"
       }
     },
     "viz_kpi_strip_compact": {
@@ -340,13 +448,33 @@
         }
       },
       {
-        "item": "viz_default_icon",
+        "item": "viz_default_icon_header",
         "type": "block",
         "position": {
           "x": 16,
           "y": 128,
           "w": 460,
-          "h": 220
+          "h": 56
+        }
+      },
+      {
+        "item": "viz_default_icon",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 188,
+          "w": 460,
+          "h": 160
+        }
+      },
+      {
+        "item": "viz_kvstore_check_header",
+        "type": "block",
+        "position": {
+          "x": 492,
+          "y": 128,
+          "w": 460,
+          "h": 56
         }
       },
       {
@@ -354,9 +482,19 @@
         "type": "block",
         "position": {
           "x": 492,
-          "y": 128,
+          "y": 188,
           "w": 460,
-          "h": 220
+          "h": 160
+        }
+      },
+      {
+        "item": "viz_icon_position_after_header",
+        "type": "block",
+        "position": {
+          "x": 968,
+          "y": 128,
+          "w": 456,
+          "h": 56
         }
       },
       {
@@ -364,9 +502,19 @@
         "type": "block",
         "position": {
           "x": 968,
-          "y": 128,
+          "y": 188,
           "w": 456,
-          "h": 220
+          "h": 160
+        }
+      },
+      {
+        "item": "viz_icon_only_header",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 364,
+          "w": 460,
+          "h": 56
         }
       },
       {
@@ -374,9 +522,19 @@
         "type": "block",
         "position": {
           "x": 16,
+          "y": 424,
+          "w": 460,
+          "h": 160
+        }
+      },
+      {
+        "item": "viz_dynamic_iconColor_header",
+        "type": "block",
+        "position": {
+          "x": 492,
           "y": 364,
           "w": 460,
-          "h": 220
+          "h": 56
         }
       },
       {
@@ -384,9 +542,19 @@
         "type": "block",
         "position": {
           "x": 492,
-          "y": 364,
+          "y": 424,
           "w": 460,
-          "h": 220
+          "h": 160
+        }
+      },
+      {
+        "item": "viz_dynamic_majorColor_header",
+        "type": "block",
+        "position": {
+          "x": 968,
+          "y": 364,
+          "w": 456,
+          "h": 56
         }
       },
       {
@@ -394,9 +562,19 @@
         "type": "block",
         "position": {
           "x": 968,
-          "y": 364,
+          "y": 424,
           "w": 456,
-          "h": 220
+          "h": 160
+        }
+      },
+      {
+        "item": "viz_iconOpacity_header",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 600,
+          "w": 460,
+          "h": 56
         }
       },
       {
@@ -404,9 +582,19 @@
         "type": "block",
         "position": {
           "x": 16,
+          "y": 660,
+          "w": 460,
+          "h": 160
+        }
+      },
+      {
+        "item": "viz_no_trend_header",
+        "type": "block",
+        "position": {
+          "x": 492,
           "y": 600,
           "w": 460,
-          "h": 220
+          "h": 56
         }
       },
       {
@@ -414,9 +602,19 @@
         "type": "block",
         "position": {
           "x": 492,
-          "y": 600,
+          "y": 660,
           "w": 460,
-          "h": 220
+          "h": 160
+        }
+      },
+      {
+        "item": "viz_majorFontSize_header",
+        "type": "block",
+        "position": {
+          "x": 968,
+          "y": 600,
+          "w": 456,
+          "h": 56
         }
       },
       {
@@ -424,9 +622,19 @@
         "type": "block",
         "position": {
           "x": 968,
-          "y": 600,
+          "y": 660,
           "w": 456,
-          "h": 220
+          "h": 160
+        }
+      },
+      {
+        "item": "viz_dynamic_bg_header",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 836,
+          "w": 460,
+          "h": 56
         }
       },
       {
@@ -434,9 +642,19 @@
         "type": "block",
         "position": {
           "x": 16,
+          "y": 896,
+          "w": 460,
+          "h": 160
+        }
+      },
+      {
+        "item": "viz_separators_off_header",
+        "type": "block",
+        "position": {
+          "x": 492,
           "y": 836,
           "w": 460,
-          "h": 220
+          "h": 56
         }
       },
       {
@@ -444,9 +662,19 @@
         "type": "block",
         "position": {
           "x": 492,
-          "y": 836,
+          "y": 896,
           "w": 460,
-          "h": 220
+          "h": 160
+        }
+      },
+      {
+        "item": "viz_kpi_strip_compact_header",
+        "type": "block",
+        "position": {
+          "x": 968,
+          "y": 836,
+          "w": 456,
+          "h": 56
         }
       },
       {
@@ -454,9 +682,9 @@
         "type": "block",
         "position": {
           "x": 968,
-          "y": 836,
+          "y": 896,
           "w": 456,
-          "h": 220
+          "h": 160
         }
       }
     ],

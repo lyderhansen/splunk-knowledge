@@ -3,6 +3,26 @@
 Single source of truth for the viz-by-viz refactor. Each viz goes through the
 same pipeline; we don't move on until every column for that row is ✅.
 
+## Status snapshot (2026-04-27)
+
+Latest QA pass against the live `splunk-knowledge-testing` dashboards:
+
+- **Confirmed clean by user:** `area`, `scatter`, `bubble`, `punchcard`,
+  `parallelcoordinates`, `column`, `bar`, `table`, the entire single-value
+  family (`singlevalue`, `singlevalueicon`, `singlevalueradial`,
+  `markergauge`, `fillergauge`), `markdown`, `image`.
+- **Still ⬜ awaiting QA:** `pie`, `events`, `timeline`, `sankey`, `linkgraph`,
+  `map`, `choropleth.svg`, `rectangle`, `ellipse`.
+
+`punchcard` SKILL.md now documents a "Minimum readable panel size" rule
+(≥ 500 × 300 px) — under that the visible bubble outpaces the hover
+hit-zone and the user can't read off values.
+
+`table` SKILL.md now documents the canonical `stats sparkline()` pattern,
+calls out the `eval | makemv` anti-pattern explicitly, and warns about
+the `dataSource.name` regex (`^[A-Za-z0-9 \-_.]+$` — no slashes).
+
+
 ## Pipeline per viz
 
 For each `splunk.<viz>`:
@@ -57,22 +77,22 @@ Legend: ✅ done · 🟡 in progress · ⬜ not started · ❌ blocked / known i
 | # | Viz                       | PDF read | Dark JSON | Light JSON | Validated | Deployed | QA dark | QA light | SKILL.md | Notes |
 |---|---------------------------|----------|-----------|------------|-----------|----------|---------|----------|----------|-------|
 | 1 | `splunk.line`             | ✅       | ✅        | ✅         | ✅        | ✅       | ✅      | ✅       | ✅       | Reference implementation. |
-| 2 | `splunk.area`             | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
-| 3 | `splunk.column`           | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
-| 4 | `splunk.bar`              | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. annotation* options listed in PDF text but not in option table — omitted from test bench. |
+| 2 | `splunk.area`             | ✅       | ✅        | ✅         | ✅        | ✅       | ✅      | ✅       | ✅       | QA 2026-04-27: confirmed clean by user, no follow-ups. |
+| 3 | `splunk.column`           | ✅       | ✅        | ✅         | ✅        | ✅       | ✅      | ✅       | ✅       | QA 2026-04-27: panel 9 annotation example wasn't rendering because annotationX was a string-category (`"Mar"` / `"Nov"`) on a categorical x-axis. PDF requires annotationX to match the primary search's x-axis, which for time-series is `_time`. Rewrote `ds_annotations_data` and `ds_annotations_marks` to time-based SPL with three deploy/incident markers across 12 hours of traffic. User confirmed clean on re-QA 2026-04-27. |
+| 4 | `splunk.bar`              | ✅       | ✅        | ✅         | ✅        | ✅       | ✅      | ✅       | ✅       | QA 2026-04-27: panel 12 sparkbar still showed major horizontal gridlines because `showYMajorGridLines` defaults to `true` on bar (the y-axis is the category axis but the option still draws horizontal grid lines). Added `showYMajorGridLines: false` to panel 12 + SKILL.md "Sparkbar (hidden chrome)" pattern. annotation* options omitted intentionally — bar uses categorical x-axis and PDF requires annotationX to match the x-axis (typically `_time`), so the pattern doesn't generalize cleanly to bar. User confirmed clean on re-QA 2026-04-27. |
 | 5 | `splunk.pie`              | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
-| 6 | `splunk.scatter`          | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
-| 7 | `splunk.bubble`           | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
+| 6 | `splunk.scatter`          | ✅       | ✅        | ✅         | ✅        | ✅       | ✅      | ✅       | ✅       | QA 2026-04-27: confirmed OK by user, no follow-ups. |
+| 7 | `splunk.bubble`           | ✅       | ✅        | ✅         | ✅        | ✅       | ✅      | ✅       | ✅       | QA 2026-04-27: confirmed clean by user. SKILL.md retains the "Bubble sizing scales with absolute pixels" gotcha with a panel-width → size table. |
 | 8 | `splunk.singlevalue`      | ✅       | ✅        | ✅         | ✅        | ✅       | ✅      | ✅       | ✅       | QA 2026-04-26: rangeValue thresholds reworked to disjoint, gap-free buckets `[{"to":60}, {"from":60,"to":80}, {"from":80}]`; SPL `health` query rewritten to swing 38-97 across all RAG buckets; panel 5/6 descriptions corrected to match. SKILL.md adds "Threshold semantics" note. |
 | 9 | `splunk.singlevalueicon`  | ✅       | ✅        | ✅         | ✅        | ✅       | ✅      | ✅       | ✅       | QA 2026-04-26: same rangeValue / health-swing fixes as `splunk.singlevalue`. Panels 5, 6, and 10 descriptions updated to declare disjoint thresholds explicitly. SKILL.md adds "Threshold semantics" note. |
 | 10 | `splunk.singlevalueradial` | ✅      | ✅        | ✅         | ✅        | ✅       | ✅      | ✅       | ✅       | QA 2026-04-26: added `ds_health_swing` (27-96) for panels 5+6 so all 3 RAG buckets demo on reload; rewrote `ds_disk_usage` SPL to swing 158-860 so panels 9+10 demo all RAG buckets. Panel descriptions updated to declare disjoint thresholds + data ranges explicitly. SKILL.md adds "Threshold semantics" note. |
 | 11 | `splunk.markergauge`      | ✅       | ✅        | ✅         | ✅        | ✅       | ✅      | ✅       | ✅       | QA 2026-04-26: gaugeRanges are display bands (not threshold buckets) — static-value test data is correct because the marker movement IS the message. Panels 1-3 (low/mid/high) prove the marker tracks the value. Bands documented as "MUST be contiguous" in the skill. No data-swing fix needed. |
 | 12 | `splunk.fillergauge`      | ✅       | ✅        | ✅         | ✅        | ✅       | ✅      | ✅       | ✅       | QA 2026-04-26: added `ds_health_swing` for panel 7 and rewrote `ds_disk_used` to swing 30-95 for panel 8 so all 3 RAG buckets demo on reload. Disjoint, gap-free thresholds already canonical. SKILL.md adds "Threshold semantics" note. |
-| 13 | `splunk.table`            | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. showInternalFields:false convention verified. tableFormat / columnFormat patterns covered. |
+| 13 | `splunk.table`            | ✅       | ✅        | ✅         | ✅        | ✅       | ✅      | ✅       | ✅       | QA 2026-04-27 (4 rounds, root cause = data density): canonical SPL has to be `\| stats latest(...) AS current_x, sparkline(avg(x), 30m) AS trend_x by host`, NOT `eval | makemv` (round 1 was wrong — `tokenizer=","` rejects as invalid regex, and even with `delim` only row 1 renders because the result is a string, not a multivalue). Round 2 got the canonical SPL but bench showed only row 1 coloured. Round 3 expanded `columnFormat.<col>.sparklineColors` from 1-element to 4-element arrays — necessary but not sufficient. Round 4 (the actual root cause): `mvcount(trend_cpu) = 3` because the SPL only generated 240 events for `-240m` while the dashboard ran on `-24h@h, now`. Splunk falls back to a flat default colour past row 1 when the sparkline is mostly empty buckets. Fix: 288 events × 5 min spacing across the full 24h window, `sparkline(...,30m)` for 30-min buckets → ~51 real datapoints per row. Side fixes still applied: sanitised `ds_sparkline.name` (no slashes), removed `columnFormat.cellTypes` for auto-detection, dropped `viz_heatmap` header overrides so it renders in light theme. SKILL.md now has a "Sparkline pattern (canonical)" section with the verified recipe + a "Why these numbers?" sub-section + a gotcha that few-data symptoms look indistinguishable from wrong-array-length symptoms (always check `mvcount` first). User confirmed all 4 rows coloured on round-4 re-QA. |
 | 14 | `splunk.events`           | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
 | 15 | `splunk.timeline`         | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
-| 16 | `splunk.punchcard`        | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
-| 17 | `splunk.parallelcoordinates` | ✅    | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
+| 16 | `splunk.punchcard`        | ✅       | ✅        | ✅         | ✅        | ✅       | ✅      | ✅       | ✅       | QA 2026-04-27: panel 9/10 `bubbleRadiusMax` lowered to 8, SPL rewritten from `\| table` to `\| stats sum(metric) by dim1 dim2` so the punch grid actually fills both dimensions (previous data put every bubble on a single row). User confirmed clean on re-QA. SKILL.md now also has a "Minimum readable panel size" section flagging that panels under 500x300 px shrink the hover hit-zone faster than the visible bubble — recommend swapping to singlevalue / line / drilldown-from-tile patterns instead. |
+| 17 | `splunk.parallelcoordinates` | ✅    | ✅        | ✅         | ✅        | ✅       | ✅      | ✅       | ✅       | QA 2026-04-26: looks good in both themes, no follow-ups. |
 | 18 | `splunk.sankey`           | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. Validate skipped — module path issue. |
 | 19 | `splunk.linkgraph`        | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. |
 | 20 | `splunk.map`              | ✅       | ✅        | ✅         | ✅        | ✅       | ⬜      | ⬜       | ✅       | Awaiting QA. Top-level options include `markerSize`. PDF source-editor table only enums marker/bubble for layer type but choropleth is fully supported and verified live. choropleth layers require `geom geo_*` in SPL and `areaIds`/`areaValues` per layer. `center` is `[lat,lon]`, not `[lon,lat]`. |

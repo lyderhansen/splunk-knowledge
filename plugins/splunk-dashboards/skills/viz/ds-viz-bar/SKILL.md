@@ -360,6 +360,10 @@ makes the time relationship explicit.
 ### 11. Sparkbar (hidden chrome) — KPI tile
 
 Strip every axis, label, gridline, legend. Bar shape is the only signal.
+**Both `showXMajorGridLines` and `showYMajorGridLines` must be set to
+`false`** — `showYMajorGridLines` defaults to `true` on bar charts even
+though the y-axis is the category axis. Forgetting this leaves
+horizontal lines striping the panel and the "sparkbar" looks busy.
 
 ```json
 {
@@ -375,6 +379,7 @@ Strip every axis, label, gridline, legend. Bar shape is the only signal.
     "yAxisLabelVisibility": "hide",
     "yAxisMajorTickVisibility": "hide",
     "showXMajorGridLines": false,
+    "showYMajorGridLines": false,
     "legendDisplay": "off",
     "backgroundColor": "transparent"
   }

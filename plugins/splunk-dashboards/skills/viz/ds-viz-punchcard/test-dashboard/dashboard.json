@@ -24,28 +24,28 @@
       "type": "ds.search",
       "name": "logins by hour x weekday - canonical punchcard shape",
       "options": {
-        "query": "| makeresults count=168 | streamstats count AS rn | eval punch_hour = (rn-1)%24 | eval punch_day = case(((rn-1)/24)%7==0,\"Mon\", ((rn-1)/24)%7==1,\"Tue\", ((rn-1)/24)%7==2,\"Wed\", ((rn-1)/24)%7==3,\"Thu\", ((rn-1)/24)%7==4,\"Fri\", ((rn-1)/24)%7==5,\"Sat\", 1==1,\"Sun\") | eval base = case(punch_hour>=8 AND punch_hour<=18,80, punch_hour>=19 AND punch_hour<=22,30, 1==1,5) | eval weekend_factor = if(punch_day==\"Sat\" OR punch_day==\"Sun\", 0.3, 1.0) | eval punch_count = round(base * weekend_factor + random()%20) | table punch_hour punch_day punch_count"
+        "query": "| makeresults count=2520 | streamstats count AS rn | eval rn = rn - 1 | eval punch_hour = rn % 24 | eval punch_day = case((rn / 24) % 7 < 1,\"Mon\", (rn / 24) % 7 < 2,\"Tue\", (rn / 24) % 7 < 3,\"Wed\", (rn / 24) % 7 < 4,\"Thu\", (rn / 24) % 7 < 5,\"Fri\", (rn / 24) % 7 < 6,\"Sat\", true(),\"Sun\") | eval base = case(punch_hour>=8 AND punch_hour<=18,80, punch_hour>=19 AND punch_hour<=22,30, true(),5) | eval weekend_factor = if(punch_day==\"Sat\" OR punch_day==\"Sun\", 0.3, 1.0) | eval w = round(base * weekend_factor) | eval punch_count = w + (random() % 10) | stats sum(punch_count) AS punch_count by punch_hour punch_day"
       }
     },
     "ds_logins_with_region": {
       "type": "ds.search",
       "name": "logins by hour x weekday with region color",
       "options": {
-        "query": "| makeresults count=168 | streamstats count AS rn | eval punch_hour = (rn-1)%24 | eval punch_day = case(((rn-1)/24)%7==0,\"Mon\", ((rn-1)/24)%7==1,\"Tue\", ((rn-1)/24)%7==2,\"Wed\", ((rn-1)/24)%7==3,\"Thu\", ((rn-1)/24)%7==4,\"Fri\", ((rn-1)/24)%7==5,\"Sat\", 1==1,\"Sun\") | eval punch_count = round(20 + random()%80) | eval punch_region = case(rn%4==0,\"emea\", rn%4==1,\"amer\", rn%4==2,\"apac\", 1==1,\"latam\") | table punch_hour punch_day punch_count punch_region"
+        "query": "| makeresults count=2520 | streamstats count AS rn | eval rn = rn - 1 | eval punch_hour = rn % 24 | eval punch_day = case((rn / 24) % 7 < 1,\"Mon\", (rn / 24) % 7 < 2,\"Tue\", (rn / 24) % 7 < 3,\"Wed\", (rn / 24) % 7 < 4,\"Thu\", (rn / 24) % 7 < 5,\"Fri\", (rn / 24) % 7 < 6,\"Sat\", true(),\"Sun\") | eval punch_region = case(rn%4==0,\"emea\", rn%4==1,\"amer\", rn%4==2,\"apac\", true(),\"latam\") | eval punch_count = 20 + (random() % 30) | stats sum(punch_count) AS punch_count first(punch_region) AS punch_region by punch_hour punch_day"
       }
     },
     "ds_attacks_hour_day": {
       "type": "ds.search",
       "name": "SOC pattern - failed logins by hour x weekday",
       "options": {
-        "query": "| makeresults count=168 | streamstats count AS rn | eval punch_hour = (rn-1)%24 | eval punch_day = case(((rn-1)/24)%7==0,\"Mon\", ((rn-1)/24)%7==1,\"Tue\", ((rn-1)/24)%7==2,\"Wed\", ((rn-1)/24)%7==3,\"Thu\", ((rn-1)/24)%7==4,\"Fri\", ((rn-1)/24)%7==5,\"Sat\", 1==1,\"Sun\") | eval night = if(punch_hour<6 OR punch_hour>22, 50, 5) | eval failures = round(night + random()%30) | table punch_hour punch_day failures"
+        "query": "| makeresults count=2520 | streamstats count AS rn | eval rn = rn - 1 | eval punch_hour = rn % 24 | eval punch_day = case((rn / 24) % 7 < 1,\"Mon\", (rn / 24) % 7 < 2,\"Tue\", (rn / 24) % 7 < 3,\"Wed\", (rn / 24) % 7 < 4,\"Thu\", (rn / 24) % 7 < 5,\"Fri\", (rn / 24) % 7 < 6,\"Sat\", true(),\"Sun\") | eval night = if(punch_hour<6 OR punch_hour>22, 50, 5) | eval failures = night + (random() % 12) | stats sum(failures) AS failures by punch_hour punch_day"
       }
     },
     "ds_volume_skew": {
       "type": "ds.search",
       "name": "skewed volume - one cell dominates",
       "options": {
-        "query": "| makeresults count=168 | streamstats count AS rn | eval punch_hour = (rn-1)%24 | eval punch_day = case(((rn-1)/24)%7==0,\"Mon\", ((rn-1)/24)%7==1,\"Tue\", ((rn-1)/24)%7==2,\"Wed\", ((rn-1)/24)%7==3,\"Thu\", ((rn-1)/24)%7==4,\"Fri\", ((rn-1)/24)%7==5,\"Sat\", 1==1,\"Sun\") | eval punch_count = if(punch_hour==12 AND punch_day==\"Wed\", 1000, round(5 + random()%30)) | table punch_hour punch_day punch_count"
+        "query": "| makeresults count=2520 | streamstats count AS rn | eval rn = rn - 1 | eval punch_hour = rn % 24 | eval punch_day = case((rn / 24) % 7 < 1,\"Mon\", (rn / 24) % 7 < 2,\"Tue\", (rn / 24) % 7 < 3,\"Wed\", (rn / 24) % 7 < 4,\"Thu\", (rn / 24) % 7 < 5,\"Fri\", (rn / 24) % 7 < 6,\"Sat\", true(),\"Sun\") | eval punch_count = if(punch_hour==12 AND punch_day==\"Wed\", 1000, 5 + (random() % 15)) | stats sum(punch_count) AS punch_count by punch_hour punch_day"
       }
     }
   },
@@ -134,21 +134,24 @@
     "viz_no_dynamic_size": {
       "type": "splunk.punchcard",
       "title": "9. showDynamicBubbleSize=false",
-      "description": "All bubbles render at the same radius. Useful when you only care about color.",
+      "description": "All bubbles render at the same radius. Useful when you only care about color. On a dense 24h x 7d grid the default bubbleRadiusMax (15) overlaps neighboring cells and hides the hover tooltip - drop bubbleRadiusMax to ~8 so each cell stays a distinct dot.",
       "dataSources": { "primary": "ds_logins_hour_day" },
       "options": {
         "showDynamicBubbleSize": false,
+        "bubbleRadiusMax": 8,
         "bubbleLabelDisplay": "off"
       }
     },
     "viz_legend_off": {
       "type": "splunk.punchcard",
       "title": "10. Categorical + legendDisplay=off",
-      "description": "Color carries semantic meaning but legend is suppressed for compact tiles.",
+      "description": "Color carries semantic meaning but legend is suppressed for compact tiles. Same overlap rule as panel 9: when showDynamicBubbleSize is false on a dense grid, keep bubbleRadiusMax small so categorical color reads as a heatmap of distinct dots.",
       "dataSources": { "primary": "ds_logins_with_region" },
       "options": {
         "colorMode": "categorical",
         "legendDisplay": "off",
+        "showDynamicBubbleSize": false,
+        "bubbleRadiusMax": 8,
         "bubbleLabelDisplay": "off"
       }
     },

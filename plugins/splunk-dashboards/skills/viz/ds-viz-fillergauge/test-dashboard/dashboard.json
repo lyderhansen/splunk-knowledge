@@ -186,7 +186,7 @@
     "viz_compact_intro": {
       "type": "splunk.markdown",
       "options": {
-        "markdown": "## Compact tile patterns\n\nThe Studio editor refuses to resize a `splunk.fillergauge` panel below ~200x150 (vertical) or ~200x100 (horizontal). The trick to get a denser KPI bank: **set `backgroundColor: \"transparent\"` and place panels at the minimum size, edge-to-edge.** The panel chrome disappears and only the bar artwork remains, so four bars side-by-side read as one tight unit. Below: a 4-up vertical bank (panels 13-16) and a stacked horizontal bank (panels 17-20). Compare with panels 1-3 which use the default opaque chrome.\n\n**Rules:**\n- Vertical: 200x150 minimum (lower than markergauge - the bar doesn't need band labels). Use `labelDisplay: \"off\"` + `valueDisplay: \"off\"` and let a sibling singlevalue carry the number.\n- Horizontal: 200x100 minimum.\n- `backgroundColor: \"transparent\"` is the unlock - without it the surface card swamps the bar.\n- For dynamic colour use the same DOS pattern as panels 7-8 - threshold-driven `gaugeColor` works inside compact tiles.",
+        "markdown": "## Compact tile patterns\n\nThe Studio editor refuses to resize a `splunk.fillergauge` panel below 200x200 (vertical) or 200x150 (horizontal) on Splunk Enterprise 10.2.1 - same minimums as `splunk.markergauge`. The trick to get a denser KPI bank: **set `backgroundColor: \"transparent\"` and place panels at the minimum size, edge-to-edge.** The panel chrome disappears and only the bar artwork remains, so four bars side-by-side read as one tight unit. Below: a 4-up vertical bank (panels 13-16) and a stacked horizontal bank (panels 17-20). Compare with panels 1-3 which use the default opaque chrome.\n\n**Rules:**\n- Vertical: 200x200 minimum. Use `labelDisplay: \"off\"` + `valueDisplay: \"off\"` and let a sibling singlevalue carry the number.\n- Horizontal: 200x150 minimum. Stack with 4-8 px gap so the bars feel related but not glued.\n- `backgroundColor: \"transparent\"` is the unlock - without it the surface card swamps the bar.\n- For dynamic colour use the same DOS pattern as panels 7-8 - threshold-driven `gaugeColor` works inside compact tiles.",
         "fontFamily": "Splunk Platform Sans",
         "fontSize": "default"
       }
@@ -194,7 +194,7 @@
     "viz_compact_v1": {
       "type": "splunk.fillergauge",
       "title": "CPU",
-      "description": "Compact vertical tile - 200x150, transparent bg, value/label off. The fill height alone carries the message; sibling number tiles can carry the percentage.",
+      "description": "Compact vertical tile - 200x200, transparent bg, value/label off. The fill height alone carries the message; sibling number tiles can carry the percentage.",
       "dataSources": { "primary": "ds_kpi_low" },
       "options": {
         "gaugeColor": "#33FF99",
@@ -243,7 +243,7 @@
     "viz_compact_h1": {
       "type": "splunk.fillergauge",
       "title": "ingest queue",
-      "description": "Horizontal compact tile - 200x100, transparent bg. The fill grows left-to-right.",
+      "description": "Horizontal compact tile - 220x150, transparent bg. The fill grows left-to-right.",
       "dataSources": { "primary": "ds_kpi_low" },
       "options": {
         "gaugeColor": "#33FF99",
@@ -282,7 +282,7 @@
     "viz_compact_h4": {
       "type": "splunk.fillergauge",
       "title": "fwd queue",
-      "description": "Bottom row. Together panels 17-20 fit in 220x424 - more vertical than the markergauge equivalent because fillergauge horizontal min is the same 100h.",
+      "description": "Bottom row. Together panels 17-20 fit inside ~620 px vertical (4 x 150 px + 3 x 8 px gaps) on a 220 px-wide column - matching the markergauge stack since both viz share the same 200x150 horizontal minimum.",
       "dataSources": { "primary": "ds_kpi_mid" },
       "options": {
         "gaugeColor": "#7AA2FF",
@@ -297,7 +297,7 @@
     "type": "absolute",
     "options": {
       "width": 1440,
-      "height": 1900,
+      "height": 2040,
       "display": "auto-scale"
     },
     "structure": [
@@ -321,10 +321,10 @@
       { "item": "viz_compact_v3",        "type": "block", "position": { "x": 416,  "y": 1380, "w": 200,  "h": 200 } },
       { "item": "viz_compact_v4",        "type": "block", "position": { "x": 616,  "y": 1380, "w": 200,  "h": 200 } },
 
-      { "item": "viz_compact_h1",        "type": "block", "position": { "x": 856,  "y": 1380, "w": 220,  "h": 100 } },
-      { "item": "viz_compact_h2",        "type": "block", "position": { "x": 856,  "y": 1488, "w": 220,  "h": 100 } },
-      { "item": "viz_compact_h3",        "type": "block", "position": { "x": 856,  "y": 1596, "w": 220,  "h": 100 } },
-      { "item": "viz_compact_h4",        "type": "block", "position": { "x": 856,  "y": 1704, "w": 220,  "h": 100 } }
+      { "item": "viz_compact_h1",        "type": "block", "position": { "x": 856,  "y": 1380, "w": 220,  "h": 150 } },
+      { "item": "viz_compact_h2",        "type": "block", "position": { "x": 856,  "y": 1538, "w": 220,  "h": 150 } },
+      { "item": "viz_compact_h3",        "type": "block", "position": { "x": 856,  "y": 1696, "w": 220,  "h": 150 } },
+      { "item": "viz_compact_h4",        "type": "block", "position": { "x": 856,  "y": 1854, "w": 220,  "h": 150 } }
     ],
     "globalInputs": []
   }

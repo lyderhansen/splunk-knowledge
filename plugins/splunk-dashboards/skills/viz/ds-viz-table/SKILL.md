@@ -91,16 +91,26 @@ All take 2D arrays (row × column) when set statically, or DOS expressions:
 
 ## columnFormat options (per-column)
 
-Keyed by field name. Same shape as `tableFormat` but **1D arrays** (only the column's cells), plus:
+Keyed by field name. Same shape as `tableFormat` but **1D arrays where each element = one row**, plus:
 
 - `width` - pixel width
 
 ```json
 "columnFormat": {
   "host":  { "width": 140 },
-  "trend": { "cellTypes": ["SparklineCell"], "sparklineColors": ["#33FF99"], "sparklineTypes": ["area"] }
+  "trend": {
+    "sparklineColors": ["#33FF99", "#33FF99", "#33FF99", "#33FF99"],
+    "sparklineTypes":  ["area",    "area",    "area",    "area"],
+    "width": 200
+  }
 }
 ```
+
+> **Each array element styles ONE row.** If your table has 4 rows you must pass 4 colours. This is per the official Splunk schema:
+> - `tableFormat.sparklineColors` is `string[][]` (outer = rows, inner = series within a multivalue cell).
+> - `columnFormat.<col>.sparklineColors` is `string[]` (each entry = one row of that column).
+>
+> Passing a single-element `["#33FF99"]` only colours **row 1** - rows 2..N silently fall back to the default series colour. This is the most common reason a sparkline column "looks wrong from row 2 down".
 
 ## Verified patterns (from test-dashboard)
 
@@ -113,7 +123,7 @@ Keyed by field name. Same shape as `tableFormat` but **1D arrays** (only the col
 | 5 | Per-column align + width                               | `columnFormat.<field>.width`                          |
 | 6 | Static header colours                                  | `tableFormat.headerBackgroundColor` + `headerColor`   |
 | 7 | **Heatmap rows via `_color_rank` + `rangeValue`**      | DOS `rowBackgroundColors` and `rowColors`             |
-| 8 | Inline sparkline column                                | `columnFormat.<field>.cellTypes: ["SparklineCell"]`   |
+| 8 | Inline sparkline columns (per-host trend)              | `stats sparkline(...) by host` + `columnFormat.<field>.sparklineTypes` (no explicit `cellTypes`) |
 | 9 | Stripped-down KPI table                                | `count: 1`, `headerVisibility: none`                  |
 | 10 | Cell-area tint                                         | `backgroundColor` + matching header colours           |
 | 11 | Executive-readable                                     | `fontSize: large`, `headerVisibility: fixed`          |
@@ -163,24 +173,92 @@ Three rules:
 2. **`showInternalFields: false`** is mandatory to hide the `_color_rank` field.
 3. Pair `rowBackgroundColors` and `rowColors` so text contrasts against the tint.
 
-## Sparkline pattern
+## Sparkline pattern (canonical)
+
+The trend column **must be a true multivalue field with enough datapoints to plot**. Two failures are indistinguishable visually but have different fixes:
+
+1. *Wrong shape* - using `eval x="a,b,c" | makemv x`. Result: row 1 looks like a sparkline, rows 2..N show as text. See the anti-pattern below.
+2. *Right shape, not enough data* - using `stats sparkline()` over a synthetic dataset that doesn't span the dashboard's time window. Result: row 1 has a coloured line, rows 2..N have a flat default-colour line. This looks like a "colour bug" but is actually a "data bug".
+
+The reliable recipe:
 
 ```spl
-| eval trend = mvappend("60","72","81","88","94")
+| makeresults count=288
+| streamstats count AS rn
+| eval _time = relative_time(now(), "-" . tostring((288-rn)*5) . "m")
+| eval host = case((rn-1) % 4 == 0, "web-01", (rn-1) % 4 == 1, "web-02", (rn-1) % 4 == 2, "db-01", 1==1, "app-03")
+| eval cpu  = case(host=="web-01",75,host=="web-02",55,host=="db-01",45,1==1,28) + (rn % 25) - 12
+| eval mem  = case(host=="web-01",68,host=="web-02",50,host=="db-01",72,1==1,32) + (rn % 18) - 8
+| eval req  = case(host=="web-01",1400,host=="web-02",640,host=="db-01",240,1==1,80) + (rn % 80)*4 - 160
+| eval err  = case(host=="web-01",18,host=="web-02",4,host=="db-01",2,1==1,1) + (rn % 7) - 3
+| stats latest(cpu)              AS current_cpu,
+        sparkline(avg(cpu), 30m) AS trend_cpu,
+        sparkline(avg(mem), 30m) AS trend_mem,
+        sparkline(sum(req), 30m) AS trend_req,
+        sparkline(sum(err), 30m) AS trend_err
+   by host
 ```
+
+Why these numbers?
+- `count=288` × `5m` = 24 hours, matching `defaults.dataSources.global.queryParameters.earliest = "-24h@h"`. If your dashboard uses a different time window, scale `count` accordingly (e.g. `count=144` for `-12h`, `count=576` for `-48h`).
+- `_time = relative_time(now(), "-" . tostring((288-rn)*5) . "m")` actually spreads the synthetic events across that window. Without the `*5` you get all events crammed into the last 240 minutes.
+- `sparkline(avg(metric), 30m)` produces ~48 buckets across 24 hours, more than enough for a smooth line.
+- Verify with `| eval mv = mvcount(trend_cpu)` - you want **>=20 elements per row**, not 3.
 
 ```json
 "columnFormat": {
-  "trend": {
-    "cellTypes":      ["SparklineCell"],
-    "sparklineColors":["#33FF99"],
-    "sparklineTypes": ["area"],
+  "host":        { "width": 130 },
+  "current_cpu": { "width": 110 },
+  "trend_cpu": {
+    "sparklineTypes":  ["area", "area", "area", "area"],
+    "sparklineColors": ["#33FF99", "#33FF99", "#33FF99", "#33FF99"],
+    "width": 200
+  },
+  "trend_mem": {
+    "sparklineTypes":  ["line", "line", "line", "line"],
+    "sparklineColors": ["#7AA2FF", "#7AA2FF", "#7AA2FF", "#7AA2FF"],
+    "width": 200
+  },
+  "trend_req": {
+    "sparklineTypes":  ["area", "area", "area", "area"],
+    "sparklineColors": ["#FFB627", "#FFB627", "#FFB627", "#FFB627"],
+    "width": 220
+  },
+  "trend_err": {
+    "sparklineTypes":  ["line", "line", "line", "line"],
+    "sparklineColors": ["#FF2D95", "#FF2D95", "#FF2D95", "#FF2D95"],
     "width": 200
   }
 }
 ```
 
-The trend column must be a multivalue array of numeric strings.
+> **One colour and one type per row.** With 4 hosts you need 4 entries. If your row count is dynamic, prefer `tableFormat.sparklineColors` with a DOS expression (e.g. `> table | seriesByName('host') | matchValue(hostColours)`) so each row gets a colour driven by data, not a hard-coded array.
+
+The default global `tableFormat.cellTypes` DOS expression auto-resolves multivalue numeric columns to `SparklineCell`. Only set `columnFormat.<col>.cellTypes` explicitly if you need to force a different renderer (e.g. `TextCell` to show the underlying mv list).
+
+### Anti-pattern: faking mv with `makemv`
+
+A pattern that **does not work** and silently degrades to "only the first row renders":
+
+```spl
+| eval trend_cpu = "60,72,81,88,94"
+| makemv tokenizer="(\d+)" trend_cpu     ❌ only the first row gets typed as mv
+```
+
+Or the variant using `delim`:
+
+```spl
+| eval trend_cpu = "60,72,81,88,94"
+| makemv delim="," trend_cpu              ❌ same problem; only row 1 renders
+```
+
+`makemv` operates row-by-row in a way that the table renderer's mv detector only picks up reliably on the first row of stats output. The first row paints as a sparkline; rows 2..N stay as plain comma-strings or empty. This is the most common reason a "sparkline column only renders on `web-01`" - it isn't a colour-mapping bug, it's that rows 2..N are not actually mv.
+
+**Fix**: replace the `eval | makemv` pair with `stats sparkline(...) by <key>`. Drop any `columnFormat.<col>.cellTypes: ["SparklineCell"]` you may have added - the default DOS auto-detects.
+
+### `sparklineTypes` enum
+
+`area` and `line` only. There is **no `bar` sparkline**. If you need bar-shaped inline trends, render a tiny `splunk.column` viz inside a layout cell instead.
 
 ## Gotchas
 
@@ -188,8 +266,13 @@ The trend column must be a multivalue array of numeric strings.
 - **`_time` is special** - it stays visible even with `showInternalFields: false`. To hide it, exclude in SPL with `| fields - _time`.
 - **`tableFormat.align` is 2D**, **`columnFormat.<col>.align` is 1D** - they're not interchangeable.
 - **`headerBackgroundColor` is a single hex**, not an array. It applies to the whole header row.
+- **Theme-default headers**: if you want the header to track theme (white-on-light, dark-on-dark), **don't set `headerBackgroundColor` / `headerColor` at all**. The defaults resolve through `themes.defaultHeaderBackgroundColor` per theme. Hardcoding `#0B0C0E` makes the header unreadable in light theme.
 - **`backgroundColor` on the table** is different from the panel chrome - it tints only the cell area.
 - **Pagination** (`paginateDataSourceKey`) requires a paginated data source - it's not a UI control, it's a contract with the SPL backend.
+- **`dataSource.name` regex**: the Dashboard Studio editor enforces `^[A-Za-z0-9 \-_.]+$`. **Slashes, parentheses, and `/` will trip the picker** even though the JSON parses fine. Stick to letters, digits, spaces, dashes, underscores, periods. Example - `"sparkline - hosts with cpu/mem trends"` ❌ → `"sparkline - hosts with cpu mem trends"` ✅.
+- **SparklineCell only auto-detects mv columns produced by `stats sparkline()` (or equivalents like `mvexpand`-then-stats).** A column built with `eval x = "1,2,3" | makemv ...` is not a true mv column for the table - row 1 renders, rows 2..N do not. See the anti-pattern above.
+- **`columnFormat.<col>.sparklineColors` and `sparklineTypes` are per-row arrays, not per-series.** Schema is `string[]` where index `i` = row `i`. With 4 rows you pass 4 entries: `["#33FF99","#33FF99","#33FF99","#33FF99"]`. Passing one entry only styles row 1 and rows 2..N quietly fall back to the default series colour. For dynamic row counts, prefer `tableFormat.sparklineColors` with a DOS expression keyed off the grouping field.
+- **"Only row 1 has a coloured sparkline" is almost always a data-density problem, not a styling problem.** The renderer needs enough non-zero datapoints across the dashboard time window before it commits to your `sparklineColors`. Test SPL: `| eval mv = mvcount(trend_cpu)` - if you see 3 elements per row (one of which is the `##__SPARKLINE__##` marker and one is `0`), you have effectively one datapoint per host and Splunk will not honour your colour override. The fix is to widen the synthetic time range to match the dashboard's `earliest..latest`. With `defaults.dataSources.global.queryParameters.earliest = "-24h@h"` you need ~288 events at 5-minute spacing (`| makeresults count=288 | eval _time = relative_time(now(), "-" . tostring((288-rn)*5) . "m")`), then `sparkline(avg(metric), 30m)` produces ~51 real datapoints per row. Few-data symptoms are indistinguishable from "wrong colour array length" so check the data first with `mvcount`.
 
 ## Cross-references
 

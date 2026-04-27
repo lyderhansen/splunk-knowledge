@@ -364,6 +364,40 @@ If you need a sparkline → use `splunk.singlevalue`. If you need a radial → `
 
 It also does **not** support: legend, axes, `dataValuesDisplay` — the same constraints as `splunk.singlevalue`.
 
+### No native panel `title` or `description`
+
+This is the biggest practical gap and worth its own callout. The official Splunk docs are explicit:
+
+> *"You can add icons to single values to help signal significant changes and clarify what the single value represents. **This is useful when the icon accurately represents the data, and you don't want to use a visualization title or description to explain the metric.**"*
+> — Splunk Enterprise 10.2 docs, *Single value visualizations*
+
+In the visual editor, the **Title** and **Description** fields are tagged `(single value and single value radial)` — `splunk.singlevalueicon` is excluded by name. The full options table for the viz lists 22 properties (`align`, `backgroundColor`, `icon`, `iconColor`, `iconOpacity`, `iconPosition`, `majorColor`, `majorFontSize`, `majorValue`, `majorValueField`, `numberPrecision`, `shouldAbbreviateMajorValue`, `shouldAbbreviateTrendValue`, `shouldUseThousandSeparators`, `showValue`, `trendColor`, `trendDisplay`, `trendFontSize`, `trendValue`, `underLabel`, `unit`, `unitPosition`); **`title` and `description` are not among them**. Setting `title` / `description` keys on the visualization JSON object is silently ignored at render time on Splunk Enterprise 10.2.1.
+
+**Workaround that does work:** add a small `splunk.markdown` panel directly above each icon panel. Pattern used in the test dashboard:
+
+```json
+"viz_kvstore_check_header": {
+  "type": "splunk.markdown",
+  "options": {
+    "markdown": "**2. kvstore filename URL - uploaded SVG**  \nicon = splunk-enterprise-kvstore://<name>__<UUID>.svg ...",
+    "fontFamily": "Splunk Platform Sans",
+    "fontSize": "default",
+    "backgroundColor": "transparent"
+  }
+}
+```
+
+Layout convention used throughout this skill's test dashboard:
+
+- Header markdown: `h: 56` (fits 2 lines of default-size markdown comfortably).
+- 4 px gap.
+- Icon panel: `h: 160` (was 220 before headers).
+- Total slot: `220` — same as before, so adding headers doesn't change `layout.height`.
+
+Three panels per row, row stride `236` (220 slot + 16 gap). With 4 rows of 3 icon panels, the icon panel `y` positions are `188, 424, 660, 896` and headers sit at `128, 364, 600, 836`. See `test-dashboard/dashboard.json` for the canonical absolute-layout coordinates.
+
+If you don't need a per-panel description, drop the second markdown line and shrink the header to `h: 32` — the icon then gets back to `h: 184`. Either way, **leave `title` and `description` populated on the viz JSON object** even though they don't render: source-view editing relies on them, and a future Splunk release may light them up.
+
 ---
 
 ## Gotchas
@@ -377,6 +411,7 @@ It also does **not** support: legend, axes, `dataValuesDisplay` — the same con
 7. **`iconOpacity` is a number, not a percent.** `0.3` not `30`.
 8. **Light theme readability.** When `backgroundColor` flips to a light tone via `rangeValue`, lock `iconColor` and `majorColor` to a dark hex (`#1A1A1A`). The default theme text colour will be light and disappear on the light bg.
 9. **`rangeValue` thresholds are top-down with `from` inclusive and `to` exclusive.** Overlapping buckets like `[{to:70}, {from:70, to:90}, {from:90}]` silently mis-route values: the boundary value 70 lands in amber (not red), and any value in (70, 90) hits the first bucket if you swap order. Always design **disjoint, gap-free** buckets (e.g. `[{to:60}, {from:60, to:80}, {from:80}]`) and verify with at least one demo value per bucket. See pattern 5 above.
+10. **Setting `title` / `description` on the viz object renders nothing.** This viz type explicitly does not support panel chrome titles or descriptions — confirmed against the Splunk Enterprise 10.2 docs (the options reference table omits both fields, and the editor labels the corresponding inputs `(single value and single value radial)`). Use a paired `splunk.markdown` panel directly above each icon panel instead — see *No native panel `title` or `description`* above for the layout convention.
 
 ---
 
