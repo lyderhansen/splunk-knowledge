@@ -129,9 +129,9 @@
     },
     "ds_hourly_pattern": {
       "type": "ds.search",
-      "name": "attacks by day-of-week and hour-of-day for punchcard heatmap",
+      "name": "attacks by hour-of-day and day-of-week for punchcard heatmap - column order hour dow count maps to x y size",
       "options": {
-        "query": "| makeresults count=168 | streamstats count as i | eval dow=case((i-1)/24<1,\"Mon\",(i-1)/24<2,\"Tue\",(i-1)/24<3,\"Wed\",(i-1)/24<4,\"Thu\",(i-1)/24<5,\"Fri\",(i-1)/24<6,\"Sat\",1=1,\"Sun\"), hour=(i-1)%24, base=case(hour>=2 AND hour<=5, 80, hour>=9 AND hour<=17, 25, hour>=22 OR hour<=1, 60, 1=1, 18), count=base+(random()%20) | stats sum(count) as count by dow hour"
+        "query": "| makeresults count=168 | streamstats count as i | eval dow=case((i-1)/24<1,\"Mon\",(i-1)/24<2,\"Tue\",(i-1)/24<3,\"Wed\",(i-1)/24<4,\"Thu\",(i-1)/24<5,\"Fri\",(i-1)/24<6,\"Sat\",1=1,\"Sun\"), hour=(i-1)%24, base=case(hour>=2 AND hour<=5, 80, hour>=9 AND hour<=17, 25, hour>=22 OR hour<=1, 60, 1=1, 18), count=base+(random()%20) | stats sum(count) as count by hour dow | table hour dow count"
       }
     },
     "ds_top_countries": {
@@ -286,12 +286,10 @@
     "viz_severity_stacked": {
       "type": "splunk.column",
       "title": "Alerts by severity over time",
-      "description": "Stacked column - 24 hourly buckets, 4 severity series. Color order matches the SOC palette: red/orange/yellow/green for critical/high/medium/low.",
+      "description": "Stacked column - 24 hourly buckets, 4 severity series. SPL emits _time + critical/high/medium/low columns; the viz auto-binds first column as x (time) and remaining as series. seriesColors is positional: red/orange/yellow/green matches SPL column order critical/high/medium/low. No x/y options on column charts — they're stats-table-format viz (only splunk.scatter and splunk.bubble use explicit x/y).",
       "dataSources": {"primary": "ds_severity_over_time"},
       "options": {
         "stackMode": "stacked",
-        "x": "> primary | seriesByName(\"_time\")",
-        "y": "> primary | frameBySeriesNames(\"critical\", \"high\", \"medium\", \"low\")",
         "seriesColors": ["#DC4E41", "#F1813F", "#F8BE34", "#53A051"],
         "legendDisplay": "right",
         "xAxisTitleVisibility": "hide",
@@ -347,15 +345,16 @@
     "viz_top_attackers": {
       "type": "splunk.bar",
       "title": "Top 10 attacker IPs",
-      "description": "Horizontal bar, sorted descending. Source IPs with country code suffix. Click any bar to filter the rest of the page by that IP (drilldown.setToken).",
+      "description": "Horizontal bar, sorted descending. SPL emits src_ip, country, attacks — viz auto-binds first column as y-axis category, last numeric column as x-axis value. No x/y DOS options on splunk.bar (those are scatter/bubble-only). Click any bar to filter the rest of the dashboard by that IP via drilldown.setToken.",
       "dataSources": {"primary": "ds_top_attackers"},
       "options": {
-        "x": "> primary | seriesByName(\"attacks\")",
-        "y": "> primary | seriesByName(\"src_ip\")",
         "seriesColors": ["#DC4E41"],
         "legendDisplay": "off",
-        "xAxisTitleVisibility": "hide",
+        "xAxisTitleText": "Attacks (24h)",
+        "xAxisTitleVisibility": "show",
         "yAxisTitleVisibility": "hide",
+        "yAxisLabelVisibility": "auto",
+        "yAxisMajorTickVisibility": "hide",
         "backgroundColor": "#15161a"
       },
       "eventHandlers": [
@@ -363,7 +362,7 @@
           "type": "drilldown.setToken",
           "options": {
             "tokens": [
-              {"token": "source_ip_filter", "key": "click.value2"}
+              {"token": "source_ip_filter", "key": "row.src_ip.value"}
             ]
           }
         }
@@ -372,55 +371,49 @@
     "viz_top_countries": {
       "type": "splunk.bar",
       "title": "Top attacking countries",
-      "description": "Top-N + Other. Aggregating beyond top 9 prevents long tail clutter.",
+      "description": "Top-N + Other. SPL pre-sorts and aggregates to a 10-row table (top 9 + 'Other' to prevent long-tail clutter — REFLEX 8 from ds-design-principles).",
       "dataSources": {"primary": "ds_top_countries"},
       "options": {
-        "x": "> primary | seriesByName(\"attacks\")",
-        "y": "> primary | seriesByName(\"country\")",
         "seriesColors": ["#F1813F"],
         "legendDisplay": "off",
-        "xAxisTitleVisibility": "hide",
+        "xAxisTitleText": "Attacks (24h)",
+        "xAxisTitleVisibility": "show",
         "yAxisTitleVisibility": "hide",
+        "yAxisLabelVisibility": "auto",
+        "yAxisMajorTickVisibility": "hide",
         "backgroundColor": "#15161a"
       }
     },
     "viz_mitre_punchcard": {
       "type": "splunk.punchcard",
       "title": "MITRE ATT&CK — technique × tactic frequency",
-      "description": "Punchcard heatmap of technique frequency by tactic. Bubble size encodes count. Use to spot which tactic phase is currently most active.",
+      "description": "Punchcard heatmap of technique frequency by tactic. Bubble area encodes count. SPL emits tactic, technique, count in that exact order — punchcard's default `x = seriesByIndex(0)`, `y = seriesByIndex(1)`, `size = seriesByIndex(2)` mapping picks them up automatically. Use to spot which tactic phase is currently most active.",
       "dataSources": {"primary": "ds_mitre_techniques"},
       "options": {
-        "x": "> primary | seriesByName(\"tactic\")",
-        "y": "> primary | seriesByName(\"technique\")",
-        "bubbleSize": "> primary | seriesByName(\"count\")",
         "bubbleRadiusMax": 16,
         "bubbleRadiusMin": 3,
+        "bubbleSizeMethod": "area",
         "backgroundColor": "#15161a"
       }
     },
     "viz_kill_chain": {
       "type": "splunk.sankey",
       "title": "Kill chain progression",
-      "description": "Sankey of source-stage → target-stage transitions, weighted by event volume. The 'Blocked' sink is the SOC's defensive-control surface — fatter ribbons into Blocked = better.",
+      "description": "Sankey of source-stage → target-stage transitions, weighted by event volume. SPL emits source, target, value in that exact 3-column order — sankey reads them positionally (no source/target/value DOS options on the viz). The 'Blocked' sink is the SOC's defensive-control surface; fatter ribbons into Blocked = better.",
       "dataSources": {"primary": "ds_kill_chain"},
       "options": {
-        "source": "> primary | seriesByName(\"source\")",
-        "target": "> primary | seriesByName(\"target\")",
-        "value":  "> primary | seriesByName(\"value\")",
         "backgroundColor": "#15161a"
       }
     },
     "viz_hourly_pattern": {
       "type": "splunk.punchcard",
       "title": "Attack pattern — day-of-week × hour-of-day",
-      "description": "Punchcard of attack volume by weekday and hour. Larger bubbles indicate sustained pressure. Use to identify off-hours patterns (weekend / 02-05 UTC).",
+      "description": "Punchcard of attack volume by weekday and hour. SPL emits dow, hour, count — viz auto-binds them via the seriesByIndex defaults. Larger bubbles indicate sustained pressure; use to identify off-hours patterns (weekend / 02-05 UTC).",
       "dataSources": {"primary": "ds_hourly_pattern"},
       "options": {
-        "x": "> primary | seriesByName(\"hour\")",
-        "y": "> primary | seriesByName(\"dow\")",
-        "bubbleSize": "> primary | seriesByName(\"count\")",
         "bubbleRadiusMax": 14,
         "bubbleRadiusMin": 2,
+        "bubbleSizeMethod": "area",
         "backgroundColor": "#15161a"
       }
     },
@@ -549,14 +542,14 @@
     "viz_host_timeline": {
       "type": "splunk.line",
       "title": "Host activity — last 24h",
-      "description": "Event volume on `$selected_host$`. Spikes correlate with the alert's first-seen timestamp. Click + drag to set a finer time window.",
+      "description": "Event volume on `$selected_host$`. SPL emits _time + events — splunk.line auto-binds first column as x-axis (time) and remaining as series. Spikes correlate with the alert's first-seen timestamp. Click the chart to open the same query in Splunk Search via drilldown.linkToSearch.",
       "dataSources": {"primary": "ds_host_timeline"},
       "options": {
-        "x": "> primary | seriesByName(\"_time\")",
-        "y": "> primary | seriesByName(\"events\")",
         "seriesColors": ["#DC4E41"],
         "legendDisplay": "off",
         "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "auto",
+        "xAxisMajorTickVisibility": "hide",
         "yAxisTitleVisibility": "hide",
         "backgroundColor": "#15161a"
       },
