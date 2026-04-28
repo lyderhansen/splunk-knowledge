@@ -155,12 +155,6 @@
         }
       }
     },
-    "ds_token_demo": {
-      "type": "ds.search",
-      "options": {
-        "query": "| makeresults | eval msg=\"index=$selected_index$ status IN ($status|s$) filter=$search_text$ host=$host_filter$ time=$global_time.earliest$..$global_time.latest$\" | table msg"
-      }
-    },
     "ds_table_rows": {
       "type": "ds.search",
       "options": {
@@ -196,16 +190,12 @@
       }
     },
     "viz_token_echo": {
-      "type": "splunk.singlevalue",
+      "type": "splunk.markdown",
       "title": "Token echo",
-      "description": "Shows that $selected_index$, $status$, $search_text$, $host_filter$, and $global_time.earliest$ / $global_time.latest$ all resolve correctly.",
-      "dataSources": {
-        "primary": "ds_token_demo"
-      },
+      "description": "Markdown panel that interpolates every dashboard token directly. No SPL involved \u2014 the markdown engine substitutes `$tok$` references at render time. Token values are wrapped in inline-code spans so wildcards and special chars (e.g. `*`, `_`) don't get reinterpreted as markdown formatting.",
       "options": {
-        "majorValue": "> primary | seriesByName(\"msg\") | lastPoint()",
-        "majorFontSize": 14,
-        "shouldUseThousandSeparators": false
+        "markdown": "**Resolved SPL fragment:**\n\n```spl\n| eval msg=\"index=$selected_index$ status IN ($status|s$) filter=$search_text$ host=$host_filter$ time=$global_time.earliest$..$global_time.latest$\"\n```\n\n**Individual tokens:**\n\n- `$selected_index$` \u2192 `$selected_index$`\n- `$status$` \u2192 `$status$` &nbsp;&nbsp; (multiselect; with `|s` \u2192 `$status|s$`)\n- `$search_text$` \u2192 `$search_text$`\n- `$host_filter$` \u2192 `$host_filter$`\n- `$global_time.earliest$` \u2192 `$global_time.earliest$`\n- `$global_time.latest$` \u2192 `$global_time.latest$`\n- `$selected_host$` (from \u00a74 click) \u2192 `$selected_host$`\n- `$selected_action$` (from \u00a74 click) \u2192 `$selected_action$`",
+        "fontSize": "small"
       }
     },
     "viz_section2_header": {
@@ -216,13 +206,12 @@
       }
     },
     "viz_inputs_proof": {
-      "type": "splunk.table",
+      "type": "splunk.markdown",
       "title": "Inputs \u2192 tokens (live)",
-      "dataSources": {
-        "primary": "ds_token_demo"
-      },
+      "description": "Markdown table that maps each input above to the token it writes and the current token value. Live-updates as the user changes any input.",
       "options": {
-        "showInternalFields": false
+        "markdown": "| Input | Type | Token | Current value |\n| --- | --- | --- | --- |\n| Time range | `input.timerange` | `global_time` | earliest=`$global_time.earliest$` &nbsp; latest=`$global_time.latest$` |\n| Index | `input.dropdown` | `selected_index` | `$selected_index$` |\n| Status | `input.multiselect` | `status` | `$status$` &nbsp; (with `|s` filter: `$status|s$`) |\n| Search filter | `input.text` | `search_text` | `$search_text$` |\n| Host (dynamic) | `input.dropdown` w/ DOS items | `host_filter` | `$host_filter$` |\n\n**From drilldowns (\u00a74):**\n\n| Source | Token | Current value |\n| --- | --- | --- |\n| Row click \u2192 `setToken` | `selected_host` | `$selected_host$` |\n| Row click \u2192 `setToken` | `selected_action` | `$selected_action$` |",
+        "fontSize": "small"
       }
     },
     "viz_section3_header": {
