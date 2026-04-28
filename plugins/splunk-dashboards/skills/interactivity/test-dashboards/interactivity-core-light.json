@@ -12,6 +12,16 @@
           }
         }
       }
+    },
+    "tokens": {
+      "default": {
+        "selected_host": {
+          "value": ""
+        },
+        "selected_action": {
+          "value": ""
+        }
+      }
     }
   },
   "inputs": {
@@ -148,7 +158,7 @@
     "ds_token_demo": {
       "type": "ds.search",
       "options": {
-        "query": "| makeresults | eval msg=\"index=$selected_index$ status=$status$ filter=$search_text$ host=$host_filter$ time=$global_time.earliest$..$global_time.latest$\" | table msg"
+        "query": "| makeresults | eval msg=\"index=$selected_index$ status IN ($status|s$) filter=$search_text$ host=$host_filter$ time=$global_time.earliest$..$global_time.latest$\" | table msg"
       }
     },
     "ds_table_rows": {
@@ -237,7 +247,7 @@
     "viz_section4_header": {
       "type": "splunk.markdown",
       "options": {
-        "markdown": "## \u00a74 ds-drilldowns\n\nClick a row in the table below.\n\n- **setToken** \u2014 captures `row.host.value` into `$selected_host$`. The detail panel in \u00a75 shows it.\n- **linkToSearch** \u2014 opens the Splunk search UI prefilled with `index=main host=<row>`.\n- **linkToDashboard** \u2014 navigates to `host_detail_view` (placeholder app=`search`, dashboard=`host_detail_view`).\n- **customUrl** \u2014 opens an external investigation URL with URL-encoded row values.",
+        "markdown": "## \u00a74 ds-drilldowns\n\nClick a row in the table below to fire the demo drilldown.\n\n- **setToken** \u2014 captures `row.host.value` into `$selected_host$` and `row.action.value` into `$selected_action$`. \u00a75 reacts to `$selected_host$`.\n- **linkToSearch** \u2014 opens the Splunk Search UI prefilled with `index=main host=<row>` and forwards the dashboard's current time range.\n- **linkToDashboard** \u2014 re-navigates to this same dashboard (`ds_interactivity_core_dark`), forwarding `selected_host` + the time range. **Token forwarding requires the array-of-objects shape** `tokens: [{token, value}]` \u2014 the string-keyed map shape is silently rejected by the editor.\n- **customUrl** \u2014 opens an external investigation URL with URL-encoded row values via the `|u` token filter.",
         "fontSize": "small"
       }
     },
@@ -317,7 +327,7 @@
     "viz_drilldown_table_dash": {
       "type": "splunk.table",
       "title": "Drilldown \u2014 linkToDashboard",
-      "description": "Navigates to host_detail_view in the search app, passing form.host and form.earliest as URL params.",
+      "description": "Navigates to ds_interactivity_core_dark in the same app, forwarding row.host.value as the `selected_host` token and the current global time range. Uses the array-of-objects `tokens: [{token, value}]` shape (the documented schema). The string-keyed `tokens: { name: value }` shape is rejected by the editor with no error.",
       "dataSources": {
         "primary": "ds_table_rows"
       },
@@ -329,13 +339,23 @@
         {
           "type": "drilldown.linkToDashboard",
           "options": {
-            "app": "search",
-            "dashboard": "host_detail_view",
+            "app": "splunk-knowledge-testing",
+            "dashboard": "ds_interactivity_core_dark",
             "newTab": true,
-            "tokens": {
-              "form.host": "$row.host.value$",
-              "form.earliest": "$global_time.earliest$"
-            }
+            "tokens": [
+              {
+                "token": "selected_host",
+                "value": "row.host.value"
+              },
+              {
+                "token": "global_time.earliest",
+                "value": "global_time.earliest"
+              },
+              {
+                "token": "global_time.latest",
+                "value": "global_time.latest"
+              }
+            ]
           }
         }
       ]
@@ -343,24 +363,32 @@
     "viz_section5_header": {
       "type": "splunk.markdown",
       "options": {
-        "markdown": "## \u00a75 ds-visibility\n\nThree panels below toggle on different token states of `$selected_host$`:\n- **panel A** \u2014 visible only when `$selected_host$` is set (after a row click in \u00a74)\n- **panel B** \u2014 visible only when `$selected_host$` equals `web-01`\n- **panel C** \u2014 visible only when `$selected_host$` is unset (default state)\n\nClick rows in \u00a74 to flip these on and off.",
+        "markdown": "## \u00a75 ds-visibility\n\nThree panels below toggle on different token states of `$selected_host$`. Click rows in \u00a74 to flip them on and off.\n\n- **panel A** \u2014 visible when `$selected_host$` is set (after any row click in \u00a74). Condition: `$selected_host$ != \"\"`.\n- **panel B** \u2014 visible only when `$selected_host$` equals `web-01`. Condition: `$selected_host$ = \"web-01\"`.\n- **panel C** \u2014 visible when `$selected_host$` is unset (initial state). Condition: `$selected_host$ = \"\"`.\n\n**How the wiring works:** every panel's `containerOptions.visibility.showConditions` references one or more *condition IDs*. The conditions themselves are declared at the dashboard root under `expressions.conditions.<id>.value`.\n\n**Two hard rules from QA debugging:**\n\n1. **`visibility` lives under `containerOptions`, NOT at panel root.** Setting `visibility` directly on the viz is rejected with `must NOT have additional properties`. Every example in the official Splunk doc puts it at `containerOptions.visibility`. Same for inputs (`inputs.<id>.containerOptions.visibility`).\n2. **Condition expressions use bare tokens + quoted literals.** Write `$selected_host$ = \"web-01\"`, NOT `\"$selected_host$\" = \"web-01\"` (wrapping the token in quotes breaks the SPL parser when the value contains a dash). The `isSet($tok$)` / `not isSet($tok$)` form shown in newer Splunk docs is JSONata-only and is rejected by Splunk Enterprise 10.2.x's SPL-flavoured condition evaluator with `S0201 Syntax error: \"isSet\"`. Plain `$tok$ != \"\"` / `$tok$ = \"\"` works on every version we tested.\n\nBoolean operators are lowercase: `and`, `or`, `not`. Single equals (`=` / `!=`), not `==`.",
         "fontSize": "small"
       }
     },
     "viz_visibility_a_set": {
       "type": "splunk.table",
       "title": "A \u2014 visible when $selected_host$ is set",
+      "description": "Visible only when `$selected_host$` is non-empty. Uses containerOptions.visibility.showConditions referencing condition_host_set declared in expressions.conditions.",
       "dataSources": {
         "primary": "ds_selected_detail"
       },
       "options": {
         "showInternalFields": false
       },
-      "visibility": "$selected_host$!=\"\""
+      "containerOptions": {
+        "visibility": {
+          "showConditions": [
+            "condition_host_set"
+          ]
+        }
+      }
     },
     "viz_visibility_b_match": {
       "type": "splunk.singlevalue",
       "title": "B \u2014 visible only when host == web-01",
+      "description": "Visible only when `$selected_host$` equals 'web-01'. Click that row in \u00a74 to reveal it.",
       "dataSources": {
         "primary": "ds_selected_detail"
       },
@@ -368,22 +396,51 @@
         "majorValue": "> primary | seriesByName(\"host\") | lastPoint()",
         "underLabel": "matched web-01"
       },
-      "visibility": "$selected_host$==\"web-01\""
+      "containerOptions": {
+        "visibility": {
+          "showConditions": [
+            "condition_host_is_web01"
+          ]
+        }
+      }
     },
     "viz_visibility_c_unset": {
       "type": "splunk.markdown",
+      "description": "Visible only in the initial state (no host selected). Click a row in \u00a74 to hide.",
       "options": {
         "markdown": "_(C \u2014 initial state: no host selected. Click a row in \u00a74 to hide this and reveal A/B.)_",
         "fontSize": "small"
       },
-      "visibility": "$selected_host$==\"\""
+      "containerOptions": {
+        "visibility": {
+          "showConditions": [
+            "condition_host_unset"
+          ]
+        }
+      }
+    }
+  },
+  "expressions": {
+    "conditions": {
+      "condition_host_set": {
+        "name": "host is set",
+        "value": "$selected_host$ != \"\""
+      },
+      "condition_host_is_web01": {
+        "name": "host is web-01",
+        "value": "$selected_host$ = \"web-01\""
+      },
+      "condition_host_unset": {
+        "name": "host is unset",
+        "value": "$selected_host$ = \"\""
+      }
     }
   },
   "layout": {
     "type": "absolute",
     "options": {
       "width": 1440,
-      "height": 2400,
+      "height": 2700,
       "backgroundColor": "#FAEAD8"
     },
     "globalInputs": [
@@ -521,7 +578,7 @@
           "x": 0,
           "y": 1940,
           "w": 1440,
-          "h": 180
+          "h": 460
         }
       },
       {
@@ -529,7 +586,7 @@
         "type": "block",
         "position": {
           "x": 0,
-          "y": 2140,
+          "y": 2420,
           "w": 480,
           "h": 220
         }
@@ -539,7 +596,7 @@
         "type": "block",
         "position": {
           "x": 480,
-          "y": 2140,
+          "y": 2420,
           "w": 480,
           "h": 220
         }
@@ -549,7 +606,7 @@
         "type": "block",
         "position": {
           "x": 960,
-          "y": 2140,
+          "y": 2420,
           "w": 480,
           "h": 220
         }

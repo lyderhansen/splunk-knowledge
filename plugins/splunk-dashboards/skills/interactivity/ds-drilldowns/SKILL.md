@@ -119,17 +119,20 @@ URL is constructed.
 
 ## `drilldown.linkToDashboard`
 
+Verified shape from the live test bench:
+
 ```json
 {
   "type": "drilldown.linkToDashboard",
   "options": {
-    "app": "search",
-    "dashboard": "host_detail_view",
+    "app": "splunk-knowledge-testing",
+    "dashboard": "ds_interactivity_core_dark",
     "newTab": true,
-    "tokens": {
-      "form.host":     "$row.host.value$",
-      "form.earliest": "$global_time.earliest$"
-    }
+    "tokens": [
+      {"token": "selected_host",        "value": "row.host.value"},
+      {"token": "global_time.earliest", "value": "global_time.earliest"},
+      {"token": "global_time.latest",   "value": "global_time.latest"}
+    ]
   }
 }
 ```
@@ -138,13 +141,30 @@ URL is constructed.
 |---|---|---|
 | `app` | yes | App ID containing the target dashboard. |
 | `dashboard` | yes | Dashboard ID (the URL slug, not the title). |
-| `tokens` | no | `{form.<name>: $value$}` map. The receiving dashboard sees these as `form.<name>` URL params, which populate matching input tokens by name. |
+| `tokens` | no | **Array of `{token, value}` objects** — same shape as `setToken`'s `tokens`, but the field is `value` (not `key`). |
 | `newTab` | no | `true` opens in a new tab. |
 
-The receiving dashboard must have an input declared with token name
-matching the destination — i.e. `form.host` arrives as the `host` token
-on the target. **Always prefix the key with `form.`** — without it the
-URL param is malformed and the receiving dashboard ignores it.
+> **Hard rule.** `tokens` is an array of `{token, value}` objects, NOT
+> a string-keyed map. Setting `tokens: { "form.host": "$row.host.value$" }`
+> looks superficially right (it matches the Simple-XML form) but the
+> Studio editor silently drops the entry — the link navigates with no
+> tokens, and the target dashboard's inputs stay at their defaults.
+> Use the array shape and the editor accepts it.
+
+Two more differences from `setToken`:
+
+- The field name is `value` (not `key`).
+- The `value` field carries a **bare token name** (`row.host.value`,
+  `global_time.earliest`) — same convention as `setToken.tokens[].key`,
+  no `$…$` wrappers.
+- `token` is the **destination token name** on the receiving dashboard.
+  No `form.` prefix is required — Studio targets resolve raw token
+  names, unlike Simple-XML which required `form.<name>` URL params.
+
+The receiving dashboard must have an input declared with the destination
+token name (or another mechanism that writes that token). If the target
+dashboard has `inputs.input_host.options.token: "selected_host"`, the
+incoming `selected_host` value populates that input on load.
 
 ## `drilldown.customUrl`
 
@@ -187,7 +207,9 @@ navigate.
     "options": {
       "app": "search",
       "dashboard": "host_detail_view",
-      "tokens": {"form.host": "$row.host.value$"}
+      "tokens": [
+        {"token": "host", "value": "row.host.value"}
+      ]
     }
   }
 ]
@@ -219,15 +241,24 @@ after handler shape.
 
 ## Common gotchas
 
-- **`tokens` shape differs by action type.** `setToken` wants an
-  *array* of `{token, key}`; `linkToDashboard` wants an *object*
-  `{form.foo: $bar$}`. Easy to copy from one and break the other.
+- **`tokens` shape across actions: same array, slightly different key
+  name.** `setToken.tokens[].key` ↔ `linkToDashboard.tokens[].value` —
+  both are bare context-token names (`row.host.value`,
+  `global_time.earliest`), neither uses `$…$` wrappers. The fields are
+  named differently because `setToken`'s "where to read from" is the
+  `key`, while `linkToDashboard`'s "what to forward as" is the `value`.
+- **`linkToDashboard.tokens` is an array, not a map.** The Simple-XML
+  `{form.host: $value$}` map shape is silently rejected by the Studio
+  editor — the link works but no tokens are forwarded. Use
+  `[{token, value}, ...]`.
 - **`key` in `setToken` has no `$`.** Everywhere else, you'd write
-  `$row.host.value$`. Inside the `key` field of `setToken`, you write
-  `row.host.value` — bare. The `$` form there is treated as a literal.
-- **`form.` prefix is required for `linkToDashboard.tokens`.**
-  `{"host": "..."}` does nothing on the target. `{"form.host": "..."}`
-  works.
+  `$row.host.value$`. Inside the `key` field of `setToken` (or
+  `linkToDashboard`'s `value`), you write `row.host.value` — bare. The
+  `$` form there is treated as a literal.
+- **No `form.` prefix on `linkToDashboard.tokens`.** Studio v2 resolves
+  raw token names — `{"token": "host", "value": "row.host.value"}`
+  populates the target's `host` token directly. The `form.<name>`
+  URL-param convention is Simple-XML / Classic; Studio doesn't need it.
 - **`customUrl` without `|u` breaks on special chars.** Always use
   `$row.<field>.value|u$` for tokens going into URLs.
 - **Charts emit `$click.*$`, tables emit `$row.*$`.** Picking the wrong
@@ -295,17 +326,18 @@ Downstream search:
     "app": "search",
     "dashboard": "host_detail_view",
     "newTab": true,
-    "tokens": {
-      "form.host":     "$row.host.value$",
-      "form.earliest": "$global_time.earliest$",
-      "form.latest":   "$global_time.latest$"
-    }
+    "tokens": [
+      {"token": "host",                 "value": "row.host.value"},
+      {"token": "global_time.earliest", "value": "global_time.earliest"},
+      {"token": "global_time.latest",   "value": "global_time.latest"}
+    ]
   }
 }]
 ```
 
-The target dashboard declares matching `host` / `time` inputs; the
-`form.*` URL params populate them on load.
+The target dashboard declares matching `host` and `global_time` inputs
+(the latter via `input.timerange` with `options.token: "global_time"`);
+the forwarded tokens populate them on load.
 
 ## See also
 

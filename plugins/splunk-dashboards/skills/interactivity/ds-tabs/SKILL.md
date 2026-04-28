@@ -1,12 +1,12 @@
 ---
-name: ds-tabs
+
+## name: ds-tabs
 description: Tabs split a single dashboard into multiple panel groups, each with its own grid layout, sharing the same inputs and data sources. Read when a dashboard has too many panels for one screen, when separating workflows by audience (operations vs investigators), or when adding a "details" sub-page that doesn't deserve its own dashboard. Triggers on 'tabs', 'tabbed dashboard', 'multiple pages in one dashboard', 'layoutDefinitions', 'tab bar position'.
 version: 1.0
 verified_against: Splunk Enterprise 10.2.1
 test_dashboards:
   - splunk-knowledge-testing/ds_interactivity_tabs_dark
   - splunk-knowledge-testing/ds_interactivity_tabs_light
----
 
 # `ds-tabs` — tabbed layouts
 
@@ -65,22 +65,24 @@ inside an absolute layout, and you cannot embed an absolute layout
 Three keys at `layout`-level:
 
 - `globalInputs` — array of input IDs visible across all tabs (typically
-  the global time picker).
+the global time picker).
 - `tabs.items` — array of `{layoutId, label}`. Order matches tab order
-  left-to-right. Each `layoutId` must be a key in `layoutDefinitions`.
+left-to-right. Each `layoutId` must be a key in `layoutDefinitions`.
 - `tabs.options` — tab-bar styling (see below).
 - `layoutDefinitions` — keyed by tab ID. Each entry is itself a layout
-  block (`type: "grid" | "absolute"`, plus its own `structure` and
-  optional `inputs`).
+block (`type: "grid" | "absolute"`, plus its own `structure` and
+optional `inputs`).
 
 ## `tabs.options`
 
 Verified working options:
 
-| Option | Type | Default | Notes |
-|---|---|---|---|
-| `barPosition` | `"top"` \| `"bottom"` | `"top"` | Tab bar above or below content. |
-| `showTabBar` | boolean | `true` | When `false`, tabs are hidden — useful for programmatic tab switching only. |
+
+| Option        | Type                 | Default | Notes                                                                       |
+| ------------- | -------------------- | ------- | --------------------------------------------------------------------------- |
+| `barPosition` | `"top"` | `"bottom"` | `"top"` | Tab bar above or below content.                                             |
+| `showTabBar`  | boolean              | `true`  | When `false`, tabs are hidden — useful for programmatic tab switching only. |
+
 
 Hiding the tab bar (`showTabBar: false`) is rare but useful for
 embedded dashboards where another widget controls which tab is active
@@ -124,9 +126,9 @@ whole dashboard unless there's a specific reason.
 Use tabs when:
 
 - Multiple views *share* the same input filters (one time picker, one
-  host filter — same scope).
+host filter — same scope).
 - The user workflow naturally moves between views without changing
-  context.
+context.
 - Each view is small enough that it doesn't deserve a separate URL.
 
 Use separate dashboards when:
@@ -134,7 +136,7 @@ Use separate dashboards when:
 - Views have distinct audiences (executives vs operators).
 - The URL needs to be shareable / bookmarkable per-view.
 - Filter scope differs significantly (different time horizons, different
-  inputs).
+inputs).
 
 A common production pattern is to pair: a "summary" dashboard with no
 tabs, and a "detail" dashboard with tabs for sub-sections. Drill from
@@ -143,27 +145,27 @@ landing on a specific tab via URL params (advanced).
 
 ## Common gotchas
 
-- **`layout.type` must be omitted** when using tabs. Setting both
-  `layout.type: "absolute"` and `layout.tabs` produces undefined behaviour
-  (often "tabs ignored").
-- **`layoutDefinitions` keys must match `tabs.items[].layoutId`**
-  exactly. A typo → blank tab.
+- `**layout.type` must be omitted** when using tabs. Setting both
+`layout.type: "absolute"` and `layout.tabs` produces undefined behaviour
+(often "tabs ignored").
+- `**layoutDefinitions` keys must match `tabs.items[].layoutId*`*
+exactly. A typo → blank tab.
 - **Each tab's own layout still needs `type` and `structure`.** They're
-  not optional on the inner layout — the outer dashboard's removal of
-  `layout.type` doesn't propagate.
+not optional on the inner layout — the outer dashboard's removal of
+`layout.type` doesn't propagate.
 - **Searches in hidden tabs still dispatch on dashboard load** by
-  default. If performance matters, gate with `visibility` on individual
-  panels, or split into separate dashboards.
+default. If performance matters, gate with `visibility` on individual
+panels, or split into separate dashboards.
 - **Tabs cannot be nested.** A tab cannot itself contain another tabbed
-  layout.
-- **`globalInputs` always render** above the tab bar regardless of
-  `barPosition`. Tab-scoped inputs render *inside* the tab content.
-- **`labels` are user-visible strings**, not slugs — internationalise
-  freely. `layoutId` is the internal key — keep it stable.
+layout.
+- `**globalInputs` always render** above the tab bar regardless of
+`barPosition`. Tab-scoped inputs render *inside* the tab content.
+- `**labels` are user-visible strings**, not slugs — internationalise
+freely. `layoutId` is the internal key — keep it stable.
 - **No URL-level tab state** by default. The currently selected tab is
-  not preserved in the URL hash. Bookmarking always lands on the first
-  tab. Workarounds exist (token-driven tab selection) but are not part of
-  the verified surface.
+not preserved in the URL hash. Bookmarking always lands on the first
+tab. Workarounds exist (token-driven tab selection) but are not part of
+the verified surface.
 
 ## Quick recipes
 
@@ -228,6 +230,7 @@ beyond the verified scope of this skill — test it before relying on it.)
 - `ds-inputs` — `globalInputs` vs tab-scoped `inputs`.
 - `ds-defaults` — global time wiring works the same in tabbed dashboards.
 - `ds-drilldowns` — `linkToDashboard.tokens` to land on a specific tab
-  (token-driven only).
+(token-driven only).
 - `reference/ds-syntax` — the legacy monolith, with the original layout
-  reference covering grid, absolute, and tabs.
+reference covering grid, absolute, and tabs.
+

@@ -109,11 +109,15 @@ a named token. See `ds-drilldowns`.
 
 Append `|<filter>` to a token name to transform the value at substitution time:
 
-| Syntax | Filter | Use case |
-|---|---|---|
-| `$token|s$` | Raw string (default) | SPL search strings (no transformation) |
-| `$token|h$` | HTML escape | Injecting into `splunk.markdown` text panels (XSS-safe) |
-| `$token|u$` | URL encode | `drilldown.customUrl` and any URL-bound interpolation |
+| Syntax        | Filter                | Use case |
+|---------------|------------------------|---------|
+| `$token|s$`   | **Quote each value (string-quote filter)** | Multiselect tokens going into SPL `IN(...)` clauses. |
+| `$token|h$`   | HTML escape            | Injecting into `splunk.markdown` text panels (XSS-safe) |
+| `$token|u$`   | URL encode             | `drilldown.customUrl` and any URL-bound interpolation |
+
+Default (no filter) emits the raw value: a string for single-value
+tokens, a comma-separated joined list for multiselect arrays (no
+quoting around individual values).
 
 Example from the live test bench:
 
@@ -127,15 +131,32 @@ Example from the live test bench:
 ## Multiselect tokens
 
 `input.multiselect` produces a token whose **runtime expansion** depends on
-context. The token *value* is an array; when interpolated into SPL it
-expands to a comma-separated quoted list. Use it inside `IN()`:
+context. The token *value* is an array.
+
+- **Default** interpolation joins the array with commas, **no quoting
+  around values**: `["200", "404"]` → `200,404`. This is unsafe for SPL
+  fields whose values contain spaces or hyphens — `web-01,web-02`
+  parses literally as `web` then chokes on the dash.
+- **`|s` filter** quotes each value: `["web-01", "web-02"]` →
+  `"web-01","web-02"`. This is the documented form for SPL `IN()`
+  clauses.
+
+The canonical multiselect search pattern (verified in the Splunk doc
+"Network Traffic" example):
 
 ```spl
-| where status IN($status$)
+| where Username IN ($username|s$) OR ("$username$" = "*")
 ```
 
-This is how the live `ds_token_demo` search renders `status=$status$` in
-the §1 Token echo output — the array is joined into the literal string.
+The `IN(...)` clause uses `|s` so the array becomes a properly-quoted
+list; the trailing `OR ("$tok$" = "*")` handles the "All" sentinel
+case where the user picks `*`.
+
+If you forget `|s`, multiselect with N>1 always produces invalid SPL
+the moment any value contains a space, hyphen, colon, or quote. The
+test bench's §1 Token echo demonstrates the right form — it renders
+the SPL `status IN ("200","404")` (quoted) instead of `status IN (200,
+404)` (unquoted).
 
 ## "My panel is not updating" — debug ladder
 
@@ -218,10 +239,13 @@ Best debug pattern. The `§1 Token echo` panel in the live test bench:
 ### Use a multiselect inside a search
 
 ```spl
-| stats count by host | where status IN($status$)
+| stats count by host | where status IN ($status|s$) OR ("$status$" = "*")
 ```
 
-`status` is declared as `input.multiselect` with `defaultValue: ["200","201"]`.
+`status` is declared as `input.multiselect` with `defaultValue:
+["200","201"]`. The `|s` filter quotes each array element so `IN()`
+parses cleanly even when values contain hyphens / spaces; the
+`OR ("$status$" = "*")` clause handles the "All" sentinel.
 
 ### Pass tokens to another dashboard
 

@@ -174,14 +174,26 @@ Key facts:
 ```
 
 - **`defaultValue` is an array**, not a comma-separated string.
-- Consume in SPL with `IN()`:
+- Consume in SPL with `IN()` **and the `|s` filter** to quote each
+  array element:
 
   ```spl
-  | search status IN($status$)
+  | search status IN ($status|s$) OR ("$status$" = "*")
   ```
 
-- Avoid `status=$status$` — that resolves to literal `"200,201"` and
-  matches nothing.
+  Without `|s`, the array `["web-01", "web-02"]` interpolates as the
+  raw `web-01,web-02` and SPL chokes on the hyphens with `S0201
+  Syntax error`. With `|s` it becomes `"web-01","web-02"` and `IN()`
+  parses cleanly. The trailing `OR ("$status$" = "*")` handles the
+  "All" sentinel.
+
+- Avoid `status=$status$` — that resolves to bare `200,201` and is
+  not even valid SPL. Always use `IN ($status|s$)`.
+
+- Studio v2 does **not** support the Simple-XML `valuePrefix` /
+  `valueSuffix` / `delimiter` properties on multiselect — the schema
+  rejects them with `must NOT have additional properties`. Use the
+  `|s` token filter at consumption time instead.
 
 ## `input.text` — free text
 

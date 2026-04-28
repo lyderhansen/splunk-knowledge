@@ -1,12 +1,13 @@
 ---
-name: ds-defaults
+
+## name: ds-defaults
 description: The dashboard-root `defaults` block sets shared options on every data source or visualization of a given type — most commonly used to wire a global timerange into every `ds.search`, set a project-wide refresh cadence, or define dataset-wide visualization defaults. Read when adding a global time picker, when one search ignores the time picker, or when you want to set a default `refresh` / `refreshType` across all panels. Triggers on 'defaults block', 'global time not affecting all panels', 'refresh', 'queryParameters', 'shared options'.
-version: 1.0
+version: 1.1
 verified_against: Splunk Enterprise 10.2.1
+verified_against_docs: Splunk Cloud Platform 10.1.2507
 test_dashboards:
   - splunk-knowledge-testing/ds_interactivity_core_dark (root)
   - splunk-knowledge-testing/ds_interactivity_core_light (root)
----
 
 # `ds-defaults` — dashboard-wide option defaults
 
@@ -18,8 +19,7 @@ test_dashboards:
 
 `defaults` is a dashboard-root key that lets you set option values once,
 keyed by **type**, instead of pasting them onto every data source or
-visualization. Anything you put under `defaults.dataSources["ds.search"].
-options` is applied to every `ds.search` on the dashboard, unless that
+visualization. Anything you put under `defaults.dataSources["ds.search"]. options` is applied to every `ds.search` on the dashboard, unless that
 search overrides the same key locally.
 
 This is **the** mechanism for wiring a global timerange into every panel.
@@ -75,29 +75,69 @@ each query string.
 }
 ```
 
-Two top-level keys are supported:
+Three top-level keys are supported:
 
 - `dataSources` — keyed by data source `type` (`ds.search`,
-  `ds.savedSearch`, `ds.chain`, `ds.test`).
+`ds.savedSearch`, `ds.chain`, `ds.test`).
 - `visualizations` — keyed by visualization `type` (`splunk.line`,
-  `splunk.singlevalue`, etc.).
+`splunk.singlevalue`, etc.).
+- `tokens` — initial values for tokens that are written by drilldowns
+or eval expressions later. See "Initialising tokens" below.
 
 Anything you can set under a single instance's `options` you can set
 here as a default.
+
+## Initialising tokens with `defaults.tokens.default`
+
+Tokens that aren't owned by an `input` (e.g. ones populated by
+`drilldown.setToken` or by an `expressions.eval` block) are
+**undefined** until something writes them. That's a problem for
+visibility conditions and SPL interpolation, where an undefined
+token compares oddly and an empty time range produces unexpected
+results.
+
+Declare a default value at the dashboard root:
+
+```json
+"defaults": {
+  "tokens": {
+    "default": {
+      "selected_host":   { "value": "" },
+      "selected_action": { "value": "" },
+      "showTrend":       { "value": "false" },
+      "metric":          { "value": "*" }
+    }
+  }
+}
+```
+
+Each entry maps a token name to an initial `{ "value": <string> }`.
+The dashboard now starts with these tokens defined, so:
+
+- Visibility conditions like `$selected_host$ = ""` evaluate cleanly
+before the first click instead of being skipped.
+- SPL interpolation like `host=$selected_host$` becomes `host=` (empty)
+instead of `host=` (literal `$selected_host$` token text), which
+Splunk parses correctly.
+
+This block lives at `defaults.tokens.default` (note the inner `default`
+keyword — it's the bucket name, not a typo).
 
 ## What you can put under `dataSources["ds.search"].options`
 
 The most useful keys:
 
-| Key | Purpose |
-|---|---|
-| `queryParameters.earliest` | Default earliest time (token-bindable). |
-| `queryParameters.latest` | Default latest time. |
-| `refresh` | Auto-refresh interval (`30s`, `5m`, etc.). |
-| `refreshType` | `"delay"` or `"interval"` — see below. |
-| `enablePreview` | `true` to stream preview results. |
-| `cancelOnUnload` | `true` to kill jobs when dashboard closes. |
-| `enableSmartSources` | `true` for inputs/searches that depend on upstream tokens. |
+
+| Key                        | Purpose                                                    |
+| -------------------------- | ---------------------------------------------------------- |
+| `queryParameters.earliest` | Default earliest time (token-bindable).                    |
+| `queryParameters.latest`   | Default latest time.                                       |
+| `refresh`                  | Auto-refresh interval (`30s`, `5m`, etc.).                 |
+| `refreshType`              | `"delay"` or `"interval"` — see below.                     |
+| `enablePreview`            | `true` to stream preview results.                          |
+| `cancelOnUnload`           | `true` to kill jobs when dashboard closes.                 |
+| `enableSmartSources`       | `true` for inputs/searches that depend on upstream tokens. |
+
 
 `refresh` + `refreshType` set a project-wide refresh cadence — useful for
 wallboards. `"delay"` waits N seconds **after** results return before
@@ -142,27 +182,26 @@ ignores the picker), and sometimes a bug (you forgot a search overrode it).
 
 ## Common gotchas
 
-- **`defaults` is a top-level key**, sibling to `dataSources`,
-  `visualizations`, `inputs`, `layout`. Easy to nest by accident.
+- `**defaults` is a top-level key**, sibling to `dataSources`,
+`visualizations`, `inputs`, `layout`. Easy to nest by accident.
 - **Bare `$global_time$` does not work.** Always use `.earliest` /
-  `.latest` subfields. The schema accepts the bare form silently and
-  produces no useful value.
+`.latest` subfields. The schema accepts the bare form silently and
+produces no useful value.
 - **Defaults run *before* token resolution** is a common misconception.
-  Defaults are *evaluated* at search dispatch time, like any other
-  option — they have full access to the current token state.
+Defaults are *evaluated* at search dispatch time, like any other
+option — they have full access to the current token state.
 - **Override silence.** A panel ignoring your global time picker almost
-  always means that panel locally redeclares `queryParameters`. Grep the
-  JSON for `queryParameters` to find the culprit.
+always means that panel locally redeclares `queryParameters`. Grep the
+JSON for `queryParameters` to find the culprit.
 - **Refresh defaults are footgun-y.** Setting `refresh: "30s"` at the
-  dashboard root makes *every* search auto-refresh, including expensive
-  cluster scans. Prefer per-panel refresh on wallboards.
-- **`ds.savedSearch` does not honour `queryParameters` defaults** the
-  same way as `ds.search`. Saved searches carry their own time bounds
-  unless explicitly overridden via `ds.savedSearch.options
-  .queryParameters` — set those individually.
+dashboard root makes *every* search auto-refresh, including expensive
+cluster scans. Prefer per-panel refresh on wallboards.
+- `**ds.savedSearch` does not honour `queryParameters` defaults** the
+same way as `ds.search`. Saved searches carry their own time bounds
+unless explicitly overridden via `ds.savedSearch.options .queryParameters` — set those individually.
 - **You cannot default `query`**. Only options that don't change the
-  identity of a data source (time bounds, refresh, etc.) make sense as
-  defaults. The actual SPL belongs on the individual `ds.search`.
+identity of a data source (time bounds, refresh, etc.) make sense as
+defaults. The actual SPL belongs on the individual `ds.search`.
 
 ## Quick recipes
 
@@ -245,4 +284,5 @@ the dashboard.
 - `ds-inputs` — declares `input.timerange` that writes `global_time`.
 - `ds-tokens` — explains `.earliest` / `.latest` subfields.
 - `reference/ds-syntax` — legacy monolith with the full data-source option
-  reference.
+reference.
+
