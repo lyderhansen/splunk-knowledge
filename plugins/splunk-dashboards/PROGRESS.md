@@ -19,21 +19,22 @@ skills/
   design/           empty placeholder — see "Wave C" below
 ```
 
-## Status snapshot (2026-04-28)
+## Status snapshot (2026-04-28 PM)
 
-### What works end-to-end
+### Wave A — visual QA: COMPLETE ✅
 
-QA is **dark-only**. Light variants are auto-generated on deploy by
+All 27 deployed dashboards (dark) confirmed clean by user. QA is
+dark-only; light variants are auto-generated on deploy by
 `make_light.py` (color-remap) and aren't visually walked.
 
-| Layer         | Skills                           | Dark dashboards | SKILL.md | QA (dark)       |
-| ------------- | -------------------------------- | --------------- | -------- | --------------- |
-| viz           | 26 + 1 router + 1 disambiguation | **25**          | 28/28    | 22/26 ✅ 4/26 🟡 |
-| interactivity | 6                                | **2**           | 6/6      | 2/6 ✅ 4/6 🟡    |
-| reference     | 3                                | n/a             | 3/3      | n/a             |
-| pipeline      | 11                               | n/a             | 11/11    | n/a             |
-| design        | 0 (empty placeholder)            | n/a             | n/a      | n/a             |
-| **Total**     | **47** skills                    | **27** dashboards (× 2 dark/light = 54 XML files in container) | **48/48** | 24/32 closed |
+| Layer         | Skills                           | Dark dashboards | SKILL.md | QA (dark) |
+| ------------- | -------------------------------- | --------------- | -------- | --------- |
+| viz           | 26 + 1 router + 1 disambiguation | **25**          | 28/28    | **26/26 ✅** |
+| interactivity | 6                                | **2**           | 6/6      | **6/6 ✅**  |
+| reference     | 3                                | n/a             | 3/3      | n/a       |
+| pipeline      | 11                               | n/a             | 11/11    | n/a       |
+| design        | 0 (empty placeholder)            | n/a             | n/a      | n/a       |
+| **Total**     | **47** skills                    | **27** dashboards (× 2 dark/light = 54 XML files in container) | **48/48** | **32/32 ✅** |
 
 Legend for QA: ✅ user-confirmed clean · 🟡 in progress (fixed, awaiting re-QA) · ⬜ not started.
 
@@ -48,22 +49,17 @@ file path inside the container:
 
 ## What's left to do
 
-### Wave A — close visual QA on what's deployed (highest priority)
+### Wave A — visual QA: ✅ COMPLETE (2026-04-28 PM)
 
-**Status:** 🟡 in progress.
-
-Run through `skills/QA-PLAN.md` end-to-end. Most viz dashboards are
-already user-confirmed clean from earlier rounds; the gap is:
+All 27 dashboards (dark) closed clean by user. The closing work:
 
 
 | #   | Dashboard (dark)                | Outstanding QA work                                                                                                                                                                                                                                       |
 | --- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | `ds_viz_map_dark`               | Re-verify panel 4 (bubble), panel 5 (choropleth), panel 9 (Bubble Type Map - Data Colors) after geo-round redeploy.                                                                                                                                       |
-| 2   | `ds_viz_choropleth_svg_dark`    | Verify panel 7 (World continents) shows recognisable equirectangular silhouettes after the path-redraw.                                                                                                                                                   |
-| 3   | `ds_interactivity_core_dark`    | Re-verify §1 token echo + §2 inputs proof after Q7+Q9+Q10+Q11 fixes (markdown swap, GFM-table → bullet list, `\|s` on free-text/dynamic, A/B/C uniform layout). Verify §5 visibility paneller toggle correctly with `defaults.tokens.default` initialisation. |
-| 4   | `ds_interactivity_tabs_dark`    | Verify tab switching, tab-scoped inputs.                                                                                                                                                                                                                  |
-
-After QA, flip QA columns to ✅ in the per-category PROGRESS.md files.
+| 1   | `ds_viz_map_dark`            | Bench expanded 10 → 15 panels. Panel 4 (bubble) reworked to `geostats` pattern. Panel 5 (choropleth) fixed to use full English country names. Panel 9 replaced with the canonical "Bubble Type Map - Data Colors" example using `dataValues` token. SKILL.md gained 17 gotchas including marker+bubble multi-layer-stack bug. |
+| 2   | `ds_viz_choropleth_svg_dark` | Bench expanded 4 → 9 panels. Panel 7 (World continents) redrawn with proper equirectangular projection and ~25-50 hand-traced coastline vertices per continent. New `SVG-AUTHORING.md` companion file documents the full SVG-side authoring pattern. All 6 data sources converted from `ds.test` → `ds.search`. |
+| 3   | `ds_interactivity_core_dark` | §1 token echo + §2 inputs proof converted to markdown panels (Q7). GFM tables dropped — bullet-list form (Q9). `\|s` filter applied to free-text + dynamic dropdowns (Q10). A/B/C visibility panels unified to same row (Q11). `defaults.tokens.default` block added (Q4). 11 QA findings closed in total (Q1-Q11). |
+| 4   | `ds_interactivity_tabs_dark` | Tab switching + tab-scoped inputs verified.                                                                                                                                                                                                                |
 
 ### Wave B — plugin polish
 
@@ -138,10 +134,10 @@ summaries.
 Run `git log --oneline -10` for the live list. As of last update:
 
 ```
+03c5111 QA round 4: fix |s on free-text, drop GFM-tables in markdown, unify A/B/C layout
 c0881c5 interactivity: convert §1 token echo + §2 inputs proof to markdown panels
 8d959d9 ref(ds-syntax): document expressions, containerOptions.visibility, fix DOS table
 fd02425 interactivity QA round: visibility + drilldown + multiselect schema fixes
 ce634da viz QA pass (geo + table family): real-world fixes from live testing
-9f94f6e viz(QA pass 2026-04-27): table sparkline data-density + 8 viz follow-ups
 ```
 
