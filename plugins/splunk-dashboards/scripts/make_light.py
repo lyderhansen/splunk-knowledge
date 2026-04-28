@@ -42,7 +42,9 @@ COLOR_MAP: dict[str, str] = {
     "#4A6BD9": "#4A6BD9",
 
     # Backgrounds and chrome
+    "#0B0C0E": "#F5F1E8",  # Splunk Prisma dark canvas -> warm parchment light canvas (timeline default)
     "#0F1729": "#FAEAD8",  # dark canvas -> warm light canvas
+    "#101A33": "#EFE7D3",  # SOC slate -> warm light canvas (linkgraph hero)
     "#1A2440": "#EFE7D3",
     "#1A2540": "#EFE7D3",  # near-twin of #1A2440
     "#151B3A": "#EFE7D3",
@@ -60,16 +62,46 @@ COLOR_MAP: dict[str, str] = {
     "#152034": "#F6F1E4",
     "#A85A1F": "#F4D9A8",
     "#8B1F3A": "#F4B5B5",
+
+    # SVG palette for ds-viz-choropleth-svg richer panels (panels 5-9)
+    "#0F1F3D": "#F6F1E4",  # SVG canvas dark -> warm light parchment
+    "#1F2A4A": "#E8DEC4",  # secondary dark slab -> light slab tint
+    "#3A4A6B": "#A89C7A",  # SVG borders dark -> warm dark border on light
+    "#5C7099": "#7B6B4A",  # connector lines / strokes dark -> warm mid stroke
+    "#7FAFCC": "#5A7090",  # cool decoration text dark -> medium cool
+    "#FFE9B0": "#B36B00",  # very-light warning fill -> deeper warning text on light
+    "#0E7C70": "#0E7C70",  # already light-friendly teal
 }
 
 HEX_RE = re.compile(r"#[0-9A-Fa-f]{6}\b")
+SHORT_HEX_RE = re.compile(r"#([0-9A-Fa-f])([0-9A-Fa-f])([0-9A-Fa-f])\b")
+
+SHORT_HEX_MAP: dict[str, str] = {
+    "#fff": "#1A1A1A",  # white in dark SVGs -> dark text on light
+    "#FFF": "#1A1A1A",
+    "#444": "#D8D2C0",  # neutral mid-grey region default -> warm light-grey region default
+    "#888": "#7A6E50",  # mid-grey decoration -> warm muted brown
+    "#9AB": "#7A6E50",  # cool muted text -> warm muted brown
+    "#666": "#7A6E50",
+    "#222": "#1A1A1A",
+}
 
 
 def remap_colors(text: str) -> str:
-    def repl(m: re.Match) -> str:
+    def long_repl(m: re.Match) -> str:
         h = m.group(0).upper()
         return COLOR_MAP.get(h, m.group(0))
-    return HEX_RE.sub(repl, text)
+    def short_repl(m: re.Match) -> str:
+        original = m.group(0)
+        if original in SHORT_HEX_MAP:
+            return SHORT_HEX_MAP[original]
+        lowered = original.lower()
+        if lowered in SHORT_HEX_MAP:
+            return SHORT_HEX_MAP[lowered]
+        return original
+    text = HEX_RE.sub(long_repl, text)
+    text = SHORT_HEX_RE.sub(short_repl, text)
+    return text
 
 
 def make_light(src: Path, dst: Path) -> None:

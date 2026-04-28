@@ -1,6 +1,6 @@
 {
   "title": "ds-viz-sankey - option matrix (light)",
-  "description": "Light-theme companion. Test bench for splunk.sankey. Verifies all options from the 10.4 PDF: backgroundColor, colorMode (categorical|dynamic), linkOpacity, linkValues, linkColors, resultLimit, seriesColors. Also tests three required fields (source, target, value) and the optional fourth dynamic-coloring field (value2).",
+  "description": "Test bench for splunk.sankey. Verifies all options from the 10.4 PDF: backgroundColor, colorMode (categorical|dynamic), linkOpacity, linkValues, linkColors, resultLimit, seriesColors. Also tests three required fields (source, target, value) and the optional fourth dynamic-coloring field (value2).",
   "defaults": {
     "dataSources": {
       "global": {
@@ -102,7 +102,7 @@
     "viz_title": {
       "type": "splunk.markdown",
       "options": {
-        "markdown": "# `splunk.sankey` - option matrix (light)\n\nSankey diagrams show **proportional flow between node entities**. The width of each link is proportional to the value field. Best for funnels, energy/material flows, workflow routing, attribution, and budget breakdowns.\n\nFull options list from the **10.4 PDF**:\n- `backgroundColor`\n- `colorMode` (`categorical` | `dynamic`)\n- `linkOpacity` (default `0.5`)\n- `linkValues` - DOS for the link width field\n- `linkColors` - DOS for per-link coloring (used with `colorMode: dynamic`)\n- `resultLimit` (default `1000`)\n- `seriesColors`\n\n**Required fields**: `source`, `target`, `value`. Optional 4th field for dynamic coloring.",
+        "markdown": "# `splunk.sankey` - option matrix\n\nSankey diagrams show **proportional flow between node entities**. The width of each link is proportional to the value field. Best for funnels, energy/material flows, workflow routing, attribution, and budget breakdowns.\n\nFull options list from the **10.4 PDF**:\n- `backgroundColor`\n- `colorMode` (`categorical` | `dynamic`)\n- `linkOpacity` (default `0.5`)\n- `linkValues` - DOS for the link width field\n- `linkColors` - DOS for per-link coloring (used with `colorMode: dynamic`)\n- `resultLimit` (default `1000`)\n- `seriesColors`\n\n**Required fields**: `source`, `target`, `value`. Optional 4th field for dynamic coloring.",
         "fontFamily": "Splunk Platform Sans",
         "fontSize": "default"
       }
@@ -155,25 +155,58 @@
     },
     "viz_custom_palette": {
       "type": "splunk.sankey",
-      "title": "6. Custom seriesColors",
-      "description": "Brand palette override. seriesColors assigns one color per source node.",
+      "title": "6. Custom seriesColors (array form)",
+      "description": "Brand palette override. seriesColors must be an array of hex strings (NOT a CSV string - the validator rejects '#1F77B4,#FF6F50,...' with 'must be array' / 'must match pattern ^>.*'). Colors are assigned in order to source nodes alphabetically.",
       "dataSources": {
         "primary": "ds_workflow"
       },
       "options": {
-        "seriesColors": "#1F77B4,#FF6F50,#9C27B0,#26A69A,#FFC107,#5C6BC0,#EC407A"
+        "seriesColors": [
+          "#1F77B4",
+          "#FF6F50",
+          "#9C27B0",
+          "#0E7C70",
+          "#FFC107",
+          "#5C6BC0",
+          "#EC407A"
+        ]
       }
     },
     "viz_dynamic_color": {
       "type": "splunk.sankey",
       "title": "7. colorMode=dynamic by severity field",
-      "description": "Links are colored by the severity field via DOS rangeValue. Higher severity -> hotter color.",
+      "description": "Links coloured by severity via DOS `rangeValue(linkColorRangeConfig)`. The custom `linkColorRangeConfig` array (sibling option) is the lookup table: severity 1->cool blue, 2->teal, 3->amber, 4->orange, 5->red. Same pattern timeline uses with `dataColorConfig`.",
       "dataSources": {
         "primary": "ds_dynamic"
       },
       "options": {
         "colorMode": "dynamic",
-        "linkColors": "> primary | seriesByName(\"severity\") | rangeValue(linkColorRangeConfig)"
+        "linkColors": "> primary | seriesByName(\"severity\") | rangeValue(linkColorRangeConfig)",
+        "linkColorRangeConfig": [
+          {
+            "to": 2,
+            "value": "#1F77B4"
+          },
+          {
+            "from": 2,
+            "to": 3,
+            "value": "#0E7C70"
+          },
+          {
+            "from": 3,
+            "to": 4,
+            "value": "#E89A2C"
+          },
+          {
+            "from": 4,
+            "to": 5,
+            "value": "#FF6B35"
+          },
+          {
+            "from": 5,
+            "value": "#C2185B"
+          }
+        ]
       }
     },
     "viz_tinted_background": {
@@ -223,13 +256,20 @@
     },
     "viz_alert_palette": {
       "type": "splunk.sankey",
-      "title": "12. Alert / SOC palette",
-      "description": "Severity-coded series colors for security flow visualizations.",
+      "title": "12. Alert / SOC palette (array form)",
+      "description": "Severity-coded series colors for security flow visualizations. Array form is the schema-correct way to override the categorical palette.",
       "dataSources": {
         "primary": "ds_dynamic"
       },
       "options": {
-        "seriesColors": "#C2185B,#E89A2C,#1F77B4,#26A69A,#7B56DB,#FF677B"
+        "seriesColors": [
+          "#C2185B",
+          "#E89A2C",
+          "#1F77B4",
+          "#0E7C70",
+          "#7B49B7",
+          "#C62368"
+        ]
       }
     }
   },
@@ -375,5 +415,6 @@
       }
     ],
     "globalInputs": []
-  }
+  },
+  "theme": "light"
 }

@@ -70,7 +70,27 @@ The complete option surface from the 10.4 PDF:
 | `linkValues`      | DOS string                    | `> primary | seriesByType('number')`        |
 | `linkColors`      | DOS string                    | `> linkValues | rangeValue(linkColorRangeConfig)` |
 | `resultLimit`     | number                        | `1000`                                      |
-| `seriesColors`    | string (CSV of hex)           | brand 12-color palette starting `#7B56DB`   |
+| `seriesColors`    | `string[]` \| DOS string (`^>.*`) | brand 12-color palette starting `#7B56DB` |
+
+> **Heads up - schema vs PDF disagreement.** The 10.4 PDF lists
+> `seriesColors` as `string` and shows a CSV example like
+> `"#7B56DB,#009CEB,..."`. **The runtime validator rejects that form.**
+> Use either:
+>
+> ```jsonc
+> "seriesColors": ["#7B56DB", "#009CEB", "#00CDAF"]   // array of hex strings
+> "seriesColors": "> someConfig | matchValue(...)"     // DOS expression starting with >
+> ```
+>
+> Passing a CSV string like `"#7B56DB,#009CEB"` triggers:
+>
+> ```
+> /visualizations/<id>/options/seriesColors: must match a schema in anyOf
+> /visualizations/<id>/options/seriesColors: must match pattern "^>.*"
+> /visualizations/<id>/options/seriesColors: must be array
+> ```
+>
+> The PDF is wrong. Trust the schema.
 
 ### colorMode
 
@@ -155,7 +175,9 @@ nodes, `value` for links).
 - **String values for `value` field** silently break the chart - cast with
   `tonumber()` if the data is text.
 - **Categorical color palette runs out** at ~12 source nodes - extra nodes
-  reuse colors. Provide a longer `seriesColors` string for distinct nodes.
+  reuse colors. Provide a longer `seriesColors` array (`["#aaa","#bbb",...]`)
+  for distinct nodes. **Do not pass a CSV string** - the schema rejects it
+  even though the 10.4 PDF shows that form.
 - **Dynamic mode requires a 4th numeric field** referenced by `linkColors`.
   Missing this leaves all links the same color.
 - **`resultLimit: 4`** doesn't pick the "important" 4 - it picks the first

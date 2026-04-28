@@ -90,7 +90,7 @@ Confirmation:
 | You want to...                                                | Use                                          |
 | ------------------------------------------------------------- | -------------------------------------------- |
 | Shade countries / US states on a Leaflet basemap              | `splunk.map` with `type: "choropleth"` layer |
-| Same, with markers / bubbles also on the map                  | `splunk.map` with multiple layers            |
+| Choropleth + markers / bubbles in one view                    | **Two separate `splunk.map` panels** in the dashboard layout. Stacking layer types in one `layers[]` is unreliable - the second layer commonly disappears. See `ds-viz-map` gotcha #16. |
 | Shade a building floor plan, OR theatre, custom polygons      | `splunk.choropleth.svg`                      |
 | Shade a country map without a Leaflet basemap                 | `splunk.choropleth.svg` with a country SVG   |
 | Anything else (lat/lon points, bubbles only, marker clusters) | `splunk.map`                                 |

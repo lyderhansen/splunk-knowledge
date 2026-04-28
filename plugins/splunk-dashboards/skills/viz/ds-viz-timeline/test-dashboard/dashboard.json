@@ -1,6 +1,6 @@
 {
   "title": "ds-viz-timeline - option matrix (dark)",
-  "description": "Test bench for splunk.timeline. NOTE: splunk.timeline is in the validator's accepted enum but is NOT documented in the 10.4 reference PDF. Options below are verified empirically: category (DOS for the lane field), legendDisplay, backgroundColor, seriesColors, axisVisibility, showProgressBar/showLastUpdated. Drilldowns supported via primary.click.",
+  "description": "Test bench for splunk.timeline. Verifies all options from the Splunk Cloud 10.3 official docs (help.splunk.com/.../visualizations/timelines): category, duration, additionalTooltipFields, backgroundColor, dataColors + dataColorConfig (rangeValue and matchValue), legendDisplay, legendTruncation, resultLimit, seriesColors, yAxisLabelWidth. Demonstrates discrete events (circles) vs intervals (bars), per-event tooltips, dynamic coloring by numeric range and by category match, and editorial layouts.",
   "defaults": {
     "dataSources": {
       "global": {
@@ -22,14 +22,14 @@
   "dataSources": {
     "ds_incidents": {
       "type": "ds.search",
-      "name": "incidents - 12 events spread across 24h 3 categories",
+      "name": "incidents - 12 events spread across 24h, 3 categories",
       "options": {
         "query": "| makeresults count=12 | streamstats count AS rn | eval _time = relative_time(now(), \"-\" . tostring(24-rn*2) . \"h\") | eval category = case(rn%3==0,\"deploy\", rn%3==1,\"alert\", 1==1,\"audit\") | eval label = case(category==\"deploy\",\"web-\" . tostring(rn) . \" deployed\", category==\"alert\",\"alert: cpu > 90% on host-\" . tostring(rn), 1==1,\"user_login on host-\" . tostring(rn)) | eval severity = case(category==\"alert\",random()%3+1, 1==1,1) | table _time category label severity"
       }
     },
     "ds_deploys_only": {
       "type": "ds.search",
-      "name": "deploys only - one lane simple timeline",
+      "name": "deploys only - one lane, simple timeline",
       "options": {
         "query": "| makeresults count=8 | streamstats count AS rn | eval _time = relative_time(now(), \"-\" . tostring(20-rn*2) . \"h\") | eval env = case(rn%3==0,\"prod\", rn%3==1,\"staging\", 1==1,\"dev\") | eval label = \"deploy v1.\" . tostring(rn) | table _time env label"
       }
@@ -47,66 +47,337 @@
       "options": {
         "query": "| makeresults count=40 | streamstats count AS rn | eval _time = relative_time(now(), \"-\" . tostring(24*60-rn*30) . \"m\") | eval category = case(rn%4==0,\"info\", rn%4==1,\"warn\", rn%4==2,\"error\", 1==1,\"critical\") | eval label = category . \"_event_\" . tostring(rn) | table _time category label"
       }
+    },
+    "ds_jobs_with_duration": {
+      "type": "ds.search",
+      "name": "batch jobs - intervals (events with duration in seconds)",
+      "options": {
+        "query": "| makeresults count=10 | streamstats count AS rn | eval _time = relative_time(now(), \"-\" . tostring(20-rn*2) . \"h\") | eval job = case(rn%3==0,\"etl-load\", rn%3==1,\"index-rebuild\", 1==1,\"backup\") | eval duration = case(rn%3==0,1800+rn*60, rn%3==1,3600+rn*120, 1==1,2700+rn*90) | eval status = case(rn%4==0,\"failed\", 1==1,\"success\") | table _time job duration status"
+      }
+    },
+    "ds_resource_utilization": {
+      "type": "ds.search",
+      "name": "host CPU sampling - numeric values for dataColorConfig rangeValue",
+      "options": {
+        "query": "| makeresults count=18 | streamstats count AS rn | eval _time = relative_time(now(), \"-\" . tostring(24-rn) . \"h\") | eval host = case(rn%3==0,\"db-01\", rn%3==1,\"web-01\", 1==1,\"api-01\") | eval cpu_pct = case(rn%6==0,12, rn%6==1,28, rn%6==2,45, rn%6==3,62, rn%6==4,78, 1==1,93) | table _time host cpu_pct"
+      }
+    },
+    "ds_changelog_intervals": {
+      "type": "ds.search",
+      "name": "release windows - feature work spanning hours, color by status",
+      "options": {
+        "query": "| makeresults count=8 | streamstats count AS rn | eval _time = relative_time(now(), \"-\" . tostring(22-rn*2) . \"h\") | eval feature = case(rn==1,\"auth-rewrite\", rn==2,\"billing-v2\", rn==3,\"search-index\", rn==4,\"alerts-engine\", rn==5,\"dashboards\", rn==6,\"data-export\", rn==7,\"compliance\", 1==1,\"ml-pipeline\") | eval duration = 1800 + (rn * 600) | eval status = case(rn%4==0,\"failed\", rn%4==1,\"in_progress\", rn%4==2,\"deployed\", 1==1,\"reverted\") | eval owner = case(rn%2==0,\"platform-team\", 1==1,\"product-team\") | table _time feature duration status owner"
+      }
+    },
+    "ds_audit_with_user": {
+      "type": "ds.search",
+      "name": "audit events with user + ip - tooltip enrichment example",
+      "options": {
+        "query": "| makeresults count=14 | streamstats count AS rn | eval _time = relative_time(now(), \"-\" . tostring(24-rn) . \"h\") | eval action = case(rn%4==0,\"login\", rn%4==1,\"logout\", rn%4==2,\"config_change\", 1==1,\"data_export\") | eval user = case(rn%3==0,\"alice\", rn%3==1,\"bob\", 1==1,\"carol\") | eval ip = \"192.168.1.\" . tostring(rn*7) | eval result = case(rn%5==0,\"denied\", 1==1,\"allowed\") | table _time action user ip result"
+      }
+    },
+    "ds_pipeline_stages": {
+      "type": "ds.search",
+      "name": "CI pipeline - matchValue color by stage",
+      "options": {
+        "query": "| makeresults count=20 | streamstats count AS rn | eval _time = relative_time(now(), \"-\" . tostring(24*60-rn*60) . \"m\") | eval stage = case(rn%5==0,\"build\", rn%5==1,\"test\", rn%5==2,\"scan\", rn%5==3,\"deploy\", 1==1,\"smoke\") | eval duration = case(rn%5==0,180, rn%5==1,420, rn%5==2,90, rn%5==3,300, 1==1,60) | eval branch = case(rn%2==0,\"main\", 1==1,\"feature/x\") | table _time stage duration branch"
+      }
+    },
+    "ds_categorical_lanes": {
+      "type": "ds.search",
+      "name": "categorical lanes - 56 events across 7 lanes spanning 4 months, mixed colours per lane (matches Splunk UI doc example)",
+      "options": {
+        "query": "| makeresults count=56 | streamstats count AS rn | eval lane = case(rn%7==0,\"Lane 1\", rn%7==1,\"Lane 2\", rn%7==2,\"Lane 3\", rn%7==3,\"Lane 4\", rn%7==4,\"Lane 5\", rn%7==5,\"Lane 6\", 1==1,\"Lane 7\") | eval _time = relative_time(now(), \"-\" . tostring(120-rn*2) . \"d\") | eval status = case(rn%5==0,\"running\", rn%5==1,\"degraded\", rn%5==2,\"resolved\", rn%5==3,\"investigating\", 1==1,\"queued\") | eval duration = case(rn%4==0,1209600, rn%4==1,604800, rn%4==2,1814400, 1==1,432000) | eval foo = \"foo_\" . tostring(rn) | eval bar = \"bar_\" . tostring(rn*3) | table _time lane status duration foo bar"
+      }
+    },
+    "ds_dense_categorical": {
+      "type": "ds.search",
+      "name": "dense categorical lanes - 80 events / 5 lanes, short durations so bars cluster into compound colour strips",
+      "options": {
+        "query": "| makeresults count=80 | streamstats count AS rn | eval host = case(rn%5==0,\"web-edge\", rn%5==1,\"api-prod\", rn%5==2,\"db-primary\", rn%5==3,\"cache-redis\", 1==1,\"queue-broker\") | eval _time = relative_time(now(), \"-\" . tostring(60-rn*0.7) . \"d\") | eval severity = case(rn%4==0,\"critical\", rn%4==1,\"high\", rn%4==2,\"medium\", 1==1,\"info\") | eval duration = case(rn%3==0,86400, rn%3==1,259200, 1==1,172800) | eval owner = case(rn%3==0,\"sre-team\", rn%3==1,\"app-team\", 1==1,\"data-team\") | eval region = case(rn%2==0,\"us-east-1\", 1==1,\"eu-west-1\") | table _time host severity duration owner region"
+      }
+    },
+    "ds_user_sessions": {
+      "type": "ds.search",
+      "name": "user sessions - 60 sessions spread across 8 users, action types blended in same lane",
+      "options": {
+        "query": "| makeresults count=60 | streamstats count AS rn | eval user = case(rn%8==0,\"alice\", rn%8==1,\"bob\", rn%8==2,\"carol\", rn%8==3,\"dave\", rn%8==4,\"eve\", rn%8==5,\"frank\", rn%8==6,\"grace\", 1==1,\"henry\") | eval _time = relative_time(now(), \"-\" . tostring(45-rn*0.7) . \"d\") | eval action = case(rn%5==0,\"login\", rn%5==1,\"search\", rn%5==2,\"export\", rn%5==3,\"config_change\", 1==1,\"logout\") | eval duration = case(rn%5==0,1800, rn%5==1,7200, rn%5==2,3600, rn%5==3,900, 1==1,60) | eval source_ip = \"10.\" . tostring(rn%4) . \".\" . tostring(rn%256) . \".\" . tostring(rn%128) | eval result = case(rn%6==0,\"denied\", 1==1,\"allowed\") | table _time user action duration source_ip result"
+      }
     }
   },
   "visualizations": {
     "viz_title": {
       "type": "splunk.markdown",
       "options": {
-        "markdown": "# `splunk.timeline` - option matrix\n\nThe timeline visualization plots discrete events along a horizontal time axis, optionally grouped into lanes by a `category` field.\n\n**Note**: `splunk.timeline` is NOT in the 10.4 reference PDF. Options below are verified empirically against Splunk Cloud 10.2.x. The viz is officially supported but its option surface is small and lightly documented.\n\nUse it when:\n- The story is **\"when did things happen?\"** rather than \"how much\".\n- Events are sparse and discrete (deploys, alerts, audits) - not continuous metrics.\n- Multiple lanes (`category`) help tell the story.\n\nUse a column or area chart when events are dense and you care about counts.",
+        "markdown": "# `splunk.timeline` - option matrix\n\n`splunk.timeline` plots discrete events along a horizontal time axis, optionally grouped into lanes by a `category` field. Events with a `duration` field render as **bars** (intervals); events without one render as **circles**.\n\nFull canonical option surface from [help.splunk.com/...timelines](https://help.splunk.com/en/splunk-cloud-platform/create-dashboards-and-reports/dashboard-studio/10.3.2512/visualizations/timelines):\n\n- `category` (DOS) - lane field\n- `duration` (DOS) - interval length in seconds\n- `additionalTooltipFields` - extra fields shown on hover\n- `backgroundColor`\n- `dataColors` (DOS / array) - dynamic per-event coloring with `dataColorConfig`\n- `legendDisplay` (`right` | `bottom` | `off`) and `legendTruncation` (`ellipsisEnd` | `ellipsisMiddle` | `ellipsisStart` | `off`)\n- `resultLimit` (default `10000`)\n- `seriesColors` - palette array\n- `yAxisLabelWidth` (default `100`)\n\n**Use it when**: the story is *when did things happen* and events are sparse and discrete (deploys, alerts, audits, jobs). Use a column or area chart when the story is *how many*.",
         "fontFamily": "Splunk Platform Sans",
         "fontSize": "default"
       }
     },
+
+    "viz_section_categorical_intro": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## Categorical lanes - the canonical Splunk UI Timeline pattern\n\nThe three full-width panels below match the canonical *Categorical Timeline* example from the [Splunk UI Timeline package](https://splunkui.splunk.com/Packages/visualizations/Timeline) (the example image with `Lane 1 ... Lane 7`).\n\nThe key trick: **many short-duration events per lane, spread across a long time window, coloured by `dataColors` + `matchValue`**. When events crowd together inside a lane, their bars touch and form a compound multi-colour stripe - the visual story stops being *here is one event* and starts being *this lane was busy with a mix of statuses across the period*.\n\n- Panel 1 reproduces the **Categorical Timeline** image: 56 events across 7 lanes spanning 4 months.\n- Panel 2 reproduces **Additional Tooltip Fields** with the same dataset (`foo`, `bar` show on hover).\n- Panel 3 is a denser variant (80 events / 5 host lanes, severity-coloured) showing how the same pattern reads in a SRE context.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default"
+      }
+    },
+
+    "viz_categorical_lanes": {
+      "type": "splunk.timeline",
+      "title": "Categorical Timeline",
+      "description": "Reproduces the canonical Splunk UI example: 7 lanes, ~56 events spread across 4 months, each event coloured by `status` via `matchValue`. The mix of short bars per lane creates the compound multi-colour stripe that defines this layout.",
+      "dataSources": { "primary": "ds_categorical_lanes" },
+      "options": {
+        "category": "> primary | seriesByName('lane')",
+        "duration": "> primary | seriesByName('duration')",
+        "dataColors": "> primary | seriesByName('status') | matchValue(dataColorConfig)",
+        "dataColorConfig": [
+          { "match": "running",       "value": "#7AA2FF" },
+          { "match": "degraded",      "value": "#FFB627" },
+          { "match": "resolved",      "value": "#33FF99" },
+          { "match": "investigating", "value": "#FF6B35" },
+          { "match": "queued",        "value": "#7B56DB" }
+        ],
+        "yAxisLabelWidth": 80,
+        "legendDisplay": "off"
+      }
+    },
+
+    "viz_categorical_tooltip": {
+      "type": "splunk.timeline",
+      "title": "Additional Tooltip Fields - ['foo', 'bar']",
+      "description": "Same data as the panel above, with `additionalTooltipFields: ['foo','bar']`. Hover any bar to see the per-event payload appended to the default tooltip - the canonical pattern for audit timelines where the lane and the time alone are not enough.",
+      "dataSources": { "primary": "ds_categorical_lanes" },
+      "options": {
+        "category": "> primary | seriesByName('lane')",
+        "duration": "> primary | seriesByName('duration')",
+        "dataColors": "> primary | seriesByName('status') | matchValue(dataColorConfig)",
+        "dataColorConfig": [
+          { "match": "running",       "value": "#7AA2FF" },
+          { "match": "degraded",      "value": "#FFB627" },
+          { "match": "resolved",      "value": "#33FF99" },
+          { "match": "investigating", "value": "#FF6B35" },
+          { "match": "queued",        "value": "#7B56DB" }
+        ],
+        "additionalTooltipFields": ["foo", "bar"],
+        "yAxisLabelWidth": 80,
+        "legendDisplay": "off"
+      }
+    },
+
+    "viz_categorical_dense": {
+      "type": "splunk.timeline",
+      "title": "Dense categorical - 80 events / 5 host lanes, severity-coloured",
+      "description": "Same compound-stripe technique applied to a SRE context: 5 host lanes (web-edge, api-prod, db-primary, cache-redis, queue-broker), 80 incidents over 60 days, coloured by `severity` via `matchValue`. The denser the bars, the easier it is to see *which host had the busiest week, in which colour*.",
+      "dataSources": { "primary": "ds_dense_categorical" },
+      "options": {
+        "category": "> primary | seriesByName('host')",
+        "duration": "> primary | seriesByName('duration')",
+        "dataColors": "> primary | seriesByName('severity') | matchValue(dataColorConfig)",
+        "dataColorConfig": [
+          { "match": "critical", "value": "#FF2D95" },
+          { "match": "high",     "value": "#FF6B35" },
+          { "match": "medium",   "value": "#FFB627" },
+          { "match": "info",     "value": "#7AA2FF" }
+        ],
+        "additionalTooltipFields": ["owner", "region"],
+        "yAxisLabelWidth": 110,
+        "legendDisplay": "right"
+      }
+    },
+
+    "viz_user_sessions_categorical": {
+      "type": "splunk.timeline",
+      "title": "User session feed - 8 users, mixed action types per lane",
+      "description": "Identity / audit pattern. Each lane is a user, each bar is a session, coloured by `action` (login / search / export / config_change / logout). Where one user has many actions in the same week, their lane shows the compound colour stripe - this is what makes timelines so much more readable than a flat event list when the question is *who did what, when, and in what order*.",
+      "dataSources": { "primary": "ds_user_sessions" },
+      "options": {
+        "category": "> primary | seriesByName('user')",
+        "duration": "> primary | seriesByName('duration')",
+        "dataColors": "> primary | seriesByName('action') | matchValue(dataColorConfig)",
+        "dataColorConfig": [
+          { "match": "login",         "value": "#33FF99" },
+          { "match": "search",        "value": "#7AA2FF" },
+          { "match": "export",        "value": "#FFB627" },
+          { "match": "config_change", "value": "#FF6B35" },
+          { "match": "logout",        "value": "#7B56DB" }
+        ],
+        "additionalTooltipFields": ["source_ip", "result"],
+        "yAxisLabelWidth": 90,
+        "legendDisplay": "right"
+      }
+    },
+
     "viz_default": {
       "type": "splunk.timeline",
       "title": "1. Default - no options, single lane",
-      "description": "The bare minimum: a primary data source. The viz auto-derives the lane from the data and renders a single timeline.",
+      "description": "Bare minimum. Events have only a start time, so they render as circles. Without `category` the viz infers a single default lane.",
       "dataSources": { "primary": "ds_incidents" }
     },
+
     "viz_category": {
       "type": "splunk.timeline",
-      "title": "2. category - lane by field via DOS",
-      "description": "Use `category` (Dynamic Options Syntax) to specify the lane field. The DOS expression `> primary | seriesByName('category')` resolves to the `category` column. Each unique value gets its own horizontal lane.",
+      "title": "2. category - one lane per value",
+      "description": "Set `category` (DOS) to the field name and each unique value gets its own horizontal lane. This is the workhorse pattern.",
       "dataSources": { "primary": "ds_incidents" },
       "options": {
         "category": "> primary | seriesByName('category')"
       }
     },
+
+    "viz_duration_intervals": {
+      "type": "splunk.timeline",
+      "title": "3. duration - intervals as bars",
+      "description": "Add a numeric `duration` field (seconds) and events become horizontal bars whose length encodes how long they took. Mixed with discrete events, the chart switches per-row between circle and bar. Set `duration` to `0` if you want a circle for that specific event.",
+      "dataSources": { "primary": "ds_jobs_with_duration" },
+      "options": {
+        "category": "> primary | seriesByName('job')",
+        "duration": "> primary | seriesByName('duration')"
+      }
+    },
+
+    "viz_release_windows": {
+      "type": "splunk.timeline",
+      "title": "4. Real intervals - release windows by feature",
+      "description": "Eight feature releases. `duration` makes each one a horizontal bar; lanes group by `feature`. Read horizontally for *how long did this take*; read vertically for *what was happening at this moment*.",
+      "dataSources": { "primary": "ds_changelog_intervals" },
+      "options": {
+        "category": "> primary | seriesByName('feature')",
+        "duration": "> primary | seriesByName('duration')",
+        "yAxisLabelWidth": 140
+      }
+    },
+
+    "viz_data_color_ranges": {
+      "type": "splunk.timeline",
+      "title": "5. dataColors + rangeValue - CPU heatmap",
+      "description": "Color events dynamically by numeric value. `dataColors` is bound via DOS to `cpu_pct` and resolved through `dataColorConfig` ranges: cool blue at 0-30%, amber at 30-60%, red at 60-100%. This is the canonical SOC / NOC pattern: severity-tinted events read at a glance.",
+      "dataSources": { "primary": "ds_resource_utilization" },
+      "options": {
+        "category": "> primary | seriesByName('host')",
+        "dataColors": "> primary | seriesByName('cpu_pct') | rangeValue(dataColorConfig)",
+        "dataColorConfig": [
+          { "to": 30,                "value": "#1F77B4" },
+          { "from": 30, "to": 60,    "value": "#FFB627" },
+          { "from": 60, "to": 80,    "value": "#FF6B35" },
+          { "from": 80,              "value": "#FF2D95" }
+        ]
+      }
+    },
+
+    "viz_data_color_match": {
+      "type": "splunk.timeline",
+      "title": "6. dataColors + matchValue - status semantics",
+      "description": "Color by exact match against a string field. Each `status` value gets its own color via `matchValue(dataColorConfig)`. Use this for traffic-light semantics where red/amber/green is non-negotiable.",
+      "dataSources": { "primary": "ds_changelog_intervals" },
+      "options": {
+        "category": "> primary | seriesByName('feature')",
+        "duration": "> primary | seriesByName('duration')",
+        "dataColors": "> primary | seriesByName('status') | matchValue(dataColorConfig)",
+        "dataColorConfig": [
+          { "match": "deployed",    "value": "#33FF99" },
+          { "match": "in_progress", "value": "#7AA2FF" },
+          { "match": "failed",      "value": "#FF2D95" },
+          { "match": "reverted",    "value": "#FFB627" }
+        ],
+        "yAxisLabelWidth": 140
+      }
+    },
+
+    "viz_match_pipeline": {
+      "type": "splunk.timeline",
+      "title": "7. matchValue - CI pipeline stages",
+      "description": "Twenty CI runs colored by stage. `matchValue` makes the same stage (build, test, scan, deploy, smoke) keep the same color across the entire timeline so the eye learns the rhythm.",
+      "dataSources": { "primary": "ds_pipeline_stages" },
+      "options": {
+        "category": "> primary | seriesByName('branch')",
+        "duration": "> primary | seriesByName('duration')",
+        "dataColors": "> primary | seriesByName('stage') | matchValue(dataColorConfig)",
+        "dataColorConfig": [
+          { "match": "build",   "value": "#7AA2FF" },
+          { "match": "test",    "value": "#7B56DB" },
+          { "match": "scan",    "value": "#FFB627" },
+          { "match": "deploy",  "value": "#33FF99" },
+          { "match": "smoke",   "value": "#FF6B35" }
+        ]
+      }
+    },
+
+    "viz_tooltip_fields": {
+      "type": "splunk.timeline",
+      "title": "8. additionalTooltipFields - enriched hover",
+      "description": "Hover over each event to see `user`, `ip`, and `result` appended to the default tooltip. Indispensable for audit trails where the timestamp alone isn't enough context.",
+      "dataSources": { "primary": "ds_audit_with_user" },
+      "options": {
+        "category": "> primary | seriesByName('action')",
+        "additionalTooltipFields": ["user", "ip", "result"]
+      }
+    },
+
     "viz_legend_off": {
       "type": "splunk.timeline",
-      "title": "3. legendDisplay: off",
-      "description": "Hide the legend entirely. Useful when the lanes are self-explanatory or when screen real estate is tight.",
+      "title": "9. legendDisplay: off",
+      "description": "Hide the legend entirely. The default for `splunk.timeline` is actually `off`; this panel is here so the matrix is complete.",
       "dataSources": { "primary": "ds_incidents" },
       "options": {
         "category": "> primary | seriesByName('category')",
         "legendDisplay": "off"
       }
     },
+
     "viz_legend_bottom": {
       "type": "splunk.timeline",
-      "title": "4. legendDisplay: bottom",
-      "description": "Move the legend below the chart. Default position is `right`. Other valid values: `left`, `top`, `bottom`, `off`.",
-      "dataSources": { "primary": "ds_incidents" },
+      "title": "10. legendDisplay: bottom + legendTruncation",
+      "description": "Move the legend below. `legendTruncation` controls how long category names are shortened when they overflow: `ellipsisEnd` (default), `ellipsisMiddle`, `ellipsisStart`, or `off`.",
+      "dataSources": { "primary": "ds_attack_types" },
       "options": {
-        "category": "> primary | seriesByName('category')",
-        "legendDisplay": "bottom"
+        "category": "> primary | seriesByName('attack_type')",
+        "legendDisplay": "bottom",
+        "legendTruncation": "ellipsisMiddle"
       }
     },
+
+    "viz_yaxis_wide": {
+      "type": "splunk.timeline",
+      "title": "11. yAxisLabelWidth - wider lane labels",
+      "description": "Default is 100px. Bump to 200 when category names are long (feature flags, customer IDs). Otherwise labels truncate and lose meaning. Pair with `legendDisplay: off` so the lanes themselves carry the labeling.",
+      "dataSources": { "primary": "ds_changelog_intervals" },
+      "options": {
+        "category": "> primary | seriesByName('feature')",
+        "duration": "> primary | seriesByName('duration')",
+        "yAxisLabelWidth": 200,
+        "legendDisplay": "off"
+      }
+    },
+
+    "viz_result_limit_low": {
+      "type": "splunk.timeline",
+      "title": "12. resultLimit: 6 - performance throttle",
+      "description": "Default is 10000. Lower it when you have very dense events and only the first N matter (e.g. preview panels, embedded summaries). Truncation is hard - the chart shows only the first 6 rows, in source order, no top-N selection.",
+      "dataSources": { "primary": "ds_dense" },
+      "options": {
+        "category": "> primary | seriesByName('category')",
+        "resultLimit": 6
+      }
+    },
+
     "viz_custom_colors": {
       "type": "splunk.timeline",
-      "title": "5. seriesColors - custom palette",
-      "description": "Override the auto-generated palette with `seriesColors`. The colors map by series order (alphabetical on the category field).",
+      "title": "13. seriesColors - custom palette",
+      "description": "Override the auto-generated palette with `seriesColors` (must be an array - same schema rule as Sankey: CSV strings are rejected). Order maps to series order (alphabetical on the category field).",
       "dataSources": { "primary": "ds_incidents" },
       "options": {
         "category": "> primary | seriesByName('category')",
         "seriesColors": ["#FFB627", "#FF2D95", "#33FF99"]
       }
     },
+
     "viz_bg_color": {
       "type": "splunk.timeline",
-      "title": "6. backgroundColor - custom panel tint",
-      "description": "Tint the events area with `backgroundColor`. Pairs well with bold series colors for editorial impact.",
+      "title": "14. backgroundColor - editorial tint",
+      "description": "Tint the events area. Pairs well with bold series colors for SOC walls and night-mode dashboards.",
       "dataSources": { "primary": "ds_incidents" },
       "options": {
         "category": "> primary | seriesByName('category')",
@@ -114,31 +385,29 @@
         "seriesColors": ["#FFB627", "#FF2D95", "#33FF99"]
       }
     },
-    "viz_axis_hidden": {
+
+    "viz_attack_types_full": {
       "type": "splunk.timeline",
-      "title": "7. axisVisibility: hide",
-      "description": "Hide the time axis labels for a clean, decorative timeline. Works empirically; not in the 10.4 PDF but used in production dashboards.",
-      "dataSources": { "primary": "ds_incidents" },
-      "options": {
-        "category": "> primary | seriesByName('category')",
-        "axisVisibility": "hide"
-      }
-    },
-    "viz_attack_types": {
-      "type": "splunk.timeline",
-      "title": "8. SOC pattern - attack types over time",
-      "description": "Real-world pattern: attack categories on lanes, fed from a SOC investigation search. Use this layout for incident review and investigative dashboards.",
+      "title": "15. SOC pattern - attack types (canonical example from docs)",
+      "description": "Mirrors the canonical example from the official Splunk docs: attack categories on lanes, full Splunk Prisma palette via seriesColors, legend on the right. This is the layout most production SOC dashboards converge on.",
       "dataSources": { "primary": "ds_attack_types" },
       "options": {
+        "backgroundColor": "transparent",
         "category": "> primary | seriesByName('attack_type')",
         "legendDisplay": "right",
-        "seriesColors": ["#7B56DB", "#009CEB", "#00CDAF", "#DD9900", "#FF677B"]
+        "seriesColors": [
+          "#7B56DB", "#009CEB", "#00CDAF", "#DD9900", "#FF677B",
+          "#CB2196", "#813193", "#0051B5", "#008C80", "#99B100",
+          "#FFA476", "#FF6ACE", "#AE8CFF", "#00689D", "#00490A",
+          "#465D00", "#F6540B", "#FF969E", "#E47BFE"
+        ]
       }
     },
+
     "viz_deploys": {
       "type": "splunk.timeline",
-      "title": "9. Deploy timeline - env lanes",
-      "description": "Deploys grouped by environment lane. The `env` field becomes the lane separator.",
+      "title": "16. Deploy timeline - env lanes",
+      "description": "Deploys grouped by environment. Three lanes (prod, staging, dev), three colors. Simple, scannable.",
       "dataSources": { "primary": "ds_deploys_only" },
       "options": {
         "category": "> primary | seriesByName('env')",
@@ -146,10 +415,11 @@
         "seriesColors": ["#FF2D95", "#FFB627", "#7AA2FF"]
       }
     },
+
     "viz_dense": {
       "type": "splunk.timeline",
-      "title": "10. Dense events - 40 events stress test",
-      "description": "Stress test with 40 events across 4 categories. Demonstrates how the viz handles overlapping markers - they cluster but remain interactive.",
+      "title": "17. Dense events - 40 events stress test",
+      "description": "Stress test with 40 events across 4 categories. Demonstrates how the viz handles overlapping markers - they cluster but remain interactive on hover.",
       "dataSources": { "primary": "ds_dense" },
       "options": {
         "category": "> primary | seriesByName('category')",
@@ -157,9 +427,10 @@
         "seriesColors": ["#7AA2FF", "#FFB627", "#FF6B35", "#FF2D95"]
       }
     },
+
     "viz_no_title": {
       "type": "splunk.timeline",
-      "description": "No title set - the timeline is a section element rather than a panel. Pair with a markdown header for editorial layouts.",
+      "description": "No `title` - the timeline becomes a section element rather than a labeled panel. Pair with a markdown header for editorial layouts where the heading is part of the page composition rather than the panel chrome.",
       "dataSources": { "primary": "ds_incidents" },
       "options": {
         "category": "> primary | seriesByName('category')",
@@ -172,23 +443,37 @@
     "type": "absolute",
     "options": {
       "width": 1440,
-      "height": 2880,
+      "height": 7080,
       "display": "auto-scale",
       "backgroundColor": "#0B0C0E"
     },
     "structure": [
-      { "item": "viz_title",          "type": "block", "position": { "x": 16,  "y": 16,   "w": 1408, "h": 200 } },
-      { "item": "viz_default",        "type": "block", "position": { "x": 16,  "y": 232,  "w": 696,  "h": 280 } },
-      { "item": "viz_category",       "type": "block", "position": { "x": 728, "y": 232,  "w": 696,  "h": 280 } },
-      { "item": "viz_legend_off",     "type": "block", "position": { "x": 16,  "y": 528,  "w": 696,  "h": 260 } },
-      { "item": "viz_legend_bottom",  "type": "block", "position": { "x": 728, "y": 528,  "w": 696,  "h": 260 } },
-      { "item": "viz_custom_colors",  "type": "block", "position": { "x": 16,  "y": 804,  "w": 696,  "h": 260 } },
-      { "item": "viz_bg_color",       "type": "block", "position": { "x": 728, "y": 804,  "w": 696,  "h": 260 } },
-      { "item": "viz_axis_hidden",    "type": "block", "position": { "x": 16,  "y": 1080, "w": 1408, "h": 220 } },
-      { "item": "viz_attack_types",   "type": "block", "position": { "x": 16,  "y": 1316, "w": 1408, "h": 320 } },
-      { "item": "viz_deploys",        "type": "block", "position": { "x": 16,  "y": 1652, "w": 696,  "h": 280 } },
-      { "item": "viz_dense",          "type": "block", "position": { "x": 728, "y": 1652, "w": 696,  "h": 280 } },
-      { "item": "viz_no_title",       "type": "block", "position": { "x": 16,  "y": 1948, "w": 1408, "h": 220 } }
+      { "item": "viz_title",                    "type": "block", "position": { "x": 16,  "y": 16,    "w": 1408, "h": 320 } },
+
+      { "item": "viz_section_categorical_intro","type": "block", "position": { "x": 16,  "y": 352,   "w": 1408, "h": 200 } },
+      { "item": "viz_categorical_lanes",        "type": "block", "position": { "x": 16,  "y": 568,   "w": 1408, "h": 460 } },
+      { "item": "viz_categorical_tooltip",      "type": "block", "position": { "x": 16,  "y": 1044,  "w": 1408, "h": 460 } },
+      { "item": "viz_categorical_dense",        "type": "block", "position": { "x": 16,  "y": 1520,  "w": 1408, "h": 460 } },
+      { "item": "viz_user_sessions_categorical","type": "block", "position": { "x": 16,  "y": 1996,  "w": 1408, "h": 460 } },
+
+      { "item": "viz_default",          "type": "block", "position": { "x": 16,  "y": 2472,  "w": 696,  "h": 280 } },
+      { "item": "viz_category",         "type": "block", "position": { "x": 728, "y": 2472,  "w": 696,  "h": 280 } },
+      { "item": "viz_duration_intervals","type": "block", "position": { "x": 16,  "y": 2768,  "w": 696,  "h": 320 } },
+      { "item": "viz_release_windows",  "type": "block", "position": { "x": 728, "y": 2768,  "w": 696,  "h": 320 } },
+      { "item": "viz_data_color_ranges","type": "block", "position": { "x": 16,  "y": 3104,  "w": 1408, "h": 360 } },
+      { "item": "viz_data_color_match", "type": "block", "position": { "x": 16,  "y": 3480,  "w": 696,  "h": 360 } },
+      { "item": "viz_match_pipeline",   "type": "block", "position": { "x": 728, "y": 3480,  "w": 696,  "h": 360 } },
+      { "item": "viz_tooltip_fields",   "type": "block", "position": { "x": 16,  "y": 3856,  "w": 1408, "h": 280 } },
+      { "item": "viz_legend_off",       "type": "block", "position": { "x": 16,  "y": 4152,  "w": 696,  "h": 260 } },
+      { "item": "viz_legend_bottom",    "type": "block", "position": { "x": 728, "y": 4152,  "w": 696,  "h": 260 } },
+      { "item": "viz_yaxis_wide",       "type": "block", "position": { "x": 16,  "y": 4428,  "w": 1408, "h": 320 } },
+      { "item": "viz_result_limit_low", "type": "block", "position": { "x": 16,  "y": 4764,  "w": 696,  "h": 260 } },
+      { "item": "viz_custom_colors",    "type": "block", "position": { "x": 728, "y": 4764,  "w": 696,  "h": 260 } },
+      { "item": "viz_bg_color",         "type": "block", "position": { "x": 16,  "y": 5040,  "w": 696,  "h": 260 } },
+      { "item": "viz_attack_types_full","type": "block", "position": { "x": 728, "y": 5040,  "w": 696,  "h": 260 } },
+      { "item": "viz_deploys",          "type": "block", "position": { "x": 16,  "y": 5316,  "w": 696,  "h": 320 } },
+      { "item": "viz_dense",            "type": "block", "position": { "x": 728, "y": 5316,  "w": 696,  "h": 320 } },
+      { "item": "viz_no_title",         "type": "block", "position": { "x": 16,  "y": 5652,  "w": 1408, "h": 220 } }
     ],
     "globalInputs": []
   }

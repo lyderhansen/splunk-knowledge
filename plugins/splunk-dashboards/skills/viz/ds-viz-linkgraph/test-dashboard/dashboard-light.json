@@ -1,6 +1,6 @@
 {
   "title": "ds-viz-linkgraph - option matrix (light)",
-  "description": "Light-theme companion. Test bench for splunk.linkgraph. Verifies all options from the 10.4 PDF: backgroundColor, fieldOrder, linkColor, linkWidth, nodeColor, nodeTextColor, nodeHeight, nodeHighlightColor, nodeTextHighlightColor, nodeSpacingX, nodeSpacingY, nodeWidth, resultLimit, showNodeCounts, showValueCounts.",
+  "description": "Test bench for splunk.linkgraph. Verifies all options from the 10.4 PDF: backgroundColor, fieldOrder, linkColor, linkWidth, nodeColor, nodeTextColor, nodeHeight, nodeHighlightColor, nodeTextHighlightColor, nodeSpacingX, nodeSpacingY, nodeWidth, resultLimit, showNodeCounts, showValueCounts.",
   "defaults": {
     "dataSources": {
       "global": {
@@ -142,13 +142,48 @@
       "options": {
         "query": "| makeresults count=80 | streamstats count AS rn | eval colA = \"A_\".tostring(rn%30) | eval colB = \"B_\".tostring(rn%25) | eval colC = \"C_\".tostring(rn%18) | table colA colB colC"
       }
+    },
+    "ds_kill_chain_full": {
+      "type": "ds.search",
+      "name": "5-column MITRE-style attack chain - 60+ events for a fully populated graph",
+      "options": {
+        "query": "| makeresults count=60 | streamstats count AS rn | eval Tactic = case(rn%5==0,\"Reconnaissance\", rn%5==1,\"Initial Access\", rn%5==2,\"Execution\", rn%5==3,\"Persistence\", 1==1,\"Impact\") | eval Technique = case(Tactic==\"Reconnaissance\" AND rn%2==0,\"Active Scanning\", Tactic==\"Reconnaissance\",\"Phishing for Info\", Tactic==\"Initial Access\" AND rn%3==0,\"Spear-phishing\", Tactic==\"Initial Access\" AND rn%3==1,\"Public-Facing App\", Tactic==\"Initial Access\",\"Valid Accounts\", Tactic==\"Execution\" AND rn%2==0,\"PowerShell\", Tactic==\"Execution\",\"Native API\", Tactic==\"Persistence\" AND rn%2==0,\"Scheduled Task\", Tactic==\"Persistence\",\"Registry Run Keys\", rn%3==0,\"Data Encrypted\", rn%3==1,\"Data Destruction\", 1==1,\"Account Access Removal\") | eval Asset = case(rn%6==0,\"web-edge-01\", rn%6==1,\"db-prod-02\", rn%6==2,\"ad-srv-01\", rn%6==3,\"file-srv-01\", rn%6==4,\"workstation-laptop-19\", 1==1,\"jump-host-01\") | eval Severity = case(rn%4==0,\"Critical\", rn%4==1,\"High\", rn%4==2,\"Medium\", 1==1,\"Low\") | eval Action = case(rn%5==0,\"Block\", rn%5==1,\"Quarantine\", rn%5==2,\"Alert\", rn%5==3,\"Investigate\", 1==1,\"Allow\") | table Tactic Technique Asset Severity Action"
+      }
+    },
+    "ds_itsm_flow": {
+      "type": "ds.search",
+      "name": "ITSM workflow - 80 tickets across team x category x priority x state x assignee",
+      "options": {
+        "query": "| makeresults count=80 | streamstats count AS rn | eval Team = case(rn%5==0,\"Platform\", rn%5==1,\"AppDev\", rn%5==2,\"Network\", rn%5==3,\"Security\", 1==1,\"DataOps\") | eval Category = case(rn%6==0,\"Outage\", rn%6==1,\"Performance\", rn%6==2,\"Access\", rn%6==3,\"Bug\", rn%6==4,\"Feature\", 1==1,\"Question\") | eval Priority = case(rn%4==0,\"P1\", rn%4==1,\"P2\", rn%4==2,\"P3\", 1==1,\"P4\") | eval State = case(rn%4==0,\"Open\", rn%4==1,\"In Progress\", rn%4==2,\"Pending\", 1==1,\"Resolved\") | eval Assignee = case(rn%8==0,\"alice\", rn%8==1,\"bob\", rn%8==2,\"carol\", rn%8==3,\"dave\", rn%8==4,\"eve\", rn%8==5,\"frank\", rn%8==6,\"grace\", 1==1,\"henry\") | table Team Category Priority State Assignee"
+      }
+    },
+    "ds_dependency_chain": {
+      "type": "ds.search",
+      "name": "service dependency chain - User -> App -> Service -> Database -> Storage (5 columns, 100 rows)",
+      "options": {
+        "query": "| makeresults count=100 | streamstats count AS rn | eval User = case(rn%4==0,\"customer\", rn%4==1,\"admin\", rn%4==2,\"analyst\", 1==1,\"system\") | eval App = case(rn%6==0,\"web-portal\", rn%6==1,\"mobile-ios\", rn%6==2,\"mobile-android\", rn%6==3,\"api-gateway\", rn%6==4,\"batch-job\", 1==1,\"cli-tool\") | eval Service = case(rn%5==0,\"auth-svc\", rn%5==1,\"billing-svc\", rn%5==2,\"search-svc\", rn%5==3,\"recommend-svc\", 1==1,\"notify-svc\") | eval Database = case(rn%4==0,\"users-db\", rn%4==1,\"orders-db\", rn%4==2,\"events-db\", 1==1,\"cache-redis\") | eval Storage = case(rn%3==0,\"s3-primary\", rn%3==1,\"s3-backup\", 1==1,\"glacier-archive\") | table User App Service Database Storage"
+      }
+    },
+    "ds_network_flow": {
+      "type": "ds.search",
+      "name": "network 4-tuple - SrcSubnet x Protocol x DstPort x DstService (80 flows)",
+      "options": {
+        "query": "| makeresults count=80 | streamstats count AS rn | eval SrcSubnet = case(rn%5==0,\"10.0.1.0/24\", rn%5==1,\"10.0.2.0/24\", rn%5==2,\"172.16.0.0/16\", rn%5==3,\"192.168.10.0/24\", 1==1,\"203.0.113.0/24\") | eval Protocol = case(rn%3==0,\"TCP\", rn%3==1,\"UDP\", 1==1,\"ICMP\") | eval DstPort = case(rn%6==0,\"443\", rn%6==1,\"80\", rn%6==2,\"22\", rn%6==3,\"3389\", rn%6==4,\"5432\", 1==1,\"8443\") | eval DstService = case(DstPort==\"443\",\"https-frontend\", DstPort==\"80\",\"http-frontend\", DstPort==\"22\",\"ssh-bastion\", DstPort==\"3389\",\"rdp-jumpbox\", DstPort==\"5432\",\"postgres-prod\", 1==1,\"https-internal\") | table SrcSubnet Protocol DstPort DstService"
+      }
+    },
+    "ds_attack_path_compact": {
+      "type": "ds.search",
+      "name": "compact attack path - actor x stage x outcome (3 cols, 40 rows for vivid clusters)",
+      "options": {
+        "query": "| makeresults count=40 | streamstats count AS rn | eval Actor = case(rn%4==0,\"APT-Bear\", rn%4==1,\"FIN-Crime\", rn%4==2,\"Insider\", 1==1,\"Botnet\") | eval Stage = case(rn%5==0,\"Phishing\", rn%5==1,\"Lateral Movement\", rn%5==2,\"Privilege Escalation\", rn%5==3,\"Data Exfiltration\", 1==1,\"Encryption\") | eval Outcome = case(rn%3==0,\"Blocked\", rn%3==1,\"Detected\", 1==1,\"Successful\") | table Actor Stage Outcome"
+      }
     }
   },
   "visualizations": {
     "viz_title": {
       "type": "splunk.markdown",
       "options": {
-        "markdown": "# `splunk.linkgraph` - option matrix (light)\n\nLink graphs visualize **discrete relationships across multiple categorical columns**. Each column becomes a stack of nodes; links connect adjacent columns where pairs co-occur.\n\nFull options list from the **10.4 PDF**:\n- `backgroundColor`\n- `fieldOrder` (DOS - controls column order)\n- `linkColor`, `linkWidth`\n- `nodeColor`, `nodeTextColor`\n- `nodeHighlightColor`, `nodeTextHighlightColor`\n- `nodeWidth`, `nodeHeight`, `nodeSpacingX`, `nodeSpacingY`\n- `resultLimit` (default `50` per column)\n- `showNodeCounts`, `showValueCounts`\n\n**Note**: Links only appear between adjacent columns - reorder columns via `fieldOrder` to control which relationships render.",
+        "markdown": "# `splunk.linkgraph` - option matrix\n\nLink graphs visualize **discrete relationships across multiple categorical columns**. Each column becomes a stack of nodes; links connect adjacent columns where pairs co-occur.\n\nFull options list from the **10.4 PDF**:\n- `backgroundColor`\n- `fieldOrder` (DOS - controls column order)\n- `linkColor`, `linkWidth`\n- `nodeColor`, `nodeTextColor`\n- `nodeHighlightColor`, `nodeTextHighlightColor`\n- `nodeWidth`, `nodeHeight`, `nodeSpacingX`, `nodeSpacingY`\n- `resultLimit` (default `50` per column)\n- `showNodeCounts`, `showValueCounts`\n\n**Note**: Links only appear between adjacent columns - reorder columns via `fieldOrder` to control which relationships render.",
         "fontFamily": "Splunk Platform Sans",
         "fontSize": "default"
       }
@@ -207,8 +242,8 @@
           "Asset",
           "Actor"
         ],
-        "nodeColor": "#26A69A",
-        "linkColor": "#7B56DB",
+        "nodeColor": "#0E7C70",
+        "linkColor": "#7B49B7",
         "linkWidth": 3
       }
     },
@@ -283,7 +318,7 @@
         "nodeSpacingY": 30,
         "nodeSpacingX": 80,
         "linkWidth": 6,
-        "nodeColor": "#26A69A",
+        "nodeColor": "#0E7C70",
         "linkColor": "#FF8A65"
       }
     },
@@ -320,8 +355,8 @@
       },
       "options": {
         "resultLimit": 8,
-        "nodeColor": "#7B56DB",
-        "linkColor": "#FF677B"
+        "nodeColor": "#7B49B7",
+        "linkColor": "#C62368"
       }
     },
     "viz_tinted_background": {
@@ -332,10 +367,169 @@
         "primary": "ds_meals"
       },
       "options": {
-        "backgroundColor": "#101A33",
-        "nodeColor": "#7B56DB",
-        "linkColor": "#26A69A",
+        "backgroundColor": "#EFE7D3",
+        "nodeColor": "#7B49B7",
+        "linkColor": "#0E7C70",
         "linkWidth": 3
+      }
+    },
+    "viz_section_2_intro": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## Bigger graphs - more nodes, more links\n\nThe panels below stress-test `splunk.linkgraph` with **5 columns** and **40-100 rows** so you can see how the layout behaves with a fully populated graph. Set `resultLimit` per column to control density - the default is `50`. When the graph gets dense, increase `nodeSpacingY` and `linkWidth` to keep the relationships readable.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default"
+      }
+    },
+    "viz_kill_chain_5col": {
+      "type": "splunk.linkgraph",
+      "title": "14. MITRE-style 5-column attack chain",
+      "description": "Tactic -> Technique -> Asset -> Severity -> Action across 60 events. This is the canonical SOC layout: each column tells a different question (what happened, how, where, how bad, what we did). Larger nodes (220 wide) and dark slate panel mimic a SOC wall.",
+      "dataSources": {
+        "primary": "ds_kill_chain_full"
+      },
+      "options": {
+        "backgroundColor": "#FAEAD8",
+        "nodeColor": "#1F77B4",
+        "nodeTextColor": "#ECEFF1",
+        "nodeHighlightColor": "#C2185B",
+        "nodeTextHighlightColor": "#1A1A1A",
+        "linkColor": "#7B49B7",
+        "linkWidth": 2,
+        "nodeWidth": 220,
+        "nodeHeight": 32,
+        "nodeSpacingX": 60,
+        "nodeSpacingY": 14,
+        "resultLimit": 25,
+        "showNodeCounts": true,
+        "showValueCounts": true
+      }
+    },
+    "viz_itsm_5col": {
+      "type": "splunk.linkgraph",
+      "title": "15. ITSM ticket flow - 5 columns, 80 rows",
+      "description": "Team -> Category -> Priority -> State -> Assignee. Reads as a service-management story: the bigger a node, the more tickets share that value. Widen yAxisLabelWidth equivalent (nodeWidth) so long assignee names render. Dense - good demo of how `nodeSpacingY: 8` and `linkWidth: 1` keep it scannable.",
+      "dataSources": {
+        "primary": "ds_itsm_flow"
+      },
+      "options": {
+        "nodeColor": "#0E7C70",
+        "linkColor": "#E89A2C",
+        "linkWidth": 1,
+        "nodeWidth": 180,
+        "nodeHeight": 24,
+        "nodeSpacingX": 50,
+        "nodeSpacingY": 8,
+        "resultLimit": 30
+      }
+    },
+    "viz_service_chain_5col": {
+      "type": "splunk.linkgraph",
+      "title": "16. Service dependency chain - User to Storage",
+      "description": "User -> App -> Service -> Database -> Storage. Demonstrates a five-stage service map with 100 rows of dependency data. Brand-coordinated palette - violet nodes, teal links - and showValueCounts on so you can see traffic concentration.",
+      "dataSources": {
+        "primary": "ds_dependency_chain"
+      },
+      "options": {
+        "backgroundColor": "transparent",
+        "nodeColor": "#7B49B7",
+        "nodeTextColor": "#1A1A1A",
+        "nodeHighlightColor": "#2E8B57",
+        "linkColor": "#00CDAF",
+        "linkWidth": 2,
+        "nodeWidth": 200,
+        "nodeHeight": 28,
+        "nodeSpacingX": 56,
+        "nodeSpacingY": 12,
+        "resultLimit": 20,
+        "showNodeCounts": true,
+        "showValueCounts": true
+      }
+    },
+    "viz_network_4col": {
+      "type": "splunk.linkgraph",
+      "title": "17. Network 4-tuple flow - subnet to service",
+      "description": "SrcSubnet -> Protocol -> DstPort -> DstService. Full-width 4-column layout, 80 flows. The Protocol column is intentionally narrow (3 distinct values: TCP/UDP/ICMP) so it acts as a visual gate between source and destination - any traffic that goes through ICMP is immediately visible. Promoted to full row so the SrcSubnet labels (long CIDR strings) get the room they need.",
+      "dataSources": {
+        "primary": "ds_network_flow"
+      },
+      "options": {
+        "nodeColor": "#5C6BC0",
+        "linkColor": "#FF6B35",
+        "linkWidth": 2,
+        "nodeWidth": 220,
+        "nodeHeight": 30,
+        "nodeSpacingX": 80,
+        "nodeSpacingY": 12,
+        "resultLimit": 20,
+        "showNodeCounts": true,
+        "showValueCounts": true
+      }
+    },
+    "viz_kill_chain_5col_inverted": {
+      "type": "splunk.linkgraph",
+      "title": "18. Same data, fieldOrder inverted - read right-to-left",
+      "description": "Same 60-event SOC data as panel 14 but with fieldOrder reversed (Action -> Severity -> Asset -> Technique -> Tactic). Useful when the story starts from the response (\"what did we do?\") and traces back to the cause. Same graph, different narrative direction.",
+      "dataSources": {
+        "primary": "ds_kill_chain_full"
+      },
+      "options": {
+        "fieldOrder": [
+          "Action",
+          "Severity",
+          "Asset",
+          "Technique",
+          "Tactic"
+        ],
+        "nodeColor": "#FF6B35",
+        "nodeHighlightColor": "#E89A2C",
+        "linkColor": "#1F77B4",
+        "linkWidth": 2,
+        "nodeWidth": 200,
+        "nodeHeight": 30,
+        "nodeSpacingX": 56,
+        "nodeSpacingY": 12,
+        "resultLimit": 25
+      }
+    },
+    "viz_attack_path_thick": {
+      "type": "splunk.linkgraph",
+      "title": "19. Hero attack path - thick links across the full row",
+      "description": "Actor -> Stage -> Outcome with `linkWidth: 8` so the dominant pathways read as a graphic, not a chart. 40 rows means a few combinations dominate, which is exactly when thick links work. Promoted to full-width hero panel - 320px-wide nodes with generous nodeSpacingX so the typography is the headline.",
+      "dataSources": {
+        "primary": "ds_attack_path_compact"
+      },
+      "options": {
+        "backgroundColor": "#EFE7D3",
+        "nodeColor": "#C2185B",
+        "nodeTextColor": "#1A1A1A",
+        "nodeHighlightColor": "#2E8B57",
+        "linkColor": "#E89A2C",
+        "linkWidth": 8,
+        "nodeWidth": 320,
+        "nodeHeight": 60,
+        "nodeSpacingX": 140,
+        "nodeSpacingY": 32,
+        "resultLimit": 12
+      }
+    },
+    "viz_dense_test": {
+      "type": "splunk.linkgraph",
+      "title": "20. Density test - resultLimit 50 (default)",
+      "description": "Largest possible single panel: ITSM data at the default resultLimit of 50 nodes per column. Panel intentionally tall (h=560) so the chart can breathe. Use this layout when the story is *every* relationship matters - typically forensic and audit views, not at-a-glance dashboards.",
+      "dataSources": {
+        "primary": "ds_itsm_flow"
+      },
+      "options": {
+        "nodeColor": "#3949AB",
+        "nodeHighlightColor": "#FFC107",
+        "linkColor": "#90A4AE",
+        "linkWidth": 1,
+        "nodeWidth": 160,
+        "nodeHeight": 22,
+        "nodeSpacingX": 46,
+        "nodeSpacingY": 6,
+        "resultLimit": 50
       }
     }
   },
@@ -344,7 +538,7 @@
     "type": "absolute",
     "options": {
       "width": 1440,
-      "height": 2880,
+      "height": 6580,
       "display": "auto-scale",
       "backgroundColor": "#FAEAD8"
     },
@@ -488,8 +682,89 @@
           "w": 690,
           "h": 360
         }
+      },
+      {
+        "item": "viz_section_2_intro",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 2740,
+          "w": 1400,
+          "h": 160
+        }
+      },
+      {
+        "item": "viz_kill_chain_5col",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 2920,
+          "w": 1400,
+          "h": 520
+        }
+      },
+      {
+        "item": "viz_itsm_5col",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 3460,
+          "w": 1400,
+          "h": 520
+        }
+      },
+      {
+        "item": "viz_service_chain_5col",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 4000,
+          "w": 1400,
+          "h": 480
+        }
+      },
+      {
+        "item": "viz_network_4col",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 4500,
+          "w": 1400,
+          "h": 480
+        }
+      },
+      {
+        "item": "viz_attack_path_thick",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 5000,
+          "w": 1400,
+          "h": 480
+        }
+      },
+      {
+        "item": "viz_kill_chain_5col_inverted",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 5500,
+          "w": 1400,
+          "h": 480
+        }
+      },
+      {
+        "item": "viz_dense_test",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 6000,
+          "w": 1400,
+          "h": 540
+        }
       }
     ],
     "globalInputs": []
-  }
+  },
+  "theme": "light"
 }

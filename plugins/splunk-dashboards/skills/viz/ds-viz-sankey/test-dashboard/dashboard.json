@@ -94,21 +94,28 @@
     },
     "viz_custom_palette": {
       "type": "splunk.sankey",
-      "title": "6. Custom seriesColors",
-      "description": "Brand palette override. seriesColors assigns one color per source node.",
+      "title": "6. Custom seriesColors (array form)",
+      "description": "Brand palette override. seriesColors must be an array of hex strings (NOT a CSV string - the validator rejects '#1F77B4,#FF6F50,...' with 'must be array' / 'must match pattern ^>.*'). Colors are assigned in order to source nodes alphabetically.",
       "dataSources": { "primary": "ds_workflow" },
       "options": {
-        "seriesColors": "#1F77B4,#FF6F50,#9C27B0,#26A69A,#FFC107,#5C6BC0,#EC407A"
+        "seriesColors": ["#1F77B4", "#FF6F50", "#9C27B0", "#26A69A", "#FFC107", "#5C6BC0", "#EC407A"]
       }
     },
     "viz_dynamic_color": {
       "type": "splunk.sankey",
       "title": "7. colorMode=dynamic by severity field",
-      "description": "Links are colored by the severity field via DOS rangeValue. Higher severity -> hotter color.",
+      "description": "Links coloured by severity via DOS `rangeValue(linkColorRangeConfig)`. The custom `linkColorRangeConfig` array (sibling option) is the lookup table: severity 1->cool blue, 2->teal, 3->amber, 4->orange, 5->red. Same pattern timeline uses with `dataColorConfig`.",
       "dataSources": { "primary": "ds_dynamic" },
       "options": {
         "colorMode": "dynamic",
-        "linkColors": "> primary | seriesByName(\"severity\") | rangeValue(linkColorRangeConfig)"
+        "linkColors": "> primary | seriesByName(\"severity\") | rangeValue(linkColorRangeConfig)",
+        "linkColorRangeConfig": [
+          { "to": 2,             "value": "#1F77B4" },
+          { "from": 2, "to": 3,  "value": "#26A69A" },
+          { "from": 3, "to": 4,  "value": "#FFB627" },
+          { "from": 4, "to": 5,  "value": "#FF6B35" },
+          { "from": 5,           "value": "#FF2D95" }
+        ]
       }
     },
     "viz_tinted_background": {
@@ -143,11 +150,11 @@
     },
     "viz_alert_palette": {
       "type": "splunk.sankey",
-      "title": "12. Alert / SOC palette",
-      "description": "Severity-coded series colors for security flow visualizations.",
+      "title": "12. Alert / SOC palette (array form)",
+      "description": "Severity-coded series colors for security flow visualizations. Array form is the schema-correct way to override the categorical palette.",
       "dataSources": { "primary": "ds_dynamic" },
       "options": {
-        "seriesColors": "#C2185B,#E89A2C,#1F77B4,#26A69A,#7B56DB,#FF677B"
+        "seriesColors": ["#C2185B", "#E89A2C", "#1F77B4", "#26A69A", "#7B56DB", "#FF677B"]
       }
     }
   },

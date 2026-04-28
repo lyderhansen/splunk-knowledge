@@ -6,7 +6,7 @@ description: |
   adjacent columns where pairs co-occur. Best for taxonomies, kill chains,
   org charts, and dependency maps.
   Verified against the 10.4 Dashboard Studio docs.
-version: 1.0.0
+version: 1.1.0
 verified_against: SplunkCloud-10.4.2604-DashStudio
 test_dashboards:
   - ds_viz_linkgraph_dark
@@ -172,6 +172,43 @@ The click target is **always a node** (never a link). The payload contains
 every column value for that row plus a `name` indicating which column was
 clicked. To wire a downstream search, branch on `$selected_field$` and
 filter by `$selected_node$`.
+
+## Layout: when a linkgraph deserves a full row
+
+A linkgraph that **shares a row** with another panel will almost always lose
+the layout fight. The two reasons:
+
+1. **Long node labels.** CIDR strings, kill-chain technique names, asset
+   FQDNs are all 20-50+ characters. With `nodeWidth: 200` (default) the
+   labels truncate at half-width; with `nodeWidth: 280-320` (hero sizing)
+   they don't even fit in a half-width panel.
+2. **High-degree fan-out.** A 4-column graph with 20+ nodes per column
+   needs horizontal breathing room. Half-width forces nodes to stack so
+   tightly that links cross illegibly, even with `linkWidth: 1`.
+
+Rule of thumb derived from the test dashboard:
+
+| Panel scale                                                | Layout            |
+| ---------------------------------------------------------- | ----------------- |
+| Default-styled, 2-3 columns, short labels, ≤10 nodes/col   | half-row OK       |
+| 4+ columns                                                 | **full row**      |
+| Hero / spacious sizing (`nodeWidth ≥ 280`, `nodeHeight ≥ 50`) | **full row**    |
+| Long labels (CIDRs, FQDNs, technique names)                | **full row**      |
+| `linkWidth ≥ 6` (links are the headline)                   | **full row**      |
+
+When you promote to full row, also bump `nodeWidth` (`220-280`),
+`nodeSpacingX` (`60-80`), and `nodeSpacingY` (`12-16`) so the graph actually
+uses the new space rather than rendering small in a wide canvas.
+
+Verified examples in the test dashboard:
+
+- `viz_network_4col` - 4-column subnet -> protocol -> port -> service.
+  Full row, `nodeWidth: 220`, `nodeSpacingX: 80`. CIDR strings need it.
+- `viz_attack_path_thick` - kill chain with `linkWidth: 8`. Full row,
+  `nodeWidth: 280`, `nodeHeight: 50`. Links are the headline; you need the
+  span.
+- `viz_dense_test` - stress-test dense graph. Full row simply because the
+  density is the point.
 
 ## Common gotchas
 

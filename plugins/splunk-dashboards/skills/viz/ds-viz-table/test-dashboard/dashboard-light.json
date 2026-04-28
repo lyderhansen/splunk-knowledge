@@ -54,6 +54,20 @@
       "options": {
         "query": "| makeresults count=4 | streamstats count AS rn | eval product = case(rn==1,\"Headphones\",rn==2,\"Speaker\",rn==3,\"Mic\",1==1,\"Cable\") | eval orders = case(rn==1,1284,rn==2,672,rn==3,341,1==1,89) | eval revenue_usd = case(rn==1,38520.50,rn==2,16800.00,rn==3,8525.25,1==1,1335.10) | eval status = case(rn==1,\"OK\",rn==2,\"OK\",rn==3,\"WARN\",1==1,\"FAIL\") | table product orders revenue_usd status"
       }
+    },
+    "ds_format_numbers": {
+      "type": "ds.search",
+      "name": "format - regional revenue for number formatting demo",
+      "options": {
+        "query": "| makeresults count=5 | streamstats count AS rn | eval region = case(rn==1,\"NA\",rn==2,\"EMEA\",rn==3,\"APAC\",rn==4,\"LATAM\",1==1,\"AFR\") | eval orders = case(rn==1,128450,rn==2,67230,rn==3,89120,rn==4,12340,1==1,4520) | eval revenue_usd = case(rn==1,3852050.50,rn==2,1680000.25,rn==3,2245125.75,rn==4,310925.00,1==1,98775.40) | eval conversion_pct = case(rn==1,7.4,rn==2,4.2,rn==3,5.8,rn==4,2.1,1==1,1.4) | table region orders revenue_usd conversion_pct"
+      }
+    },
+    "ds_inventory": {
+      "type": "ds.search",
+      "name": "inventory - hidden field drives coloring of product",
+      "options": {
+        "query": "| makeresults count=4 | streamstats count AS rn | eval product = case(rn==1,\"Headphones\",rn==2,\"Speaker\",rn==3,\"Mic\",1==1,\"Cable\") | eval _inventory = case(rn==1,45,rn==2,12,rn==3,0,1==1,8) | eval price_usd = case(rn==1,89.99,rn==2,149.99,rn==3,55.50,1==1,9.99) | table product _inventory price_usd"
+      }
     }
   },
   "visualizations": {
@@ -200,87 +214,487 @@
         ]
       }
     },
-    "viz_sparkline": {
+    "viz_sparkline_intro": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## 8. Sparkline coloring \u2014 the four canonical patterns\n\nFour distinct distribution semantics, all driven by **DOS expressions**. **Static `[\"#hex\"]` arrays do not work** for `sparklineColors` \u2014 the renderer ignores them past row 0. Always use a DOS expression in `context`.\n\n| # | Where | Distribution semantic | Use when |\n|---|---|---|---|\n| **8a** | `tableFormat.sparklineColors` + DOS `pick(<contextArray>)` | Per row, by row index. Row 0 \u2192 colour 0, row 1 \u2192 colour 1, recycles. | Colour should track row identity (host, region) |\n| **8b** | `columnFormat.<col>.sparklineColors` + DOS `seriesByName(driver) | rangeValue(bands)` | Per row, threshold-driven, **scoped to one column**. | Each column maps a different metric, each row's colour reflects severity for that metric |\n| **8c** | `tableFormat.sparklineColors` + DOS `seriesByName(driver) | rangeValue(bands)` | Per row, threshold-driven, **across all sparkline columns in the row**. | Whole-row severity colour (one driver column shades every sparkline in that row) |\n| **8d** | `tableFormat.sparklineColors` + DOS `pick(staticColor)` with 1-element context | Uniform. All sparklines paint the same colour. | You just want one consistent colour everywhere |\n\nAll four examples below use the same `ds_sparkline` dataset (4 hosts \u00d7 4 trend columns) so you can compare visually."
+      }
+    },
+    "viz_8a_dos_pick": {
       "type": "splunk.table",
-      "title": "8. SparklineCell - canonical `stats sparkline()` pattern",
-      "description": "Inline sparklines per row. Two things must be right at once: (1) the SPL must produce REAL multivalue fields with enough datapoints across the dashboard's time window. `| makeresults count=288 | eval _time = relative_time(now(), \"-\" . tostring((288-rn)*5) . \"m\") | ... | stats latest(...) AS current_x, sparkline(avg(x), 30m) AS trend_x by host` gives 51 datapoints per host across `-24h@h, now`. With too few datapoints (or all-zero buckets), Splunk falls back to a flat default colour and only row 1 looks right. (2) `columnFormat.<col>.sparklineColors` and `sparklineTypes` are `string[]` where each element styles ONE row of that column - if you have 4 rows you pass 4 entries. Splunk auto-detects multivalue columns as SparklineCell via the default `tableFormat.cellTypes` DOS, so no need to set `cellTypes` per column. Anti-pattern: faking mv with `eval x=\"a,b,c\" | makemv delim/tokenizer x` produces strings, not multivalue fields.",
+      "title": "8a. tableFormat.sparklineColors via DOS pick() \u2014 per-row by index",
+      "description": "Per-row colour distribution. `> table | pick(trendSparklineColors)` walks the 1D context array by row index: row 0 \u2192 colour 0, row 1 \u2192 colour 1, \u2026 When the array is shorter than the row count, the renderer recycles back to colour 0. Within one row, all four sparkline columns share the same colour. Use when colour should track row identity.",
+      "dataSources": {
+        "primary": "ds_sparkline"
+      },
+      "options": {
+        "tableFormat": {
+          "sparklineColors": "> table | pick(trendSparklineColors)",
+          "sparklineTypes": "> table | pick(trendSparklineTypes)"
+        },
+        "columnFormat": {
+          "host": {
+            "width": 110
+          },
+          "current_cpu": {
+            "width": 90
+          },
+          "trend_cpu": {
+            "width": 220
+          },
+          "trend_mem": {
+            "width": 220
+          },
+          "trend_req": {
+            "width": 220
+          },
+          "trend_err": {
+            "width": 220
+          }
+        }
+      },
+      "context": {
+        "trendSparklineColors": [
+          "#2E8B57",
+          "#3F6FB7",
+          "#E89A2C",
+          "#C2185B"
+        ],
+        "trendSparklineTypes": [
+          "area",
+          "line",
+          "area",
+          "line"
+        ]
+      }
+    },
+    "viz_8b_columnformat_dos": {
+      "type": "splunk.table",
+      "title": "8b. columnFormat.<col>.sparklineColors via DOS rangeValue() \u2014 per-row, threshold-driven, scoped to one column",
+      "description": "**The canonical per-column pattern.** Each `columnFormat.<col>.sparklineColors` takes a DOS expression `> table | seriesByName('<driver>') | rangeValue(<bands>)`. The renderer evaluates the pipeline once per row, producing a per-row colour that lives **only inside that one column**. Here `current_cpu` drives `trend_cpu` (CPU bands), and `trend_req` is driven by `current_cpu` too but with different bands so the same metric can encode different scales per column. Use when each column maps a distinct metric and you want each row's colour to reflect that column's threshold. **Static array shapes (`[\"#hex\"]` or `[[\"#hex\"]]`) silently fail \u2014 only DOS expressions work here.**",
       "dataSources": {
         "primary": "ds_sparkline"
       },
       "options": {
         "columnFormat": {
           "host": {
-            "width": 130
-          },
-          "current_cpu": {
             "width": 110
           },
+          "current_cpu": {
+            "width": 90
+          },
           "trend_cpu": {
-            "sparklineColors": [
-              "#2E8B57",
-              "#2E8B57",
-              "#2E8B57",
-              "#2E8B57"
-            ],
-            "sparklineTypes": [
-              "area",
-              "area",
-              "area",
-              "area"
-            ],
-            "width": 200
+            "sparklineColors": "> table | seriesByName('current_cpu') | rangeValue(cpuBands)",
+            "sparklineTypes": "> table | seriesByName('current_cpu') | rangeValue(cpuTypes)",
+            "width": 220
           },
           "trend_mem": {
-            "sparklineColors": [
-              "#3F6FB7",
-              "#3F6FB7",
-              "#3F6FB7",
-              "#3F6FB7"
-            ],
-            "sparklineTypes": [
-              "line",
-              "line",
-              "line",
-              "line"
-            ],
-            "width": 200
+            "sparklineColors": "> table | seriesByName('current_cpu') | rangeValue(memBands)",
+            "sparklineTypes": "> table | seriesByName('current_cpu') | rangeValue(cpuTypes)",
+            "width": 220
           },
           "trend_req": {
-            "sparklineColors": [
-              "#E89A2C",
-              "#E89A2C",
-              "#E89A2C",
-              "#E89A2C"
-            ],
-            "sparklineTypes": [
-              "area",
-              "area",
-              "area",
-              "area"
-            ],
+            "sparklineColors": "> table | seriesByName('current_cpu') | rangeValue(reqBands)",
+            "sparklineTypes": "> table | seriesByName('current_cpu') | rangeValue(cpuTypes)",
             "width": 220
           },
           "trend_err": {
-            "sparklineColors": [
-              "#C2185B",
-              "#C2185B",
-              "#C2185B",
-              "#C2185B"
-            ],
-            "sparklineTypes": [
-              "line",
-              "line",
-              "line",
-              "line"
-            ],
+            "sparklineColors": "> table | seriesByName('current_cpu') | rangeValue(errBands)",
+            "sparklineTypes": "> table | seriesByName('current_cpu') | rangeValue(cpuTypes)",
+            "width": 220
+          }
+        }
+      },
+      "context": {
+        "cpuBands": [
+          {
+            "to": 50,
+            "value": "#2E8B57"
+          },
+          {
+            "from": 50,
+            "to": 70,
+            "value": "#FFD060"
+          },
+          {
+            "from": 70,
+            "to": 90,
+            "value": "#E89A2C"
+          },
+          {
+            "from": 90,
+            "value": "#B91C1C"
+          }
+        ],
+        "memBands": [
+          {
+            "to": 50,
+            "value": "#3F6FB7"
+          },
+          {
+            "from": 50,
+            "to": 70,
+            "value": "#3F6FB7"
+          },
+          {
+            "from": 70,
+            "to": 90,
+            "value": "#E89A2C"
+          },
+          {
+            "from": 90,
+            "value": "#B91C1C"
+          }
+        ],
+        "reqBands": [
+          {
+            "to": 50,
+            "value": "#E89A2C"
+          },
+          {
+            "from": 50,
+            "to": 70,
+            "value": "#E89A2C"
+          },
+          {
+            "from": 70,
+            "to": 90,
+            "value": "#FF8B27"
+          },
+          {
+            "from": 90,
+            "value": "#B91C1C"
+          }
+        ],
+        "errBands": [
+          {
+            "to": 50,
+            "value": "#C2185B"
+          },
+          {
+            "from": 50,
+            "to": 70,
+            "value": "#C2185B"
+          },
+          {
+            "from": 70,
+            "to": 90,
+            "value": "#B91C1C"
+          },
+          {
+            "from": 90,
+            "value": "#FF2D2D"
+          }
+        ],
+        "cpuTypes": [
+          {
+            "to": 70,
+            "value": "line"
+          },
+          {
+            "from": 70,
+            "value": "area"
+          }
+        ]
+      }
+    },
+    "viz_8c_tableformat_rangevalue": {
+      "type": "splunk.table",
+      "title": "8c. tableFormat.sparklineColors via DOS rangeValue() \u2014 per-row, threshold-driven, all columns",
+      "description": "Same DOS expression as 8b, but applied at `tableFormat` level so the colour propagates across every sparkline in that row. Each host's four sparklines all turn the same colour based on the host's `current_cpu` band: green (<50), yellow (50-70), orange (70-90), red (>=90). Use when colour should encode whole-row severity rather than per-metric thresholds.",
+      "dataSources": {
+        "primary": "ds_sparkline"
+      },
+      "options": {
+        "tableFormat": {
+          "sparklineColors": "> table | seriesByName('current_cpu') | rangeValue(cpuSparklineBands)",
+          "sparklineTypes": "> table | seriesByName('current_cpu') | rangeValue(cpuSparklineTypes)"
+        },
+        "columnFormat": {
+          "host": {
+            "width": 110
+          },
+          "current_cpu": {
+            "width": 90
+          },
+          "trend_cpu": {
+            "width": 220
+          },
+          "trend_mem": {
+            "width": 220
+          },
+          "trend_req": {
+            "width": 220
+          },
+          "trend_err": {
+            "width": 220
+          }
+        }
+      },
+      "context": {
+        "cpuSparklineBands": [
+          {
+            "to": 50,
+            "value": "#2E8B57"
+          },
+          {
+            "from": 50,
+            "to": 70,
+            "value": "#FFD060"
+          },
+          {
+            "from": 70,
+            "to": 90,
+            "value": "#E89A2C"
+          },
+          {
+            "from": 90,
+            "value": "#B91C1C"
+          }
+        ],
+        "cpuSparklineTypes": [
+          {
+            "to": 70,
+            "value": "line"
+          },
+          {
+            "from": 70,
+            "value": "area"
+          }
+        ]
+      }
+    },
+    "viz_8d_uniform": {
+      "type": "splunk.table",
+      "title": "8d. tableFormat.sparklineColors via DOS pick(static) \u2014 uniform colour everywhere",
+      "description": "Simplest of the four. A 1-element context array fed through `pick(staticColor)` broadcasts the single colour across all rows and all sparkline columns. Use when you want a consistent brand colour for every sparkline in the table without thresholds or per-row variation.",
+      "dataSources": {
+        "primary": "ds_sparkline"
+      },
+      "options": {
+        "tableFormat": {
+          "sparklineColors": "> table | pick(staticSparklineColor)",
+          "sparklineTypes": "> table | pick(staticSparklineType)"
+        },
+        "columnFormat": {
+          "host": {
+            "width": 110
+          },
+          "current_cpu": {
+            "width": 90
+          },
+          "trend_cpu": {
+            "width": 220
+          },
+          "trend_mem": {
+            "width": 220
+          },
+          "trend_req": {
+            "width": 220
+          },
+          "trend_err": {
+            "width": 220
+          }
+        }
+      },
+      "context": {
+        "staticSparklineColor": [
+          "#3F6FB7"
+        ],
+        "staticSparklineType": [
+          "line"
+        ]
+      }
+    },
+    "viz_section9_intro": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## 9. Number formatting and field-driven colouring\n\nThree more patterns from the [10.2 Table docs](https://help.splunk.com/en/splunk-enterprise/create-dashboards-and-reports/dashboard-studio/10.2/visualizations/table) Examples section:\n\n- **9a - Number formatting** via `columnFormat.<col>.data` + `formatByType(...)`. Adds thousand separators, currency prefix, percent suffix.\n- **9b - Per-column heatmap** via `columnFormat.<col>.rowBackgroundColors`. Tints **only that column's cells** by value, leaving other columns alone.\n- **9c - Hidden field drives coloring**. `_inventory` is hidden via `showInternalFields: false`, but its values still drive `rowBackgroundColors` on the visible `product` column."
+      }
+    },
+    "viz_9a_number_format": {
+      "type": "splunk.table",
+      "title": "9a. columnFormat.data + formatByType - number formatting",
+      "description": "Numbers get thousand separators (`128,450`), currency gets `$` prefix (`$3,852,050.50`), percent gets `%` suffix (`7.4%`). Each column declares a `data: \"> table | seriesByName('col') | formatByType(<contextKey>)\"` and the corresponding context entry sets `{ \"number\": { \"thousandSeparated\": true, \"unitPosition\": \"after\" } }` plus prefix/suffix unit. This is the **canonical** way to pretty-print numbers in tables.",
+      "dataSources": {
+        "primary": "ds_format_numbers"
+      },
+      "options": {
+        "columnFormat": {
+          "region": {
+            "width": 100
+          },
+          "orders": {
+            "data": "> table | seriesByName('orders') | formatByType(ordersFormat)",
+            "width": 140
+          },
+          "revenue_usd": {
+            "data": "> table | seriesByName('revenue_usd') | formatByType(revenueFormat)",
             "width": 200
+          },
+          "conversion_pct": {
+            "data": "> table | seriesByName('conversion_pct') | formatByType(pctFormat)",
+            "width": 160
+          }
+        },
+        "showInternalFields": false
+      },
+      "context": {
+        "ordersFormat": {
+          "number": {
+            "thousandSeparated": true,
+            "unitPosition": "after"
+          }
+        },
+        "revenueFormat": {
+          "number": {
+            "thousandSeparated": true,
+            "unitPosition": "before",
+            "unit": "$"
+          }
+        },
+        "pctFormat": {
+          "number": {
+            "thousandSeparated": false,
+            "unitPosition": "after",
+            "unit": "%"
           }
         }
       }
     },
+    "viz_9b_per_column_heatmap": {
+      "type": "splunk.table",
+      "title": "9b. columnFormat.<col>.rowBackgroundColors - per-column heatmap",
+      "description": "Heatmap that lives **inside one column only**. `columnFormat.orders.rowBackgroundColors` paints just the `orders` cell per row using a `rangeValue()` band on `orders` itself, while every other cell stays default. Compare to panel 7 where `tableFormat.rowBackgroundColors` tints the entire row. Use this when one metric is the anchor and you don't want a full-row tint dominating the rest of the grid.",
+      "dataSources": {
+        "primary": "ds_format_numbers"
+      },
+      "options": {
+        "columnFormat": {
+          "region": {
+            "width": 100
+          },
+          "orders": {
+            "data": "> table | seriesByName('orders') | formatByType(ordersFormat)",
+            "rowBackgroundColors": "> table | seriesByName('orders') | rangeValue(ordersBands)",
+            "rowColors": "> table | seriesByName('orders') | rangeValue(ordersFg)",
+            "width": 160
+          },
+          "revenue_usd": {
+            "data": "> table | seriesByName('revenue_usd') | formatByType(revenueFormat)",
+            "width": 180
+          },
+          "conversion_pct": {
+            "data": "> table | seriesByName('conversion_pct') | formatByType(pctFormat)",
+            "width": 160
+          }
+        },
+        "showInternalFields": false
+      },
+      "context": {
+        "ordersFormat": {
+          "number": {
+            "thousandSeparated": true,
+            "unitPosition": "after"
+          }
+        },
+        "revenueFormat": {
+          "number": {
+            "thousandSeparated": true,
+            "unitPosition": "before",
+            "unit": "$"
+          }
+        },
+        "pctFormat": {
+          "number": {
+            "thousandSeparated": false,
+            "unitPosition": "after",
+            "unit": "%"
+          }
+        },
+        "ordersBands": [
+          {
+            "to": 10000,
+            "value": "#4a1722"
+          },
+          {
+            "from": 10000,
+            "to": 50000,
+            "value": "#4a2d17"
+          },
+          {
+            "from": 50000,
+            "to": 100000,
+            "value": "#45391a"
+          },
+          {
+            "from": 100000,
+            "value": "#173d2b"
+          }
+        ],
+        "ordersFg": [
+          {
+            "from": 0,
+            "value": "#1A1A1A"
+          }
+        ]
+      }
+    },
+    "viz_9c_hidden_field_driver": {
+      "type": "splunk.table",
+      "title": "9c. Hidden field drives coloring - _inventory \u2192 product cell colour",
+      "description": "`_inventory` is hidden by `showInternalFields: false`, but its numeric value still drives the `rowBackgroundColors` on the visible `product` column. Out-of-stock (`_inventory==0`) shows the product name on red; low stock (`<20`) on amber; healthy (`>=20`) on green. Same pattern as the official Splunk \"Hidden field to color another field\" example. The same trick works for any underscore-prefixed field; common names are `_color_rank`, `_color_hex`, `_status_code`.",
+      "dataSources": {
+        "primary": "ds_inventory"
+      },
+      "options": {
+        "columnFormat": {
+          "product": {
+            "rowBackgroundColors": "> table | seriesByName('_inventory') | rangeValue(inventoryBg)",
+            "rowColors": "> table | seriesByName('_inventory') | rangeValue(inventoryFg)",
+            "width": 200
+          },
+          "price_usd": {
+            "data": "> table | seriesByName('price_usd') | formatByType(priceFormat)",
+            "width": 160
+          }
+        },
+        "showInternalFields": false
+      },
+      "context": {
+        "priceFormat": {
+          "number": {
+            "thousandSeparated": true,
+            "unitPosition": "before",
+            "unit": "$"
+          }
+        },
+        "inventoryBg": [
+          {
+            "to": 1,
+            "value": "#4a1722"
+          },
+          {
+            "from": 1,
+            "to": 20,
+            "value": "#45391a"
+          },
+          {
+            "from": 20,
+            "value": "#173d2b"
+          }
+        ],
+        "inventoryFg": [
+          {
+            "from": 0,
+            "value": "#1A1A1A"
+          }
+        ]
+      }
+    },
     "viz_count_one": {
       "type": "splunk.table",
-      "title": "9. count: 1 + headerVisibility: none",
+      "title": "10. count: 1 + headerVisibility: none",
       "description": "Stripped down. headerVisibility=none kills the header row entirely - useful for KPI mini-tables embedded in a grid where the title carries the meaning.",
       "dataSources": {
         "primary": "ds_basic"
@@ -293,7 +707,7 @@
     },
     "viz_bg_color": {
       "type": "splunk.table",
-      "title": "10. backgroundColor: panel tint",
+      "title": "11. backgroundColor: panel tint",
       "description": "Global backgroundColor at the table level. Different from the panel chrome - this paints the cells. Pair with header colours so the gradient reads as one unit.",
       "dataSources": {
         "primary": "ds_basic"
@@ -309,7 +723,7 @@
     },
     "viz_compact_large": {
       "type": "splunk.table",
-      "title": "11. fontSize: large + headerVisibility: fixed",
+      "title": "12. fontSize: large + headerVisibility: fixed",
       "description": "Bigger font (16px) for an executive readout. Combined with fixed header for scroll friendliness even though count<rows.",
       "dataSources": {
         "primary": "ds_basic"
@@ -322,7 +736,7 @@
     },
     "viz_align_grid": {
       "type": "splunk.table",
-      "title": "12. tableFormat.align via DOS - auto by type",
+      "title": "13. tableFormat.align via DOS - auto by type",
       "description": "Default global align: `> table | type() | matchValue(tableAlignByType)`. Numbers go right, strings left, mixed center. For full control, override per-column via columnFormat.align (1D array) or the global tableFormat.align (2D array).",
       "dataSources": {
         "primary": "ds_align"
@@ -340,7 +754,7 @@
     "type": "absolute",
     "options": {
       "width": 1440,
-      "height": 2820,
+      "height": 4280,
       "display": "auto-scale"
     },
     "structure": [
@@ -425,13 +839,93 @@
         }
       },
       {
-        "item": "viz_sparkline",
+        "item": "viz_sparkline_intro",
         "type": "block",
         "position": {
           "x": 16,
           "y": 1396,
           "w": 1408,
-          "h": 360
+          "h": 260
+        }
+      },
+      {
+        "item": "viz_8a_dos_pick",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 1672,
+          "w": 1408,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_8b_columnformat_dos",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 1968,
+          "w": 1408,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_8c_tableformat_rangevalue",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 2264,
+          "w": 1408,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_8d_uniform",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 2560,
+          "w": 1408,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_section9_intro",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 2856,
+          "w": 1408,
+          "h": 200
+        }
+      },
+      {
+        "item": "viz_9a_number_format",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 3072,
+          "w": 696,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_9b_per_column_heatmap",
+        "type": "block",
+        "position": {
+          "x": 728,
+          "y": 3072,
+          "w": 696,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_9c_hidden_field_driver",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 3408,
+          "w": 1408,
+          "h": 280
         }
       },
       {
@@ -439,7 +933,7 @@
         "type": "block",
         "position": {
           "x": 16,
-          "y": 1772,
+          "y": 3704,
           "w": 696,
           "h": 200
         }
@@ -449,7 +943,7 @@
         "type": "block",
         "position": {
           "x": 728,
-          "y": 1772,
+          "y": 3704,
           "w": 696,
           "h": 200
         }
@@ -459,9 +953,9 @@
         "type": "block",
         "position": {
           "x": 16,
-          "y": 1988,
+          "y": 3920,
           "w": 696,
-          "h": 320
+          "h": 200
         }
       },
       {
@@ -469,9 +963,9 @@
         "type": "block",
         "position": {
           "x": 728,
-          "y": 1988,
+          "y": 3920,
           "w": 696,
-          "h": 320
+          "h": 200
         }
       }
     ],
