@@ -5,11 +5,13 @@ description: |
   panels for section headers, panel descriptions, KPI explanations, editorial
   framing, runbook links, and inline documentation. Verified against the 10.4
   Dashboard Studio docs.
-version: 1.0.0
-verified_against: SplunkCloud-10.4.2604-DashStudio
+version: 1.1.0
+verified_against: SplunkCloud-10.4.2604-DashStudio + Splunk Enterprise 10.2.1 (live)
 test_dashboards:
   - ds_viz_markdown_dark
   - ds_viz_markdown_light
+  - ds_interactivity_core_dark (§1 + §2 use markdown for live token echo)
+  - ds_interactivity_core_light
 related:
   - ds-viz-image
   - ds-viz-rectangle
@@ -37,11 +39,15 @@ actually scan and understand.
 
 ## When NOT to use
 
-- For dynamic content driven by SPL - markdown is **static text only**, no
-  token interpolation in the body.
-- For images - use `splunk.image` instead.
-- For shapes/dividers - use `splunk.rectangle` or `splunk.ellipse`.
-- For tabular data that needs sorting/paging - use `splunk.table`.
+- For dynamic content driven by SPL search results — markdown takes no
+  data source. (But token interpolation `$tok$` from inputs and
+  drilldowns DOES work; see "Supported markdown syntax" below.)
+- For images — use `splunk.image` instead.
+- For shapes/dividers — use `splunk.rectangle` or `splunk.ellipse`.
+- For tabular data that needs sorting / paging / column resizing — use
+  `splunk.table`. The markdown renderer also doesn't render GFM
+  pipe-tables at all (they show as raw `|`-separated text), so even
+  static tables don't work — use bullet lists with bold field labels.
 
 ## Data shape
 
@@ -86,25 +92,41 @@ the editor rejects the panel with `must match a schema in anyOf`.
 
 ## Supported markdown syntax
 
-`splunk.markdown` supports **all standard Markdown except raw HTML**.
-Verified in the test bench:
+`splunk.markdown` supports a CommonMark-ish subset, with a couple of
+notable gaps and a couple of Studio-specific superpowers. Verified live
+in `ds_interactivity_core` and the test bench:
+
+**Supported:**
 
 - **Headings** `# H1` ... `###### H6`
 - **Bold** `**text**`, **italic** `*text*`, ~~strikethrough~~ `~~text~~`
-- **Inline code** `` `code` `` and **fenced code blocks** ``` ``` ```
+- **Inline code** `` `code` `` and **fenced code blocks** with language
+  tags (` ```spl `, ` ```json `, ` ```bash `)
 - **Blockquotes** `> text`
-- **Unordered lists** with `-` or `*`, **ordered lists** with `1.`, **nested**
-- **Tables** with pipe syntax (`| col | col |`)
+- **Unordered lists** with `-` or `*`, **ordered lists** with `1.`,
+  **nested** lists
 - **Links** `[text](url)` and reference-style `[text][ref]`, `[ref]: url`
 - **Images** `![alt](url)` (use `splunk.image` for proper image panels)
 - **Horizontal rules** `---`
+- **Token interpolation** — `$token_name$` references in the markdown
+  body resolve to the live token value at render time. This is a
+  Studio-only extension on top of CommonMark and is the canonical way
+  to build "live token echo" or status panels driven by inputs and
+  drilldowns. Wrap token references in inline-code spans
+  (`` `$tok$` ``) so values containing `*` or `_` don't get
+  reinterpreted as markdown formatting.
 
-What does **not** work:
+**NOT supported (verified rejected or rendered raw):**
 
-- Raw HTML (`<div>`, `<style>`, `<script>` etc. is stripped or escaped).
-- Markdown attributes / extensions like footnotes, definition lists.
-- Token interpolation in the markdown body (e.g., `$token$` is rendered as
-  literal text).
+- **GFM pipe-tables** (`| col | col |\n|---|---|` etc.). These render as
+  literal pipe-separated text — the renderer does not interpret the
+  table syntax. Use bullet lists with bold field labels instead, or
+  drop in a `splunk.table` panel with a `ds.test` source for tabular
+  layout.
+- **Raw HTML** (`<div>`, `<style>`, `<script>`, etc. — stripped or
+  escaped).
+- **Markdown attributes / extensions**: footnotes, definition lists,
+  attribute syntax (`{.class}`).
 
 ## Verified patterns (test-dashboard reference)
 
@@ -119,7 +141,7 @@ The patterns below are **all rendered and verified** in
 | 6     | `backgroundColor` + custom text color                 | Section grouping, visual zones            |
 | 7     | Alert-style red-on-dark                               | Active incident banners (sparingly)       |
 | 8     | Lists - unordered, ordered, nested                    | Steps, regions, environments              |
-| 9     | Tables                                                | KPI quick-reference, threshold tables     |
+| 9     | Tables (negative example — renders as raw `\|`-text in 10.2.x; kept to demonstrate the limitation) | If interactivity is wanted use `splunk.table`. For static tabular display use bullet lists with bold labels. |
 | 10    | Inline code + fenced code block                       | SPL snippets, runbooks                    |
 | 11    | Blockquote + bold + italic                            | "Why this matters" callouts               |
 | 12    | Links (inline + reference-style)                      | Sidebar of quick links                    |
@@ -144,28 +166,41 @@ for interactivity.
 
 ## Common gotchas
 
-1. **No token interpolation in the body**. Writing `Hello $user$` renders
-   literally as `Hello $user$`. If you need token-driven copy, the only
-   workaround is to maintain multiple markdown panels and toggle them via
-   layout visibility tokens (advanced).
-2. **Raw HTML is stripped.** If you paste `<div style="...">`, it
-   disappears or shows as escaped text. Use `fontColor`, `backgroundColor`,
-   `fontSize`, and `fontFamily` options instead.
-3. **`fontColor` applies to everything.** It overrides headings, links, and
-   code-inline color. If you want a colored heading on default-colored body,
-   you have to split it into two markdown panels.
-4. **`backgroundColor` is the entire panel**, not just the text. Padding is
-   minimal - colored backgrounds touch the panel border. Use a `splunk.rectangle`
-   behind the markdown if you want padded color blocks.
-5. **Code-block backgrounds are theme-controlled.** Inline `` `code` `` and
-   fenced ``` blocks ``` get a subtle grey tint that you can't override with
-   `backgroundColor` (which sets the panel, not the inline code).
-6. **Tables don't sort or paginate.** Markdown tables are visual only. If
-   you need interactivity, use `splunk.table` with a static `ds.test` data
-   source.
+1. **GFM pipe-tables don't render.** Writing
+   `| col1 | col2 |\n| --- | --- |\n| a | b |` shows up as literal
+   pipe-separated text in 10.2.x. The markdown renderer does not
+   interpret the table syntax. Use one of:
+   - **Bullet lists with bold field labels** —
+     `- **Field**: value` reads cleanly as a key/value pair and is
+     what production-grade markdown panels in this codebase use.
+     See `ds_interactivity_core` §1 + §2 for the canonical form.
+   - A separate `splunk.table` panel sourced from `ds.test` if you
+     genuinely need a sortable / paginated table.
+2. **Token interpolation works — and it's actually useful.** `$token$`
+   references inside the `markdown` body resolve at render time, so
+   you can build live "token echo" / status panels without an SPL
+   round-trip. Wrap each token in an inline-code span
+   (`` `$tok$` ``) so values containing `*`, `_`, or backticks don't
+   get reinterpreted as markdown formatting. (This is a Studio
+   superpower over CommonMark — see the §1 panel in
+   `ds_interactivity_core` for verified usage.)
+3. **Raw HTML is stripped.** If you paste `<div style="...">`, it
+   disappears or shows as escaped text. Use `fontColor`,
+   `backgroundColor`, `fontSize`, and `fontFamily` options instead.
+4. **`fontColor` applies to everything.** It overrides headings,
+   links, and code-inline color. If you want a colored heading on
+   default-colored body, split it into two markdown panels.
+5. **`backgroundColor` is the entire panel**, not just the text.
+   Padding is minimal — colored backgrounds touch the panel border.
+   Use a `splunk.rectangle` behind the markdown if you want padded
+   color blocks.
+6. **Code-block backgrounds are theme-controlled.** Inline `` `code` ``
+   and fenced ``` blocks ``` get a subtle grey tint that you can't
+   override with `backgroundColor` (which sets the panel, not the
+   inline code).
 7. **Long content scrolls.** If the markdown is taller than the panel
-   height, the panel becomes scrollable. Size your panels generously - hero
-   callouts especially.
+   height, the panel becomes scrollable. Size your panels generously
+   — hero callouts especially.
 8. **Headings render bigger than `fontSize` suggests.** `fontSize=default`
    is ~14px for body text, but `# H1` inside is still `H1`-sized. The five
    `fontSize` values *scale* the entire hierarchy.

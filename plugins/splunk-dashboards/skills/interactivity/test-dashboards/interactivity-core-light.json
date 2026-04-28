@@ -192,9 +192,9 @@
     "viz_token_echo": {
       "type": "splunk.markdown",
       "title": "Token echo",
-      "description": "Markdown panel that interpolates every dashboard token directly. No SPL involved \u2014 the markdown engine substitutes `$tok$` references at render time. Token values are wrapped in inline-code spans so wildcards and special chars (e.g. `*`, `_`) don't get reinterpreted as markdown formatting.",
+      "description": "Markdown panel that interpolates every dashboard token directly. No SPL involved \u2014 the markdown engine substitutes `$tok$` references at render time. Token values are wrapped in inline-code spans so wildcards and special chars (e.g. `*`, `_`) don't get reinterpreted as markdown formatting. Multi-word free-text tokens (`search_text`) and multiselect tokens (`status`) both pass through `|s` to get quoted values, so the rendered SPL is parser-clean even when the user types spaces or selects multiple options.",
       "options": {
-        "markdown": "**Resolved SPL fragment:**\n\n```spl\n| eval msg=\"index=$selected_index$ status IN ($status|s$) filter=$search_text$ host=$host_filter$ time=$global_time.earliest$..$global_time.latest$\"\n```\n\n**Individual tokens:**\n\n- `$selected_index$` \u2192 `$selected_index$`\n- `$status$` \u2192 `$status$` &nbsp;&nbsp; (multiselect; with `|s` \u2192 `$status|s$`)\n- `$search_text$` \u2192 `$search_text$`\n- `$host_filter$` \u2192 `$host_filter$`\n- `$global_time.earliest$` \u2192 `$global_time.earliest$`\n- `$global_time.latest$` \u2192 `$global_time.latest$`\n- `$selected_host$` (from \u00a74 click) \u2192 `$selected_host$`\n- `$selected_action$` (from \u00a74 click) \u2192 `$selected_action$`",
+        "markdown": "**Resolved SPL fragment** (every multi-word token uses `|s` so the output is parser-clean):\n\n```spl\n| eval msg=\"index=$selected_index$ status IN ($status|s$) filter=$search_text|s$ host=$host_filter|s$ time=$global_time.earliest$..$global_time.latest$\"\n```\n\n**Individual tokens** \u2014 both raw and `|s`-quoted form shown side by side:\n\n- `$selected_index$` \u2192 `$selected_index$`\n- `$status$` \u2192 `$status$` &nbsp;&nbsp; with `|s`: `$status|s$`\n- `$search_text$` \u2192 `$search_text$` &nbsp;&nbsp; with `|s`: `$search_text|s$`\n- `$host_filter$` \u2192 `$host_filter$` &nbsp;&nbsp; with `|s`: `$host_filter|s$`\n- `$global_time.earliest$` \u2192 `$global_time.earliest$`\n- `$global_time.latest$` \u2192 `$global_time.latest$`\n- `$selected_host$` (from \u00a74 click) \u2192 `$selected_host$`\n- `$selected_action$` (from \u00a74 click) \u2192 `$selected_action$`",
         "fontSize": "small"
       }
     },
@@ -208,9 +208,9 @@
     "viz_inputs_proof": {
       "type": "splunk.markdown",
       "title": "Inputs \u2192 tokens (live)",
-      "description": "Markdown table that maps each input above to the token it writes and the current token value. Live-updates as the user changes any input.",
+      "description": "Bullet-list view of which input writes which token, plus the current value. Live-updates as the user changes any input. **Not a markdown table on purpose** \u2014 Dashboard Studio's markdown renderer does not support GFM pipe-tables (they render as raw `|`-separated text). Use bullet lists with bold field labels instead. See `ds-viz-markdown` skill for the full set of supported markdown features.",
       "options": {
-        "markdown": "| Input | Type | Token | Current value |\n| --- | --- | --- | --- |\n| Time range | `input.timerange` | `global_time` | earliest=`$global_time.earliest$` &nbsp; latest=`$global_time.latest$` |\n| Index | `input.dropdown` | `selected_index` | `$selected_index$` |\n| Status | `input.multiselect` | `status` | `$status$` &nbsp; (with `|s` filter: `$status|s$`) |\n| Search filter | `input.text` | `search_text` | `$search_text$` |\n| Host (dynamic) | `input.dropdown` w/ DOS items | `host_filter` | `$host_filter$` |\n\n**From drilldowns (\u00a74):**\n\n| Source | Token | Current value |\n| --- | --- | --- |\n| Row click \u2192 `setToken` | `selected_host` | `$selected_host$` |\n| Row click \u2192 `setToken` | `selected_action` | `$selected_action$` |",
+        "markdown": "**From inputs:**\n\n- **Time range** \u2014 `input.timerange` writes `global_time`; current: earliest=`$global_time.earliest$`, latest=`$global_time.latest$`\n- **Index** \u2014 `input.dropdown` writes `selected_index`; current: `$selected_index$`\n- **Status** \u2014 `input.multiselect` writes `status`; current: `$status$` (with `|s` filter: `$status|s$`)\n- **Search filter** \u2014 `input.text` writes `search_text`; current: `$search_text$` (with `|s`: `$search_text|s$`)\n- **Host (dynamic)** \u2014 `input.dropdown` w/ DOS items writes `host_filter`; current: `$host_filter$` (with `|s`: `$host_filter|s$`)\n\n**From drilldowns (\u00a74 row click \u2192 `setToken`):**\n\n- `selected_host` \u2192 `$selected_host$`\n- `selected_action` \u2192 `$selected_action$`",
         "fontSize": "small"
       }
     },
@@ -395,10 +395,11 @@
     },
     "viz_visibility_c_unset": {
       "type": "splunk.markdown",
+      "title": "C \u2014 visible when no host selected",
       "description": "Visible only in the initial state (no host selected). Click a row in \u00a74 to hide.",
       "options": {
-        "markdown": "_(C \u2014 initial state: no host selected. Click a row in \u00a74 to hide this and reveal A/B.)_",
-        "fontSize": "small"
+        "markdown": "## C \u2014 initial state\n\n_(no host selected \u2014 click a row in \u00a74 to hide this and reveal A and B)_",
+        "fontSize": "default"
       },
       "containerOptions": {
         "visibility": {
@@ -574,20 +575,20 @@
         "item": "viz_visibility_a_set",
         "type": "block",
         "position": {
-          "x": 0,
+          "x": 20,
           "y": 2420,
-          "w": 480,
-          "h": 220
+          "w": 460,
+          "h": 240
         }
       },
       {
         "item": "viz_visibility_b_match",
         "type": "block",
         "position": {
-          "x": 480,
+          "x": 490,
           "y": 2420,
-          "w": 480,
-          "h": 220
+          "w": 460,
+          "h": 240
         }
       },
       {
@@ -596,8 +597,8 @@
         "position": {
           "x": 960,
           "y": 2420,
-          "w": 480,
-          "h": 220
+          "w": 460,
+          "h": 240
         }
       }
     ]
