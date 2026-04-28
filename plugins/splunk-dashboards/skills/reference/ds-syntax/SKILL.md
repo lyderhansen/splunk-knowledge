@@ -17,7 +17,8 @@ A Dashboard Studio definition is a JSON object with these keys:
 | `dataSources` | object | yes | Named searches — see next section |
 | `visualizations` | object | yes | Panels, keyed by id |
 | `inputs` | object | no | User-facing filters (tokens) |
-| `defaults` | object | no | Default token values + global time range |
+| `defaults` | object | no | Default options for `dataSources` / `visualizations` types and initial values for tokens (`defaults.tokens.default.<name>.value`). |
+| `expressions` | object | no | Named visibility conditions (`expressions.conditions`) and named token-eval expressions (`expressions.eval`). See section below. |
 | `layout` | object | yes | Grid structure placing visualizations on screen |
 
 ## dataSources
@@ -347,6 +348,89 @@ Getting the time picker to actually control searches requires three coordinated 
 
 Only step 3 makes the picker visible; only step 2 makes searches react to it. Miss either and the dashboard looks correct but the time control is a no-op.
 
+## expressions
+
+`expressions` is a top-level dashboard key holding **named conditions** (used for visibility) and **named eval expressions** (used to compute derived token values). Two sub-blocks:
+
+```json
+"expressions": {
+  "conditions": {
+    "condition_host_set": {
+      "name": "host is set",
+      "value": "$selected_host$ != \"\""
+    }
+  },
+  "eval": {
+    "expr_toggle_trend": {
+      "name": "toggleTrend",
+      "value": "$showTrend$ = 'true' ? 'false' : 'true'"
+    }
+  }
+}
+```
+
+### `conditions` — visibility predicates
+
+Each entry has `name` (free-text label shown in the editor) and `value` (the predicate). The predicate is a small expression language with these operators:
+
+| Operator / function | Meaning |
+|---|---|
+| `=` | Equals (single equals; `==` is **not** accepted). |
+| `!=` | Not equals. |
+| `and` / `or` / `not` | Lowercase Boolean composition. |
+| `()` | Grouping. |
+| `isSet($tok$)` | True when the token is defined. **Cloud-only — Splunk Enterprise 10.2.x's SPL parser rejects this with `S0201 Syntax error: "isSet"`.** Use `$tok$ != ""` for portability. |
+
+Token references inside conditions are **bare** — write `$selected_host$ = "web-01"`, NOT `"$selected_host$" = "web-01"`. The latter expands to `"web-01" = "web-01"` and the parser breaks at the dash with `S0201`.
+
+### `eval` — derived token values
+
+Each entry has `name` and `value` (a JSONata expression). The result is referenced from elsewhere in the dashboard as `$eval:<name>$`. Useful for ternaries, label toggles, and combining tokens:
+
+```json
+"expressions": {
+  "eval": {
+    "expr_label": {
+      "name": "trendBtnLabel",
+      "value": "$showTrend$ = 'true' ? 'Show metrics' : 'Show trends'"
+    }
+  }
+}
+```
+
+Reference it later as `"label": "$eval:trendBtnLabel$"`.
+
+## visibility
+
+`visibility` lives **under `containerOptions`** on every visualization, input, or layout-element that supports it. Setting `visibility` directly at the panel root is rejected with `must NOT have additional properties`. Schema:
+
+```json
+"viz_x": {
+  "type": "splunk.table",
+  "containerOptions": {
+    "visibility": {
+      "showConditions":     ["condition_host_set"],
+      "hideConditions":     ["condition_in_maintenance"],
+      "showWhenConditions": "all-true",
+      "hideWhenNoData":     true,
+      "hideInViewMode":     true
+    }
+  }
+}
+```
+
+| Key | Type | Notes |
+|---|---|---|
+| `showConditions` | `string[]` | Show panel when conditions are true (default: any-true). |
+| `hideConditions` | `string[]` | Hide panel when any of these are true. `hideConditions` wins over `showConditions`. |
+| `showWhenConditions` | `"any-true"` \| `"all-true"` | When `showConditions` has multiple entries, controls AND vs OR. Default `any-true`. |
+| `hideWhenNoData` | `boolean` | Hide when the primary data source returns 0 rows. Doesn't require any condition. |
+| `hideInViewMode` | `boolean` | Hide in published view mode but show in the editor. Useful for debug / scaffolding inputs. |
+
+`hideWhenNoData` can also be set as a sibling of `containerOptions` (`viz_x.hideWhenNoData = true`) — that is the legacy short form documented for the empty-data case. Both work; the nested form is preferred.
+
+The full skill on visibility patterns lives in `interactivity/ds-visibility`.
+
 ## layout
 
 Two layout types:
@@ -580,27 +664,33 @@ DOS is the expression language used in Dashboard Studio to dynamically configure
 | `seriesByName("field")` | DataFrame → DataSeries | Select a column by name |
 | `seriesByIndex(n)` | DataFrame → DataSeries | Select a column by zero-based index |
 | `seriesByPrioritizedTypes("number","string")` | DataFrame → DataSeries | Select first column matching given type priority |
+| `frameBySeriesNames("a","b","c")` | DataFrame → DataFrame | Keep only the listed columns. |
+| `frameWithoutSeriesNames("x","y")` | DataFrame → DataFrame | Drop the listed columns; keep everything else. Used heavily by bubble-map `bubbleSize`. |
+| `frameBySeriesTypes("number")` | DataFrame → DataFrame | Keep only columns matching the type. |
 | `firstPoint()` | DataSeries → DataPoint | First value in the series |
 | `lastPoint()` | DataSeries → DataPoint | Last value in the series |
 | `pointByIndex(n)` | DataSeries → DataPoint | Value at index n |
-| `delta(n)` | DataSeries → DataPoint | Difference between last n points |
+| `delta(n)` | DataSeries → DataPoint | Difference between last n points (use negative `n` for "n points back from now"). |
 | `getField()` | DataPoint → string | Get field name of the data point |
 | `getType()` | DataPoint → string | Get data type of the data point |
 | `getValue()` | DataPoint → value | Get the raw value of the data point |
-| `pick(contextVar)` | any | Pick a value from a context variable |
-| `frame(label, value)` | DataFrame | Create label/value pairs (used for input items) |
+| `frame(label, value)` | DataFrame | Reshape two columns into a label/value frame (used for input items). |
+| `renameSeries("newName")` | DataSeries → DataSeries | Rename a column in-place. |
+| `prepend(items)` | DataFrame → DataFrame | Prepend a static frame (typically the "All" sentinel `[["All"], ["*"]]`) to the start of dynamic input items. |
+| `objects()` | DataFrame → object[] | Convert a frame into the `[{label, value}]` array shape that `input.dropdown.options.items` expects. Always last in dynamic-dropdown chains. |
 
 ### Formatter table
 
 | Formatter | Description | Example |
 |---|---|---|
 | `rangeValue(config)` | Map numeric ranges to values (e.g., colors). `config` is a context array of `{from, to, value}` entries. | `rangeValue(colorConfig)` |
-| `matchValue(config)` | Map exact string matches to values. **BROKEN — causes `e.map is not a function` at runtime. Use `rangeValue` with a numeric rank field instead.** | — |
-| `formatByType(config)` | Format data by type (number, string). `config` is a context object like `{"number": {"thousandSeparated": true}}`. | `formatByType(numFormat)` |
+| `matchValue(config)` | Map exact string matches to values. `config` is `[{match: "string", value: ...}]`. Verified working on the `splunk.timeline` `dataColors` and `splunk.table` `rowBackgroundColors` paths in the live bench. | `matchValue(statusColors)` |
+| `gradient(config)` | Smooth-interpolated colour gradient between stops. `config` is `{colors: ["#1F3A5F", "#26A69A", "#FFD166"]}`. | `gradient(usersGradient)` |
+| `formatByType(config)` | Format data by type (number, string). `config` is a context object like `{"number": {"thousandSeparated": true, "prefix": "$"}}`. | `formatByType(numFormat)` |
+| `multiFormat(config)` | Apply different formatters to different columns in a DataFrame. | `multiFormat(colFormats)` |
+| `pick(contextVar)` | Cycle / select from a context array (used for table row-color stripes). | `pick(rowColorsByTheme)` |
 | `prefix("str")` | Prepend a static string to each value. | `prefix("$")` |
 | `suffix("str")` | Append a static string to each value. | `suffix(" ms")` |
-| `prepend(items)` | Prepend items to a list (used for static options in inputs). | `prepend(staticItems)` |
-| `multiFormat(config)` | Apply different formatters to different columns in a DataFrame. | `multiFormat(colFormats)` |
 | `type()` | Return the data type of each element as a string. | `> primary \| seriesByIndex(0) \| type()` |
 
 ### `context` configuration store
@@ -640,13 +730,28 @@ String arguments inside DOS use `\"` for double-quoted strings, or single-quote 
 
 Apply filters after the token name with `|`:
 
-| Syntax | Filter | Use case |
-|---|---|---|
-| `$token|h$` | HTML escape | Prevents XSS when injecting token values into `splunk.markdown` or text panels |
-| `$token|u$` | URL encode | Required for token values inserted into `link.url` targets |
-| `$token|s$` | Raw string (default) | No transformation; safe for SPL search strings |
+| Syntax       | Filter                                  | Use case |
+|--------------|-----------------------------------------|---------|
+| `$token|h$`  | HTML escape                              | Prevents XSS when injecting token values into `splunk.markdown` or text panels. |
+| `$token|u$`  | URL encode                               | Required for token values inserted into `link.url` targets / `drilldown.customUrl`. |
+| `$token|s$`  | **Quote each value** (string-quote)     | Multiselect tokens going into SPL `IN(...)` clauses. With `["200", "404"]` it expands to `"200","404"` (each value double-quoted) instead of the default unquoted `200,404`. |
 
-Example: `https://example.com/search?q=$search_term|u$`
+Default (no filter) emits the raw value: a string for single-value
+tokens, a comma-separated joined list for multiselect arrays (no
+quoting around individual values).
+
+Examples:
+
+```
+url: "https://example.com/search?q=$search_term|u$"
+spl: "| where Username IN ($username|s$) OR (\"$username$\" = \"*\")"
+md:  "Searching for $search_term|h$"
+```
+
+The canonical multiselect-search pattern (from the Splunk Cloud Maps
+example) is `IN ($tok|s$) OR ("$tok$" = "*")` — `|s` quotes the
+selected values so `IN()` parses cleanly, and the trailing `OR (...)`
+clause handles the "All" sentinel where the user picks `*`.
 
 ## Default color palette
 
