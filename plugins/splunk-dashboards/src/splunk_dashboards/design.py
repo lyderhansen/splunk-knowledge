@@ -56,7 +56,13 @@ import sys as _sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
-WIREFRAME_HTML = Path(__file__).resolve().parent.parent.parent / "skills" / "ds-design" / "wireframe.html"
+WIREFRAME_HTML = (
+    Path(__file__).resolve().parent.parent.parent
+    / "skills"
+    / "pipeline"
+    / "ds-design"
+    / "wireframe.html"
+)
 
 
 def _make_handler(project: str):

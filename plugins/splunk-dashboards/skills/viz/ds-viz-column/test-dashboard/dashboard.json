@@ -1,0 +1,390 @@
+{
+  "title": "ds-viz-column - option matrix",
+  "description": "Test bench for splunk.column. Each panel exercises a distinct option group: stack modes, columnGrouping, columnSpacing/seriesSpacing, dataValuesDisplay, xAxisLabelRotation, annotations, dual y-axis, split sub-charts, sparkbar pattern. SPL is makeresults-based so this dashboard runs in any Splunk instance with no setup. Same axis convention as line/area: hide x-axis title (the word _time / category-name is noise when the title repeats it), keep labels visible (auto), hide major tick marks.",
+  "defaults": {
+    "dataSources": {
+      "global": {
+        "options": {
+          "queryParameters": {
+            "earliest": "-24h@h",
+            "latest": "now"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": false,
+        "showLastUpdated": false
+      }
+    }
+  },
+  "dataSources": {
+
+    "ds_basic": {
+      "type": "ds.search",
+      "name": "basic - single series by category",
+      "options": {
+        "query": "| makeresults count=8 | streamstats count as i | eval category = case(i=1,\"Auth\",i=2,\"Search\",i=3,\"API\",i=4,\"Web\",i=5,\"DB\",i=6,\"Cache\",i=7,\"Queue\",1==1,\"Storage\"), requests = round(800 - (i*50) + random()%200) | table category requests"
+      }
+    },
+
+    "ds_multiseries": {
+      "type": "ds.search",
+      "name": "3-series side-by-side default",
+      "options": {
+        "query": "| makeresults count=7 | streamstats count as i | eval region = case(i=1,\"Mon\",i=2,\"Tue\",i=3,\"Wed\",i=4,\"Thu\",i=5,\"Fri\",i=6,\"Sat\",1==1,\"Sun\"), us_east = round(800 + 200*sin(i/2) + random()%100), us_west = round(600 + 250*sin(i/3+1) + random()%100), eu_west = round(450 + 150*sin(i/2+2) + random()%80) | table region us_east us_west eu_west"
+      }
+    },
+
+    "ds_stacked": {
+      "type": "ds.search",
+      "name": "3-series cumulative stacking",
+      "options": {
+        "query": "| makeresults count=7 | streamstats count as i | eval day = case(i=1,\"Mon\",i=2,\"Tue\",i=3,\"Wed\",i=4,\"Thu\",i=5,\"Fri\",i=6,\"Sat\",1==1,\"Sun\"), frontend = round(40 + 15*sin(i/2) + random()%8), backend = round(60 + 20*sin(i/3+1) + random()%10), database = round(30 + 12*sin(i/2+2) + random()%6) | table day frontend backend database"
+      }
+    },
+
+    "ds_pct": {
+      "type": "ds.search",
+      "name": "share-of-traffic 100pct stacking",
+      "options": {
+        "query": "| makeresults count=7 | streamstats count as i | eval day = case(i=1,\"Mon\",i=2,\"Tue\",i=3,\"Wed\",i=4,\"Thu\",i=5,\"Fri\",i=6,\"Sat\",1==1,\"Sun\"), mobile = round(35 + 10*sin(i/2)), desktop = round(45 + 8*sin(i/3+1)), tablet = round(20 + 5*sin(i/2+2)) | table day mobile desktop tablet"
+      }
+    },
+
+    "ds_overlay": {
+      "type": "ds.search",
+      "name": "overlay grouping - actual vs target",
+      "options": {
+        "query": "| makeresults count=7 | streamstats count as i | eval day = case(i=1,\"Mon\",i=2,\"Tue\",i=3,\"Wed\",i=4,\"Thu\",i=5,\"Fri\",i=6,\"Sat\",1==1,\"Sun\"), target = 100, actual = round(60 + 35*sin(i/2) + random()%15) | table day target actual"
+      }
+    },
+
+    "ds_negative": {
+      "type": "ds.search",
+      "name": "negative values - week-over-week delta",
+      "options": {
+        "query": "| makeresults count=8 | streamstats count as i | eval product = case(i=1,\"Phones\",i=2,\"Tablets\",i=3,\"Laptops\",i=4,\"TVs\",i=5,\"Audio\",i=6,\"Wearables\",i=7,\"Cameras\",1==1,\"Gaming\"), delta_pct = round((random()%4000-2000)/100, 1) | table product delta_pct"
+      }
+    },
+
+    "ds_minmax": {
+      "type": "ds.search",
+      "name": "data labels minmax pattern",
+      "options": {
+        "query": "| makeresults count=10 | streamstats count as i | eval bucket = \"Bin \" . i, count = round(50 + 80*sin(i/2) + random()%30) | table bucket count"
+      }
+    },
+
+    "ds_long_labels": {
+      "type": "ds.search",
+      "name": "long category labels - rotation test",
+      "options": {
+        "query": "| makeresults count=8 | streamstats count as i | eval product_name = case(i=1,\"Premium Wireless Headphones\",i=2,\"4K Ultra HD Television 55-inch\",i=3,\"Ergonomic Office Chair\",i=4,\"Stainless Steel Water Bottle\",i=5,\"Mechanical Gaming Keyboard\",i=6,\"Bluetooth Portable Speaker\",i=7,\"Smart Home Security Camera\",1==1,\"Wireless Charging Pad\"), revenue = round(1000 + 800*sin(i/2) + random()%400) | table product_name revenue"
+      }
+    },
+
+    "ds_annotations_data": {
+      "type": "ds.search",
+      "name": "main column for annotation panel - hourly traffic",
+      "options": {
+        "query": "| makeresults count=12 | streamstats count as i | eval _time = relative_time(now(), \"-\" . (12-i) . \"h\") | eval visits = round(8000 + 2500*sin(i/2) + (i*150) + random()%500) | table _time visits"
+      }
+    },
+
+    "ds_annotations_marks": {
+      "type": "ds.search",
+      "name": "annotation marks - deploy and incident events",
+      "options": {
+        "query": "| makeresults count=3 | streamstats count as i | eval _time = case(i=1, relative_time(now(), \"-9h\"), i=2, relative_time(now(), \"-5h\"), 1==1, relative_time(now(), \"-2h\")) | eval annotationLabel = case(i=1,\"v4.2 deploy\", i=2,\"DB failover\", 1==1,\"Cache warm-up\") | eval annotationColor = case(i=1,\"#33FF99\", i=2,\"#FF2D95\", 1==1,\"#FFB627\") | table _time annotationLabel annotationColor"
+      }
+    },
+
+    "ds_dualaxis": {
+      "type": "ds.search",
+      "name": "dual axis - volume column and conversion line overlay",
+      "options": {
+        "query": "| makeresults count=7 | streamstats count as i | eval day = case(i=1,\"Mon\",i=2,\"Tue\",i=3,\"Wed\",i=4,\"Thu\",i=5,\"Fri\",i=6,\"Sat\",1==1,\"Sun\"), visits = round(8000 + 2000*sin(i/2) + random()%1000), conversion_pct = round(2 + 1.5*sin(i/3+1) + random()%1*0.1, 1) | table day visits conversion_pct"
+      }
+    },
+
+    "ds_split": {
+      "type": "ds.search",
+      "name": "split series - small multiples by metric",
+      "options": {
+        "query": "| makeresults count=7 | streamstats count as i | eval day = case(i=1,\"Mon\",i=2,\"Tue\",i=3,\"Wed\",i=4,\"Thu\",i=5,\"Fri\",i=6,\"Sat\",1==1,\"Sun\"), cpu_pct = round(40 + 30*sin(i/2) + random()%10), memory_gb = round(8 + 4*sin(i/3+1) + random()%2*0.1, 1), disk_iops = round(2000 + 1500*sin(i/2+2) + random()%500) | table day cpu_pct memory_gb disk_iops"
+      }
+    },
+
+    "ds_minimal": {
+      "type": "ds.search",
+      "name": "minimal sparkbar series",
+      "options": {
+        "query": "| makeresults count=20 | streamstats count as i | eval bin = \"b\" . i, value = round(50 + 30*sin(i/2) + random()%10) | table bin value"
+      }
+    }
+
+  },
+
+  "visualizations": {
+
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# `splunk.column` - option matrix\n\nVertical bars - **categorical x-axis, value y-axis**. Each panel exercises one option group. **Convention:** `xAxisTitleVisibility:\"hide\"` (avoid repeating the category name), `xAxisLabelVisibility:\"auto\"`, `xAxisMajorTickVisibility:\"hide\"`. **Column-specific:** `columnGrouping` (`auto`/`overlay`), `columnSpacing`, `seriesSpacing`, `xAxisLabelRotation` (-90/-45/0/45/90), `dataValuesDisplay` (off/all/minmax). Annotations are supported.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default"
+      }
+    },
+
+    "viz_basic": {
+      "type": "splunk.column",
+      "title": "1. Minimal - single series",
+      "description": "Bare options applied. Default columnGrouping=auto, default seriesSpacing.",
+      "dataSources": { "primary": "ds_basic" },
+      "options": {
+        "seriesColors": ["#00D9FF"],
+        "yAxisTitleText": "Requests",
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "auto",
+        "xAxisMajorTickVisibility": "hide"
+      }
+    },
+
+    "viz_unstacked": {
+      "type": "splunk.column",
+      "title": "2. Multi-series side-by-side - default auto grouping",
+      "description": "stackMode=auto + columnGrouping=auto: bars sit next to each other within each category. Easy to compare series within one bucket.",
+      "dataSources": { "primary": "ds_multiseries" },
+      "options": {
+        "seriesColors": ["#00D9FF", "#FF2D95", "#FFB627"],
+        "legendDisplay": "bottom",
+        "yAxisTitleText": "Requests / day",
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "auto",
+        "xAxisMajorTickVisibility": "hide"
+      }
+    },
+
+    "viz_stacked": {
+      "type": "splunk.column",
+      "title": "3. Stacked - cumulative volume per day",
+      "description": "stackMode=stacked. Each series on top of the previous. Each column's TOTAL height represents the sum.",
+      "dataSources": { "primary": "ds_stacked" },
+      "options": {
+        "stackMode": "stacked",
+        "seriesColorsByField": {
+          "frontend": "#00D9FF",
+          "backend": "#7AA2FF",
+          "database": "#B57BFF"
+        },
+        "legendDisplay": "bottom",
+        "yAxisTitleText": "CPU cores used",
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "auto",
+        "xAxisMajorTickVisibility": "hide"
+      }
+    },
+
+    "viz_stacked100": {
+      "type": "splunk.column",
+      "title": "4. Stacked 100% - share of traffic",
+      "description": "stackMode=stacked100. Each column normalises to 100%. Best for showing how proportions shift between categories. Y-axis shows %.",
+      "dataSources": { "primary": "ds_pct" },
+      "options": {
+        "stackMode": "stacked100",
+        "seriesColorsByField": {
+          "mobile": "#00D9FF",
+          "desktop": "#7AA2FF",
+          "tablet": "#FFB627"
+        },
+        "legendDisplay": "bottom",
+        "yAxisTitleText": "Traffic share (%)",
+        "yAxisAbbreviation": "off",
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "auto",
+        "xAxisMajorTickVisibility": "hide"
+      }
+    },
+
+    "viz_overlay": {
+      "type": "splunk.column",
+      "title": "5. Overlay grouping - actual on top of target",
+      "description": "columnGrouping=overlay: series render IN FRONT of each other (transparent), not side-by-side. Most useful for actual-vs-target patterns where target is a wide pale bar and actual is a narrower bright bar.",
+      "dataSources": { "primary": "ds_overlay" },
+      "options": {
+        "columnGrouping": "overlay",
+        "seriesColorsByField": {
+          "target": "#7AA2FF",
+          "actual": "#00D9FF"
+        },
+        "legendDisplay": "bottom",
+        "yAxisTitleText": "Requests / day",
+        "yAxisMin": "0",
+        "yAxisMax": "150",
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "auto",
+        "xAxisMajorTickVisibility": "hide"
+      }
+    },
+
+    "viz_negative": {
+      "type": "splunk.column",
+      "title": "6. Negative values - delta with zero baseline",
+      "description": "showYAxisWithZero=true forces the y-axis to include 0 so positive and negative bars share a common baseline. seriesColorsByField uses two tones - but a real conditional colour requires DOS (Dynamic Options Syntax).",
+      "dataSources": { "primary": "ds_negative" },
+      "options": {
+        "seriesColors": ["#33FF99"],
+        "showYAxisWithZero": true,
+        "yAxisTitleText": "Week-over-week change (%)",
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "auto",
+        "xAxisLabelRotation": -45,
+        "xAxisMajorTickVisibility": "hide"
+      }
+    },
+
+    "viz_minmax": {
+      "type": "splunk.column",
+      "title": "7. Data labels - minmax pattern",
+      "description": "dataValuesDisplay=minmax labels only the minimum and maximum bars. Less noisy than `all`, more informative than `off`. Use when readers need to know the extremes.",
+      "dataSources": { "primary": "ds_minmax" },
+      "options": {
+        "seriesColors": ["#7AA2FF"],
+        "dataValuesDisplay": "minmax",
+        "yAxisTitleText": "Count",
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "auto",
+        "xAxisMajorTickVisibility": "hide"
+      }
+    },
+
+    "viz_rotated": {
+      "type": "splunk.column",
+      "title": "8. Rotated x-labels - long category names",
+      "description": "xAxisLabelRotation=-45 turns the category labels diagonally so long names fit. Allowed values are -90/-45/0/45/90. legendTruncation=ellipsisMiddle keeps the middle of long labels readable.",
+      "dataSources": { "primary": "ds_long_labels" },
+      "options": {
+        "seriesColors": ["#FFB627"],
+        "xAxisLabelRotation": -45,
+        "legendTruncation": "ellipsisMiddle",
+        "yAxisTitleText": "Revenue ($)",
+        "yAxisAbbreviation": "auto",
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "auto",
+        "xAxisMajorTickVisibility": "hide"
+      }
+    },
+
+    "viz_annotations": {
+      "type": "splunk.column",
+      "title": "9. Event annotations - second dataSource",
+      "description": "Column charts support the same annotation pattern as line/area: a separate dataSource with `annotationX` (a `_time` value matching the primary x-axis), `annotationLabel`, and `annotationColor`. Annotations render as colored vertical flags with a hover tooltip - here three deploy/incident markers across 12 hours of traffic.",
+      "dataSources": {
+        "primary": "ds_annotations_data",
+        "annotation": "ds_annotations_marks"
+      },
+      "options": {
+        "seriesColors": ["#00D9FF"],
+        "annotationX": "> annotation | seriesByName('_time')",
+        "annotationLabel": "> annotation | seriesByName('annotationLabel')",
+        "annotationColor": "> annotation | seriesByName('annotationColor')",
+        "yAxisTitleText": "Visits",
+        "yAxisAbbreviation": "auto",
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "auto",
+        "xAxisMajorTickVisibility": "hide"
+      }
+    },
+
+    "viz_dualaxis": {
+      "type": "splunk.column",
+      "title": "10. Dual y-axis - volume column + conversion line",
+      "description": "overlayFields moves the conversion_pct series to the right axis (line, not column). Most common business chart: volume on left, rate on right.",
+      "dataSources": { "primary": "ds_dualaxis" },
+      "options": {
+        "overlayFields": "conversion_pct",
+        "showOverlayY2Axis": true,
+        "seriesColorsByField": {
+          "visits": "#00D9FF",
+          "conversion_pct": "#FF2D95"
+        },
+        "y2AxisTitleText": "Conversion (%)",
+        "yAxisTitleText": "Visits / day",
+        "yAxisAbbreviation": "auto",
+        "legendDisplay": "bottom",
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "auto",
+        "xAxisMajorTickVisibility": "hide"
+      }
+    },
+
+    "viz_split": {
+      "type": "splunk.column",
+      "title": "11. Split series - independent y-ranges",
+      "description": "showSplitSeries=true breaks each series into its own sub-chart. showIndependentYRanges=true gives each its own scale - essential when comparing series with very different magnitudes (here cpu_pct, memory_gb, disk_iops).",
+      "dataSources": { "primary": "ds_split" },
+      "options": {
+        "showSplitSeries": true,
+        "showIndependentYRanges": true,
+        "seriesColors": ["#00D9FF", "#FF2D95", "#FFB627"],
+        "legendDisplay": "off",
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "auto",
+        "xAxisMajorTickVisibility": "hide"
+      }
+    },
+
+    "viz_hidden_chrome": {
+      "type": "splunk.column",
+      "title": "12. Hidden chrome - sparkbar (everything off)",
+      "description": "Sparkbar pattern: all chrome off. The shape is the only signal. Use inside KPI tiles or executive cards where the column chart accompanies a single value.",
+      "dataSources": { "primary": "ds_minimal" },
+      "options": {
+        "seriesColors": ["#00D9FF"],
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "hide",
+        "xAxisMajorTickVisibility": "hide",
+        "yAxisTitleVisibility": "hide",
+        "yAxisLabelVisibility": "hide",
+        "yAxisMajorTickVisibility": "hide",
+        "showYMajorGridLines": false,
+        "legendDisplay": "off",
+        "backgroundColor": "transparent"
+      }
+    }
+
+  },
+
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 1820,
+      "display": "auto-scale"
+    },
+    "structure": [
+      { "item": "viz_title",         "type": "block", "position": { "x": 16,  "y": 16,   "w": 1408, "h": 64  } },
+
+      { "item": "viz_basic",         "type": "block", "position": { "x": 16,  "y": 96,   "w": 696,  "h": 280 } },
+      { "item": "viz_unstacked",     "type": "block", "position": { "x": 728, "y": 96,   "w": 696,  "h": 280 } },
+
+      { "item": "viz_stacked",       "type": "block", "position": { "x": 16,  "y": 392,  "w": 696,  "h": 280 } },
+      { "item": "viz_stacked100",    "type": "block", "position": { "x": 728, "y": 392,  "w": 696,  "h": 280 } },
+
+      { "item": "viz_overlay",       "type": "block", "position": { "x": 16,  "y": 688,  "w": 696,  "h": 280 } },
+      { "item": "viz_negative",      "type": "block", "position": { "x": 728, "y": 688,  "w": 696,  "h": 280 } },
+
+      { "item": "viz_minmax",        "type": "block", "position": { "x": 16,  "y": 984,  "w": 696,  "h": 280 } },
+      { "item": "viz_rotated",       "type": "block", "position": { "x": 728, "y": 984,  "w": 696,  "h": 280 } },
+
+      { "item": "viz_annotations",   "type": "block", "position": { "x": 16,  "y": 1280, "w": 696,  "h": 280 } },
+      { "item": "viz_dualaxis",      "type": "block", "position": { "x": 728, "y": 1280, "w": 696,  "h": 280 } },
+
+      { "item": "viz_split",         "type": "block", "position": { "x": 16,  "y": 1576, "w": 696,  "h": 200 } },
+      { "item": "viz_hidden_chrome", "type": "block", "position": { "x": 728, "y": 1576, "w": 696,  "h": 200 } }
+    ],
+    "globalInputs": []
+  }
+}

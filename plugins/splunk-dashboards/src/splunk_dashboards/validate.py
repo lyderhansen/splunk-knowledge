@@ -207,6 +207,262 @@ def check_rangevalue_dos_signatures(dashboard: dict) -> list[Finding]:
     return findings
 
 
+def check_input_types(dashboard: dict) -> list[Finding]:
+    """Reject input ``type`` values not on the Splunk 10.4 PDF allow-list.
+
+    Per the Splunk Cloud 10.4.2604 Dashboard Studio reference, only five input
+    types are valid:
+
+    - ``input.text``
+    - ``input.dropdown``
+    - ``input.multiselect``
+    - ``input.checkbox``
+    - ``input.timerange``
+
+    Common mistakes that produce ``/inputs/<id>/type: must be equal to one of
+    the allowed values`` at render time:
+
+    - ``input.radio`` — does not exist; use ``input.dropdown`` for single-select.
+    - ``input.number``, ``input.date``, ``input.search`` — not in the schema.
+    """
+    ALLOWED = {
+        "input.text",
+        "input.dropdown",
+        "input.multiselect",
+        "input.checkbox",
+        "input.timerange",
+    }
+    findings: list[Finding] = []
+    for input_id, inp in (dashboard.get("inputs") or {}).items():
+        type_ = inp.get("type")
+        if type_ is None:
+            findings.append(Finding(
+                severity="error",
+                code="input-missing-type",
+                message=f"input '{input_id}' is missing required 'type' field",
+            ))
+            continue
+        if type_ not in ALLOWED:
+            allowed_str = ", ".join(sorted(ALLOWED))
+            hint = ""
+            if type_ == "input.radio":
+                hint = " — use 'input.dropdown' for single-select."
+            findings.append(Finding(
+                severity="error",
+                code="input-invalid-type",
+                message=(
+                    f"input '{input_id}' has type '{type_}' which is not in the "
+                    f"Splunk 10.4 allow-list ({allowed_str}).{hint}"
+                ),
+            ))
+    return findings
+
+
+def check_rangevalue_needs_reducer(dashboard: dict) -> list[Finding]:
+    """Flag ``rangeValue`` DOS expressions that operate on a series without reducing.
+
+    ``rangeValue(thresholds)`` requires a single number as input. Pickers like
+    ``seriesByName(...)`` and ``seriesByType(...)`` return a *series* — they
+    must be reduced with ``lastPoint()`` (or ``min()``, ``max()``, ``count()``,
+    ``sum()``) before being piped into ``rangeValue``.
+
+    A pipeline such as::
+
+        > primary | seriesByType("number") | rangeValue(cfg)
+
+    will silently render grey because ``rangeValue`` cannot match a series
+    against numeric thresholds. Splunk Studio's editor always emits the
+    canonical alias-in-context form::
+
+        context.dataAlias = "> primary | seriesByType(\\"number\\") | lastPoint()"
+        options.fillColor = "> dataAlias | rangeValue(colorConfig)"
+
+    This check warns on any ``rangeValue`` expression where the upstream
+    pipeline contains a series picker but no reducer.
+
+    Both inline (``options.fillColor``) and context-alias forms are checked.
+    """
+    SERIES_PICKERS = ("seriesByName", "seriesByType", "seriesByIndex")
+    REDUCERS = ("lastPoint", "max", "min", "count", "sum", "first", "last")
+
+    def _expression_needs_reducer(expr: str) -> bool:
+        if "rangeValue(" not in expr:
+            return False
+        if not any(p in expr for p in SERIES_PICKERS):
+            return False
+        if any(f"{r}(" in expr for r in REDUCERS):
+            return False
+        return True
+
+    findings: list[Finding] = []
+    for viz_id, viz in (dashboard.get("visualizations") or {}).items():
+        # Inline form: options.<name> = "> primary | seriesByType(...) | rangeValue(...)"
+        for opt_name, opt_value in (viz.get("options") or {}).items():
+            if isinstance(opt_value, str) and _expression_needs_reducer(opt_value):
+                findings.append(Finding(
+                    severity="warning",
+                    code="rangevalue-missing-reducer",
+                    message=(
+                        f"visualization '{viz_id}' option '{opt_name}' pipes a "
+                        f"series picker into rangeValue() without reducing to a "
+                        f"single value. Add ' | lastPoint()' (or max/min) before "
+                        f"rangeValue, or use the canonical alias-in-context form."
+                    ),
+                ))
+
+        # Alias form: context aliases that are referenced by an option, but the
+        # alias pipeline itself has a series picker without a reducer. The
+        # `rangeValue` call lives in the option string, the `seriesBy*` lives
+        # in the context alias — combine them.
+        ctx = viz.get("context") or {}
+        if not ctx:
+            continue
+        # collect aliases that are used somewhere in options as `> alias | rangeValue(...)`
+        used_aliases: dict[str, str] = {}  # alias_name -> option name where it is used
+        for opt_name, opt_value in (viz.get("options") or {}).items():
+            if not isinstance(opt_value, str) or "rangeValue(" not in opt_value:
+                continue
+            m = re.match(r"\s*>\s*(\w+)\s*\|\s*rangeValue", opt_value)
+            if m:
+                used_aliases[m.group(1)] = opt_name
+        for alias, opt_name in used_aliases.items():
+            alias_expr = ctx.get(alias)
+            if not isinstance(alias_expr, str):
+                continue
+            if any(p in alias_expr for p in SERIES_PICKERS) and not any(
+                f"{r}(" in alias_expr for r in REDUCERS
+            ):
+                findings.append(Finding(
+                    severity="warning",
+                    code="rangevalue-alias-missing-reducer",
+                    message=(
+                        f"visualization '{viz_id}' option '{opt_name}' references "
+                        f"context alias '{alias}' which uses a series picker "
+                        f"({alias_expr!r}) without a reducer. Append "
+                        f"' | lastPoint()' to the alias so rangeValue receives a "
+                        f"single number."
+                    ),
+                ))
+    return findings
+
+
+def check_threshold_buckets(dashboard: dict) -> list[Finding]:
+    """Flag ``rangeValue`` threshold arrays whose buckets overlap or have gaps.
+
+    ``rangeValue`` evaluates buckets **top-down** (first match wins), with
+    ``from`` inclusive (``>=``) and ``to`` exclusive (``<``). The boundary
+    semantics make the following classes of bug silent footguns:
+
+    1. **Overlap (top-down dead bucket).** ::
+
+           [{ "to": 70 }, { "from": 60, "to": 80 }, { "from": 80 }]
+
+       Any value below 70 hits the first bucket; the second bucket only fires
+       in [70, 80). The first 10 units of the "amber" range are dead — values
+       of 60–69 render as red even though the dashboard author intended amber.
+
+    2. **Gap.** ::
+
+           [{ "to": 60 }, { "from": 70, "to": 80 }, { "from": 80 }]
+
+       Values in [60, 70) match no bucket and render as the theme default
+       (usually grey), which reads as "data missing" to a SOC operator.
+
+    3. **Inverted bounds.** ::
+
+           [{ "from": 80, "to": 60 }]
+
+       ``to <= from`` defines an empty interval that can never match.
+
+    Sources scanned:
+
+    - ``visualizations.<id>.context.<name>`` — context arrays referenced by
+      DOS expressions like ``rangeValue(thresholds)``.
+    - ``visualizations.<id>.options.<name>EditorConfig`` — inline shape-viz
+      threshold tables for ``fillColor`` / ``strokeColor``.
+    """
+    findings: list[Finding] = []
+
+    def _looks_like_threshold_array(value) -> bool:
+        if not isinstance(value, list) or not value:
+            return False
+        for item in value:
+            if not isinstance(item, dict):
+                return False
+            if "value" not in item:
+                return False
+            if "from" not in item and "to" not in item:
+                return False
+        return True
+
+    def _scan_bucket_array(viz_id: str, source: str, name: str, arr: list) -> None:
+        for idx, bucket in enumerate(arr):
+            frm = bucket.get("from")
+            to = bucket.get("to")
+            if isinstance(frm, (int, float)) and isinstance(to, (int, float)) and to <= frm:
+                findings.append(Finding(
+                    severity="error",
+                    code="threshold-inverted-bounds",
+                    message=(
+                        f"visualization '{viz_id}' {source} '{name}' bucket {idx} "
+                        f"has to ({to}) <= from ({frm}); this defines an empty "
+                        f"interval that never matches."
+                    ),
+                ))
+
+        for idx in range(len(arr) - 1):
+            cur = arr[idx]
+            nxt = arr[idx + 1]
+            cur_to = cur.get("to")
+            nxt_from = nxt.get("from")
+            if not isinstance(cur_to, (int, float)) or not isinstance(nxt_from, (int, float)):
+                continue
+            if nxt_from < cur_to:
+                findings.append(Finding(
+                    severity="error",
+                    code="threshold-buckets-overlap",
+                    message=(
+                        f"visualization '{viz_id}' {source} '{name}' buckets "
+                        f"{idx} and {idx + 1} overlap: bucket {idx} ends at "
+                        f"to={cur_to} but bucket {idx + 1} starts at "
+                        f"from={nxt_from} (< {cur_to}). rangeValue is top-down: "
+                        f"values in [{nxt_from}, {cur_to}) match the earlier "
+                        f"bucket and the later bucket is partially dead. "
+                        f"Use disjoint buckets like "
+                        f"[{{to: X}}, {{from: X, to: Y}}, {{from: Y}}]."
+                    ),
+                ))
+            elif nxt_from > cur_to:
+                findings.append(Finding(
+                    severity="warning",
+                    code="threshold-buckets-gap",
+                    message=(
+                        f"visualization '{viz_id}' {source} '{name}' has a gap "
+                        f"between buckets {idx} and {idx + 1}: bucket {idx} "
+                        f"ends at to={cur_to} but bucket {idx + 1} starts at "
+                        f"from={nxt_from}. Values in [{cur_to}, {nxt_from}) "
+                        f"match no bucket and render as theme default. "
+                        f"Make buckets contiguous: set bucket {idx + 1} "
+                        f"from={cur_to}."
+                    ),
+                ))
+
+    for viz_id, viz in (dashboard.get("visualizations") or {}).items():
+        ctx = viz.get("context") or {}
+        for name, value in ctx.items():
+            if _looks_like_threshold_array(value):
+                _scan_bucket_array(viz_id, "context", name, value)
+
+        options = viz.get("options") or {}
+        for opt_name, opt_value in options.items():
+            if not opt_name.endswith("EditorConfig"):
+                continue
+            if _looks_like_threshold_array(opt_value):
+                _scan_bucket_array(viz_id, "options", opt_name, opt_value)
+
+    return findings
+
+
 def check_all(dashboard: dict) -> list[Finding]:
     findings: list[Finding] = []
     findings.extend(check_data_source_names(dashboard))
@@ -214,8 +470,11 @@ def check_all(dashboard: dict) -> list[Finding]:
     findings.extend(check_token_references(dashboard))
     findings.extend(check_drilldown_targets(dashboard))
     findings.extend(check_timerange_default_value(dashboard))
+    findings.extend(check_input_types(dashboard))
     findings.extend(check_singlevalue_invalid_options(dashboard))
     findings.extend(check_rangevalue_dos_signatures(dashboard))
+    findings.extend(check_rangevalue_needs_reducer(dashboard))
+    findings.extend(check_threshold_buckets(dashboard))
     return findings
 
 

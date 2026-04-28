@@ -1,0 +1,615 @@
+{
+  "title": "ds-viz-ellipse - option matrix (light)",
+  "description": "Test bench for splunk.ellipse. Verifies every option from the 10.4 PDF: fillColor, fillOpacity, strokeColor, strokeDashStyle, strokeOpacity, strokeWidth. Demonstrates circles vs ellipses (set by panel aspect ratio), status dots, KPI accent rings, faint background blobs, and donut-style accent rings.",
+  "defaults": {
+    "dataSources": {
+      "global": {
+        "options": {
+          "queryParameters": {
+            "earliest": "-24h@h",
+            "latest": "now"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": false,
+        "showLastUpdated": false
+      }
+    }
+  },
+  "dataSources": {
+    "ds_kpi": {
+      "type": "ds.test",
+      "options": {
+        "data": {
+          "fields": [
+            {
+              "name": "value"
+            }
+          ],
+          "columns": [
+            [
+              "98.7"
+            ]
+          ]
+        }
+      }
+    },
+    "ds_health_low": {
+      "type": "ds.search",
+      "name": "health - low value 20",
+      "options": {
+        "query": "| makeresults | eval health = 20 | table health"
+      }
+    },
+    "ds_health_mid": {
+      "type": "ds.search",
+      "name": "health - mid value 60",
+      "options": {
+        "query": "| makeresults | eval health = 60 | table health"
+      }
+    },
+    "ds_health_high": {
+      "type": "ds.search",
+      "name": "health - high value 95",
+      "options": {
+        "query": "| makeresults | eval health = 95 | table health"
+      }
+    }
+  },
+  "visualizations": {
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# `splunk.ellipse` - option matrix\n\nEllipses are absolute-layout shapes with **6 options** total. They are the workhorse for **circular badges**, **status dots**, **KPI accent rings**, **faint background blobs**, and **decorative highlights**.\n\nUnlike rectangles, ellipses have no `rx` / `ry` / `strokeJoinStyle` - shape is set entirely by the **panel aspect ratio**:\n\n- panel `w == h` => circle\n- panel `w != h` => ellipse (oval)\n\nAll options from the **10.4 PDF**:\n- `fillColor` (string, hex; theme default)\n- `fillOpacity` (0 - 1)\n- `strokeColor` (string, hex; theme default)\n- `strokeDashStyle` (number; pixel length of dashes & gaps; `0` = solid)\n- `strokeOpacity` (0 - 1)\n- `strokeWidth` (1 - 25 px)",
+        "fontSize": "default",
+        "backgroundColor": "transparent",
+        "fontColor": "#3C444D"
+      }
+    },
+    "viz_default": {
+      "type": "splunk.ellipse",
+      "title": "1. Default (theme defaults)",
+      "description": "No options set. Square panel => circle. Theme default fill #31373E, stroke #3C444D in enterprise dark.",
+      "options": {}
+    },
+    "viz_circle_solid": {
+      "type": "splunk.ellipse",
+      "title": "2. Circle - solid fill",
+      "description": "Square panel + custom fillColor + transparent stroke. Most common circular badge.",
+      "options": {
+        "fillColor": "#0E7C70",
+        "strokeColor": "transparent"
+      }
+    },
+    "viz_ellipse_oval": {
+      "type": "splunk.ellipse",
+      "title": "3. Ellipse - oval (panel w != h)",
+      "description": "Wide panel => horizontal oval. Ellipses inherit the panel aspect ratio.",
+      "options": {
+        "fillColor": "#7B49B7",
+        "strokeColor": "transparent"
+      }
+    },
+    "viz_fill_opacity_half": {
+      "type": "splunk.ellipse",
+      "title": "4. fillOpacity = 0.5",
+      "description": "50% fill - layered atop a coloured canvas, lets it bleed through.",
+      "options": {
+        "fillColor": "#B36B00",
+        "fillOpacity": 0.5,
+        "strokeColor": "transparent"
+      }
+    },
+    "viz_fill_opacity_faint": {
+      "type": "splunk.ellipse",
+      "title": "5. fillOpacity = 0.15 (faint blob)",
+      "description": "Decorative background watermark. Pair with markdown overlay.",
+      "options": {
+        "fillColor": "#7B49B7",
+        "fillOpacity": 0.15,
+        "strokeColor": "transparent"
+      }
+    },
+    "viz_outline": {
+      "type": "splunk.ellipse",
+      "title": "6. strokeColor + strokeWidth",
+      "description": "Outlined ring - transparent fill, brand stroke. The classic 'donut accent'.",
+      "options": {
+        "fillColor": "transparent",
+        "strokeColor": "#0E7C70",
+        "strokeWidth": 3
+      }
+    },
+    "viz_stroke_thick": {
+      "type": "splunk.ellipse",
+      "title": "7. strokeWidth = 25 (max)",
+      "description": "Maximum stroke width per the PDF. Anything above 25 is clipped.",
+      "options": {
+        "fillColor": "#FAEAD8",
+        "strokeColor": "#C62368",
+        "strokeWidth": 25
+      }
+    },
+    "viz_stroke_dashed": {
+      "type": "splunk.ellipse",
+      "title": "8. strokeDashStyle = 6",
+      "description": "Dashed ring - 6px dashes, 6px gaps. Useful for empty / placeholder states.",
+      "options": {
+        "fillColor": "transparent",
+        "strokeColor": "#3C444D",
+        "strokeWidth": 2,
+        "strokeDashStyle": 6
+      }
+    },
+    "viz_stroke_opacity": {
+      "type": "splunk.ellipse",
+      "title": "9. strokeOpacity = 0.4",
+      "description": "Soft accent ring - solid fill, faded stroke. Common KPI surround.",
+      "options": {
+        "fillColor": "#D8E0F2",
+        "strokeColor": "#0E7C70",
+        "strokeOpacity": 0.4,
+        "strokeWidth": 4
+      }
+    },
+    "viz_status_dot_ok": {
+      "type": "splunk.ellipse",
+      "title": "10a. Status dot OK",
+      "description": "Tiny circle for status indicators. Pair with markdown label.",
+      "options": {
+        "fillColor": "#0E7C70",
+        "strokeColor": "transparent"
+      }
+    },
+    "viz_status_dot_warn": {
+      "type": "splunk.ellipse",
+      "title": "10b. Status dot WARN",
+      "options": {
+        "fillColor": "#B36B00",
+        "strokeColor": "transparent"
+      }
+    },
+    "viz_status_dot_crit": {
+      "type": "splunk.ellipse",
+      "title": "10c. Status dot CRIT",
+      "options": {
+        "fillColor": "#C62368",
+        "strokeColor": "transparent"
+      }
+    },
+    "viz_kpi_ring": {
+      "type": "splunk.ellipse",
+      "title": "11. KPI accent ring",
+      "description": "Background ring with a contrasting accent stroke and a singleValue layered on top. Demonstrates the canonical 'ring + KPI' recipe.",
+      "options": {
+        "fillColor": "#EFE7D3",
+        "fillOpacity": 0.95,
+        "strokeColor": "#0E7C70",
+        "strokeOpacity": 0.6,
+        "strokeWidth": 3
+      }
+    },
+    "viz_kpi_value": {
+      "type": "splunk.singlevalue",
+      "title": "Uptime",
+      "description": "singleValue layered on top of viz_kpi_ring.",
+      "dataSources": {
+        "primary": "ds_kpi"
+      },
+      "options": {
+        "majorColor": "#0E7C70",
+        "trendDisplay": "off",
+        "sparklineDisplay": "off",
+        "unit": "%",
+        "unitPosition": "after",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_section_dos": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## Data-bound colour (DOS / `rangeValue`)\n\nDOS = **Dynamic Options Syntax** \u2014 Splunk's pipe-language for binding any option string to a dataSource. The PDF says of `fillColor` and `strokeColor`: *\"You may use a dataSource to apply the color.\"* This is the **status-dot** pattern: an ellipse whose colour flips based on a metric without any text overlay.\n\n**Canonical editor form** (panels 12-15):\n\n```\noptions.fillColor    = \"> fillDataValue | rangeValue(fillColorEditorConfig)\"\ncontext.fillDataValue        = \"> primary | seriesByType(\\\"number\\\") | lastPoint()\"\ncontext.fillColorEditorConfig = [ { from, to, value }, ... ]\n```\n\nKey rules: (1) the picker (`seriesByName` / `seriesByType`) returns a *series*, but `rangeValue` needs a *single number* \u2014 always reduce with `lastPoint()` (or `max()`, `min()`). (2) Splunk Studio's editor always writes the alias-in-`context` form; direct pipelines in `fillColor` won't roundtrip through the editor cleanly. (3) Threshold buckets in `context` are evaluated top-down \u2014 first match wins.\n\nPanels 12-14 show three identical ellipses bound to three different `ds_health_*` searches (values 20 / 60 / 95) and the same threshold table. Same options, different data, different colour.",
+        "fontSize": "default",
+        "backgroundColor": "transparent",
+        "fontColor": "#3C444D"
+      }
+    },
+    "viz_dos_dot_low": {
+      "type": "splunk.ellipse",
+      "title": "12. DOS fillColor - health = 20 (red)",
+      "description": "Status dot whose fill is bound to the search via DOS rangeValue. Editor form: alias 'fillDataValue' in context with seriesByType + lastPoint(), then rangeValue(fillColorEditorConfig). Value 20 falls below 60 -> red. Buckets are disjoint (from inclusive, to exclusive) so each value lands in exactly one bucket.",
+      "dataSources": {
+        "primary": "ds_health_low"
+      },
+      "options": {
+        "fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)",
+        "strokeColor": "transparent"
+      },
+      "context": {
+        "fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
+        "fillColorEditorConfig": [
+          {
+            "to": 60,
+            "value": "#C2185B"
+          },
+          {
+            "from": 60,
+            "to": 80,
+            "value": "#E89A2C"
+          },
+          {
+            "from": 80,
+            "value": "#2E8B57"
+          }
+        ]
+      }
+    },
+    "viz_dos_dot_mid": {
+      "type": "splunk.ellipse",
+      "title": "13. DOS fillColor - health = 60 (amber)",
+      "description": "Same DOS pattern, value 60. With disjoint buckets {to:60} | {from:60, to:80} | {from:80}, 60 lands in the middle bucket -> amber. 'to' is exclusive (< to), 'from' is inclusive (>= from), so the boundary value 60 falls into the second bucket.",
+      "dataSources": {
+        "primary": "ds_health_mid"
+      },
+      "options": {
+        "fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)",
+        "strokeColor": "transparent"
+      },
+      "context": {
+        "fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
+        "fillColorEditorConfig": [
+          {
+            "to": 60,
+            "value": "#C2185B"
+          },
+          {
+            "from": 60,
+            "to": 80,
+            "value": "#E89A2C"
+          },
+          {
+            "from": 80,
+            "value": "#2E8B57"
+          }
+        ]
+      }
+    },
+    "viz_dos_dot_high": {
+      "type": "splunk.ellipse",
+      "title": "14. DOS fillColor - health = 95 (green)",
+      "description": "Same DOS pattern, value 95. Hits the >= 80 bucket -> green. Note the seriesByName('health') alternative picker here - identical effect to seriesByType because there is only one numeric column.",
+      "dataSources": {
+        "primary": "ds_health_high"
+      },
+      "options": {
+        "fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)",
+        "strokeColor": "transparent"
+      },
+      "context": {
+        "fillDataValue": "> primary | seriesByName(\"health\") | lastPoint()",
+        "fillColorEditorConfig": [
+          {
+            "to": 60,
+            "value": "#C2185B"
+          },
+          {
+            "from": 60,
+            "to": 80,
+            "value": "#E89A2C"
+          },
+          {
+            "from": 80,
+            "value": "#2E8B57"
+          }
+        ]
+      }
+    },
+    "viz_dos_ring": {
+      "type": "splunk.ellipse",
+      "title": "15. DOS fill + stroke - both bound (high = green)",
+      "description": "Both fill and stroke DOS-bound to the same search. Each option has its own alias and its own threshold table. Result is a 'donut-style' ring: tinted fill plus a coloured outline. Useful for KPI rings whose colour reflects the underlying KPI.",
+      "dataSources": {
+        "primary": "ds_health_high"
+      },
+      "options": {
+        "fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)",
+        "strokeColor": "> strokeDataValue | rangeValue(strokeColorEditorConfig)",
+        "strokeWidth": 4
+      },
+      "context": {
+        "fillDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
+        "strokeDataValue": "> primary | seriesByType(\"number\") | lastPoint()",
+        "fillColorEditorConfig": [
+          {
+            "to": 60,
+            "value": "#C2185B"
+          },
+          {
+            "from": 60,
+            "to": 80,
+            "value": "#E89A2C"
+          },
+          {
+            "from": 80,
+            "value": "#2E8B57"
+          }
+        ],
+        "strokeColorEditorConfig": [
+          {
+            "to": 60,
+            "value": "#B91C1C"
+          },
+          {
+            "from": 60,
+            "value": "#3C444D"
+          }
+        ]
+      }
+    },
+    "viz_dos_token": {
+      "type": "splunk.ellipse",
+      "title": "16. Token-driven fillColor - dropdown flips colour",
+      "description": "fillColor reads from a dashboard token via $colour_token$ interpolation. The dropdown below the legend lets the viewer flip the dot between OK / WARN / CRIT without touching any data source.",
+      "options": {
+        "fillColor": "$colour_token$",
+        "strokeColor": "transparent"
+      }
+    }
+  },
+  "inputs": {
+    "input_colour_token": {
+      "options": {
+        "defaultValue": "#0E7C70",
+        "items": [
+          {
+            "label": "OK (green)",
+            "value": "#2E8B57"
+          },
+          {
+            "label": "WARN (amber)",
+            "value": "#E89A2C"
+          },
+          {
+            "label": "CRIT (red)",
+            "value": "#C2185B"
+          },
+          {
+            "label": "Teal (default)",
+            "value": "#0E7C70"
+          }
+        ],
+        "token": "colour_token"
+      },
+      "title": "Token: dot colour",
+      "type": "input.dropdown"
+    }
+  },
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 2520,
+      "display": "auto-scale",
+      "backgroundColor": "#FAEAD8"
+    },
+    "structure": [
+      {
+        "item": "viz_title",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 20,
+          "w": 1400,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_default",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 360,
+          "w": 220,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_circle_solid",
+        "type": "block",
+        "position": {
+          "x": 260,
+          "y": 360,
+          "w": 220,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_ellipse_oval",
+        "type": "block",
+        "position": {
+          "x": 500,
+          "y": 360,
+          "w": 460,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_fill_opacity_half",
+        "type": "block",
+        "position": {
+          "x": 980,
+          "y": 360,
+          "w": 220,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_fill_opacity_faint",
+        "type": "block",
+        "position": {
+          "x": 1220,
+          "y": 360,
+          "w": 220,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_outline",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 600,
+          "w": 220,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_stroke_thick",
+        "type": "block",
+        "position": {
+          "x": 260,
+          "y": 600,
+          "w": 220,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_stroke_dashed",
+        "type": "block",
+        "position": {
+          "x": 500,
+          "y": 600,
+          "w": 220,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_stroke_opacity",
+        "type": "block",
+        "position": {
+          "x": 740,
+          "y": 600,
+          "w": 220,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_status_dot_ok",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 840,
+          "w": 60,
+          "h": 60
+        }
+      },
+      {
+        "item": "viz_status_dot_warn",
+        "type": "block",
+        "position": {
+          "x": 100,
+          "y": 840,
+          "w": 60,
+          "h": 60
+        }
+      },
+      {
+        "item": "viz_status_dot_crit",
+        "type": "block",
+        "position": {
+          "x": 180,
+          "y": 840,
+          "w": 60,
+          "h": 60
+        }
+      },
+      {
+        "item": "viz_kpi_ring",
+        "type": "block",
+        "position": {
+          "x": 280,
+          "y": 840,
+          "w": 280,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_kpi_value",
+        "type": "block",
+        "position": {
+          "x": 320,
+          "y": 900,
+          "w": 200,
+          "h": 160
+        }
+      },
+      {
+        "item": "viz_section_dos",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 1180,
+          "w": 1400,
+          "h": 240
+        }
+      },
+      {
+        "item": "viz_dos_dot_low",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 1440,
+          "w": 220,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_dos_dot_mid",
+        "type": "block",
+        "position": {
+          "x": 260,
+          "y": 1440,
+          "w": 220,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_dos_dot_high",
+        "type": "block",
+        "position": {
+          "x": 500,
+          "y": 1440,
+          "w": 220,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_dos_ring",
+        "type": "block",
+        "position": {
+          "x": 740,
+          "y": 1440,
+          "w": 280,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_dos_token",
+        "type": "block",
+        "position": {
+          "x": 1060,
+          "y": 1440,
+          "w": 220,
+          "h": 220
+        }
+      }
+    ],
+    "globalInputs": [
+      "input_colour_token"
+    ]
+  },
+  "theme": "light"
+}

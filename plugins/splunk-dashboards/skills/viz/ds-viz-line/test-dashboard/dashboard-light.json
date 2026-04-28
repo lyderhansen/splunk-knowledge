@@ -1,0 +1,547 @@
+{
+  "title": "ds-viz-line \u2014 option matrix (light)",
+  "description": "Test bench for splunk.line. Each panel exercises a distinct option group. SPL is makeresults-based so this dashboard runs in any Splunk instance with no setup. Convention codified for time-series charts: hide the x-axis title (the word '_time' is noise), keep timestamp labels visible (auto), and hide the major tick marks (visual noise). Re-enable elements only when they carry information.",
+  "defaults": {
+    "dataSources": {
+      "global": {
+        "options": {
+          "queryParameters": {
+            "earliest": "-24h@h",
+            "latest": "now"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": false,
+        "showLastUpdated": false
+      }
+    }
+  },
+  "dataSources": {
+    "ds_basic": {
+      "type": "ds.search",
+      "name": "basic - single series",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval requests = round(100 + 30*sin(i/3) + random()%20) | table _time requests"
+      }
+    },
+    "ds_multiseries": {
+      "type": "ds.search",
+      "name": "3-series - explicit seriesColors",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval us_east = round(80 + 20*sin(i/4) + random()%10), us_west = round(60 + 25*sin(i/5+1) + random()%10), eu_west = round(45 + 15*sin(i/3+2) + random()%8) | table _time us_east us_west eu_west"
+      }
+    },
+    "ds_byfield": {
+      "type": "ds.search",
+      "name": "named field colors - seriesColorsByField",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval allowed = round(900 + 100*sin(i/4) + random()%50), blocked = round(40 + 25*sin(i/3) + random()%15), suspicious = round(15 + 10*sin(i/5) + random()%8) | table _time allowed blocked suspicious"
+      }
+    },
+    "ds_dualaxis": {
+      "type": "ds.search",
+      "name": "dual axis - count and latency",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval requests_per_min = round(800 + 200*sin(i/4) + random()%80), p95_latency_ms = round(120 + 80*sin(i/3+1) + random()%30) | table _time requests_per_min p95_latency_ms"
+      }
+    },
+    "ds_annotations_data": {
+      "type": "ds.search",
+      "name": "main series for annotation panel",
+      "options": {
+        "query": "| makeresults count=30 | streamstats count as i | eval _time = relative_time(now(), \"-30d@d\") + (i*86400) | eval revenue = case(i<10, round(8000+random()%500), i>=10 AND i<20, round(15000+1500*sin(i/2)+random()%800), 1==1, round(11000+random()%600)) | table _time revenue"
+      }
+    },
+    "ds_annotations_marks": {
+      "type": "ds.search",
+      "name": "annotation marks - time label color",
+      "options": {
+        "query": "| makeresults count=3 | streamstats count as i | eval _time = case(i=1, relative_time(now(), \"-21d@d\"), i=2, relative_time(now(), \"-14d@d\"), 1==1, relative_time(now(), \"-7d@d\")), annotationLabel = case(i=1, \"Black Friday\", i=2, \"Christmas Push\", 1==1, \"Boxing Day\"), annotationColor = case(i=1, \"#FF2D95\", i=2, \"#FFB627\", 1==1, \"#7AA2FF\") | table _time annotationLabel annotationColor"
+      }
+    },
+    "ds_log_nulls": {
+      "type": "ds.search",
+      "name": "log scale and null gaps",
+      "options": {
+        "query": "| makeresults count=30 | streamstats count as i | eval _time = relative_time(now(), \"-30d@d\") + (i*86400) | eval traffic = round(pow(10, 1+(i/6)) + random()%100), errors = if(i%5=0, null(), round(pow(10, (i/8)) + random()%5)) | table _time traffic errors"
+      }
+    },
+    "ds_dashstyles": {
+      "type": "ds.search",
+      "name": "dash styles and markers",
+      "options": {
+        "query": "| makeresults count=20 | streamstats count as i | eval _time = relative_time(now(), \"-20h\") + (i*3600) | eval target = 100, actual = round(70 + 40*sin(i/3) + random()%20), forecast = round(85 + 30*sin(i/4+1) + random()%15) | table _time target actual forecast"
+      }
+    },
+    "ds_split": {
+      "type": "ds.search",
+      "name": "split series - independent y-ranges",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval cpu_pct = round(40 + 30*sin(i/4) + random()%10), memory_gb = round(8 + 4*sin(i/5+1) + random()%2*0.1, 1), disk_iops = round(2000 + 1500*sin(i/3+2) + random()%500) | table _time cpu_pct memory_gb disk_iops"
+      }
+    },
+    "ds_minimal": {
+      "type": "ds.search",
+      "name": "minimal sparkline series",
+      "options": {
+        "query": "| makeresults count=40 | streamstats count as i | eval _time = relative_time(now(), \"-40h\") + (i*3600) | eval pulse = round(50 + 30*sin(i/3) + random()%10) | table _time pulse"
+      }
+    },
+    "ds_overlays": {
+      "type": "ds.search",
+      "name": "multi-overlay - 4 series",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as i | eval _time = relative_time(now(), \"-24h\") + (i*3600) | eval cpu_pct = round(40 + 30*sin(i/4) + random()%10), memory_pct = round(55 + 20*sin(i/5+1) + random()%8), latency_p50 = round(40 + 20*sin(i/3) + random()%10), latency_p95 = round(120 + 60*sin(i/3+1) + random()%30) | table _time cpu_pct memory_pct latency_p50 latency_p95"
+      }
+    },
+    "ds_alldashes": {
+      "type": "ds.search",
+      "name": "6 dash styles - one per series",
+      "options": {
+        "query": "| makeresults count=20 | streamstats count as i | eval _time = relative_time(now(), \"-20h\") + (i*3600) | eval solid_line = round(80 + 5*sin(i/3)), dash_line = round(70 + 5*sin(i/3+0.5)), dot_line = round(60 + 5*sin(i/3+1)), shortDash_line = round(50 + 5*sin(i/3+1.5)), longDash_line = round(40 + 5*sin(i/3+2)), dashDot_line = round(30 + 5*sin(i/3+2.5)) | table _time solid_line dash_line dot_line shortDash_line longDash_line dashDot_line"
+      }
+    },
+    "ds_smartaxis": {
+      "type": "ds.search",
+      "name": "smart axis - clean defaults",
+      "options": {
+        "query": "| makeresults count=48 | streamstats count as i | eval _time = relative_time(now(), \"-48h\") + (i*3600) | eval signal = round(100 + 50*sin(i/6) + random()%15), baseline = 100 | table _time signal baseline"
+      }
+    }
+  },
+  "visualizations": {
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# `splunk.line` \u2014 option matrix (light)\n\nEach panel exercises one option group. **Convention for every time-series panel:** `xAxisTitleVisibility:\"hide\"` (the word `_time` is noise), `xAxisLabelVisibility:\"auto\"` (timestamps stay visible), `xAxisMajorTickVisibility:\"hide\"` (no tick marks under the axis).",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default"
+      }
+    },
+    "viz_basic": {
+      "type": "splunk.line",
+      "title": "1. Minimal \u2014 clean defaults applied",
+      "description": "Bare options: x-title hidden, x-labels auto (visible), tick marks hidden. This is the recommended baseline for every time-series line chart.",
+      "dataSources": {
+        "primary": "ds_basic"
+      },
+      "options": {
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "auto",
+        "xAxisMajorTickVisibility": "hide"
+      }
+    },
+    "viz_multiseries": {
+      "type": "splunk.line",
+      "title": "2. Multi-series \u2014 seriesColors[]",
+      "description": "Explicit seriesColors array (positional). Order in SPL output = order in array.",
+      "dataSources": {
+        "primary": "ds_multiseries"
+      },
+      "options": {
+        "seriesColors": [
+          "#1F77B4",
+          "#C2185B",
+          "#E89A2C"
+        ],
+        "lineWidth": 2,
+        "legendDisplay": "bottom",
+        "yAxisTitleText": "Requests / sec",
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "auto",
+        "xAxisMajorTickVisibility": "hide"
+      }
+    },
+    "viz_byfield": {
+      "type": "splunk.line",
+      "title": "3. Named colors \u2014 seriesColorsByField{}",
+      "description": "Field-name \u2192 color map. Survives SPL field reorder. Use for semantic colors (allowed=green, blocked=red).",
+      "dataSources": {
+        "primary": "ds_byfield"
+      },
+      "options": {
+        "seriesColorsByField": {
+          "allowed": "#2E8B57",
+          "blocked": "#C2185B",
+          "suspicious": "#E89A2C"
+        },
+        "legendDisplay": "right",
+        "yAxisTitleText": "Events",
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "auto",
+        "xAxisMajorTickVisibility": "hide"
+      }
+    },
+    "viz_dualaxis": {
+      "type": "splunk.line",
+      "title": "4. Dual y-axis \u2014 overlayFields + y2",
+      "description": "p95_latency_ms mapped to right y-axis. Separates units that should not share a scale.",
+      "dataSources": {
+        "primary": "ds_dualaxis"
+      },
+      "options": {
+        "overlayFields": "p95_latency_ms",
+        "showOverlayY2Axis": true,
+        "y2AxisTitleText": "Latency (ms)",
+        "yAxisTitleText": "Requests/min",
+        "seriesColors": [
+          "#1F77B4",
+          "#C2185B"
+        ],
+        "legendDisplay": "bottom",
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "auto",
+        "xAxisMajorTickVisibility": "hide"
+      }
+    },
+    "viz_annotations": {
+      "type": "splunk.line",
+      "title": "5. Event annotations \u2014 separate annotation dataSource",
+      "description": "Annotation marks come from a SECOND dataSource named 'annotation'. Required fields: _time, annotationLabel, annotationColor.",
+      "dataSources": {
+        "primary": "ds_annotations_data",
+        "annotation": "ds_annotations_marks"
+      },
+      "options": {
+        "seriesColors": [
+          "#3F6FB7"
+        ],
+        "lineWidth": 2,
+        "yAxisTitleText": "Revenue ($)",
+        "annotationX": "> annotation | seriesByName('_time')",
+        "annotationLabel": "> annotation | seriesByName('annotationLabel')",
+        "annotationColor": "> annotation | seriesByName('annotationColor')",
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "auto",
+        "xAxisMajorTickVisibility": "hide"
+      }
+    },
+    "viz_log_nulls": {
+      "type": "splunk.line",
+      "title": "6. Log scale + null handling",
+      "description": "yAxisScale=log compresses orders of magnitude. nullValueDisplay=connect bridges gaps in the errors series. Minor gridlines OFF on log scale (would produce one line per minor tick).",
+      "dataSources": {
+        "primary": "ds_log_nulls"
+      },
+      "options": {
+        "yAxisScale": "log",
+        "yAxisMin": "1",
+        "nullValueDisplay": "connect",
+        "seriesColors": [
+          "#3F6FB7",
+          "#C2185B"
+        ],
+        "lineWidth": 2,
+        "yAxisTitleText": "Events (log)",
+        "showYMinorGridLines": false,
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "auto",
+        "xAxisMajorTickVisibility": "hide"
+      }
+    },
+    "viz_dashstyles": {
+      "type": "splunk.line",
+      "title": "7. Per-field dash styles + markers",
+      "description": "lineDashStylesByField: target=dot (reference line), forecast=dash (predicted), actual=solid (real). markerDisplay=filled adds dots at every value.",
+      "dataSources": {
+        "primary": "ds_dashstyles"
+      },
+      "options": {
+        "lineDashStylesByField": {
+          "target": "dot",
+          "forecast": "dash",
+          "actual": "solid"
+        },
+        "seriesColorsByField": {
+          "target": "#3F6FB7",
+          "actual": "#2E8B57",
+          "forecast": "#E89A2C"
+        },
+        "markerDisplay": "filled",
+        "lineWidth": 2,
+        "legendDisplay": "bottom",
+        "dataValuesDisplay": "minmax",
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "auto",
+        "xAxisMajorTickVisibility": "hide"
+      }
+    },
+    "viz_split": {
+      "type": "splunk.line",
+      "title": "8. Split series \u2014 independent y-ranges",
+      "description": "showSplitSeries=true stacks each series in its own sub-chart. showIndependentYRanges=true gives each its own y-axis range.",
+      "dataSources": {
+        "primary": "ds_split"
+      },
+      "options": {
+        "showSplitSeries": true,
+        "showIndependentYRanges": true,
+        "seriesColors": [
+          "#1F77B4",
+          "#C2185B",
+          "#E89A2C"
+        ],
+        "legendDisplay": "off",
+        "lineWidth": 2,
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "auto",
+        "xAxisMajorTickVisibility": "hide"
+      }
+    },
+    "viz_hidden_chrome": {
+      "type": "splunk.line",
+      "title": "9. Hidden chrome \u2014 sparkline (everything off)",
+      "description": "Sparkline pattern: titles hidden, BOTH axis labels hidden, tick marks hidden, gridlines off, legend off. The line is the only signal. Use inside KPI tiles or executive cards.",
+      "dataSources": {
+        "primary": "ds_minimal"
+      },
+      "options": {
+        "seriesColors": [
+          "#1F77B4"
+        ],
+        "lineWidth": 2.5,
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "hide",
+        "xAxisMajorTickVisibility": "hide",
+        "yAxisTitleVisibility": "hide",
+        "yAxisLabelVisibility": "hide",
+        "yAxisMajorTickVisibility": "hide",
+        "showYMajorGridLines": false,
+        "legendDisplay": "off",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_overlays": {
+      "type": "splunk.line",
+      "title": "10. Multi-overlay \u2014 4 fields with mixed axes",
+      "description": "Two p50/p95 latency fields overlaid on y2 (right axis), two pct fields on primary y. overlayFields can be array. y2AxisTitleText labels the right axis.",
+      "dataSources": {
+        "primary": "ds_overlays"
+      },
+      "options": {
+        "overlayFields": [
+          "latency_p50",
+          "latency_p95"
+        ],
+        "showOverlayY2Axis": true,
+        "y2AxisTitleText": "Latency (ms)",
+        "yAxisTitleText": "Utilization (%)",
+        "seriesColorsByField": {
+          "cpu_pct": "#1F77B4",
+          "memory_pct": "#3F6FB7",
+          "latency_p50": "#E89A2C",
+          "latency_p95": "#C2185B"
+        },
+        "lineDashStylesByField": {
+          "latency_p50": "dash",
+          "latency_p95": "solid",
+          "cpu_pct": "solid",
+          "memory_pct": "dot"
+        },
+        "lineWidth": 2,
+        "legendDisplay": "bottom",
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "auto",
+        "xAxisMajorTickVisibility": "hide"
+      }
+    },
+    "viz_all_dashes": {
+      "type": "splunk.line",
+      "title": "11. All 6 dash styles \u2014 one per series",
+      "description": "solid / dash / dot / shortDash / longDash / dashDot \u2014 every supported lineDashStyle value side by side. Use this panel as the visual reference when picking a dash style.",
+      "dataSources": {
+        "primary": "ds_alldashes"
+      },
+      "options": {
+        "lineDashStylesByField": {
+          "solid_line": "solid",
+          "dash_line": "dash",
+          "dot_line": "dot",
+          "shortDash_line": "shortDash",
+          "longDash_line": "longDash",
+          "dashDot_line": "dashDot"
+        },
+        "seriesColorsByField": {
+          "solid_line": "#1F77B4",
+          "dash_line": "#3F6FB7",
+          "dot_line": "#2E8B57",
+          "shortDash_line": "#E89A2C",
+          "longDash_line": "#C2185B",
+          "dashDot_line": "#7B49B7"
+        },
+        "lineWidth": 2,
+        "legendDisplay": "right",
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "auto",
+        "xAxisMajorTickVisibility": "hide"
+      }
+    },
+    "viz_smart_axis": {
+      "type": "splunk.line",
+      "title": "12. Smart axis \u2014 recommended baseline",
+      "description": "Clean defaults pattern. x-title hidden (no '_time'), x-labels auto (timestamps visible), x major ticks hidden. y-axis title carries unit. Legend at bottom for compactness.",
+      "dataSources": {
+        "primary": "ds_smartaxis"
+      },
+      "options": {
+        "seriesColorsByField": {
+          "signal": "#1F77B4",
+          "baseline": "#3F6FB7"
+        },
+        "lineDashStylesByField": {
+          "baseline": "dash"
+        },
+        "lineWidth": 2,
+        "yAxisTitleText": "Signal level",
+        "legendDisplay": "bottom",
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "auto",
+        "xAxisMajorTickVisibility": "hide"
+      }
+    }
+  },
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 1820,
+      "display": "auto-scale"
+    },
+    "structure": [
+      {
+        "item": "viz_title",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 16,
+          "w": 1408,
+          "h": 64
+        }
+      },
+      {
+        "item": "viz_basic",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 96,
+          "w": 696,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_multiseries",
+        "type": "block",
+        "position": {
+          "x": 728,
+          "y": 96,
+          "w": 696,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_byfield",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 392,
+          "w": 696,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_dualaxis",
+        "type": "block",
+        "position": {
+          "x": 728,
+          "y": 392,
+          "w": 696,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_annotations",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 688,
+          "w": 696,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_log_nulls",
+        "type": "block",
+        "position": {
+          "x": 728,
+          "y": 688,
+          "w": 696,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_dashstyles",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 984,
+          "w": 696,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_split",
+        "type": "block",
+        "position": {
+          "x": 728,
+          "y": 984,
+          "w": 696,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_hidden_chrome",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 1280,
+          "w": 696,
+          "h": 200
+        }
+      },
+      {
+        "item": "viz_overlays",
+        "type": "block",
+        "position": {
+          "x": 728,
+          "y": 1280,
+          "w": 696,
+          "h": 200
+        }
+      },
+      {
+        "item": "viz_all_dashes",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 1496,
+          "w": 696,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_smart_axis",
+        "type": "block",
+        "position": {
+          "x": 728,
+          "y": 1496,
+          "w": 696,
+          "h": 280
+        }
+      }
+    ],
+    "globalInputs": []
+  }
+}

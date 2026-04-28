@@ -1,0 +1,339 @@
+{
+  "title": "ds-viz-parallelcoordinates - option matrix (light)",
+  "description": "Light-theme companion. Test bench for splunk.parallelcoordinates. Verifies all options from the 10.4 PDF: backgroundColor, lineColor, lineOpacity (0-1 or %), showNullAxis. Demonstrates field-order semantics (each column = one axis), null-axis behavior, and styling for high vs low cardinality.",
+  "defaults": {
+    "dataSources": {
+      "global": {
+        "options": {
+          "queryParameters": {
+            "earliest": "-24h@h",
+            "latest": "now"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": false,
+        "showLastUpdated": false
+      }
+    }
+  },
+  "dataSources": {
+    "ds_perf_4axis": {
+      "type": "ds.search",
+      "name": "service x cpu x mem x latency x errors - 4 numeric axes",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count AS rn | eval service = case(rn%4==0,\"checkout\", rn%4==1,\"catalog\", rn%4==2,\"payments\", 1==1,\"search\") | eval cpu_pct = round(20 + random()%70) | eval mem_gb = round(2 + random()%14) | eval latency_ms = round(50 + random()%450) | eval errors = round(random()%30) | table service cpu_pct mem_gb latency_ms errors"
+      }
+    },
+    "ds_nutrients": {
+      "type": "ds.search",
+      "name": "canonical PDF example - food groups x calories x protein x water",
+      "options": {
+        "query": "| makeresults count=18 | streamstats count AS rn | eval nutrients_group = case(rn%6==0,\"Vegetables\", rn%6==1,\"Fruits\", rn%6==2,\"Grains\", rn%6==3,\"Dairy\", rn%6==4,\"Meats\", 1==1,\"Sweets\") | eval nutrients_calories = round(30 + random()%500) | eval protein_g = round(random()%40) | eval water_g = round(40 + random()%55) | table nutrients_group nutrients_calories protein_g water_g"
+      }
+    },
+    "ds_with_nulls": {
+      "type": "ds.search",
+      "name": "data with nulls - to test showNullAxis",
+      "options": {
+        "query": "| makeresults count=20 | streamstats count AS rn | eval product = case(rn%4==0,\"sku-A\", rn%4==1,\"sku-B\", rn%4==2,\"sku-C\", 1==1,\"sku-D\") | eval revenue = round(100 + random()%900) | eval cost = if(rn%5==0, null(), round(40 + random()%500)) | eval margin = if(isnotnull(cost), revenue - cost, null()) | eval units = round(10 + random()%200) | table product revenue cost margin units"
+      }
+    },
+    "ds_correlation": {
+      "type": "ds.search",
+      "name": "axes with strong correlation - shows visual lines collapse",
+      "options": {
+        "query": "| makeresults count=30 | streamstats count AS rn | eval x = round(20 + random()%80) | eval correlated = round(x * 1.2 + random()%10) | eval inverse = round(120 - x + random()%5) | eval noise = round(random()%100) | eval cohort = case(rn%3==0,\"alpha\", rn%3==1,\"beta\", 1==1,\"gamma\") | table cohort x correlated inverse noise"
+      }
+    }
+  },
+  "visualizations": {
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# `splunk.parallelcoordinates` - option matrix (light)\n\nParallel coordinates plot **multiple numeric variables on parallel vertical axes**, one row of data drawn as a line that threads through every axis. Best for spotting clusters, correlations, and outliers across 4-8 dimensions.\n\nFull options list from the **10.4 PDF**:\n- `backgroundColor`\n- `lineColor`\n- `lineOpacity` (0-1 or %)\n- `showNullAxis` (default `true`)\n\nThe field order in your SPL **defines the axes** - the first column becomes axis 1, the second becomes axis 2, etc.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default"
+      }
+    },
+    "viz_default": {
+      "type": "splunk.parallelcoordinates",
+      "title": "1. Default - 5 axes, brand purple",
+      "description": "Default lineColor #7B56DB, lineOpacity 0.5. Field order in SPL controls axis order.",
+      "dataSources": {
+        "primary": "ds_perf_4axis"
+      }
+    },
+    "viz_canonical": {
+      "type": "splunk.parallelcoordinates",
+      "title": "2. Canonical PDF example",
+      "description": "nutrients_group x nutrients_calories x protein_g x water_g - same shape as PDF.",
+      "dataSources": {
+        "primary": "ds_nutrients"
+      }
+    },
+    "viz_low_opacity": {
+      "type": "splunk.parallelcoordinates",
+      "title": "3. lineOpacity=0.15",
+      "description": "Useful when many lines overlap. Density becomes the visual cue.",
+      "dataSources": {
+        "primary": "ds_correlation"
+      },
+      "options": {
+        "lineOpacity": 0.15
+      }
+    },
+    "viz_high_opacity": {
+      "type": "splunk.parallelcoordinates",
+      "title": "4. lineOpacity=0.95",
+      "description": "Use only when you have <20 rows; otherwise lines crush each other.",
+      "dataSources": {
+        "primary": "ds_perf_4axis"
+      },
+      "options": {
+        "lineOpacity": 0.95
+      }
+    },
+    "viz_custom_color": {
+      "type": "splunk.parallelcoordinates",
+      "title": "5. Custom lineColor",
+      "description": "Brand teal for editorial dashboards.",
+      "dataSources": {
+        "primary": "ds_perf_4axis"
+      },
+      "options": {
+        "lineColor": "#1F77B4",
+        "lineOpacity": 0.6
+      }
+    },
+    "viz_red_alert": {
+      "type": "splunk.parallelcoordinates",
+      "title": "6. Alert variant - red on dark",
+      "description": "Severity-coded color for SOC dashboards.",
+      "dataSources": {
+        "primary": "ds_perf_4axis"
+      },
+      "options": {
+        "lineColor": "#C2185B",
+        "lineOpacity": 0.7
+      }
+    },
+    "viz_show_null": {
+      "type": "splunk.parallelcoordinates",
+      "title": "7. showNullAxis=true (default)",
+      "description": "Rows with null values still render. Lines drop to a separate 'null' tick on the affected axis.",
+      "dataSources": {
+        "primary": "ds_with_nulls"
+      },
+      "options": {
+        "showNullAxis": true,
+        "lineOpacity": 0.7
+      }
+    },
+    "viz_hide_null": {
+      "type": "splunk.parallelcoordinates",
+      "title": "8. showNullAxis=false",
+      "description": "Cleaner axes. Rows with nulls in any displayed field are suppressed visually.",
+      "dataSources": {
+        "primary": "ds_with_nulls"
+      },
+      "options": {
+        "showNullAxis": false,
+        "lineOpacity": 0.7
+      }
+    },
+    "viz_correlation": {
+      "type": "splunk.parallelcoordinates",
+      "title": "9. Correlation - parallel = correlated, X = inverse",
+      "description": "axes go: x, correlated, inverse, noise. Lines visually parallel between x/correlated and form an X between x/inverse.",
+      "dataSources": {
+        "primary": "ds_correlation"
+      },
+      "options": {
+        "lineColor": "#E89A2C",
+        "lineOpacity": 0.5
+      }
+    },
+    "viz_tinted_background": {
+      "type": "splunk.parallelcoordinates",
+      "title": "10. Custom backgroundColor",
+      "description": "Custom background paired with brand line color.",
+      "dataSources": {
+        "primary": "ds_perf_4axis"
+      },
+      "options": {
+        "backgroundColor": "#D8E0F2",
+        "lineColor": "#3F6FB7",
+        "lineOpacity": 0.65
+      }
+    },
+    "viz_pct_opacity": {
+      "type": "splunk.parallelcoordinates",
+      "title": "11. lineOpacity as a percentage string",
+      "description": "Per the PDF, both `0.50` and `\"50%\"` are valid forms.",
+      "dataSources": {
+        "primary": "ds_perf_4axis"
+      },
+      "options": {
+        "lineOpacity": "50%"
+      }
+    },
+    "viz_dense": {
+      "type": "splunk.parallelcoordinates",
+      "title": "12. Dense data - the density story",
+      "description": "Combine many rows + low opacity to reveal modal paths.",
+      "dataSources": {
+        "primary": "ds_correlation"
+      },
+      "options": {
+        "lineColor": "#00CDAF",
+        "lineOpacity": 0.2
+      }
+    }
+  },
+  "inputs": {},
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 2640,
+      "display": "auto-scale",
+      "backgroundColor": "#FAEAD8"
+    },
+    "structure": [
+      {
+        "item": "viz_title",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 20,
+          "w": 1400,
+          "h": 200
+        }
+      },
+      {
+        "item": "viz_default",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 240,
+          "w": 690,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_canonical",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 240,
+          "w": 690,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_low_opacity",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 580,
+          "w": 690,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_high_opacity",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 580,
+          "w": 690,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_custom_color",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 920,
+          "w": 690,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_red_alert",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 920,
+          "w": 690,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_show_null",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 1260,
+          "w": 690,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_hide_null",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 1260,
+          "w": 690,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_correlation",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 1600,
+          "w": 690,
+          "h": 360
+        }
+      },
+      {
+        "item": "viz_tinted_background",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 1600,
+          "w": 690,
+          "h": 360
+        }
+      },
+      {
+        "item": "viz_pct_opacity",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 1980,
+          "w": 690,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_dense",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 1980,
+          "w": 690,
+          "h": 320
+        }
+      }
+    ],
+    "globalInputs": []
+  }
+}

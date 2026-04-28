@@ -1,0 +1,143 @@
+---
+name: ds-create
+description: Use this skill to generate a full Splunk Dashboard Studio JSON definition (dashboard.json) from a workspace's layout.json and data-sources.json. Reads Panel positions, visualization types, and SPL queries; produces the complete dataSources + visualizations + layout.structure. Advances workspace state from designed to built. Requires a workspace at designed stage produced by ds-design.
+---
+
+# ds-create — Dashboard Studio JSON builder
+
+## When to use
+
+After `ds-design` has written `design/layout.json` and advanced state to `designed`. Combined with `data-sources.json` from `ds-data-explore` or `ds-mock`, this skill produces the complete `dashboard.json` that a Splunk instance can consume.
+
+## Prerequisites
+
+- Workspace exists with `current_stage=designed`.
+- `design/layout.json` has panels.
+- `data-sources.json` has one entry per question.
+
+## What it does
+
+1. Reads `design/layout.json` (panels: id, title, grid position, viz_type, data_source_ref).
+2. Reads `data-sources.json` (sources: question, SPL, earliest, latest, name).
+3. Generates Dashboard Studio JSON:
+   - One `ds.search` entry per data source, keyed `ds_1`, `ds_2`, …
+   - One visualization per panel, keyed `viz_<panel.id>`, with `dataSources.primary` pointing to the matching `ds_N`.
+   - Absolute layout structure: grid cells × `GRID_UNIT_W`/`GRID_UNIT_H` (100 × 80 pixels).
+4. Writes `dashboard.json` at the workspace root.
+5. Advances state `designed` → `built`.
+
+## How to invoke
+
+```bash
+PYTHONPATH=<repo-root>/plugins/splunk-dashboards/src \
+python3 -m splunk_dashboards.create build <project-name> \
+  --title "<dashboard title>" \
+  --description "<optional description>"
+```
+
+The `title` becomes the dashboard's top-level title (shown in the Splunk UI). `description` is optional.
+
+## Output shape
+
+`dashboard.json` matches the Splunk Dashboard Studio (v2) schema:
+
+```json
+{
+  "title": "...",
+  "description": "...",
+  "theme": "dark",
+  "dataSources": { "ds_1": { "type": "ds.search", "name": "...", "options": { "query": "...", "queryParameters": { "earliest": "...", "latest": "..." } } } },
+  "visualizations": { "viz_p1": { "type": "splunk.singlevalue", "title": "...", "dataSources": { "primary": "ds_1" }, "options": {} } },
+  "inputs": {},
+  "defaults": {},
+  "layout": { "type": "absolute", "options": { "width": 1440, "height": 960 }, "structure": [ { "item": "viz_p1", "type": "block", "position": { "x": 0, "y": 0, "w": 600, "h": 320 } } ] }
+}
+```
+
+For deeper schema details, invoke `ds-syntax`. For per-visualization option fields, invoke `ds-viz`.
+
+## New: global time input, drilldowns, grid layout
+
+### CLI flags
+
+- `--no-time-input` — Omits the global time-range input and the `defaults` block that wires panel queries to it. Useful when embedding a dashboard in a context that supplies its own time picker, or for static dashboards.
+- `--layout grid` — Emits a grid layout instead of absolute positioning. Panels are grouped into rows by their `y` coordinate and sorted by `x` within each row. Each row becomes a `{"type": "row", "items": [...]}` entry with `width` expressed as a percentage of the row. Default is `--layout absolute`.
+
+### Global time input (default on)
+
+When `--no-time-input` is NOT passed (the default), `ds-create` automatically:
+
+1. Adds an `input.timerange` keyed `input_global_time` with token `global_time` to the `inputs` block.
+2. Adds a `defaults.dataSources.global` block that wires every panel's `queryParameters.earliest` / `latest` to `$global_time.earliest$` / `$global_time.latest$`.
+
+This means users get a working time-range picker that controls all panels without any extra configuration.
+
+### Panel drilldowns
+
+Panels in `layout.json` can carry a `drilldown` field:
+
+```json
+{
+  "id": "p1",
+  "title": "My Panel",
+  "drilldown": {"type": "link.dashboard", "dashboard": "target_dash"}
+}
+```
+
+`ds-create` translates this into `options.drilldown = "all"` and `options.drilldownAction = <drilldown value>` on the matching visualization, enabling click-through behavior in the rendered dashboard.
+
+## Hard rule — dataSource `name` character set
+
+Every `dataSource.name` field this skill emits **must** match
+`^[A-Za-z0-9 \-_.]+$`. Splunk's Studio editor enforces this regex on
+the user-facing "Data source name" input — anything else is rejected at
+save time and `splunk_create_dashboard` fails. Allowed characters:
+**letters, numbers, spaces, dashes, underscores, periods**.
+
+When deriving a `name` from a question string in `data-sources.json`
+(e.g. `"What's the failure rate by host?"`), sanitize before writing:
+
+| Found | Replace with |
+|---|---|
+| `?` `!` `"` `'` smart quotes | drop |
+| `/` `:` `(` `)` `[` `]` `\|` `,` `&` `+` `*` `=` | space or dash |
+| accented letters (æøåéüñ etc.) | ASCII fold (`æ→ae`, `ø→o`, `å→a`, `é→e` …) |
+| consecutive spaces | single space |
+| leading/trailing whitespace | trim |
+
+This rule applies **only** to the `name` field. The JSON object key
+(`ds_1`, `ds_2`, …) is an internal ID and is not user-visible — it is
+not subject to this regex (the codebase convention is `ds_*` snake_case).
+
+`ds-validate` enforces this with `dataSource-name-illegal-chars` —
+catch it at `built`-stage rather than at deploy.
+
+## Splunk Enterprise and Cloud compatibility
+
+`ds-create` emits **native Dashboard Studio v2 JSON only** — no custom CSS, no JavaScript, no app dependencies. Output runs unmodified on Splunk Enterprise (9.x+) and Splunk Cloud.
+
+## After building
+
+- `dashboard.json` exists at the workspace root.
+- `state.json` has `current_stage=built`.
+- Next step: `ds-validate` (lint SPL, tokens, drilldowns) before `ds-deploy`.
+
+## Design considerations
+
+The CLI builds the mechanical skeleton (data sources, visualizations, structure) directly from the workspace. It does not style the dashboard — that is Claude's job during the build.
+
+Before invoking the CLI, consult:
+
+- **`ds-design-principles`** — archetypes, KPI sizing, chart selection decision table, semantic color palette, canvas tokens.
+- **`ds-syntax`** — the Dashboard Studio v2 JSON schema (required/optional fields, Dynamic Options Syntax, token bindings).
+- **`ds-viz`** — per-visualization option reference.
+
+After the CLI writes `dashboard.json`, enrich the file directly:
+
+- Set `layout.options.backgroundColor` to the canvas token that matches the chosen mode (`#0b0c0e` for dark, `#FAFAF7` for light, `#000000` for NOC wall).
+- Populate per-viz `options` with the semantic palette (e.g. failure KPIs get `"majorColor": "#DC4E41"`).
+- Add `splunk.rectangle` cards behind KPI rows for depth (place first in `layout.structure` so they render behind the panels).
+- Add `splunk.markdown` section headers between zones when panel count > 6.
+- Wire `trendValue`, `sparklineValue`, or `majorValue` Dynamic Options Syntax expressions on singlevalues that have time-series data.
+
+If the layout picked viz types that don't fit the data shape, use the "Chart selection" decision table in `ds-design-principles` and invoke `ds-update` to swap viz types before running the CLI.

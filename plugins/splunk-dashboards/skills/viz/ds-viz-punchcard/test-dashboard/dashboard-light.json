@@ -1,0 +1,377 @@
+{
+  "title": "ds-viz-punchcard - option matrix (light)",
+  "description": "Test bench for splunk.punchcard. Verifies all options from the 10.4 PDF: x/y/size/category DOS bindings, bubbleColor (dynamic gradient), bubbleLabelDisplay (all|max|off), bubbleRadiusMin/Max, bubbleRowScale (global|row), bubbleSizeMin/Max, bubbleSizeMethod (radius|area), colorMode (dynamic|categorical), legendDisplay, seriesColors, showDefaultSort, showDynamicBubbleSize, showMaxValuePulsation, backgroundColor.",
+  "defaults": {
+    "dataSources": {
+      "global": {
+        "options": {
+          "queryParameters": {
+            "earliest": "-24h@h",
+            "latest": "now"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": false,
+        "showLastUpdated": false
+      }
+    }
+  },
+  "dataSources": {
+    "ds_logins_hour_day": {
+      "type": "ds.search",
+      "name": "logins by hour x weekday - canonical punchcard shape",
+      "options": {
+        "query": "| makeresults count=2520 | streamstats count AS rn | eval rn = rn - 1 | eval punch_hour = rn % 24 | eval punch_day = case((rn / 24) % 7 < 1,\"Mon\", (rn / 24) % 7 < 2,\"Tue\", (rn / 24) % 7 < 3,\"Wed\", (rn / 24) % 7 < 4,\"Thu\", (rn / 24) % 7 < 5,\"Fri\", (rn / 24) % 7 < 6,\"Sat\", true(),\"Sun\") | eval base = case(punch_hour>=8 AND punch_hour<=18,80, punch_hour>=19 AND punch_hour<=22,30, true(),5) | eval weekend_factor = if(punch_day==\"Sat\" OR punch_day==\"Sun\", 0.3, 1.0) | eval w = round(base * weekend_factor) | eval punch_count = w + (random() % 10) | stats sum(punch_count) AS punch_count by punch_hour punch_day"
+      }
+    },
+    "ds_logins_with_region": {
+      "type": "ds.search",
+      "name": "logins by hour x weekday with region color",
+      "options": {
+        "query": "| makeresults count=2520 | streamstats count AS rn | eval rn = rn - 1 | eval punch_hour = rn % 24 | eval punch_day = case((rn / 24) % 7 < 1,\"Mon\", (rn / 24) % 7 < 2,\"Tue\", (rn / 24) % 7 < 3,\"Wed\", (rn / 24) % 7 < 4,\"Thu\", (rn / 24) % 7 < 5,\"Fri\", (rn / 24) % 7 < 6,\"Sat\", true(),\"Sun\") | eval punch_region = case(rn%4==0,\"emea\", rn%4==1,\"amer\", rn%4==2,\"apac\", true(),\"latam\") | eval punch_count = 20 + (random() % 30) | stats sum(punch_count) AS punch_count first(punch_region) AS punch_region by punch_hour punch_day"
+      }
+    },
+    "ds_attacks_hour_day": {
+      "type": "ds.search",
+      "name": "SOC pattern - failed logins by hour x weekday",
+      "options": {
+        "query": "| makeresults count=2520 | streamstats count AS rn | eval rn = rn - 1 | eval punch_hour = rn % 24 | eval punch_day = case((rn / 24) % 7 < 1,\"Mon\", (rn / 24) % 7 < 2,\"Tue\", (rn / 24) % 7 < 3,\"Wed\", (rn / 24) % 7 < 4,\"Thu\", (rn / 24) % 7 < 5,\"Fri\", (rn / 24) % 7 < 6,\"Sat\", true(),\"Sun\") | eval night = if(punch_hour<6 OR punch_hour>22, 50, 5) | eval failures = night + (random() % 12) | stats sum(failures) AS failures by punch_hour punch_day"
+      }
+    },
+    "ds_volume_skew": {
+      "type": "ds.search",
+      "name": "skewed volume - one cell dominates",
+      "options": {
+        "query": "| makeresults count=2520 | streamstats count AS rn | eval rn = rn - 1 | eval punch_hour = rn % 24 | eval punch_day = case((rn / 24) % 7 < 1,\"Mon\", (rn / 24) % 7 < 2,\"Tue\", (rn / 24) % 7 < 3,\"Wed\", (rn / 24) % 7 < 4,\"Thu\", (rn / 24) % 7 < 5,\"Fri\", (rn / 24) % 7 < 6,\"Sat\", true(),\"Sun\") | eval punch_count = if(punch_hour==12 AND punch_day==\"Wed\", 1000, 5 + (random() % 15)) | stats sum(punch_count) AS punch_count by punch_hour punch_day"
+      }
+    }
+  },
+  "visualizations": {
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# `splunk.punchcard` - option matrix\n\nPunchcards visualize cyclical patterns: bubble size at each (x, y) cell shows a metric, optionally tinted by a fourth field. Best for hour x weekday, dimension x dimension intensity.\n\nVerified options from the **10.4 PDF**:\n- DOS bindings: `x`, `y`, `size`, `category` + `*Field` labels\n- `colorMode` (`dynamic` | `categorical`)\n- Bubble sizing: `bubbleRadiusMin/Max` (1, 15), `bubbleSizeMin/Max` (0.25, 1), `bubbleSizeMethod` (`radius` | `area`), `bubbleRowScale` (`global` | `row`)\n- Labels: `bubbleLabelDisplay` (`all` | `max` | `off`)\n- Color: `bubbleColor` (DOS gradient), `seriesColors`, `backgroundColor`\n- Toggles: `showDefaultSort`, `showDynamicBubbleSize`, `showMaxValuePulsation`\n- `legendDisplay` (`right` | `off`)",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default"
+      }
+    },
+    "viz_default": {
+      "type": "splunk.punchcard",
+      "title": "1. Default - hour x day x count",
+      "description": "Default colorMode=dynamic. Size = aggregated metric.",
+      "dataSources": {
+        "primary": "ds_logins_hour_day"
+      }
+    },
+    "viz_categorical": {
+      "type": "splunk.punchcard",
+      "title": "2. colorMode=categorical with region",
+      "description": "Color comes from a fourth field. seriesColors palette assigns one per region.",
+      "dataSources": {
+        "primary": "ds_logins_with_region"
+      },
+      "options": {
+        "colorMode": "categorical"
+      }
+    },
+    "viz_label_max": {
+      "type": "splunk.punchcard",
+      "title": "3. bubbleLabelDisplay=max",
+      "description": "Show value only on the largest bubble.",
+      "dataSources": {
+        "primary": "ds_logins_hour_day"
+      },
+      "options": {
+        "bubbleLabelDisplay": "max"
+      }
+    },
+    "viz_label_off": {
+      "type": "splunk.punchcard",
+      "title": "4. bubbleLabelDisplay=off",
+      "description": "All labels hidden. Cleaner editorial style.",
+      "dataSources": {
+        "primary": "ds_logins_hour_day"
+      },
+      "options": {
+        "bubbleLabelDisplay": "off"
+      }
+    },
+    "viz_row_scale": {
+      "type": "splunk.punchcard",
+      "title": "5. bubbleRowScale=row",
+      "description": "Each row scales independently. Reveals patterns inside low-volume rows.",
+      "dataSources": {
+        "primary": "ds_volume_skew"
+      },
+      "options": {
+        "bubbleRowScale": "row",
+        "bubbleLabelDisplay": "off"
+      }
+    },
+    "viz_radius_method": {
+      "type": "splunk.punchcard",
+      "title": "6. bubbleSizeMethod=radius",
+      "description": "Default is 'area'. 'radius' makes large values grow more aggressively.",
+      "dataSources": {
+        "primary": "ds_logins_hour_day"
+      },
+      "options": {
+        "bubbleSizeMethod": "radius",
+        "bubbleLabelDisplay": "off"
+      }
+    },
+    "viz_radius_max": {
+      "type": "splunk.punchcard",
+      "title": "7. bubbleRadiusMax=24",
+      "description": "Default cap is 15. Bigger bubbles for headline panels.",
+      "dataSources": {
+        "primary": "ds_logins_hour_day"
+      },
+      "options": {
+        "bubbleRadiusMax": 24,
+        "bubbleLabelDisplay": "off"
+      }
+    },
+    "viz_no_pulsation": {
+      "type": "splunk.punchcard",
+      "title": "8. showMaxValuePulsation=false",
+      "description": "Default pulses the max bubble. Off for static screenshots.",
+      "dataSources": {
+        "primary": "ds_logins_hour_day"
+      },
+      "options": {
+        "showMaxValuePulsation": false,
+        "bubbleLabelDisplay": "off"
+      }
+    },
+    "viz_no_dynamic_size": {
+      "type": "splunk.punchcard",
+      "title": "9. showDynamicBubbleSize=false",
+      "description": "All bubbles render at the same radius. Useful when you only care about color. On a dense 24h x 7d grid the default bubbleRadiusMax (15) overlaps neighboring cells and hides the hover tooltip - drop bubbleRadiusMax to ~8 so each cell stays a distinct dot.",
+      "dataSources": {
+        "primary": "ds_logins_hour_day"
+      },
+      "options": {
+        "showDynamicBubbleSize": false,
+        "bubbleRadiusMax": 8,
+        "bubbleLabelDisplay": "off"
+      }
+    },
+    "viz_legend_off": {
+      "type": "splunk.punchcard",
+      "title": "10. Categorical + legendDisplay=off",
+      "description": "Color carries semantic meaning but legend is suppressed for compact tiles. Same overlap rule as panel 9: when showDynamicBubbleSize is false on a dense grid, keep bubbleRadiusMax small so categorical color reads as a heatmap of distinct dots.",
+      "dataSources": {
+        "primary": "ds_logins_with_region"
+      },
+      "options": {
+        "colorMode": "categorical",
+        "legendDisplay": "off",
+        "showDynamicBubbleSize": false,
+        "bubbleRadiusMax": 8,
+        "bubbleLabelDisplay": "off"
+      }
+    },
+    "viz_soc_pattern": {
+      "type": "splunk.punchcard",
+      "title": "11. SOC pattern - failed logins by hour x day",
+      "description": "Investigation lens: night-time clustering becomes visible.",
+      "dataSources": {
+        "primary": "ds_attacks_hour_day"
+      },
+      "options": {
+        "bubbleLabelDisplay": "max",
+        "bubbleRadiusMax": 20,
+        "showMaxValuePulsation": true
+      }
+    },
+    "viz_default_sort": {
+      "type": "splunk.punchcard",
+      "title": "12. showDefaultSort=true",
+      "description": "Sorts the y-axis using a built-in heuristic (chronological where applicable).",
+      "dataSources": {
+        "primary": "ds_logins_hour_day"
+      },
+      "options": {
+        "showDefaultSort": true,
+        "bubbleLabelDisplay": "off"
+      }
+    },
+    "viz_tinted": {
+      "type": "splunk.punchcard",
+      "title": "13. backgroundColor + custom seriesColors",
+      "description": "Custom panel background paired with brand palette in categorical mode.",
+      "dataSources": {
+        "primary": "ds_logins_with_region"
+      },
+      "options": {
+        "backgroundColor": "#EFE7D3",
+        "colorMode": "categorical",
+        "seriesColors": [
+          "#2E8B57",
+          "#E89A2C",
+          "#C2185B",
+          "#3F6FB7"
+        ],
+        "bubbleLabelDisplay": "off"
+      }
+    }
+  },
+  "inputs": {},
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 2360,
+      "display": "auto-scale",
+      "backgroundColor": "#FAEAD8"
+    },
+    "structure": [
+      {
+        "item": "viz_title",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 20,
+          "w": 1400,
+          "h": 220
+        }
+      },
+      {
+        "item": "viz_default",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 260,
+          "w": 460,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_categorical",
+        "type": "block",
+        "position": {
+          "x": 490,
+          "y": 260,
+          "w": 460,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_label_max",
+        "type": "block",
+        "position": {
+          "x": 960,
+          "y": 260,
+          "w": 460,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_label_off",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 560,
+          "w": 460,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_row_scale",
+        "type": "block",
+        "position": {
+          "x": 490,
+          "y": 560,
+          "w": 460,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_radius_method",
+        "type": "block",
+        "position": {
+          "x": 960,
+          "y": 560,
+          "w": 460,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_radius_max",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 860,
+          "w": 460,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_no_pulsation",
+        "type": "block",
+        "position": {
+          "x": 490,
+          "y": 860,
+          "w": 460,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_no_dynamic_size",
+        "type": "block",
+        "position": {
+          "x": 960,
+          "y": 860,
+          "w": 460,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_legend_off",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 1160,
+          "w": 460,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_soc_pattern",
+        "type": "block",
+        "position": {
+          "x": 490,
+          "y": 1160,
+          "w": 460,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_default_sort",
+        "type": "block",
+        "position": {
+          "x": 960,
+          "y": 1160,
+          "w": 460,
+          "h": 280
+        }
+      },
+      {
+        "item": "viz_tinted",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 1460,
+          "w": 1400,
+          "h": 320
+        }
+      }
+    ],
+    "globalInputs": []
+  },
+  "theme": "light"
+}

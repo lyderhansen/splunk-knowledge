@@ -1,0 +1,635 @@
+{
+  "title": "SOC Operations — Threat Overview",
+  "description": "Three-tab SOC dashboard: Overview (hero KPIs + geo + severity over time), Innsikt (threat intelligence — top attackers, MITRE techniques, kill-chain, attack patterns), Analytiker (master-detail investigation with drilldown-driven context panels). Demonstrates every interactivity skill in this plugin: tabs, tokens, inputs (incl. multiselect with |s), defaults.tokens.default initialisation, drilldowns (setToken + linkToDashboard), visibility (containerOptions.visibility with showConditions), and the SOC archetype from ds-design-principles.",
+  "theme": "dark",
+  "defaults": {
+    "dataSources": {
+      "ds.search": {
+        "options": {
+          "queryParameters": {
+            "earliest": "$global_time.earliest$",
+            "latest": "$global_time.latest$"
+          }
+        }
+      }
+    },
+    "tokens": {
+      "default": {
+        "selected_alert_id": { "value": "" },
+        "selected_host":     { "value": "" },
+        "selected_severity": { "value": "" },
+        "selected_country":  { "value": "" },
+        "severity_filter":   { "value": "*" },
+        "source_ip_filter":  { "value": "*" }
+      }
+    }
+  },
+  "inputs": {
+    "input_global_time": {
+      "type": "input.timerange",
+      "title": "Time range",
+      "options": {
+        "token": "global_time",
+        "defaultValue": "-24h@h,now"
+      }
+    },
+    "input_severity": {
+      "type": "input.multiselect",
+      "title": "Severity",
+      "options": {
+        "token": "severity_filter",
+        "defaultValue": ["critical", "high", "medium", "low"],
+        "items": [
+          {"label": "Critical", "value": "critical"},
+          {"label": "High",     "value": "high"},
+          {"label": "Medium",   "value": "medium"},
+          {"label": "Low",      "value": "low"}
+        ]
+      }
+    },
+    "input_source_ip": {
+      "type": "input.text",
+      "title": "Source IP filter",
+      "options": {
+        "token": "source_ip_filter",
+        "defaultValue": "*"
+      }
+    }
+  },
+  "dataSources": {
+    "ds_kpi_critical": {
+      "type": "ds.search",
+      "name": "critical alerts count synth - severity rotates so SOC tile flips RAG live",
+      "options": {
+        "query": "| makeresults | eval count=case(random()%4=0, 23, random()%4=1, 8, random()%4=2, 47, 1=1, 12) | table count"
+      }
+    },
+    "ds_kpi_high": {
+      "type": "ds.search",
+      "name": "high alerts count synth",
+      "options": {
+        "query": "| makeresults | eval count=82 | table count"
+      }
+    },
+    "ds_kpi_medium": {
+      "type": "ds.search",
+      "name": "medium alerts count synth",
+      "options": {
+        "query": "| makeresults | eval count=341 | table count"
+      }
+    },
+    "ds_kpi_open_cases": {
+      "type": "ds.search",
+      "name": "open SOC cases count synth",
+      "options": {
+        "query": "| makeresults | eval count=17 | table count"
+      }
+    },
+    "ds_geo_attacks": {
+      "type": "ds.search",
+      "name": "geographic attack source - country counts using bundled geom geo_countries lookup",
+      "options": {
+        "query": "| makeresults count=12 | streamstats count as i | eval country=case(i==1,\"China\",i==2,\"Russia\",i==3,\"United States\",i==4,\"North Korea\",i==5,\"Iran\",i==6,\"Brazil\",i==7,\"India\",i==8,\"Vietnam\",i==9,\"Romania\",i==10,\"Ukraine\",i==11,\"Germany\",i==12,\"United Kingdom\"), attacks=case(i==1,4820,i==2,3140,i==3,2105,i==4,1890,i==5,1432,i==6,890,i==7,720,i==8,615,i==9,540,i==10,470,i==11,210,i==12,180) | geom geo_countries featureIdField=country | fields country attacks geom"
+      }
+    },
+    "ds_severity_over_time": {
+      "type": "ds.search",
+      "name": "severity counts over time stacked column - 24 hourly buckets x 4 severities",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as h | eval _time=relative_time(now(), \"-\".(24-h).\"h@h\"), critical=case(h<8,random()%5+1,h>=8 AND h<16,random()%8+3,1=1,random()%12+5), high=random()%18+8, medium=random()%35+15, low=random()%55+30 | table _time critical high medium low"
+      }
+    },
+    "ds_recent_alerts": {
+      "type": "ds.search",
+      "name": "recent alerts table for overview drilldown - 8 rows with severity host action",
+      "options": {
+        "query": "| makeresults count=8 | streamstats count as i | eval _time=relative_time(now(), \"-\".(i*8).\"m\"), alert_id=\"ALT-\".tostring(2400+i*7), severity=case(i==1,\"critical\",i==2,\"critical\",i==3,\"high\",i==4,\"medium\",i==5,\"high\",i==6,\"low\",i==7,\"critical\",i==8,\"medium\"), host=case(i==1,\"web-01\",i==2,\"db-prod-03\",i==3,\"app-04\",i==4,\"web-02\",i==5,\"db-prod-01\",i==6,\"cache-02\",i==7,\"web-01\",i==8,\"queue-05\"), src_ip=case(i==1,\"203.0.113.42\",i==2,\"198.51.100.8\",i==3,\"203.0.113.99\",i==4,\"192.0.2.115\",i==5,\"198.51.100.8\",i==6,\"192.0.2.7\",i==7,\"203.0.113.42\",i==8,\"198.51.100.220\"), rule=case(i==1,\"Lateral movement detected\",i==2,\"SQL injection attempt\",i==3,\"Brute force - 200+ attempts\",i==4,\"Suspicious DNS query\",i==5,\"Privilege escalation\",i==6,\"Cache poisoning\",i==7,\"Lateral movement detected\",i==8,\"Anomalous queue access\") | eval _time=strftime(_time, \"%Y-%m-%d %H:%M:%S\") | table _time alert_id severity host src_ip rule"
+      }
+    },
+    "ds_top_attackers": {
+      "type": "ds.search",
+      "name": "top attacker IPs sorted descending - bar chart for innsikt tab",
+      "options": {
+        "query": "| makeresults count=10 | streamstats count as i | eval src_ip=case(i==1,\"203.0.113.42\",i==2,\"198.51.100.8\",i==3,\"203.0.113.99\",i==4,\"192.0.2.115\",i==5,\"198.51.100.220\",i==6,\"203.0.113.7\",i==7,\"192.0.2.55\",i==8,\"198.51.100.140\",i==9,\"203.0.113.180\",i==10,\"192.0.2.221\"), country=case(i==1,\"CN\",i==2,\"RU\",i==3,\"CN\",i==4,\"KP\",i==5,\"RU\",i==6,\"IR\",i==7,\"CN\",i==8,\"BR\",i==9,\"RU\",i==10,\"VN\"), attacks=case(i==1,1240,i==2,890,i==3,720,i==4,615,i==5,540,i==6,470,i==7,415,i==8,380,i==9,340,i==10,295) | table src_ip country attacks"
+      }
+    },
+    "ds_mitre_techniques": {
+      "type": "ds.search",
+      "name": "MITRE technique x tactic frequency for punchcard - heatmap density",
+      "options": {
+        "query": "| makeresults count=42 | streamstats count as i | eval tactic=case(i%7==0,\"Initial Access\",i%7==1,\"Execution\",i%7==2,\"Persistence\",i%7==3,\"Privilege Escalation\",i%7==4,\"Defense Evasion\",i%7==5,\"Credential Access\",i%7==6,\"Lateral Movement\"), technique=case(i%6==0,\"Phishing\",i%6==1,\"PowerShell\",i%6==2,\"Scheduled Task\",i%6==3,\"Token Manipulation\",i%6==4,\"Obfuscated Files\",i%6==5,\"Brute Force\"), count=random()%30+1 | stats sum(count) as count by tactic technique"
+      }
+    },
+    "ds_kill_chain": {
+      "type": "ds.search",
+      "name": "kill chain progression sankey - source stage to target stage with volume",
+      "options": {
+        "query": "| makeresults count=14 | streamstats count as i | eval source=case(i==1,\"Recon\",i==2,\"Recon\",i==3,\"Initial Access\",i==4,\"Initial Access\",i==5,\"Execution\",i==6,\"Execution\",i==7,\"Persistence\",i==8,\"Persistence\",i==9,\"Lateral Movement\",i==10,\"Lateral Movement\",i==11,\"Lateral Movement\",i==12,\"Exfiltration\",i==13,\"Exfiltration\",i==14,\"Impact\"), target=case(i==1,\"Initial Access\",i==2,\"Execution\",i==3,\"Execution\",i==4,\"Persistence\",i==5,\"Persistence\",i==6,\"Privilege Esc\",i==7,\"Privilege Esc\",i==8,\"Lateral Movement\",i==9,\"Credential Access\",i==10,\"Exfiltration\",i==11,\"Impact\",i==12,\"Impact\",i==13,\"Blocked\",i==14,\"Blocked\"), value=case(i==1,840,i==2,420,i==3,380,i==4,310,i==5,180,i==6,150,i==7,120,i==8,200,i==9,90,i==10,75,i==11,40,i==12,55,i==13,80,i==14,120) | table source target value"
+      }
+    },
+    "ds_hourly_pattern": {
+      "type": "ds.search",
+      "name": "attacks by hour-of-day and day-of-week for punchcard heatmap - column order hour dow count maps to x y size",
+      "options": {
+        "query": "| makeresults count=168 | streamstats count as i | eval dow=case((i-1)/24<1,\"Mon\",(i-1)/24<2,\"Tue\",(i-1)/24<3,\"Wed\",(i-1)/24<4,\"Thu\",(i-1)/24<5,\"Fri\",(i-1)/24<6,\"Sat\",1=1,\"Sun\"), hour=(i-1)%24, base=case(hour>=2 AND hour<=5, 80, hour>=9 AND hour<=17, 25, hour>=22 OR hour<=1, 60, 1=1, 18), count=base+(random()%20) | stats sum(count) as count by hour dow | table hour dow count"
+      }
+    },
+    "ds_top_countries": {
+      "type": "ds.search",
+      "name": "top attacking countries bar chart - sorted descending",
+      "options": {
+        "query": "| makeresults count=10 | streamstats count as i | eval country=case(i==1,\"China\",i==2,\"Russia\",i==3,\"North Korea\",i==4,\"Iran\",i==5,\"Vietnam\",i==6,\"Romania\",i==7,\"Brazil\",i==8,\"Ukraine\",i==9,\"India\",i==10,\"Other\"), attacks=case(i==1,4820,i==2,3140,i==3,1890,i==4,1432,i==5,615,i==6,540,i==7,890,i==8,470,i==9,720,i==10,1245) | sort - attacks | table country attacks"
+      }
+    },
+    "ds_alert_table_full": {
+      "type": "ds.search",
+      "name": "full alert table for analytiker tab - master view rows clickable to populate detail panels",
+      "options": {
+        "query": "| makeresults count=15 | streamstats count as i | eval _time=relative_time(now(), \"-\".(i*7).\"m\"), alert_id=\"ALT-\".tostring(2400+i*7), severity=case(i%4==0,\"critical\",i%4==1,\"high\",i%4==2,\"medium\",i%4==3,\"low\"), host=case(i%5==0,\"web-01\",i%5==1,\"db-prod-03\",i%5==2,\"app-04\",i%5==3,\"web-02\",i%5==4,\"cache-02\"), src_ip=case(i%6==0,\"203.0.113.42\",i%6==1,\"198.51.100.8\",i%6==2,\"203.0.113.99\",i%6==3,\"192.0.2.115\",i%6==4,\"198.51.100.220\",i%6==5,\"203.0.113.7\"), rule=case(i%5==0,\"Lateral movement detected\",i%5==1,\"SQL injection attempt\",i%5==2,\"Brute force - 200+ attempts\",i%5==3,\"Suspicious DNS query\",i%5==4,\"Privilege escalation\"), status=case(i%3==0,\"Open\",i%3==1,\"Investigating\",i%3==2,\"Acknowledged\") | eval _time=strftime(_time, \"%Y-%m-%d %H:%M:%S\") | table _time alert_id severity host src_ip rule status"
+      }
+    },
+    "ds_alert_detail": {
+      "type": "ds.search",
+      "name": "selected alert detail rows - host facts events count time of first/last seen",
+      "options": {
+        "query": "| makeresults | eval alert_id=\"$selected_alert_id$\", host=\"$selected_host$\", events_in_24h=843, first_seen=\"-22h\", last_seen=\"-12m\", related_alerts=7 | table alert_id host events_in_24h first_seen last_seen related_alerts"
+      }
+    },
+    "ds_host_timeline": {
+      "type": "ds.search",
+      "name": "events for selected host - time series line for analytiker context",
+      "options": {
+        "query": "| makeresults count=48 | streamstats count as h | eval _time=relative_time(now(), \"-\".(48-h)/2.\"h@30m\"), events=case(\"$selected_host$\"=\"\",0,1=1,(random()%60)+30+if(h%6=0,80,0)) | table _time events"
+      }
+    }
+  },
+  "expressions": {
+    "conditions": {
+      "condition_alert_selected": {
+        "name": "alert is selected",
+        "value": "$selected_alert_id$ != \"\""
+      },
+      "condition_no_alert": {
+        "name": "no alert selected (initial state)",
+        "value": "$selected_alert_id$ = \"\""
+      }
+    }
+  },
+  "visualizations": {
+    "viz_overview_intro": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# SOC Operations — Threat Overview\n\n**Last 24h** · time-window driven by global filter above\n\nKey signals at a glance. Drill into the **Innsikt** tab for threat-intel breakdowns, or the **Analytiker** tab for case-level investigation.",
+        "fontSize": "default",
+        "fontColor": "#FFFFFF",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_kpi_critical": {
+      "type": "splunk.singlevalue",
+      "title": "CRITICAL alerts",
+      "description": "Hero KPI - up-is-bad polarity. Threshold-coloured: ≥20 critical = red (page on-call), 5-19 = orange, <5 = green.",
+      "dataSources": {"primary": "ds_kpi_critical"},
+      "options": {
+        "majorValue": "> primary | seriesByName(\"count\") | lastPoint()",
+        "majorColor": "> primary | seriesByName(\"count\") | lastPoint() | rangeValue(criticalThresholds)",
+        "majorFontSize": 72,
+        "underLabel": "in last 24h",
+        "shouldUseThousandSeparators": false,
+        "backgroundColor": "#15161a"
+      },
+      "context": {
+        "criticalThresholds": [
+          {"from": 20,           "value": "#DC4E41"},
+          {"from": 5, "to": 20,  "value": "#F1813F"},
+          {              "to": 5,"value": "#53A051"}
+        ]
+      }
+    },
+    "viz_kpi_high": {
+      "type": "splunk.singlevalue",
+      "title": "HIGH alerts",
+      "description": "Up-is-bad. ≥100 = orange, 30-99 = yellow, <30 = green.",
+      "dataSources": {"primary": "ds_kpi_high"},
+      "options": {
+        "majorValue": "> primary | seriesByName(\"count\") | lastPoint()",
+        "majorColor": "> primary | seriesByName(\"count\") | lastPoint() | rangeValue(highThresholds)",
+        "majorFontSize": 48,
+        "underLabel": "in last 24h",
+        "shouldUseThousandSeparators": false,
+        "backgroundColor": "#15161a"
+      },
+      "context": {
+        "highThresholds": [
+          {"from": 100,           "value": "#F1813F"},
+          {"from": 30, "to": 100, "value": "#F8BE34"},
+          {              "to": 30,"value": "#53A051"}
+        ]
+      }
+    },
+    "viz_kpi_medium": {
+      "type": "splunk.singlevalue",
+      "title": "MEDIUM alerts",
+      "description": "Volume metric — informational. Static neutral color.",
+      "dataSources": {"primary": "ds_kpi_medium"},
+      "options": {
+        "majorValue": "> primary | seriesByName(\"count\") | lastPoint()",
+        "majorColor": "#006D9C",
+        "majorFontSize": 48,
+        "underLabel": "in last 24h",
+        "shouldUseThousandSeparators": false,
+        "backgroundColor": "#15161a"
+      }
+    },
+    "viz_kpi_open_cases": {
+      "type": "splunk.singlevalue",
+      "title": "OPEN cases",
+      "description": "Cases currently under SOC investigation. Down-is-bad - rising values mean backlog.",
+      "dataSources": {"primary": "ds_kpi_open_cases"},
+      "options": {
+        "majorValue": "> primary | seriesByName(\"count\") | lastPoint()",
+        "majorColor": "> primary | seriesByName(\"count\") | lastPoint() | rangeValue(caseThresholds)",
+        "majorFontSize": 48,
+        "underLabel": "in queue",
+        "shouldUseThousandSeparators": false,
+        "backgroundColor": "#15161a"
+      },
+      "context": {
+        "caseThresholds": [
+          {"from": 25,           "value": "#DC4E41"},
+          {"from": 10, "to": 25, "value": "#F8BE34"},
+          {              "to": 10,"value": "#53A051"}
+        ]
+      }
+    },
+    "viz_geo_attacks": {
+      "type": "splunk.map",
+      "title": "Attack sources — global",
+      "description": "Choropleth layer over geom geo_countries. Hover any country to see attack count. SPL pre-resolves country names to full English (geo_countries doesn't accept ISO-2).",
+      "dataSources": {"primary": "ds_geo_attacks"},
+      "options": {
+        "layers": [
+          {
+            "type": "choropleth",
+            "areaIds":    "> primary | seriesByName(\"country\")",
+            "areaValues": "> primary | seriesByName(\"attacks\")",
+            "tooltipHeaderField": "> primary | seriesByName(\"country\")",
+            "additionalTooltipFields": ["attacks"],
+            "choroplethOpacity": 0.85
+          }
+        ],
+        "center": [25, 10],
+        "zoom": 1.3,
+        "backgroundColor": "#0b0c0e"
+      }
+    },
+    "viz_severity_stacked": {
+      "type": "splunk.column",
+      "title": "Alerts by severity over time",
+      "description": "Stacked column - 24 hourly buckets, 4 severity series. SPL emits _time + critical/high/medium/low columns; the viz auto-binds first column as x (time) and remaining as series. seriesColors is positional: red/orange/yellow/green matches SPL column order critical/high/medium/low. No x/y options on column charts — they're stats-table-format viz (only splunk.scatter and splunk.bubble use explicit x/y).",
+      "dataSources": {"primary": "ds_severity_over_time"},
+      "options": {
+        "stackMode": "stacked",
+        "seriesColors": ["#DC4E41", "#F1813F", "#F8BE34", "#53A051"],
+        "legendDisplay": "right",
+        "xAxisTitleVisibility": "hide",
+        "yAxisTitleVisibility": "hide",
+        "backgroundColor": "#15161a"
+      }
+    },
+    "viz_recent_alerts_overview": {
+      "type": "splunk.table",
+      "title": "Recent alerts (8 most recent)",
+      "description": "Click any row to open the alert in the Analytiker tab. Severity column is colour-coded via matchValue to the SOC palette.",
+      "dataSources": {"primary": "ds_recent_alerts"},
+      "options": {
+        "drilldown": "row",
+        "showInternalFields": false,
+        "columnFormat": {
+          "severity": {
+            "rowBackgroundColors": "> table | seriesByName(\"severity\") | matchValue(severityColors)"
+          }
+        },
+        "backgroundColor": "#15161a"
+      },
+      "eventHandlers": [
+        {
+          "type": "drilldown.setToken",
+          "options": {
+            "tokens": [
+              {"token": "selected_alert_id", "key": "row.alert_id.value"},
+              {"token": "selected_host",     "key": "row.host.value"},
+              {"token": "selected_severity", "key": "row.severity.value"}
+            ]
+          }
+        }
+      ],
+      "context": {
+        "severityColors": [
+          {"match": "critical", "value": "#DC4E41"},
+          {"match": "high",     "value": "#F1813F"},
+          {"match": "medium",   "value": "#F8BE34"},
+          {"match": "low",      "value": "#53A051"}
+        ]
+      }
+    },
+    "viz_innsikt_intro": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# Threat Innsikt\n\nWho is attacking, how, and when. Use the filters above to narrow scope. The MITRE matrix and kill-chain views are read top-down.",
+        "fontSize": "default",
+        "fontColor": "#FFFFFF",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_top_attackers": {
+      "type": "splunk.bar",
+      "title": "Top 10 attacker IPs",
+      "description": "Horizontal bar, sorted descending. SPL emits src_ip, country, attacks — viz auto-binds first column as y-axis category, last numeric column as x-axis value. No x/y DOS options on splunk.bar (those are scatter/bubble-only). Click any bar to filter the rest of the dashboard by that IP via drilldown.setToken.",
+      "dataSources": {"primary": "ds_top_attackers"},
+      "options": {
+        "seriesColors": ["#DC4E41"],
+        "legendDisplay": "off",
+        "xAxisTitleText": "Attacks (24h)",
+        "xAxisTitleVisibility": "show",
+        "yAxisTitleVisibility": "hide",
+        "yAxisLabelVisibility": "auto",
+        "yAxisMajorTickVisibility": "hide",
+        "backgroundColor": "#15161a"
+      },
+      "eventHandlers": [
+        {
+          "type": "drilldown.setToken",
+          "options": {
+            "tokens": [
+              {"token": "source_ip_filter", "key": "row.src_ip.value"}
+            ]
+          }
+        }
+      ]
+    },
+    "viz_top_countries": {
+      "type": "splunk.bar",
+      "title": "Top attacking countries",
+      "description": "Top-N + Other. SPL pre-sorts and aggregates to a 10-row table (top 9 + 'Other' to prevent long-tail clutter — REFLEX 8 from ds-design-principles).",
+      "dataSources": {"primary": "ds_top_countries"},
+      "options": {
+        "seriesColors": ["#F1813F"],
+        "legendDisplay": "off",
+        "xAxisTitleText": "Attacks (24h)",
+        "xAxisTitleVisibility": "show",
+        "yAxisTitleVisibility": "hide",
+        "yAxisLabelVisibility": "auto",
+        "yAxisMajorTickVisibility": "hide",
+        "backgroundColor": "#15161a"
+      }
+    },
+    "viz_mitre_punchcard": {
+      "type": "splunk.punchcard",
+      "title": "MITRE ATT&CK — technique × tactic frequency",
+      "description": "Punchcard heatmap of technique frequency by tactic. Bubble area encodes count. SPL emits tactic, technique, count in that exact order — punchcard's default `x = seriesByIndex(0)`, `y = seriesByIndex(1)`, `size = seriesByIndex(2)` mapping picks them up automatically. Use to spot which tactic phase is currently most active.",
+      "dataSources": {"primary": "ds_mitre_techniques"},
+      "options": {
+        "bubbleRadiusMax": 16,
+        "bubbleRadiusMin": 3,
+        "bubbleSizeMethod": "area",
+        "backgroundColor": "#15161a"
+      }
+    },
+    "viz_kill_chain": {
+      "type": "splunk.sankey",
+      "title": "Kill chain progression",
+      "description": "Sankey of source-stage → target-stage transitions, weighted by event volume. SPL emits source, target, value in that exact 3-column order — sankey reads them positionally (no source/target/value DOS options on the viz). The 'Blocked' sink is the SOC's defensive-control surface; fatter ribbons into Blocked = better.",
+      "dataSources": {"primary": "ds_kill_chain"},
+      "options": {
+        "backgroundColor": "#15161a"
+      }
+    },
+    "viz_hourly_pattern": {
+      "type": "splunk.punchcard",
+      "title": "Attack pattern — day-of-week × hour-of-day",
+      "description": "Punchcard of attack volume by weekday and hour. SPL emits dow, hour, count — viz auto-binds them via the seriesByIndex defaults. Larger bubbles indicate sustained pressure; use to identify off-hours patterns (weekend / 02-05 UTC).",
+      "dataSources": {"primary": "ds_hourly_pattern"},
+      "options": {
+        "bubbleRadiusMax": 14,
+        "bubbleRadiusMin": 2,
+        "bubbleSizeMethod": "area",
+        "backgroundColor": "#15161a"
+      }
+    },
+    "viz_analytiker_intro": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# Analytiker Investigation\n\nMaster-detail workflow: click a row in the **alert queue** below, and the right side populates with host context, event timeline, and case status. Selected alert: `$selected_alert_id$` &nbsp;·&nbsp; host: `$selected_host$` &nbsp;·&nbsp; severity: `$selected_severity$`",
+        "fontSize": "default",
+        "fontColor": "#FFFFFF",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_alert_queue": {
+      "type": "splunk.table",
+      "title": "Alert queue (15 rows)",
+      "description": "Master view. Click a row → setToken populates `selected_alert_id`, `selected_host`, `selected_severity`. Right-side detail panels then render via containerOptions.visibility.showConditions.",
+      "dataSources": {"primary": "ds_alert_table_full"},
+      "options": {
+        "drilldown": "row",
+        "showInternalFields": false,
+        "columnFormat": {
+          "severity": {
+            "rowBackgroundColors": "> table | seriesByName(\"severity\") | matchValue(severityColors)"
+          }
+        },
+        "backgroundColor": "#15161a"
+      },
+      "eventHandlers": [
+        {
+          "type": "drilldown.setToken",
+          "options": {
+            "tokens": [
+              {"token": "selected_alert_id", "key": "row.alert_id.value"},
+              {"token": "selected_host",     "key": "row.host.value"},
+              {"token": "selected_severity", "key": "row.severity.value"}
+            ]
+          }
+        }
+      ],
+      "context": {
+        "severityColors": [
+          {"match": "critical", "value": "#DC4E41"},
+          {"match": "high",     "value": "#F1813F"},
+          {"match": "medium",   "value": "#F8BE34"},
+          {"match": "low",      "value": "#53A051"}
+        ]
+      }
+    },
+    "viz_detail_empty_hint": {
+      "type": "splunk.markdown",
+      "title": "No alert selected",
+      "description": "Visible only when no row has been clicked yet (containerOptions.visibility.showConditions: condition_no_alert).",
+      "options": {
+        "markdown": "## ← Select an alert\n\nClick any row in the alert queue on the left. The detail panels here will populate with:\n\n- **Host facts** — events / 24h, first/last seen, related alerts\n- **Host activity timeline** — event volume on the affected host\n- **Investigation context** — alert metadata for the selected case\n\n_(This empty-state hint disappears the moment you click a row — visibility is wired via `condition_no_alert: \"$selected_alert_id$ = \\\"\\\"\"`.)_",
+        "fontSize": "default",
+        "fontColor": "#B0B0BE",
+        "backgroundColor": "#15161a"
+      },
+      "containerOptions": {
+        "visibility": {
+          "showConditions": ["condition_no_alert"]
+        }
+      }
+    },
+    "viz_detail_summary": {
+      "type": "splunk.markdown",
+      "title": "Investigation context",
+      "description": "Visible when an alert is selected. Pulls the selected alert id, host, and severity directly from tokens via markdown interpolation.",
+      "options": {
+        "markdown": "## Selected case\n\n| Field | Value |\n| --- | --- |\n_(Note: GFM tables aren't rendered by Studio markdown; using bullet list:)_\n\n- **Alert ID:** `$selected_alert_id$`\n- **Affected host:** `$selected_host$`\n- **Severity:** `$selected_severity$`\n- **Status:** Open · awaiting triage\n\n**Recommended actions:**\n\n1. Verify rule fired correctly (check `$selected_alert_id$` in raw events)\n2. Confirm `$selected_host$` is in scope (asset inventory)\n3. Check related alerts on the same host in the past 24h\n4. Decide: escalate / dismiss / acknowledge",
+        "fontSize": "small",
+        "fontColor": "#FFFFFF",
+        "backgroundColor": "#15161a"
+      },
+      "containerOptions": {
+        "visibility": {
+          "showConditions": ["condition_alert_selected"]
+        }
+      }
+    },
+    "viz_detail_facts": {
+      "type": "splunk.singlevalue",
+      "title": "Events on selected host (24h)",
+      "description": "Visible when alert is selected. Major value is the events_in_24h count for the host carrying the alert.",
+      "dataSources": {"primary": "ds_alert_detail"},
+      "options": {
+        "majorValue": "> primary | seriesByName(\"events_in_24h\") | lastPoint()",
+        "majorColor": "#F1813F",
+        "majorFontSize": 56,
+        "underLabel": "events",
+        "shouldUseThousandSeparators": true,
+        "backgroundColor": "#15161a"
+      },
+      "containerOptions": {
+        "visibility": {
+          "showConditions": ["condition_alert_selected"]
+        }
+      }
+    },
+    "viz_detail_related": {
+      "type": "splunk.singlevalue",
+      "title": "Related alerts (same host, 24h)",
+      "description": "Count of correlated alerts. Up-is-bad — high values suggest pattern of compromise.",
+      "dataSources": {"primary": "ds_alert_detail"},
+      "options": {
+        "majorValue": "> primary | seriesByName(\"related_alerts\") | lastPoint()",
+        "majorColor": "> primary | seriesByName(\"related_alerts\") | lastPoint() | rangeValue(relatedThresholds)",
+        "majorFontSize": 56,
+        "underLabel": "correlations",
+        "shouldUseThousandSeparators": false,
+        "backgroundColor": "#15161a"
+      },
+      "context": {
+        "relatedThresholds": [
+          {"from": 10,           "value": "#DC4E41"},
+          {"from": 3, "to": 10,  "value": "#F1813F"},
+          {              "to": 3,"value": "#53A051"}
+        ]
+      },
+      "containerOptions": {
+        "visibility": {
+          "showConditions": ["condition_alert_selected"]
+        }
+      }
+    },
+    "viz_host_timeline": {
+      "type": "splunk.line",
+      "title": "Host activity — last 24h",
+      "description": "Event volume on `$selected_host$`. SPL emits _time + events — splunk.line auto-binds first column as x-axis (time) and remaining as series. Spikes correlate with the alert's first-seen timestamp. Click the chart to open the same query in Splunk Search via drilldown.linkToSearch.",
+      "dataSources": {"primary": "ds_host_timeline"},
+      "options": {
+        "seriesColors": ["#DC4E41"],
+        "legendDisplay": "off",
+        "xAxisTitleVisibility": "hide",
+        "xAxisLabelVisibility": "auto",
+        "xAxisMajorTickVisibility": "hide",
+        "yAxisTitleVisibility": "hide",
+        "backgroundColor": "#15161a"
+      },
+      "containerOptions": {
+        "visibility": {
+          "showConditions": ["condition_alert_selected"]
+        }
+      },
+      "eventHandlers": [
+        {
+          "type": "drilldown.linkToSearch",
+          "options": {
+            "query": "index=main host=$selected_host$ earliest=$global_time.earliest$ latest=$global_time.latest$",
+            "newTab": true
+          }
+        }
+      ]
+    }
+  },
+  "layout": {
+    "globalInputs": ["input_global_time", "input_severity", "input_source_ip"],
+    "layoutDefinitions": {
+      "layout_overview": {
+        "type": "absolute",
+        "options": {
+          "width": 1440,
+          "height": 1100,
+          "backgroundColor": "#0b0c0e"
+        },
+        "structure": [
+          {"item": "viz_overview_intro",       "type": "block", "position": {"x": 20,  "y": 20,  "w": 1400, "h": 100}},
+          {"item": "viz_kpi_critical",         "type": "block", "position": {"x": 20,  "y": 140, "w": 460,  "h": 240}},
+          {"item": "viz_kpi_high",             "type": "block", "position": {"x": 500, "y": 140, "w": 300,  "h": 240}},
+          {"item": "viz_kpi_medium",           "type": "block", "position": {"x": 820, "y": 140, "w": 300,  "h": 240}},
+          {"item": "viz_kpi_open_cases",       "type": "block", "position": {"x": 1140,"y": 140, "w": 280,  "h": 240}},
+          {"item": "viz_geo_attacks",          "type": "block", "position": {"x": 20,  "y": 400, "w": 880,  "h": 380}},
+          {"item": "viz_severity_stacked",     "type": "block", "position": {"x": 920, "y": 400, "w": 500,  "h": 380}},
+          {"item": "viz_recent_alerts_overview","type":"block", "position": {"x": 20,  "y": 800, "w": 1400, "h": 280}}
+        ]
+      },
+      "layout_innsikt": {
+        "type": "absolute",
+        "options": {
+          "width": 1440,
+          "height": 1340,
+          "backgroundColor": "#0b0c0e"
+        },
+        "structure": [
+          {"item": "viz_innsikt_intro",        "type": "block", "position": {"x": 20,  "y": 20,   "w": 1400, "h": 100}},
+          {"item": "viz_top_attackers",        "type": "block", "position": {"x": 20,  "y": 140,  "w": 700,  "h": 380}},
+          {"item": "viz_top_countries",        "type": "block", "position": {"x": 740, "y": 140,  "w": 680,  "h": 380}},
+          {"item": "viz_mitre_punchcard",      "type": "block", "position": {"x": 20,  "y": 540,  "w": 1400, "h": 380}},
+          {"item": "viz_kill_chain",           "type": "block", "position": {"x": 20,  "y": 940,  "w": 880,  "h": 380}},
+          {"item": "viz_hourly_pattern",       "type": "block", "position": {"x": 920, "y": 940,  "w": 500,  "h": 380}}
+        ]
+      },
+      "layout_analytiker": {
+        "type": "absolute",
+        "options": {
+          "width": 1440,
+          "height": 1100,
+          "backgroundColor": "#0b0c0e"
+        },
+        "structure": [
+          {"item": "viz_analytiker_intro",     "type": "block", "position": {"x": 20,  "y": 20,   "w": 1400, "h": 120}},
+          {"item": "viz_alert_queue",          "type": "block", "position": {"x": 20,  "y": 160,  "w": 800,  "h": 900}},
+          {"item": "viz_detail_empty_hint",    "type": "block", "position": {"x": 840, "y": 160,  "w": 580,  "h": 320}},
+          {"item": "viz_detail_summary",       "type": "block", "position": {"x": 840, "y": 160,  "w": 580,  "h": 320}},
+          {"item": "viz_detail_facts",         "type": "block", "position": {"x": 840, "y": 500,  "w": 280,  "h": 240}},
+          {"item": "viz_detail_related",       "type": "block", "position": {"x": 1140,"y": 500,  "w": 280,  "h": 240}},
+          {"item": "viz_host_timeline",        "type": "block", "position": {"x": 840, "y": 760,  "w": 580,  "h": 300}}
+        ]
+      }
+    },
+    "tabs": {
+      "items": [
+        {"label": "Overview",    "layoutId": "layout_overview"},
+        {"label": "Innsikt",     "layoutId": "layout_innsikt"},
+        {"label": "Analytiker",  "layoutId": "layout_analytiker"}
+      ]
+    }
+  }
+}
