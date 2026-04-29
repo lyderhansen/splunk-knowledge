@@ -87,5 +87,5 @@ answer best and the most common wrong-tool failure mode.
   panels.
 - **Tables** — never without drilldown.
 
-See `ds-viz-pitfalls` for the cross-skill gotchas matrix when the
+See `ds-pitfalls` for the cross-skill gotchas matrix when the
 right viz is picked but mis-configured.

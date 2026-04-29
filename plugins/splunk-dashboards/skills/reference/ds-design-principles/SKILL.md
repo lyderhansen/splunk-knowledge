@@ -201,5 +201,5 @@ Run before completion. A single NO means rewrite:
 - [CHART-SELECTION.md](CHART-SELECTION.md) — full 27-viz decision
   table.
 - `ds-syntax` — JSON envelope.
-- `ds-viz-pitfalls` — cross-skill viz-specific traps.
+- `ds-pitfalls` — cross-skill traps matrix (viz + interactivity + schema).
 - `ds-viz-bar` / `ds-viz-singlevalue` etc. — per-viz reference.

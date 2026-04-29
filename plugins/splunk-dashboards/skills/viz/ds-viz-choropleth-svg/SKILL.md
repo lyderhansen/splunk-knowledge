@@ -151,7 +151,8 @@ is in SVG geometry, not configuration.
   conventions, SVG-only pitfalls (winding, duplicate IDs).
 - `ds-viz-map` — proper geographic map (Leaflet basemap, lat/lon,
   optional choropleth layer over `geom geo_countries`).
-- `ds-viz-choropleth-map` — disambiguation skill (the type doesn't
-  exist; routes to `ds-viz-map` or this skill).
+- `ds-viz-map` Common confusions — covers why `splunk.choropleth.map`
+  doesn't exist and routes to either map (Leaflet) or this skill
+  (custom SVG).
 - `ds-viz-singlevalue` — layer KPIs on top of SVG choropleth.
 - `ds-design-principles` — when SVG choropleth is the right answer.

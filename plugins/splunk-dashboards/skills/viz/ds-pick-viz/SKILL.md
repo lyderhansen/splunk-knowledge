@@ -70,7 +70,7 @@ If the user asks for something that maps to one of these, push back instead of r
 - **Line with > 6 series** → recommend top-N filter in SPL plus `line`, or `table` with sparkline columns.
 - **3D pie / 3D column / any 3D effect** → never. There is no 3D option in Dashboard Studio and emulating it via skewed shapes is bad practice.
 - **Map of countries with `lat`/`lon` coordinates only** → if the user wants country-level shading, recommend `map` with a `choropleth`-typed layer (and `geom geo_countries` in the SPL); plain markers show individual points, not regional totals.
-- **`splunk.choropleth.map` as a viz type** → does not exist in Dashboard Studio. Country / state shading is a `choropleth` **layer** inside `splunk.map`. See `ds-viz-choropleth-map` for the disambiguation.
+- **`splunk.choropleth.map` as a viz type** → does not exist in Dashboard Studio. Country / state shading is a `choropleth` **layer** inside `splunk.map`. See `ds-viz-map` "Common confusions" section.
 - **Singlevalue + threshold without color/icon** → upgrade to `singlevalueicon` or `markergauge`; numeric alone forces the operator to do mental threshold math.
 - **Stacked bar to show flow** → recommend `sankey` instead; stacked bar shows category totals, not movement.
 

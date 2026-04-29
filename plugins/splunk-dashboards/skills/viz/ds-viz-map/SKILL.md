@@ -1,6 +1,6 @@
 ---
 name: ds-viz-map
-description: Splunk Dashboard Studio splunk.map visualization — geographic Leaflet-style basemap with marker, bubble, and choropleth layers. Provides patterns for IP-origin marker maps, geostats bubble maps with dynamic colour, country-shaded choropleths via geom geo_countries, US state choropleths, styled tile-less maps, and the layer-vs-SPL-shape pairing rules. Use when the user asks about geographic maps, bubble maps, marker maps, choropleths, IP-location plots, regional shading, or world/US maps in Splunk Dashboard Studio.
+description: Splunk Dashboard Studio splunk.map visualization — geographic Leaflet-style basemap with marker, bubble, and choropleth layers. Provides patterns for IP-origin marker maps, geostats bubble maps with dynamic colour, country-shaded choropleths via geom geo_countries, US state choropleths, styled tile-less maps, and the layer-vs-SPL-shape pairing rules. Use when the user asks about geographic maps, bubble maps, marker maps, choropleths, IP-location plots, regional shading, world/US maps, or "splunk.choropleth.map" (NOTE — that viz type does not exist in Dashboard Studio; the canonical pattern is a choropleth-typed layer inside splunk.map, documented here) in Splunk Dashboard Studio.
 ---
 
 # splunk.map — geographic map
@@ -26,11 +26,32 @@ pin markers, sized bubbles, or country/region shading (choropleth).
   `splunk.choropleth.svg`.
 - **Abstract "world map" branding** with no real lat/lon data → 
   `splunk.image` with a static SVG.
-- **Single-region thematic maps** (one country, no zoom needed) →
-  `splunk.choropleth.map`.
 - **Multi-layer marker + bubble + choropleth on one panel** —
   unreliable. Use separate panels per layer type. See
   [GOTCHAS.md](GOTCHAS.md) #16.
+
+## Common confusions — `splunk.choropleth.map`
+
+**There is no `splunk.choropleth.map` visualization in Dashboard
+Studio.** If you saw it referenced in older notes, an LLM
+hallucination, or a Classic Simple XML dashboard, the canonical
+Studio pattern is a `choropleth`-typed layer inside `splunk.map`
+(this skill).
+
+| You want to… | Use |
+|---|---|
+| Shade countries / US states on a Leaflet basemap | `splunk.map` with `type: "choropleth"` layer (PATTERNS.md #5). |
+| Choropleth + markers / bubbles in one view | **Two separate `splunk.map` panels.** Stacking is unreliable. See [GOTCHAS.md](GOTCHAS.md) #16. |
+| Shade a country map WITHOUT a Leaflet basemap | `splunk.map` tile-less choropleth (PATTERNS.md #14) OR `splunk.choropleth.svg` with a country SVG. |
+| Shade a building floor plan / custom polygons | `splunk.choropleth.svg`. |
+
+The 10.4 PDF has a section titled "Choropleth map" (page 381, under
+the Simple XML / Classic appendix) with `source` / `projection` /
+`fillColor` / `strokeColor` options — **those do not apply to
+Dashboard Studio**. A search across the 24k-line PDF for
+`"type": "splunk.[a-z.]+"` yields exactly one choropleth viz type:
+`splunk.choropleth.svg`. Splunk 10.2.1 rejects a panel with
+`"type": "splunk.choropleth.map"` at validation time.
 
 ## Quick start — marker layer
 
@@ -96,7 +117,6 @@ Wrong pairing = silent empty panel. See [GOTCHAS.md](GOTCHAS.md) #15.
 - [GOTCHAS.md](GOTCHAS.md) — 17 verified traps including the
   `geo_countries`-vs-`geo://default/world` key-difference and the
   bubble/marker shape-mismatch trap.
-- `ds-viz-choropleth-map` — single-region thematic map disambiguation.
 - `ds-viz-choropleth-svg` — flat SVG without basemap.
 - `ds-viz-singlevalue` — pair with map for KPI overlay.
 - `ds-design-principles` — geographic colour discipline.

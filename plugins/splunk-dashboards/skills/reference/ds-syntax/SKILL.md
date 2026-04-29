@@ -343,7 +343,7 @@ Canonical multiselect pattern:
 - [DOS-REFERENCE.md](DOS-REFERENCE.md) — companion. Selectors,
   formatters, escaping, `context` configuration store.
 - `ds-design-principles` — visual hierarchy, when not to use a chart.
-- `ds-viz-pitfalls` — cross-skill viz-specific traps matrix.
+- `ds-pitfalls` — cross-skill traps matrix (viz + interactivity + schema).
 - `interactivity/ds-tokens` — token consumption.
 - `interactivity/ds-inputs` — input declarations.
 - `interactivity/ds-defaults` — global defaults block.
