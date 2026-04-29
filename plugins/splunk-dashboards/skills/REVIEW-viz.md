@@ -1,3 +1,79 @@
+# Wave A close-out review (2026-04-28)
+
+End-of-Wave-A sweep across the full skill set after visual QA wrapped
+on every deployed test dashboard. Interactivity skills, which the
+2026-04-25 review tracked as deferred (see D1 below), are now complete
+and dropped from the deferred bucket. Two new top-level skills landed
+during the wave: `ds-couture` (design-first companion) and `ds-spl`
+(SPL grammar reference).
+
+## Snapshot
+
+| Layer         | Skills                            | SKILL.md | Test dashboards (dark) | QA (dark)   |
+| ------------- | --------------------------------- | -------- | ---------------------- | ----------- |
+| viz           | 25 + 1 router + 1 disambiguation  | 27/27    | 25 deployed            | **25/25 ✅** |
+| interactivity | 6                                 | 6/6      | 2 deployed             | **2/2 ✅**   |
+| reference     | 3 (`ds-ref-syntax`, `ds-ref-design-principles`, `ds-ref-pitfalls`) | 3/3 | n/a | n/a |
+| pipeline      | 11                                | 11/11    | n/a                    | n/a         |
+| design-first  | 1 (`ds-couture`)                  | 1/1      | n/a                    | n/a         |
+| SPL           | 1 (`ds-spl`)                      | 1/1      | n/a                    | n/a         |
+| **Total**     | **47** skills                     | **48/48** | 27 dashboards × 2 themes = **54 XML** | **27/27 ✅** |
+
+## What changed since the 2026-04-25 review
+
+### Resolved deferred items
+
+- **D1 (interactivity stubs)** — all 6 skills are now full content:
+  `ds-int-tokens`, `ds-int-inputs`, `ds-int-drilldowns`, `ds-int-tabs`,
+  `ds-int-visibility`, `ds-int-defaults`. Two test dashboards back the
+  set (`ds_interactivity_core` and `ds_interactivity_tabs`, dark + light).
+- **D2 (visual QA)** — Wave A walked every deployed dashboard against the
+  agent-extracted query plan in `QA-PLAN.md`. All 27 dashboards
+  user-confirmed clean.
+
+### Resolved during the wave
+
+- Geo viz benches expanded and corrected — `ds-viz-map` bench grew from
+  10 → 15 panels with a reworked geostats pattern; `ds-viz-choropleth-svg`
+  bench grew from 4 → 9 panels with hand-traced continent geometry and
+  a new `SVG-AUTHORING.md` companion documenting the SVG-side authoring
+  pattern.
+- All 6 `ds-int-*` skills carry full content; the two test dashboards
+  exercise tokens, inputs, drilldowns, tabs, visibility, and defaults
+  across both themes.
+- Skills flattened from `skills/<category>/<name>/` to `skills/<name>/`
+  with prefix-based naming (`ds-int-`, `ds-ref-`, `ds-viz-`). Pipeline
+  skills carry no prefix.
+- Two new skills introduced: `ds-couture` (Design Context Protocol +
+  archetype + restraint, paired with `ds-ref-design-principles`) and
+  `ds-spl` (SPL grammar — eval, stats, where, rex, tstats, lookups,
+  subsearches, with the dotted-field-quoting and silent-fail traps).
+
+## New deferred items (Wave B, C, D)
+
+These are tracked in `PROGRESS.md` rather than restated here:
+
+- **Wave B (plugin polish)** — README refresh ✅ done as B1 (v2.6.1),
+  this review block ✅ B2, KNOWN-ISSUES additions ⬜ B3 pending.
+- **Wave C (content extension)** — 4 new interactivity skills
+  (`ds-cross-panel-filtering`, `ds-search-chaining`, `ds-conditional-spl`,
+  `ds-token-lifecycle`) and a 3-way split of `ds-ref-design-principles`
+  into `ds-archetypes`, `ds-anti-patterns`, `ds-spacing-and-grid`.
+  Brainstorming planned around extracting reusable references out of
+  `ds-couture` (color, typography, layout-grid, visual-encoding,
+  archetypes, personas).
+- **Wave D (long-term)** — retire the legacy `ds-viz` monolith if any
+  references remain, add `ds-spl-for-dashboards` (dashboard-specific SPL
+  patterns layered over `ds-spl`), `ds-color-palettes`, `ds-themes`.
+
+### Standing deferred items
+
+| #  | Item                                              | Status                                                                                |
+| -- | ------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| D3 | Frontmatter standardisation (`version`, `verified_against`, `test_dashboards`) | No skill currently carries these fields. Adding them across 47 skills is a deliberate design decision, not cleanup — parked for a later session. |
+
+---
+
 # Final viz-skill review pass (2026-04-25)
 
 End-of-iteration sweep across all 26 `ds-viz-*` skills + the meta-skill
