@@ -83,72 +83,6 @@ front.
 | **DOS picker:** `seriesByName('field')` (refactor-safe). | `seriesByIndex(0)` when SPL field order isn't stable. |
 | **Drilldown:** hardcode handlers per rectangle — payload is `n/a`. | Read `$row.<field>$` / `$click.value$` — rectangle clicks have no contextual payload. |
 
-## Three colour-source patterns
-
-### 1. Static colour (most common)
-
-```json
-"options": { "fillColor": "#1A2440" }
-```
-
-### 2. DOS-bound colour — data-driven status card
-
-Canonical alias-in-context form (what the editor produces):
-
-```json
-{
-  "type": "splunk.rectangle",
-  "dataSources": { "primary": "ds_health" },
-  "context": {
-    "fillDataValue": "> primary | seriesByType('number') | lastPoint()",
-    "fillColorEditorConfig": [
-      { "to": 60,             "value": "#FF2D95" },
-      { "from": 60, "to": 80, "value": "#FFB627" },
-      { "from": 80,           "value": "#33FF99" }
-    ]
-  },
-  "options": {
-    "fillColor": "> fillDataValue | rangeValue(fillColorEditorConfig)",
-    "strokeColor": "transparent",
-    "rx": 8
-  }
-}
-```
-
-Inline form is also valid:
-
-```json
-"fillColor": "> primary | seriesByName('health') | lastPoint() | rangeValue(thresholds)"
-```
-
-Both forms work. The alias-in-context form survives the editor
-round-trip cleanly.
-
-### 3. Token-driven — input-driven colour
-
-```json
-"options": { "fillColor": "$colour_token$" }
-```
-
-Pair with `input.dropdown`. Token must produce a valid hex string.
-
-## Nine options total
-
-| Option | Type | Default | Notes |
-|---|---|---|---|
-| `fillColor` | string (hex) | `> themes.defaultFillColor` | DOS-bindable. |
-| `fillOpacity` | number 0–1 | `1` | UI also accepts `"80%"`. |
-| `rx` | number (px) or % | `0` | Horizontal corner radius. |
-| `ry` | number (px) or % | `> rx` | Defaults to `rx`. Set independently for elliptical corners. |
-| `strokeColor` | string (hex) | `> themes.defaultStrokeColor` | DOS-bindable. |
-| `strokeDashStyle` | number (px) | `0` (solid) | Dash & gap length, both equal. |
-| `strokeJoinStyle` | `arcs` \| `bevel` \| `miter` \| `miter-clip` \| `round` | `miter` | Corner join — visible only at large `strokeWidth`. |
-| `strokeOpacity` | number 0–1 | `1` | Independent of `fillOpacity`. |
-| `strokeWidth` | number 1–25 (px) | `1` | Hard-clipped at 25. |
-
-> Legacy PDF examples occasionally use `fill`/`stroke` (no "Color"
-> suffix). Canonical 10.4 names are `fillColor`/`strokeColor`.
-
 ## Image hit-zone recipe
 
 For each clickable region of a floor plan / diagram:
@@ -164,9 +98,13 @@ downstream search.
 
 ## See also
 
-- [PATTERNS.md](PATTERNS.md) — verified patterns: card, divider, pill,
-  outlined card, dashed empty-state, status badge, DOS RAG card,
-  hit-zone, swatch.
+- [PATTERNS.md](PATTERNS.md) — 20 verified patterns: card, divider,
+  pill, outlined card, dashed empty-state, status badge, DOS RAG
+  card, hit-zone, swatch, faux drop-shadow.
+- [OPTIONS.md](OPTIONS.md) — 9 options + the three colour-source
+  patterns (static / DOS / token-driven).
+- [GOTCHAS.md](GOTCHAS.md) — strokeWidth clip, no `z-index`, no drop
+  shadow, threshold-bucket semantics.
 - `ds-viz-ellipse` — circular twin (no `rx`/`ry`).
 - `ds-viz-image` — what the rectangles overlay.
 - `ds-viz-singlevalue` — overlay number on top of card.

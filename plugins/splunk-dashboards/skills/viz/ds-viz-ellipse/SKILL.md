@@ -18,17 +18,17 @@ donut outlines, decorative blobs, circular legend swatches.
 - **KPI accent rings** behind a circular `splunk.singlevalue`.
 - **Donut outlines** — transparent fill + thick stroke.
 - **Faint background blobs** — large radius, very low `fillOpacity`,
-  decorative only.
+decorative only.
 - **Legend swatches** for circular plot markers (bubble, scatter,
-  marker gauge).
+marker gauge).
 
 ## When NOT to use
 
 - **Rectangular cards / pills** → `splunk.rectangle` (it has `rx`/`ry`
-  for rounded-corner pills; ellipses do not).
+for rounded-corner pills; ellipses do not).
 - **Photographic content** → `splunk.image`.
 - **Typographic content** → `splunk.markdown` (ellipses never render
-  text).
+text).
 - **Grid layouts** — ellipses only render in **absolute** layout.
 
 ## Quick start
@@ -51,80 +51,30 @@ a `splunk.markdown` label. **Shape is set by panel aspect ratio**:
 
 ## Do / Don't
 
-| ✅ Do | ❌ Don't |
-|---|---|
-| **Layout:** absolute only. | Paste into grid layout — fails silently. |
-| **Circle:** `w == h` exactly. | Mix `w: 200, h: 195` and expect a circle — 5 px difference is visible. |
-| **Status dot RAG:** disjoint, gap-free buckets `[{to:60}, {from:60, to:80}, {from:80}]`. | Overlap `[{to:70}, {from:60, to:80}, {from:70}]` — second bucket is dead because top-down + first-match wins. |
-| **Pair with text:** `splunk.markdown` (label) or `splunk.singlevalue` (KPI ring overlay). | Expect the ellipse to render text — it never does. |
-| **Theme-aware:** always set `fillColor` explicitly for shipped dashboards. | Ship with bare `options: {}` — default fill is theme-dependent and looks different dark vs light. |
-| **Big-screen visibility:** ≥ 20 × 20 px for SOC wall displays. | Ship 12 × 12 dots for projector use — invisible at distance. |
-| **DOS pickers:** `> primary \| seriesByName('field')` OR `seriesByType("number")` (both work). | Use `seriesByIndex(0)` when SPL field order isn't stable. |
-| **Drilldown:** hardcode handlers per ellipse — payload is `n/a`. | Read `$click.value$` / `$row.<field>$` — ellipse click events have no contextual payload. |
 
-## Three colour-source patterns
+| ✅ Do                                                                                          | ❌ Don't                                                                                                       |
+| --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| **Layout:** absolute only.                                                                    | Paste into grid layout — fails silently.                                                                      |
+| **Circle:** `w == h` exactly.                                                                 | Mix `w: 200, h: 195` and expect a circle — 5 px difference is visible.                                        |
+| **Status dot RAG:** disjoint, gap-free buckets `[{to:60}, {from:60, to:80}, {from:80}]`.      | Overlap `[{to:70}, {from:60, to:80}, {from:70}]` — second bucket is dead because top-down + first-match wins. |
+| **Pair with text:** `splunk.markdown` (label) or `splunk.singlevalue` (KPI ring overlay).     | Expect the ellipse to render text — it never does.                                                            |
+| **Theme-aware:** always set `fillColor` explicitly for shipped dashboards.                    | Ship with bare `options: {}` — default fill is theme-dependent and looks different dark vs light.             |
+| **Big-screen visibility:** ≥ 20 × 20 px for SOC wall displays.                                | Ship 12 × 12 dots for projector use — invisible at distance.                                                  |
+| **DOS pickers:** `> primary | seriesByName('field')` OR `seriesByType("number")` (both work). | Use `seriesByIndex(0)` when SPL field order isn't stable.                                                     |
+| **Drilldown:** hardcode handlers per ellipse — payload is `n/a`.                              | Read `$click.value$` / `$row.<field>$` — ellipse click events have no contextual payload.                     |
 
-### 1. Static colour (most common)
-
-```json
-"options": { "fillColor": "#0E7C70" }
-```
-
-### 2. DOS-bound colour — data-driven status dot
-
-```json
-{
-  "type": "splunk.ellipse",
-  "dataSources": { "primary": "ds_health" },
-  "options": {
-    "fillColor": "> primary | seriesByName('health') | lastPoint() | rangeValue(thresholds)",
-    "strokeColor": "transparent"
-  },
-  "context": {
-    "thresholds": [
-      { "to": 60,             "value": "#FF2D95" },
-      { "from": 60, "to": 80, "value": "#FFB627" },
-      { "from": 80,           "value": "#33FF99" }
-    ]
-  }
-}
-```
-
-Disjoint, gap-free buckets. Verify with at least one demo value per
-bucket (health = 20 / 60 / 95 against thresholds 60 / 80) — boundary
-values are easy to mis-route.
-
-### 3. Token-driven — input-driven colour
-
-```json
-"options": { "fillColor": "$colour_token$" }
-```
-
-Pair with an `input.dropdown`. Token must produce a valid hex string.
-Use for design previews and brand-colour pickers.
-
-## Six options total
-
-| Option | Type | Default | Notes |
-|---|---|---|---|
-| `fillColor` | string (hex) | `> themes.defaultFillColor` | DOS-bindable. |
-| `fillOpacity` | number 0–1 | `1` | UI also accepts `"80%"`. |
-| `strokeColor` | string (hex) | `> themes.defaultStrokeColor` | DOS-bindable. |
-| `strokeDashStyle` | number (px) | `0` (solid) | Dash & gap length, both equal. |
-| `strokeOpacity` | number 0–1 | `1` | Independent of `fillOpacity`. |
-| `strokeWidth` | number 1–25 (px) | `1` | Hard-clipped at 25. |
-
-No `rx`/`ry`, no `strokeJoinStyle` (no corners on a curve).
-
-> Legacy PDF examples occasionally use `fill`/`stroke` (no "Color"
-> suffix). The canonical 10.4 names are `fillColor`/`strokeColor`.
 
 ## See also
 
 - [PATTERNS.md](PATTERNS.md) — 16 verified patterns: circle, oval,
   fade levels, donut outline, dashed ring, status dots, KPI ring +
   singlevalue overlay, DOS RAG, token-driven.
+- [OPTIONS.md](OPTIONS.md) — 6 options + the three colour-source
+  patterns (static / DOS / token-driven).
+- [GOTCHAS.md](GOTCHAS.md) — strokeWidth clip, no `rx`/`ry`, drilldown
+  payload `n/a`, threshold-bucket semantics.
 - `ds-viz-rectangle` — rectangular twin with `rx`/`ry` for pills.
 - `ds-viz-singlevalue` — overlay number on top of a KPI ring.
 - `ds-viz-markdown` — pair with status dot for "label + indicator".
 - `ds-design-principles` — RAG colour discipline.
+

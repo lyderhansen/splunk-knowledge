@@ -107,11 +107,11 @@ values < 70.
 
 ## Verified patterns
 
-20 panels in `ds_viz_fillergauge_dark`. Inspect for live JSON. Patterns
-include: default at low/mid/high, horizontal orientation, static
-`gaugeColor`, dynamic threshold colouring, upstream-scaled quota
-progress, percentage display modes, no-chrome 4-up vertical bank
-(CPU/MEM/DISK/NET), stacked horizontal queue panel.
+20 panels in `ds_viz_fillergauge_dark`. See [PATTERNS.md](PATTERNS.md)
+for the full set: default at low/mid/high, horizontal orientation,
+static + dynamic `gaugeColor`, threshold colouring, upstream-scaled
+quota progress, percentage display modes, no-chrome 4-up vertical
+bank (CPU/MEM/DISK/NET), stacked horizontal queue panel.
 
 ## What fillergauge does NOT have
 
@@ -123,6 +123,8 @@ progress, percentage display modes, no-chrome 4-up vertical bank
 
 ## See also
 
+- [PATTERNS.md](PATTERNS.md) — 20 verified patterns (option matrix
+  + KPI bank packing).
 - `ds-viz-markergauge` — banded zones via `gaugeRanges`.
 - `ds-viz-singlevalueradial` — radial fill with `maxValue` and
   `radialBackgroundColor`.

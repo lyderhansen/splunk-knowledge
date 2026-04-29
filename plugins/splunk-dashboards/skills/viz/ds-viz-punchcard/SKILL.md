@@ -102,16 +102,6 @@ mid-cells render almost invisibly.
 12. **Default sort** — chronological.
 13. **Tinted** — custom `backgroundColor` + brand `seriesColors`.
 
-## Options summary
-
-Sizing (`bubbleRadiusMin`, `bubbleRadiusMax`, `bubbleSizeMin`,
-`bubbleSizeMax`, `bubbleSizeMethod`, `bubbleRowScale`,
-`showDynamicBubbleSize`), colour (`colorMode`, `bubbleColor`,
-`seriesColors`, `backgroundColor`, `legendDisplay`), toggles
-(`showMaxValuePulsation`, `bubbleLabelDisplay`, `showDefaultSort`).
-
-Full table inline above; no separate OPTIONS file.
-
 ## Drilldown
 
 ```json
@@ -128,19 +118,12 @@ Full table inline above; no separate OPTIONS file.
 Available tokens: `$click.value$` (size metric), `$click.value2$`
 (category, when `colorMode: "categorical"`), `$row.<field>$`.
 
-## Gotchas
-
-- Column order matters — fix SPL with `| table` or set explicit DOS.
-- Single-row data degenerates to a horizontal strip — use line chart.
-- > 10 values per axis = unreadable. Bucket via `| eval` / `| top`.
-- `showMaxValuePulsation` distracting on always-on wallboards.
-- `bubbleSizeMin = 0` hides low-value cells entirely. Default `0.25`
-is usually right.
-- Chart defaults to `dynamic` colour even with 4th column — must set
-`colorMode: "categorical"` explicitly.
-- Min panel size 500 × 300 px — below that, tooltip hit-area breaks.
-
 ## See also
+
+- [OPTIONS.md](OPTIONS.md) — full options table (DOS bindings,
+  sizing, colour, toggles).
+- [GOTCHAS.md](GOTCHAS.md) — column-order trap, panel-aware sizing,
+  static-size + dense-grid tooltip overlap.
 
 - `ds-viz-bubble` — continuous numeric × numeric (no grid).
 - `ds-viz-line` — single dimension over time.

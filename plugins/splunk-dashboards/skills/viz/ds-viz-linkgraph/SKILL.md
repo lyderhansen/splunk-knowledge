@@ -95,52 +95,12 @@ Each row = one connection across all columns. Field order matters
 12. `resultLimit: 8` truncation demo.
 13. Tinted background — editorial grouping.
 
-## Options summary
-
-`backgroundColor`, sizing (`nodeWidth`, `nodeHeight`, `nodeSpacingX`,
-`nodeSpacingY`, `linkWidth`), field control (`fieldOrder`), colour
-(`nodeColor`, `nodeTextColor`, `linkColor`, `nodeHighlightColor`,
-`nodeTextHighlightColor`), toggles (`showNodeCounts`,
-`showValueCounts`), `resultLimit`.
-
-Full table inline above; no separate OPTIONS file.
-
-## Drilldown
-
-Click target is **always a node** (never a link). Payload contains
-every column value for that row, plus `name` indicating which column
-was clicked.
-
-```json
-"eventHandlers": [
-  {
-    "type": "drilldown.setToken",
-    "options": {
-      "tokens": [
-        { "token": "selected_node",  "key": "row.Actor.value" },
-        { "token": "selected_field", "key": "name" }
-      ]
-    }
-  }
-]
-```
-
-Branch downstream on `$selected_field$` and filter by `$selected_node$`.
-
-## What linkgraph does NOT have
-
-- **Links only between adjacent columns.** Column 1 → Column 3
-  requires reorder via `fieldOrder` or chain search.
-- **No per-column palette** — all columns share `nodeColor`. Use
-  `splunk.sankey` with `colorMode: categorical` if needed.
-- **No dynamic link colouring.** `linkColor` is single value. For
-  severity-weighted links → `splunk.sankey` with
-  `colorMode: dynamic` + `linkColors` DOS.
-- **Truncation is silent** — `resultLimit` default `50` drops
-  trailing nodes without warning.
-
 ## See also
 
+- [OPTIONS.md](OPTIONS.md) — full options table (sizing, field
+  control, colour, toggles).
+- [GOTCHAS.md](GOTCHAS.md) — silent truncation, no per-column
+  palette, no dynamic link colour, hero-sizing pitfalls.
 - `ds-viz-sankey` — weighted flow (link width = value).
 - `ds-viz-table` — exact pair inspection.
 - `ds-viz-bar` — single-axis frequency.

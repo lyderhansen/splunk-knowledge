@@ -158,27 +158,16 @@ clickable regions:
 
 See `ds-viz-rectangle` PATTERNS for the hit-zone recipe.
 
-## Verified patterns
-
-13 panels in `ds_viz_image_dark`:
-
-- Trusted Domains warning panel (top — always include in image-heavy
-  dashboards).
-- 1: Default stretch (`preserveAspectRatio: false`).
-- 2: Letterbox (`preserveAspectRatio: true`).
-- 3–4: Logo in square vs wide panels (panel-driven aspect ratio).
-- 5: Splunk-bundled `/en-US/static/...` (always trusted, PDF-safe).
-- 6: External CDN PNG (requires allow-list, no PDF).
-- 7: SVG external URL.
-- 8: Background layer.
-- 9: KPI overlay on top of background image.
-- 10: Faint watermark (pre-faded asset, opacity baked in).
-- 11: Markdown fallback for missing `src` (empty state).
-- 12: SVG architecture diagram (crisp at any size).
-- 13: Datacenter floor plan with overlay rectangles.
-
 ## See also
 
+- [PATTERNS.md](PATTERNS.md) — 13 verified patterns: stretch /
+  letterbox, logo in square vs wide panel, Splunk-bundled paths,
+  external CDN URLs, SVG architecture diagrams, background layers,
+  KPI overlays, faint watermarks, markdown fallbacks for missing
+  `src`, datacenter floor plans with overlay rectangles.
+- [GOTCHAS.md](GOTCHAS.md) — PDF-export caveat, allow-list rule,
+  no `opacity` option, no token interpolation in `src`,
+  `currentColor` requirement for custom SVGs.
 - `ds-viz-markdown` — typographic content, lighter than images.
 - `ds-viz-rectangle` — coloured shapes + click-targets over images.
 - `ds-viz-ellipse` — circular highlights, status indicators.

@@ -91,17 +91,6 @@ singlevalue.
 11. **Custom `radialBackgroundColor`** — tinted track.
 12. **Compact strip pattern** — transparent + locked font sizes.
 
-## Options summary
-
-`maxValue`, `value` (DOS), `majorValue` / `majorValueField` /
-`majorColor` / `majorFontSize`, `numberPrecision`, `unit` /
-`unitPosition`, `underLabel`, `trendValue` / `trendDisplay` /
-`trendColor` / `shouldAbbreviateTrendValue`, `radialStrokeColor`,
-`radialBackgroundColor`, `backgroundColor`,
-`shouldUseThousandSeparators`.
-
-Full table inline above; no separate OPTIONS file.
-
 ## What singlevalueradial does NOT have
 
 - **No sparkline** — `sparkline*` silently ignored.
@@ -111,6 +100,8 @@ Full table inline above; no separate OPTIONS file.
 
 ## See also
 
+- [OPTIONS.md](OPTIONS.md) — full options table (16 options grouped
+  by major / radial / trend / chrome).
 - `ds-viz-singlevalue` — number is hero; supports sparklines.
 - `ds-viz-singlevalueicon` — KPI tile with icon.
 - `ds-viz-markergauge` / `ds-viz-fillergauge` — banded against a range.
