@@ -1,6 +1,6 @@
 ---
 name: ds-ref-design-principles
-description: Standalone Splunk Dashboard Studio design reference — covers the four canonical archetypes (executive summary, operational monitoring, analytical deep-dive, SOC overview), reflex defaults to refuse, absolute bans (status colour misuse, red/green only, pie >6, unbounded searches, defaultless inputs), KPI sizing, the chart-selection decision table for all 27 viz types, semantic colour conventions, typography, and the Splunk Dashboard Slop Test. Use when the user asks open-ended design questions ("what should my dashboard look like?", "which chart for X?"), or for the Slop Test before shipping. Companion files cover the full palette and chart-selection matrix.
+description: Standalone Splunk Dashboard Studio design reference — covers the four canonical archetypes (executive summary, operational monitoring, analytical deep-dive, SOC overview), reflex defaults to refuse, absolute bans (status colour misuse, red/green only, pie >6, unbounded searches, defaultless inputs), KPI sizing, semantic colour conventions, typography, and the Splunk Dashboard Slop Test. Use when the user asks open-ended design questions ("what should my dashboard look like?", "which chart for X?"), or for the Slop Test before shipping. Companion file PALETTE.md covers the full palette; see `ds-ref-visual-encoding` for the 27-viz chart-selection decision table.
 ---
 
 # ds-ref-design-principles — design reference
@@ -49,27 +49,12 @@ See `ds-ref-anti-patterns` for the 8 reflex defaults to refuse.
 
 See `ds-ref-anti-patterns` for the 5 absolute bans (BAN/PATTERN/WHY/REWRITE format).
 
-## Chart selection — quick decision
+## Chart selection — decision table
 
-For the full 27-viz decision table, see [CHART-SELECTION.md](CHART-SELECTION.md).
-
-Short version:
-
-| Question | Use |
-|---|---|
-| Current value of one metric? | `splunk.singlevalue` + threshold colouring |
-| How has a metric changed over time? | `splunk.line` |
-| How do discrete categories compare? | `splunk.column` (vertical) |
-| Top N (many categories)? | `splunk.bar` (horizontal, sorted) |
-| Part-to-whole ≤6 categories, one dominates? | `splunk.pie` (or donut) |
-| Threshold position / margin? | `splunk.markergauge` |
-| Geographic distribution? | `splunk.map` (real geo) / `splunk.choropleth.svg` (custom shapes) |
-| Flow between sources / targets? | `splunk.sankey` |
-| Event frequency by hour × weekday? | `splunk.punchcard` |
-| Multi-dimensional comparison? | `splunk.parallelcoordinates` |
-| Correlation between two measures? | `splunk.scatter` |
-| Three-variable correlation (x, y, volume)? | `splunk.bubble` |
-| Tabular detail with drilldown? | `splunk.table` |
+See `ds-ref-visual-encoding` for the chart-selection decision table,
+visual encoding channels (color/size/position/shape), Tufte data-ink
+ratio, and the line-vs-bar-vs-pie / log-vs-linear / stacked-vs-grouped
+rules.
 
 ## Layout, spacing, and depth
 
@@ -122,8 +107,6 @@ See `ds-ref-anti-patterns` for the 13-item quality gate.
 - [PALETTE.md](PALETTE.md) — full palettes (`SERIES_CATEGORICAL_10`,
   `SERIES_SOC_8`, `SERIES_STUDIO_20`), canvas tokens, spacing /
   radius / type scale.
-- [CHART-SELECTION.md](CHART-SELECTION.md) — full 27-viz decision
-  table.
 - **`ds-couture`** — design-first companion. Adds the Design Context
   Protocol (audience / tone / anti-reference / brand), visual taste,
   hierarchy, depth, and the Slop Test rubric. **Pair this skill
@@ -133,7 +116,7 @@ See `ds-ref-anti-patterns` for the 13-item quality gate.
 - **`ds-spl`** — SPL grammar reference for the queries that feed
   the visualisations described here.
 - `ds-pick-viz` — viz selection router. Use first when picking
-  charts; cross-references this skill's CHART-SELECTION.md.
+  charts; cross-references `ds-ref-visual-encoding`.
 - `ds-ref-syntax` — JSON envelope.
 - `ds-ref-pitfalls` — cross-skill traps matrix (viz + interactivity + schema).
 - `ds-viz-bar` / `ds-viz-singlevalue` etc. — per-viz reference.

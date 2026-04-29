@@ -65,8 +65,9 @@ Three skills MUST be consulted before placing the first panel:
    row + drill-down list; analytical = filters left + chart right).
 2. **`ds-ref-design-principles`** — archetype catalog,
    F-pattern reading order, visual hierarchy, grouping rules,
-   KPI sizing (anchor 1.5x supporting), PALETTE.md, CHART-SELECTION.md
-   (the 27-viz decision table), and the absolute bans.
+   KPI sizing (anchor 1.5x supporting), PALETTE.md, and the absolute
+   bans. For the 27-viz chart-selection decision table, see
+   `ds-ref-visual-encoding`.
 3. **`ds-pick-viz`** — for every question in `data-sources.json`,
    pick the viz that matches the data shape. Catches the common
    mismatches early (pie >6 slices, bar without sort, scatter for

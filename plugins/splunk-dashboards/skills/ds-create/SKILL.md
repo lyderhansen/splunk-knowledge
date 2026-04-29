@@ -234,9 +234,8 @@ Two passes are required:
   singlevalue` PATTERNS.md.
 
 If the layout picked viz types that don't fit the data shape, use
-the "Chart selection" decision table in `ds-ref-design-principles`
-CHART-SELECTION.md and invoke `ds-update` to swap viz types before
-running the CLI.
+the chart-selection decision table in `ds-ref-visual-encoding` and
+invoke `ds-update` to swap viz types before running the CLI.
 
 ## Self-check before declaring `dashboard.json` ready
 
