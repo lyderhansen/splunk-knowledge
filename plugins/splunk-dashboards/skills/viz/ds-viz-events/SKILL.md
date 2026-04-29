@@ -1,93 +1,90 @@
 ---
 name: ds-viz-events
-description: |
-  splunk.events - the events viewer. Renders raw _raw log payloads with expandable
-  per-event metadata. Pairs with an optional `fieldsummary` data source for the
-  field summary rail. Supports row-level eventActions and per-field fieldActions
-  for drilldowns. Six options total.
-version: 1.0.0
-verified_against: SplunkCloud-10.4.2604-DashStudio
-test_dashboards:
-  - ds_viz_events_dark
-  - ds_viz_events_light
+description: Splunk Dashboard Studio splunk.events visualization — raw event viewer with expandable per-event metadata. Provides patterns for field summary rail, row-level eventActions, per-field fieldActions, pinned footer fields, and value highlights for SOC investigations and log inspection. Use when the user asks about event viewer, raw events, log payloads, fieldsummary, eventActions, or fieldActions in Splunk Dashboard Studio.
 ---
 
-# splunk.events
+# splunk.events — raw event viewer
 
-The events viewer. Renders raw `_raw` log payloads with expandable per-event metadata.
+Verified against Splunk Cloud 10.4.2604.
+Live test bench: `ds_viz_events_dark` / `ds_viz_events_light`.
 
-## When to use it
+`splunk.events` renders raw `_raw` log payloads with expandable
+per-event metadata. Pairs with an optional `fieldsummary` data source
+for the left field-summary rail.
 
-Pick `splunk.events` when the **message is "show me the raw events"** - investigators want the original log line preserved with field decorations, the schema varies per event, and field/event drilldowns matter.
+## When to use
 
-Pick something else when:
+- Investigators want the original log line preserved with field
+  decorations.
+- Schema varies per event (varying field sets are fine).
+- Field/event drilldowns matter.
 
-| Decision                  | Use instead                                          |
-| ------------------------- | ---------------------------------------------------- |
-| Stable schema, tabular    | `splunk.table`                                       |
-| Time-ordered records      | `splunk.timeline`                                    |
-| Aggregated counts         | `splunk.column` / `splunk.bar` / `splunk.singlevalue`|
+## When NOT to use
 
-## Data shape
+| Decision | Use instead |
+|---|---|
+| Stable schema, tabular | `splunk.table` |
+| Time-ordered records as a chart | `splunk.timeline` |
+| Aggregated counts | `splunk.column` / `splunk.bar` / `splunk.singlevalue` |
 
-The viewer renders one row per result from `dataSources.primary`. The `_raw` field is preserved verbatim and surfaced as the body of each event. All other fields become expandable metadata.
-
-```spl
-| makeresults count=8
-| eval _raw = "2026-04-25 12:00:00 host=web-01 status=500 message=request_failed"
-| table _time _raw host status sourcetype
-```
-
-The events viewer **also** accepts an optional secondary data source under `dataSources.fieldsummary` - a `ds.chain` extending the primary with `| fieldsummary maxvals=10`. This drives the left-rail field summary.
+## Quick start
 
 ```json
-"dataSources": {
-  "ds_events": { "type": "ds.search", "options": { "query": "..." } },
-  "ds_fieldsummary": {
-    "type": "ds.chain",
-    "options": { "extend": "ds_events", "query": "| fieldsummary maxvals=10" }
-  }
-}
-```
-
-```json
-"viz_events": {
+{
   "type": "splunk.events",
+  "title": "Recent errors",
   "dataSources": {
     "primary":      "ds_events",
     "fieldsummary": "ds_fieldsummary"
+  },
+  "options": {
+    "showFieldSummary": true,
+    "footerFields": ["host", "source"]
   }
 }
 ```
 
-## Options (all 6)
+```json
+"dataSources": {
+  "ds_events": {
+    "type": "ds.search",
+    "options": { "query": "search index=app status>=500 | head 100" }
+  },
+  "ds_fieldsummary": {
+    "type": "ds.chain",
+    "options": {
+      "extend": "ds_events",
+      "query": "| fieldsummary maxvals=10"
+    }
+  }
+}
+```
 
-| Option                   | Type    | Default                | Notes                                                                  |
-| ------------------------ | ------- | ---------------------- | ---------------------------------------------------------------------- |
-| `backgroundColor`        | string  | theme default          | Tints the events area (not the panel chrome).                          |
-| `eventActions`           | array   | -                      | Row-level click actions. `[{ eventType, label }]`.                     |
-| `fieldActions`           | object  | -                      | Per-field click actions, keyed by field name. `default` key applies to all fields. |
-| `footerFields`           | array   | -                      | Fields pinned to the per-event footer. Surfaced inline without expansion. |
-| `highlightValuesByField` | object  | -                      | Highlight specific field-value pairs across all events. `{ field: value }` |
-| `showFieldSummary`       | boolean | `true`                 | Show/hide the left-rail field summary. Requires `dataSources.fieldsummary`. |
+## Do / Don't
 
-## Verified patterns (from test-dashboard)
+| ✅ Do | ❌ Don't |
+|---|---|
+| **Field summary:** secondary `ds.chain` extending primary with `\| fieldsummary maxvals=10`. | Use a separate `ds.search` for fieldsummary — it'll re-run the search and double cost. |
+| **Highlights:** `highlightValuesByField: { host: "web-01" }` for visual emphasis. | Expect highlights to **filter** — they only highlight matching events. Filter upstream in SPL. |
+| **Drilldown:** `eventActions: [{ eventType, label }]` for row-level, `fieldActions: { default | <field>: [...] }` for field-level. | Mix `eventActions` and `fieldActions` event types — keep names consistent (`.click` suffix). |
+| **Footer fields:** `footerFields: ["host", "source"]` pins high-signal fields inline. | Pin >5 fields — defeats the per-event compactness. |
+| **Background:** tints the events area, not panel chrome. Use for editorial styling. | Set `backgroundColor` on the panel envelope expecting it to override viz. |
+| **Schema:** preserve `_raw` end-to-end. | Strip `_raw` in SPL — viewer renders nothing useful without it. |
 
-| # | Pattern                              | Key options                                                |
-| - | ------------------------------------ | ---------------------------------------------------------- |
-| 1 | Default with field summary           | `dataSources.fieldsummary` set                             |
-| 2 | No field summary                     | `showFieldSummary: false`                                  |
-| 3 | Custom panel tint                    | `backgroundColor: "#0F1729"`                               |
-| 4 | Pinned footer fields                 | `footerFields: ["host", "source"]`                         |
-| 5 | Highlights                           | `highlightValuesByField: { host: "web-01", status: "500" }`|
-| 6 | Compact (3 events)                   | small dataset + `showFieldSummary: false`                  |
-| 7 | Row-level event action               | `eventActions: [{ eventType, label }]`                     |
-| 8 | Per-field action                     | `fieldActions: { default: [...], host: [...] }`            |
-| 9 | All options stacked                  | every option simultaneously                                |
+## Six options total
 
-## Drilldown patterns
+| Option | Type | Default | Notes |
+|---|---|---|---|
+| `backgroundColor` | string | theme | Tints events area only. |
+| `eventActions` | array | — | Row-level click actions: `[{ eventType, label }]`. |
+| `fieldActions` | object | — | Per-field click actions, keyed by field name. `default` applies to all fields. |
+| `footerFields` | array | — | Fields pinned to per-event footer; surfaced inline without expansion. |
+| `highlightValuesByField` | object | — | `{ field: value }` highlights matching events; does NOT filter. |
+| `showFieldSummary` | boolean | `true` | Show/hide the left rail. **Requires `dataSources.fieldsummary`.** |
 
-`eventActions` fire when an event row is clicked:
+## Drilldown
+
+Row-level (clicking an event):
 
 ```json
 "eventActions": [
@@ -95,7 +92,7 @@ The events viewer **also** accepts an optional secondary data source under `data
 ]
 ```
 
-`fieldActions` fire when a specific field value is clicked. Key by field name, or use `default` for actions that apply to every field:
+Field-level (clicking a specific field value):
 
 ```json
 "fieldActions": {
@@ -104,20 +101,19 @@ The events viewer **also** accepts an optional secondary data source under `data
 }
 ```
 
-Pair with `primary.click` drilldowns at the panel level to wire the action to a navigation, search, or token mutation.
-
-> **Convention**: Event types should end in `.click` if you're wiring them to event handlers.
+Pair with `eventHandlers` at the panel level to wire each `eventType` to a navigation, search, or token mutation.
 
 ## Gotchas
 
-- **`showFieldSummary: true` requires a secondary data source** under `dataSources.fieldsummary`. Without it, the viewer either renders an empty rail or prompts for one. Pair them or set `showFieldSummary: false`.
-- **`fieldsummary` must be a chain** off the primary, not a separate search. Use `ds.chain` with `extend: "<primary_id>"` and `query: "| fieldsummary maxvals=10"`.
-- **`backgroundColor` tints the events area**, not the panel chrome. The header/title still uses theme defaults.
-- **`footerFields` is per-event** - the listed fields appear in every event's footer. Use it for high-signal fields you don't want hidden behind the expand action.
-- **`highlightValuesByField` does not filter** - it just highlights matching events. Filtering is upstream in SPL.
+- `showFieldSummary: true` **requires** `dataSources.fieldsummary`. Without it, the rail prompts or renders empty.
+- `fieldsummary` must be `ds.chain` extending the primary, NOT a separate `ds.search` (would double cost).
+- `backgroundColor` tints events area only — header/title still uses theme defaults.
+- `highlightValuesByField` does NOT filter — filter upstream in SPL.
+- `_raw` is the only required field; everything else is metadata.
 
-## Cross-references
+## See also
 
-- [`ds-viz-table`](../ds-viz-table/SKILL.md) - for tabular data without the `_raw` payload
-- [`ds-viz-timeline`](../ds-viz-timeline/SKILL.md) - for time-ordered records visualised as a chart
-- [`ds-design-principles`](../../reference/ds-design-principles/SKILL.md) - investigation/SOC patterns
+- `ds-viz-table` — tabular records without `_raw`.
+- `ds-viz-timeline` — time-ordered records as chart.
+- `interactivity/ds-drilldowns` — wiring `eventType` strings to handlers.
+- `ds-design-principles` — investigation/SOC patterns.

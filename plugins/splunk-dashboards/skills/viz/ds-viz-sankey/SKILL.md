@@ -1,192 +1,133 @@
 ---
 name: ds-viz-sankey
-description: |
-  splunk.sankey - flow diagram between source/target nodes where link width
-  is proportional to a value. The workhorse for funnels, workflow routing,
-  energy/material flows, attribution, and budget breakdowns.
-  Verified against the 10.4 Dashboard Studio docs.
-version: 1.0.0
-verified_against: SplunkCloud-10.4.2604-DashStudio
-test_dashboards:
-  - ds_viz_sankey_dark
-  - ds_viz_sankey_light
-related:
-  - ds-viz-linkgraph
-  - ds-viz-bar
-  - ds-viz-column
-  - ds-viz-events
+description: Splunk Dashboard Studio splunk.sankey visualization — flow diagram between source/target nodes with link width proportional to value. Provides patterns for conversion funnels, workflow routing, attribution, energy/material flows, and severity-tinted dynamic colouring. Use when the user asks about Sankey diagrams, conversion funnels, kill-chain progression, attack flow, attribution flow, or workflow routing in Splunk Dashboard Studio.
 ---
 
-# splunk.sankey
+# splunk.sankey — proportional flow diagram
 
-A **Sankey diagram** shows directed proportional flow between two columns
-of nodes. Every link's thickness equals the value field for that pair, so
-the eye reads volume directly without scanning a number.
+Verified against Splunk Cloud 10.4.2604.
+Live test bench: `ds_viz_sankey_dark` / `ds_viz_sankey_light`.
 
-> "Where does the flow go - and how much of it makes it through?"
+A Sankey diagram shows directed proportional flow between two columns
+of nodes. Every link's thickness equals the value field for that pair,
+so the eye reads volume directly without scanning a number.
 
-## When to use it
+> "Where does the flow go — and how much of it makes it through?"
 
-| Scenario                                            | Sankey?         |
-| --------------------------------------------------- | --------------- |
-| Conversion funnel with drop-offs                    | Yes |
-| Routing across N stages (intake -> triage -> resolve) | Yes |
-| Budget / spend breakdown                            | Yes |
-| Energy / material flow                              | Yes |
-| Attribution (channel -> conversion)                 | Yes |
-| Hierarchical breakdown without flow                 | No -> treemap (custom) / bar |
-| Network with cycles or peer relationships           | No -> linkgraph |
-| Timed sequence / Gantt                              | No -> timeline |
+## When to use
+
+- Conversion funnel with drop-offs.
+- Routing across N stages (intake → triage → resolve).
+- Budget / spend breakdown.
+- Energy / material flow.
+- Attribution (channel → conversion).
+- Kill-chain or attack-path progression in security.
+
+## When NOT to use
+
+| Scenario | Use instead |
+|---|---|
+| Hierarchical breakdown without flow | Custom treemap / `splunk.bar` |
+| Network with cycles or peer relationships | `splunk.linkgraph` |
+| Timed sequence / Gantt | `splunk.timeline` |
+| Single-stage breakdown | `splunk.pie` / `splunk.bar` |
 
 ## Required data shape
 
-The data source MUST expose three fields named exactly:
+The data source MUST expose three fields named **exactly**:
 
-| Field    | Type    | Role |
-| -------- | ------- | ---- |
-| `source` | string  | The from-node |
-| `target` | string  | The to-node |
-| `value`  | number  | Width / weight of the link |
+| Field | Type | Role |
+|---|---|---|
+| `source` | string | The from-node. |
+| `target` | string | The to-node. |
+| `value` | number | Link width / weight. |
 
-A 4th optional numeric field can drive **dynamic link coloring** (e.g.
-`severity`, `error_rate`).
+Optional 4th numeric field drives `colorMode: "dynamic"` link colour.
 
-Reshape SPL example:
 ```spl
 ... | stats sum(count) AS value by stage_from stage_to
-    | rename stage_from AS source stage_to AS target
-    | table source target value
+| rename stage_from AS source stage_to AS target
+| table source target value
 ```
 
-## Options
-
-The complete option surface from the 10.4 PDF:
-
-| Option            | Type                          | Default                                     |
-| ----------------- | ----------------------------- | ------------------------------------------- |
-| `backgroundColor` | string (hex)                  | `> themes.defaultBackgroundColor`           |
-| `colorMode`       | `categorical` \| `dynamic`    | `categorical`                               |
-| `linkOpacity`     | number (0-1) \| percent string| `0.5`                                       |
-| `linkValues`      | DOS string                    | `> primary | seriesByType('number')`        |
-| `linkColors`      | DOS string                    | `> linkValues | rangeValue(linkColorRangeConfig)` |
-| `resultLimit`     | number                        | `1000`                                      |
-| `seriesColors`    | `string[]` \| DOS string (`^>.*`) | brand 12-color palette starting `#7B56DB` |
-
-> **Heads up - schema vs PDF disagreement.** The 10.4 PDF lists
-> `seriesColors` as `string` and shows a CSV example like
-> `"#7B56DB,#009CEB,..."`. **The runtime validator rejects that form.**
-> Use either:
->
-> ```jsonc
-> "seriesColors": ["#7B56DB", "#009CEB", "#00CDAF"]   // array of hex strings
-> "seriesColors": "> someConfig | matchValue(...)"     // DOS expression starting with >
-> ```
->
-> Passing a CSV string like `"#7B56DB,#009CEB"` triggers:
->
-> ```
-> /visualizations/<id>/options/seriesColors: must match a schema in anyOf
-> /visualizations/<id>/options/seriesColors: must match pattern "^>.*"
-> /visualizations/<id>/options/seriesColors: must be array
-> ```
->
-> The PDF is wrong. Trust the schema.
-
-### colorMode
-
-- `categorical` (default) - one color per source node, drawn from `seriesColors`. Best for funnels and workflows.
-- `dynamic` - link color is mapped from a numeric field via `linkColors` DOS. Best for severity/heatmap views.
-
-### linkOpacity
-
-Accepts both `0.5` and `"50%"` forms. Lower opacity (0.2-0.3) helps when
-many links overlap; higher opacity (0.7-0.9) makes flow the headline.
-
-### linkValues / linkColors
-
-Both are DOS strings. Use them when your data has multiple numeric columns
-and you want to choose which drives width vs color:
+## Quick start
 
 ```json
-"options": {
-  "linkValues": "> primary | seriesByName(\"value\")",
-  "linkColors": "> primary | seriesByName(\"severity\") | rangeValue(linkColorRangeConfig)",
-  "colorMode": "dynamic"
+{
+  "type": "splunk.sankey",
+  "title": "Conversion funnel",
+  "dataSources": { "primary": "ds_funnel" },
+  "options": {
+    "colorMode": "categorical",
+    "linkOpacity": 0.6,
+    "seriesColors": ["#00D9FF", "#7AA2FF", "#B57BFF", "#FFB627"]
+  }
 }
 ```
 
-### resultLimit
+## Do / Don't
 
-Default `1000`. Sankey degrades visually past ~80-150 distinct links. Lower
-for performance and clarity, raise only when you genuinely need it.
+| ✅ Do | ❌ Don't |
+|---|---|
+| **Field names:** lowercase `source`, `target`, `value` exactly. | `from` / `to` / `weight` — chart won't render. |
+| **Numeric value:** `\| eval value = tonumber(value)` if input is text. | Pass `value` as string — silently breaks. |
+| **Acyclic data:** filter `\| where source != target` upstream. | Allow `Cart → Cart` self-loops or back-edges — unpredictable rendering. |
+| **Colours:** `seriesColors: ["#7B56DB", "#009CEB"]` (array). | `seriesColors: "#7B56DB,#009CEB"` — schema rejects CSV string even though 10.4 PDF shows it. |
+| **Categorical palette:** ≤12 source nodes. | Expect >12 distinct colours — palette wraps. Provide a longer `seriesColors` array. |
+| **Dynamic colour:** pair `colorMode: "dynamic"` with `linkColors` DOS pointing to a 4th numeric field. | Set `colorMode: "dynamic"` without `linkColors` — every link gets default colour. |
+| **Top-N:** `\| sort -value \| head N` upstream. | Use `resultLimit: 4` expecting "top 4" — it picks first 4 rows from the source, not the largest. |
+| **Density:** `linkOpacity: 0.2`–`0.3` when many links overlap. | Default `0.5` blindly with 50+ links — visual mush. |
 
 ## Verified patterns
 
-12 panels deployed in `ds_viz_sankey_dark` / `ds_viz_sankey_light`:
+12 panels in `ds_viz_sankey_dark`. Inspect for live JSON. Patterns:
+canonical PDF energy example, ecommerce funnel, support routing,
+`linkOpacity` editorial (0.2) and headline (0.9), custom palette,
+`colorMode: "dynamic"` severity tint, branded `backgroundColor`,
+`resultLimit` raised (2000) and lowered (4) for truncation, explicit
+`linkValues` from multi-numeric source, alert/SOC palette.
 
-1. **Default** - canonical PDF energy example with `ds.test` inline data.
-2. **Ecommerce funnel** - five-stage conversion shape.
-3. **Support routing** - branching workflow.
-4. **linkOpacity=0.2** - editorial; node labels breathe.
-5. **linkOpacity=0.9** - flow as headline.
-6. **Custom seriesColors** - brand palette override.
-7. **colorMode=dynamic** - severity-tinted links.
-8. **Custom backgroundColor** - tinted panel.
-9. **resultLimit=2000** - increase for wide flows.
-10. **resultLimit=4** - truncation demo.
-11. **Explicit linkValues** - pick `value2` from multi-numeric source.
-12. **Alert / SOC palette**.
+## Eight options total
+
+| Option | Type | Default |
+|---|---|---|
+| `backgroundColor` | string (hex) | `> themes.defaultBackgroundColor` |
+| `colorMode` | `"categorical"` \| `"dynamic"` | `"categorical"` |
+| `linkOpacity` | number 0–1 OR `"50%"` | `0.5` |
+| `linkValues` | DOS string | `> primary \| seriesByType('number')` |
+| `linkColors` | DOS string | `> linkValues \| rangeValue(linkColorRangeConfig)` |
+| `resultLimit` | number | `1000` |
+| `seriesColors` | string[] OR DOS string (must start `>`) | brand 12-colour palette |
 
 ## Drilldown
 
-Per the 10.4 PDF the click context for `splunk.sankey` is:
-
-| Token                 | Value |
-| --------------------- | ----- |
-| `$click.name$`        | Field name of the value clicked (e.g. `source`, `target`, `value`) |
-| `$click.value$`       | Value of the area clicked (e.g. `Cart`, `Checkout`, `260`) |
-| `$click.value2$`      | n/a |
-
-Pattern - drill into a node's underlying events:
+| Token | Value |
+|---|---|
+| `$click.name$` | Field name (`source` / `target` for nodes, `value` for links). |
+| `$click.value$` | Value clicked (e.g. `Cart`, `Checkout`, `260`). |
+| `$click.value2$` | n/a |
 
 ```json
-"eventActions": {
-  "actions": [
-    {
-      "type": "openSearch",
-      "search": "index=app stage IN (\"$click.value$\")"
-    }
-  ]
-}
+"eventHandlers": [
+  {
+    "type": "drilldown.linkToSearch",
+    "options": { "search": "index=app stage IN (\"$click.value$\")" }
+  }
+]
 ```
 
-Tip: the click target is **either a node or a link**. To distinguish, the
-clicked field name comes through as `$click.name$` (`source`/`target` for
-nodes, `value` for links).
+## Gotchas
 
-## Common gotchas
+- Field names lowercase, exact, no aliases.
+- `seriesColors` CSV string rejected (PDF lies, schema is authoritative).
+- Cycles / self-loops break rendering.
+- `resultLimit: N` is "first N rows", not "top N by value".
+- Categorical palette wraps after 12 distinct source nodes.
+- Node order = layout algorithm, NOT SPL order.
 
-- **Field names are NOT optional.** Source/target/value must appear with
-  those exact lowercase names. `from`/`to`/`weight` will not render.
-- **No cycles.** Sankey is acyclic by design. If a node is both a source
-  and target of the same link the chart will collapse or omit it.
-- **Loops or back-edges** (e.g. `Cart -> Cart`) cause unpredictable
-  rendering. Pre-filter them out in SPL.
-- **String values for `value` field** silently break the chart - cast with
-  `tonumber()` if the data is text.
-- **Categorical color palette runs out** at ~12 source nodes - extra nodes
-  reuse colors. Provide a longer `seriesColors` array (`["#aaa","#bbb",...]`)
-  for distinct nodes. **Do not pass a CSV string** - the schema rejects it
-  even though the 10.4 PDF shows that form.
-- **Dynamic mode requires a 4th numeric field** referenced by `linkColors`.
-  Missing this leaves all links the same color.
-- **`resultLimit: 4`** doesn't pick the "important" 4 - it picks the first
-  4 rows from your data source. Pre-sort with `sort -value` if you need
-  the top N.
-- **Ordering of nodes** is determined by the layout algorithm, not your
-  SPL order. To force ordering you typically must rebuild via custom viz
-  or tweak the data so the algorithm emits the desired layout.
+## See also
 
-## Reference
-
-Verified against `SplunkCloud-10.4.2604-DashStudio` PDF.
+- `ds-viz-linkgraph` — when network has cycles or peer relations.
+- `ds-viz-bar` — single-stage breakdown.
+- `ds-viz-timeline` — when sequence is timed.
+- `ds-viz-events` — when individual flow events matter.
