@@ -156,6 +156,38 @@ Hand to `ds-create` (for fresh JSON authoring) or `ds-design` (for browser-based
 
 Hand-off is **blocked** if Scope Check fails without waivers. Fix the gap or document the waiver before proceeding.
 
+## Aesthetic flavor — commit to one direction
+
+The Design Context Protocol asks for "tone" as one of the 5 required inputs. Tone words are abstract; aesthetic flavors are committable directions. Pick ONE flavor for the dashboard and let it drive every downstream decision. Mixing flavors produces committee-design.
+
+| Flavor | One-line description | When to use | Splunk archetype pairing |
+|---|---|---|---|
+| **Brutalist** | Raw, type-heavy, near-monochrome, sharp edges, minimal decoration | Status pages, internal tools, "no-nonsense" infra | operational, status-page |
+| **Editorial** | Magazine-grade typography, generous whitespace, restrained accents | Executive summary, board reads, narrative dashboards | executive, business-metrics |
+| **Refined** | Polished but understated, tinted neutrals, single accent, professional | Stripe-style — fintech, B2B SaaS, pro tools | analytical, executive |
+| **Playful** | Rounded shapes, multiple accents, motion-friendly, personality | Sales/marketing, gamified ops, training dashboards | business-metrics |
+| **Industrial** | High-contrast, geometric, dense, accent-saturated, function-first | NOC walls, SOC walls, ops at scale | noc, soc, operational |
+| **Luxury** | Heavy serifs, deep blacks, gold/champagne accents, generous spacing | Hospitality, luxury retail, exclusive memberships | executive (rare) |
+| **Soft-pastel** | Low-chroma, mid-tone neutrals, friendly accents, low-stakes feel | Healthcare admin, education, public-sector status | status-page, business-metrics |
+| **Retro-futuristic** | High-saturation, neon-on-dark, scanline aesthetics, late-80s arcade | SOC walls (with restraint), demo/event dashboards | soc, demo |
+| **Organic-natural** | Earth tones, hand-drawn details, asymmetric, warm | Sustainability, ESG, agriculture, environment | business-metrics |
+| **Brutally-minimal** | One accent or none, type and space carry everything, no decoration | Vercel-style, monitoring, "the data is the design" | operational, analytical |
+| **Maximalist-chaos** | High density, multiple textures, overlapping layers, intentional noise | Editorial / data-journalism, hero dashboards, demos | analytical (rare) |
+
+**Rule:** pick one. Write it in the design brief. Every subsequent decision (palette, typography, layout, density) is filtered by that flavor. Two flavors fighting in the same dashboard = committee design = not sexy.
+
+**Default mappings if user hasn't specified:**
+
+- SOC / NOC wall → industrial
+- Executive summary → editorial OR refined
+- Operational ops → brutalist OR brutally-minimal
+- Analytical → refined OR (rare) maximalist-chaos
+- Business metrics → editorial OR playful
+- Status page → brutally-minimal OR soft-pastel
+- Compliance / forensic → refined
+
+These are starting points, not commands — confirm the flavor with the user before locking it.
+
 ## What this skill DOES NOT do
 
 - Specific palette tables → `ds-ref-color`
