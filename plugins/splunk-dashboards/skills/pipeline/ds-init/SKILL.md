@@ -90,3 +90,22 @@ The CLI writes `.splunk-dashboards/<project>/state.json` and `.splunk-dashboards
 ## Next step
 
 Read the `## Next step` line at the bottom of `requirements.md`. Invoke the suggested skill(s).
+
+## Pipeline reading list
+
+`ds-init` is the entry point — every downstream stage requires
+specific content skills before generating real JSON. The pipeline:
+
+```
+ds-init → ds-data-explore / ds-mock → ds-design → ds-create → ds-validate → ds-polish → ds-deploy
+```
+
+| Stage | Must consult |
+|---|---|
+| `ds-design` | `reference/ds-design-principles` (archetype + palette) + `viz/ds-pick-viz` (viz selection). |
+| `ds-create` | `viz/ds-viz-<type>` for **every** viz in the layout + `reference/ds-syntax` + `reference/ds-pitfalls` final pass. |
+| `ds-validate` | `reference/ds-pitfalls` for trap-aware manual review. |
+| `ds-polish` | `reference/ds-design-principles` (catalog) + `reference/ds-pitfalls` (configuration risks). |
+
+Skipping these lookups produces dashboards that fail schema
+validation, render empty, or fail the Slop Test.

@@ -73,3 +73,26 @@ The CLI:
 ## Next step
 
 Move to `ds-design` to wireframe the layout.
+
+## See also
+
+When drafting SPL per question, consult `viz/ds-pick-viz` to confirm
+the question shape maps to a viz that exists. The decision router
+catches mismatches between the data shape your search returns and
+the viz the user expects (e.g. a dashboard question that begs for a
+choropleth but the SPL only returns a single row, or a "top N" that
+needs `\| sort - count \| head N` upstream of bar chart binding).
+
+Per-viz data-shape requirements live in the matching `viz/ds-viz-<type>/SKILL.md`
+"Quick start" section. The most common SPL traps:
+
+- `splunk.bar` / `splunk.column` — needs `\| sort` (no auto-sort).
+- `splunk.map` bubble layer — **requires** `\| geostats latfield=lat
+  longfield=lon …`, NOT `\| stats count by lat lon`.
+- `splunk.map` choropleth — needs `\| geom geo_<lookup> featureIdField=<col>`
+  and the right key shape (full names vs ISO-2 — see `ds-viz-map`
+  GOTCHAS).
+- `splunk.sankey` — needs lowercase `source` / `target` / `value`
+  field names exactly.
+- Any sparkline column on `splunk.table` — must be built with
+  `\| stats sparkline(...) by <key>`, NOT `\| eval x="..." \| makemv`.

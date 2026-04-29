@@ -237,6 +237,24 @@ They are complementary — on a legacy dashboard, run both: `ds-review` for the 
 | **MIXED** | `ds-polish` for the fixable subset; revisit critique after. |
 | **SLOP** | `ds-polish` if failures are catalog-covered; `ds-update` if architectural; in severe cases, re-scope via `ds-init` and regenerate. |
 
+### Cross-check against `reference/ds-pitfalls`
+
+The 13 design-principles checks above don't cover **configuration
+traps** (CSV `seriesColors`, bubble layer with wrong SPL shape,
+`linkToDashboard.tokens` map vs array, etc.). Those traps fail the
+dashboard at runtime regardless of how clean the design is.
+
+After running the critique scorecard, scan `reference/ds-pitfalls`
+for any of these symptoms in the dashboard:
+
+- Schema-rejected shapes (linter / editor refuses to save).
+- Silently-empty panels (renders, no console error).
+- Drilldowns that don't fire or don't forward tokens.
+- Visibility conditions that always evaluate true / false.
+
+These get appended to the critique report under "Configuration risks
+beyond the Slop Test".
+
 ### Pipeline position
 
 ```

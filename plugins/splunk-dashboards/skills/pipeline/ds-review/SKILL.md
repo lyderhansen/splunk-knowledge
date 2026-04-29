@@ -23,12 +23,18 @@ description: Use this skill to audit a Splunk Dashboard Studio dashboard against
 
 ### 2. Visualization appropriateness
 
-Check each panel's `viz_type` against the shape of its data (see `ds-viz` for recommendations):
+Check each panel's `viz_type` against the shape of its data. Use the
+chart-selection decision table in `reference/ds-design-principles`
+(CHART-SELECTION.md) and `viz/ds-pick-viz` for the canonical
+mappings. For per-viz option correctness, load the matching
+`viz/ds-viz-<type>` GOTCHAS.md.
 
 - `splunk.pie` with > 6 categories — flag (unreadable).
 - `splunk.singlevalue` driven by a query returning many rows — flag (only first row shown).
 - Time-series data rendered as `splunk.bar` or `splunk.pie` — flag (misleading).
-- `splunk.choropleth` without a geographic field — flag.
+- `splunk.choropleth.svg` without `<path id="...">` elements — flag.
+- `splunk.bar` / `splunk.column` with stray `x` / `y` DOS options — flag (those are scatter-only; flips axes silently). See `ds-pitfalls`.
+- `splunk.map` with bubble layer using `\| table` shape — flag (must be `\| geostats`). See `ds-viz-map` GOTCHAS.
 
 ### 3. Drilldowns
 
@@ -116,3 +122,16 @@ Standalone (path to file):
 ## After review
 
 Hand the findings to the user. For each actionable one, offer a specific `ds-update` command that would fix it. Do not advance workspace state; `ds-review` is read-only.
+
+## See also
+
+- **`reference/ds-pitfalls`** — cross-skill traps matrix. Run as a
+  final review pass before declaring the dashboard clean. Catches
+  silently-empty panels, schema rejections, and drilldown
+  misconfigurations that the design-principles checklist above
+  doesn't surface.
+- **`viz/ds-pick-viz`** + **`viz/ds-viz-<type>`** for any visualization
+  that the review wants to swap or reconfigure.
+- **`reference/ds-design-principles`** for the archetype, palette,
+  and Slop Test rubric the visual-polish checklist above is derived
+  from.

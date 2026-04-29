@@ -1,6 +1,6 @@
 ---
 name: ds-create
-description: Use this skill to generate a full Splunk Dashboard Studio JSON definition (dashboard.json) from a workspace's layout.json and data-sources.json. Reads Panel positions, visualization types, and SPL queries; produces the complete dataSources + visualizations + layout.structure. Advances workspace state from designed to built. Requires a workspace at designed stage produced by ds-design.
+description: Use this skill to generate a full Splunk Dashboard Studio JSON definition (dashboard.json) from a workspace's layout.json and data-sources.json. Reads Panel positions, visualization types, and SPL queries; produces the complete dataSources + visualizations + layout.structure. Advances workspace state from designed to built. Requires a workspace at designed stage produced by ds-design. **Before generating JSON, this skill REQUIRES loading the per-viz `viz/ds-viz-<type>` skill for every distinct viz type in the layout, plus `viz/ds-pick-viz`, `reference/ds-design-principles`, `reference/ds-syntax`, and `reference/ds-pitfalls`. Skipping these lookups produces output that fails schema validation or renders empty.**
 ---
 
 # ds-create — Dashboard Studio JSON builder
@@ -54,7 +54,7 @@ The `title` becomes the dashboard's top-level title (shown in the Splunk UI). `d
 }
 ```
 
-For deeper schema details, invoke `ds-syntax`. For per-visualization option fields, invoke `ds-viz`.
+For deeper schema details, invoke `reference/ds-syntax`. For per-visualization option fields, invoke the matching `viz/ds-viz-<type>` skill — see "Required reading" below.
 
 ## New: global time input, drilldowns, grid layout
 
@@ -122,22 +122,105 @@ catch it at `built`-stage rather than at deploy.
 - `state.json` has `current_stage=built`.
 - Next step: `ds-validate` (lint SPL, tokens, drilldowns) before `ds-deploy`.
 
-## Design considerations
+## Required reading — DO NOT skip these lookups
 
-The CLI builds the mechanical skeleton (data sources, visualizations, structure) directly from the workspace. It does not style the dashboard — that is Claude's job during the build.
+The CLI builds the mechanical skeleton (data sources, visualizations,
+structure). It does **not** know per-viz option shapes, threshold
+semantics, or schema traps. Generating JSON without consulting the
+content skills below produces output that the schema validator
+rejects, the Splunk runtime renders empty, or that fails the Slop
+Test.
 
-Before invoking the CLI, consult:
+This is not optional. The 27 viz types each have their own option
+table, their own data-shape requirements, and their own gotchas. The
+6 interactivity skills each cover a separate part of the
+token / drilldown / visibility surface. **Do not freestyle from
+training-data memory** — load the specific skills below.
 
-- **`ds-design-principles`** — archetypes, KPI sizing, chart selection decision table, semantic color palette, canvas tokens.
-- **`ds-syntax`** — the Dashboard Studio v2 JSON schema (required/optional fields, Dynamic Options Syntax, token bindings).
-- **`ds-viz`** — per-visualization option reference.
+### Before deciding viz types
 
-After the CLI writes `dashboard.json`, enrich the file directly:
+1. **`viz/ds-pick-viz`** — decision router. Given the question shape
+   in `requirements.md`, picks the right viz type and warns about
+   common mismatches (pie >6 slices, bar without sort, etc.).
+2. **`reference/ds-design-principles`** — archetype (executive / ops
+   / analytical / SOC), KPI sizing, semantic colour palette,
+   canvas tokens, the absolute bans, the Slop Test.
 
-- Set `layout.options.backgroundColor` to the canvas token that matches the chosen mode (`#0b0c0e` for dark, `#FAFAF7` for light, `#000000` for NOC wall).
-- Populate per-viz `options` with the semantic palette (e.g. failure KPIs get `"majorColor": "#DC4E41"`).
-- Add `splunk.rectangle` cards behind KPI rows for depth (place first in `layout.structure` so they render behind the panels).
-- Add `splunk.markdown` section headers between zones when panel count > 6.
-- Wire `trendValue`, `sparklineValue`, or `majorValue` Dynamic Options Syntax expressions on singlevalues that have time-series data.
+### Before writing the JSON for ANY visualization
 
-If the layout picked viz types that don't fit the data shape, use the "Chart selection" decision table in `ds-design-principles` and invoke `ds-update` to swap viz types before running the CLI.
+Read **`viz/ds-viz-<type>/SKILL.md`** for every viz type that appears
+in your `layout.json`. This is the single most important step. Each
+SKILL.md has:
+
+- Quick start JSON (copy this).
+- Do / Don't table (the per-viz traps).
+- See also pointers to PATTERNS.md / OPTIONS.md / GOTCHAS.md when
+  more detail is needed.
+
+Worked examples of what each per-viz skill catches:
+
+| If layout has… | Read this | Common trap it stops |
+|---|---|---|
+| `splunk.bar` / `splunk.column` | `ds-viz-bar` / `ds-viz-column` | Adding `x` / `y` DOS options (those are scatter-only) — flips axes silently. |
+| `splunk.singlevalue` | `ds-viz-singlevalue` | Threshold bucket overlaps; `trendColor` doesn't auto-flip on +/-. |
+| `splunk.singlevalueicon` | `ds-viz-singlevalueicon` | Per-instance icon URLs (UUID is non-portable); panel `title` not supported. |
+| `splunk.map` | `ds-viz-map` | `geo_countries` keys on full names; bubble layer **must** use `\| geostats`. |
+| `splunk.choropleth.map` (typo) | `ds-viz-map` Common confusions | Doesn't exist — use `splunk.map` with choropleth layer. |
+| `splunk.sankey` | `ds-viz-sankey` | Needs lowercase `source` / `target` / `value` exactly; CSV `seriesColors` rejected. |
+| `splunk.timeline` | `ds-viz-timeline` | `category` must be DOS string, not bare field name. |
+| `splunk.table` with sparklines | `ds-viz-table` + SPARKLINE-DATA.md | `eval x="..." \| makemv` only types row 1 — use `\| stats sparkline()`. |
+| `splunk.markdown` | `ds-viz-markdown` | GFM pipe-tables NOT supported; only 7 fontFamily values allowed. |
+
+### Before adding interactivity
+
+Read the matching `interactivity/<skill>` for any of:
+
+| If layout includes… | Read this |
+|---|---|
+| Any input widget | `interactivity/ds-inputs` (only 5 input types exist; `input.radio` / `input.number` are NOT valid) |
+| Tokens consumed in SPL or options | `interactivity/ds-tokens` (multiselect needs `\|s` filter for `IN()`) |
+| Global time picker via defaults | `interactivity/ds-defaults` |
+| Click handlers on charts/tables | `interactivity/ds-drilldowns` (`linkToDashboard.tokens` is **array**, not map) |
+| Conditional show/hide panels | `interactivity/ds-visibility` (`containerOptions.visibility` only; `isSet()` is Cloud-only) |
+| Multi-tab dashboard | `interactivity/ds-tabs` |
+
+### After writing the JSON, before validating
+
+**Always do a final pass against `reference/ds-pitfalls`** — the
+cross-skill traps matrix. Symptom-to-fix lookup table that catches
+issues that span multiple skills (e.g. "schema rejects CSV
+seriesColors" appears on sankey + timeline + linkgraph; "dataSource
+name regex" appears on every search; threshold-bucket overlap
+appears on singlevalue + ellipse + rectangle + filler/markergauge).
+
+### Per-viz JSON enrichment after the CLI writes `dashboard.json`
+
+- Set `layout.options.backgroundColor` to the canvas token from
+  `ds-design-principles` PALETTE.md (`#0b0c0e` dark, `#FAFAF7` light,
+  `#000000` NOC wall).
+- Populate per-viz `options` with the semantic palette (failure
+  KPIs get `"majorColor": "#DC4E41"`, etc.) — the exact hex values
+  are in `ds-design-principles` PALETTE.md.
+- Add `splunk.rectangle` cards behind KPI rows for depth (place
+  **first** in `layout.structure` — earlier = behind). See
+  `ds-viz-rectangle` PATTERNS.md.
+- Add `splunk.markdown` section headers between zones when panel
+  count > 6.
+- Wire `trendValue`, `sparklineValue`, or `majorValue` Dynamic
+  Options Syntax expressions on singlevalues — see `ds-viz-
+  singlevalue` PATTERNS.md.
+
+If the layout picked viz types that don't fit the data shape, use
+the "Chart selection" decision table in `ds-design-principles`
+CHART-SELECTION.md and invoke `ds-update` to swap viz types before
+running the CLI.
+
+## Self-check before declaring `dashboard.json` ready
+
+- [ ] Read `ds-pick-viz` and `ds-design-principles` for archetype + viz selection.
+- [ ] Read `ds-syntax` for the JSON envelope.
+- [ ] Read **`ds-viz-<type>` for every distinct viz type** in the layout.
+- [ ] Read every relevant `interactivity/ds-*` skill if the dashboard has inputs / tokens / drilldowns / visibility / tabs.
+- [ ] Final pass against `ds-pitfalls`.
+- [ ] Slop Test from `ds-design-principles`.
+- [ ] No "I know this from training data" decisions on options or DOS expressions.

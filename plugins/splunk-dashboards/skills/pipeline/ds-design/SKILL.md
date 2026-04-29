@@ -53,7 +53,24 @@ Supported viz types: `splunk.singlevalue`, `splunk.line`, `splunk.column`, `splu
 
 ## See also
 
-Before wireframing, invoke **`ds-design-principles`** for:
-- The four dashboard archetypes (executive / operational / analytical / SOC) — pick one based on `requirements.md` audience.
-- Layout principles (F-pattern reading, visual hierarchy, grouping).
-- KPI sizing rules and the chart-selection decision table.
+Before wireframing, invoke:
+
+- **`reference/ds-design-principles`** for:
+  - The four dashboard archetypes (executive / operational / analytical
+    / SOC) — pick one based on `requirements.md` audience.
+  - Layout principles (F-pattern reading, visual hierarchy, grouping).
+  - KPI sizing rules.
+  - PALETTE.md for canvas tokens + series palettes.
+  - CHART-SELECTION.md — the 27-viz decision table.
+
+- **`viz/ds-pick-viz`** when you have a specific question shape in
+  `requirements.md` and need to pick the right viz. The decision
+  router catches the most common mismatches (pie >6 slices, bar
+  without sort, scatter for time-series). It cross-references the
+  per-viz `viz/ds-viz-<type>` skills so you can dive deeper before
+  committing the layout.
+
+Once the wireframe is set, `ds-create` will require loading the
+specific `viz/ds-viz-<type>` skill for every viz type chosen here.
+Picking a viz at this stage that doesn't fit the data shape costs
+a re-design later — better to use `ds-pick-viz` now.

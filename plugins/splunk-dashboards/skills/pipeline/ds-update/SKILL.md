@@ -49,6 +49,25 @@ Operate on any `dashboard.json` or `dashboard.xml` path the user provides. If th
 
 If any invariant breaks after your edit, fix it before writing the file.
 
+## Required reading per mutation type
+
+Different mutations require different skills before editing JSON:
+
+| Mutation | Required reading |
+|---|---|
+| Change viz type | `viz/ds-pick-viz` (does the new type fit the data shape?) + the new type's `viz/ds-viz-<type>/SKILL.md` (options + Do/Don't). |
+| Add a panel | The new viz's `viz/ds-viz-<type>` SKILL.md + GOTCHAS.md. Also `reference/ds-design-principles` for archetype-fit. |
+| Add an input | `interactivity/ds-inputs` (only 5 input types are valid; `defaultValue` shape matters). |
+| Add a drilldown | `interactivity/ds-drilldowns` (`linkToDashboard.tokens` is array, not map; `\|u` mandatory in `customUrl`). |
+| Add visibility / show-hide | `interactivity/ds-visibility` (`containerOptions.visibility` only; bare-token expressions). |
+| Edit a token reference | `interactivity/ds-tokens` (multiselect `\|s` filter, `.earliest` / `.latest` subfields). |
+| Rebind dataSource name | `reference/ds-syntax` (the `[A-Za-z0-9 \-_.]+` regex). |
+| Add a tab | `interactivity/ds-tabs` (omit `layout.type` when using `layout.tabs`). |
+
+For **any** edit, do a final pass against `reference/ds-pitfalls` —
+it catches the cross-skill traps that single-skill lookups miss
+(CSV `seriesColors`, choropleth empty panels, sparkline data-density).
+
 ## After editing
 
 Tell the user:

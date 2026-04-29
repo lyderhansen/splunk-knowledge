@@ -68,3 +68,31 @@ With errors and no `--force`, the CLI exits non-zero and leaves state at `built`
 
 - `state.json` has `current_stage=validated`.
 - Next step: `ds-deploy` to produce `dashboard.xml` (and optionally a Splunk TA tarball).
+
+## Manual review — what the linter cannot catch
+
+The CLI checks structural rules but not Dashboard-Studio runtime
+traps. Before declaring a dashboard truly clean, do a manual pass
+against `reference/ds-pitfalls` — the cross-skill traps matrix —
+which covers symptoms the linter cannot detect:
+
+- **Schema-rejected shapes** the linter doesn't enforce yet:
+  CSV-string `seriesColors` (sankey, timeline, linkgraph), bare
+  field names where DOS strings are required (`splunk.timeline`
+  `category`).
+- **Silent runtime traps**: bubble layer with `\| table lat lon`
+  shape (needs `\| geostats`); `geo_countries` keyed on ISO-2
+  instead of full names; `linkToDashboard.tokens` map shape
+  (must be array); `containerOptions.visibility` with bare-token
+  vs quoted-token mismatch.
+- **Panel-renders-empty traps** with no console error: choropleth
+  without `tooltipHeaderField`; sparkline columns built with
+  `\| eval x="..." \| makemv` (only row 1 renders); `splunk.singlevalueicon`
+  in a grid layout (silently falls back to plain singlevalue).
+
+Run the manual pass on any dashboard the linter passes — these
+landmines are the difference between "validates" and "actually
+works on Splunk".
+
+For per-viz option-level checks, also load the matching `viz/ds-viz-<type>`
+GOTCHAS.md for each distinct viz type in `dashboard.json`.

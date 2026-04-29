@@ -51,3 +51,21 @@ python3 -m splunk_dashboards.deploy build <project-name> --label "My Dashboard" 
 - (If `--as-app`) `<app-name>.tar.gz` ready to deploy as a Splunk TA.
 - `state.json` has `current_stage=deployed`.
 - Next step (optional): `ds-review` to audit the dashboard against best practices.
+
+## See also
+
+The XML envelope wraps the JSON definition for installation:
+
+```xml
+<dashboard version="2" theme="dark">
+  <label>...</label>
+  <description>...</description>
+  <definition><![CDATA[
+    { ...JSON definition... }
+  ]]></definition>
+</dashboard>
+```
+
+For envelope rules (`version="2"` requirement, theme override
+behaviour, CDATA escaping, `app.conf` / `metadata` requirements for
+the TA tarball), see `reference/ds-syntax` § XML envelope.

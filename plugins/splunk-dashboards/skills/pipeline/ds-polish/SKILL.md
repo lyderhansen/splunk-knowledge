@@ -269,6 +269,28 @@ Always run `ds-validate` AFTER `ds-polish`. Polish can technically introduce sch
 
 If a design principle changes in `ds-design-principles`, this catalog must update in lockstep.
 
+### Cross-check against `reference/ds-pitfalls`
+
+Some Slop-Test failures look like design issues but are actually
+**configuration traps** documented in `reference/ds-pitfalls`. Before
+declaring polish complete, scan the matrix for symptoms in the
+dashboard:
+
+- A KPI tile that renders `--` instead of a number → singlevalue
+  threshold-bucket overlap or single-row data without
+  `trendDisplay: "off"`. See `ds-viz-singlevalue` GOTCHAS via
+  `ds-pitfalls`.
+- A chart with axes flipped or no bars → `splunk.bar` /
+  `splunk.column` with stray `x` / `y` DOS options.
+- A choropleth that renders blank → `geo_countries` keyed on ISO-2
+  instead of full names.
+- A drilldown that doesn't forward tokens → `linkToDashboard.tokens`
+  in map shape instead of array.
+
+Polish doesn't fix these — they're SPL or schema bugs — but it should
+flag them in the polish-report so they're rerouted to `ds-update`
+before deploy.
+
 ### When NOT to use `ds-polish`
 
 - **Custom-styled dashboards**: if the author deliberately overrode canvas background, palette, or KPI sizing for a specific brand reason, polish will fight those choices. Use `ds-review` instead and review findings with the user before applying fixes manually.

@@ -105,3 +105,14 @@ The CLI:
 ## Next step
 
 After this skill completes, move to `ds-design` to wireframe the dashboard layout.
+
+## See also
+
+When drafting `makeresults`-based mock SPL per question, the data
+shape of the mock must match what the eventual viz expects. Same
+rules as real data — see `ds-data-explore` "See also" for the per-viz
+SPL traps (geostats for bubble, lowercase source/target/value for
+sankey, `\| sort` before bar chart binding, etc.).
+
+For the `ds.test` JSON shape (when you want inline columnar data
+instead of `makeresults`), see `reference/ds-syntax` § dataSources.
