@@ -35,16 +35,11 @@ Before designing, know:
 
 Ask if any are unknown. The codebase cannot tell you these.
 
-## Four archetypes
+## Dashboard archetypes
 
-| Archetype | Audience | Panels | Primary question |
-|---|---|---|---|
-| **Executive summary** | Leadership | 6–8 | Is everything healthy right now? |
-| **Operational monitoring** | On-call, NOC | 8–12 | What is happening right now? |
-| **Analytical deep-dive** | Analysts, investigators | 10–14 (use tabs) | What caused this and what does the data show? |
-| **SOC overview** | SOC analysts | 7–10 | Where are threats, how severe, what just happened? |
-
-Each archetype has a canvas-zone template — see [PALETTE.md](PALETTE.md).
+See `ds-ref-archetypes` for the four canonical layouts (executive
+summary, operational monitoring, analytical deep-dive, SOC overview)
+with panel-mix fingerprints, audience profiles, and hybrid guidance.
 
 ## Reflex defaults to reject
 
