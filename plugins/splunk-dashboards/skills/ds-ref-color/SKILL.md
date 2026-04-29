@@ -518,3 +518,74 @@ fingerprint.
   reflex palettes).
 - `ds-critique` — palette violations during the Slop Test.
 
+---
+
+## Alpha is a design smell
+
+Heavy use of transparency (`rgba()`, `hsla()`, `alpha`-channels in panel backgrounds, low `fillOpacity` everywhere) almost always signals an **incomplete palette**. When the palette has explicit overlay colors, depth ladder, and surface tokens, you don't need transparency to fake them.
+
+Why alpha is bad as a default tool:
+
+- **Unpredictable contrast** — what's the actual rendered text color on `rgba(white, 0.6)` over a chart that itself draws colored series? Auditing WCAG against this is impractical.
+- **Performance overhead** — Studio renders many transparent layers per frame; nested transparency multiplies the cost.
+- **Inconsistency** — different operators on different displays see different effective contrasts.
+
+**Define explicit overlay colors per context** instead:
+
+- Hover overlay → opaque hex, e.g., `#1A1B23` over the dark canvas
+- Modal scrim → opaque dark with explicit hex, not `rgba(0,0,0,0.6)`
+- Disabled state → explicit muted hex from the palette, not low-opacity primary
+
+**Exceptions where alpha is OK:**
+
+- Focus rings (visible state, briefly, transparency adds polish)
+- Brief interactive feedback (button-press flash)
+- Splunk's `splunk.rectangle` `fillOpacity: 0.04` for ZONE BACKGROUND tints (the only depth-via-opacity Studio supports cleanly)
+
+Anywhere else, if you reach for opacity, the palette is missing a color. Add it.
+
+## Decision fatigue — skip secondary/tertiary unless you need them
+
+Most dashboards work with **one accent color**. Adding more creates decision fatigue and visual noise without adding meaning. Common over-design pattern: primary + secondary + tertiary + "highlight" + "emphasis" + "action". After all that, the eye doesn't know where to land — every panel is "accented" so nothing is.
+
+**Rule:** start with one accent. Add a second only when the dashboard has TWO distinct actions / semantic groups the user must distinguish at a glance. Add a third only when... you almost never need a third on a dashboard.
+
+The semantic palette (RAG / SOC severity) is already 4 colors; adding more accents on top of that creates 5–6+ active hues, which crosses the "categorical perception" limit.
+
+**One-accent dashboards feel intentional. Multi-accent dashboards feel like committee work.**
+
+## Dangerous color combinations (extended)
+
+Beyond colorblind safety pairings (above), these are the most common readability failures on dashboards:
+
+- **Light gray text on white background** — the #1 accessibility fail. Looks "minimalist" in mockups, fails WCAG immediately. Placeholder text frequently lands here. Always check at AA 4.5:1 for body, 3:1 for large/UI.
+- **Gray text on a colored background** — gray reads as washed out and dead on colored surfaces. Use a darker shade of the background hue (transparency works; or compute the actual hex via OKLCH) instead of "neutral gray on color".
+- **Red text on green background (or vice versa)** — ~8% of men cannot distinguish; visual vibration even for those who can.
+- **Blue text on red background** — visually vibrates ("chromostereopsis"); the eye cannot focus on both depths simultaneously.
+- **Yellow text on white** — almost always fails contrast; needs near-black yellow to work, which defeats the point.
+- **Thin light text on chart fills** — the chart fill varies pixel-by-pixel; predicting contrast is impossible. Use solid panel-card backgrounds for text overlays, never chart-fill overlays.
+
+**Special Studio gotcha:** placeholder text in inputs (`<input.dropdown placeholder="Select host">`) commonly fails WCAG with the default Splunk styling. If brand identity is at stake, override placeholder color to a contrast-passing shade.
+
+## Brand-color inspiration
+
+Curated palettes from named brands whose look transfers cleanly to dashboard context. Use these as **calibration** — pick one whose flavor matches your archetype, sample its OKLCH ratios, and apply to the project. Do NOT copy hex-for-hex; copy the relationships (chroma, lightness ladder, neutral tinting).
+
+| Brand | Primary OKLCH | Aesthetic flavor | What to borrow for dashboards |
+|---|---|---|---|
+| **Stripe** | H≈275 (indigo) | Refined / professional | Tinted neutrals, single accent, generous whitespace, clean type hierarchy |
+| **Linear** | H≈290 (violet) | Editorial-minimal | Dotted dividers, tight type, sparse accents, dark-mode default |
+| **Cloudflare** | H≈50 (orange) | Bold industrial | High-chroma orange + dark grey, geometric maps, status semantic strict |
+| **Datadog** | H≈300 + H≈210 (purple+cyan) | Technical / data-dense | Cool palette, strict status-semantic separation, monospace as accent |
+| **Vercel** | mono (black/white) | Brutalist minimal | Type and space carry everything, no color decoration, generous negative space |
+| **Notion** | warm cream + black | Editorial classic-light | Off-white canvas, jet-black text, single warm accent, generous line-height |
+
+**How to use:**
+
+1. Pick the brand whose flavor matches your archetype + persona (SOC wall → Cloudflare's industrial orange; exec light → Stripe's refined indigo; analytical → Datadog's data-dense).
+2. Extract the primary hue in OKLCH (oklch.com or browser devtools).
+3. Build the project palette around THAT hue using OKLCH math (tinted neutrals at 0.005–0.01 chroma, status palette unchanged, series-categorical lightly hue-shifted toward the brand).
+4. The palette should feel like the brand without copying hex values directly.
+
+**What does NOT transfer to dashboards:** Apple-style (relies on materials Studio lacks), FT salmon-pink canvas (clashes with chart series), NYTimes editorial-light (text-heavy not dashboard-density), Spotify green-on-black (single saturated hue drowns status colors). For brands not in this table, follow `ds-ref-brand` color extraction.
+
