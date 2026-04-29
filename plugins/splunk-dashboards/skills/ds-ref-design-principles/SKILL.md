@@ -101,13 +101,11 @@ See `ds-ref-color` for canonical palettes (categorical, sequential,
 diverging, RAG, SOC severity), OKLCH theory, WCAG contrast tables,
 colorblind-safe pairings, and the reflex_palettes_to_reject list.
 
-## Typography
+## Typography & text
 
-- **Panel titles** — 40 char max, 3–5 words, Title Case.
-- **Descriptions** — only when non-obvious. One sentence.
-- **Section headers** — `splunk.markdown` `### Section`. 2–4 words.
-- **Avoid paragraphs** — dashboards read at a glance.
-- **Axis labels** — human-readable + units (`"Latency (ms)"`).
+See `ds-ref-typography` for typography rules, font pairing recipes,
+modular type scales per archetype, number formatting, casing rules,
+and the reflex_fonts_to_reject list.
 
 ## Common antipatterns (10 most frequent)
 
