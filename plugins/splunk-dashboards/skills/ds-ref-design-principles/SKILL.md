@@ -71,29 +71,12 @@ Short version:
 | Three-variable correlation (x, y, volume)? | `splunk.bubble` |
 | Tabular detail with drilldown? | `splunk.table` |
 
-## KPI sizing rules
+## Layout, spacing, and depth
 
-- **Minimum:** 3×3 grid cells (~300×120 px). Below this, major value
-  unreadable at distance.
-- **Recommended:** 300–440 px wide, font 36–56 px, 4-KPI row on 1440
-  canvas.
-- **Max per row:** 6.
-- **Show trend or sparkline** when direction matters.
-- **Always set `unit`** (`"%"`, `"ms"`, `"°C"`).
-- Use `splunk.singlevalueicon` for binary status, `splunk.markergauge`
-  for SLA thresholds, `splunk.fillergauge` for percentage-completion.
-- Status KPIs: dynamic `majorColor` via `rangeValue`. Informational
-  counts: static `#006D9C`.
-
-## Layout principles
-
-- **F-pattern reading** — most important KPIs at top-left.
-- **Visual hierarchy** — size signals importance.
-- **Grouping** — related panels adjacent. `splunk.rectangle`
-  backgrounds delimit zones.
-- **Whitespace** — minimum 20 px gutters and canvas margins.
-- **Consistent column widths** — 2-column or 3-column grid; stick to
-  it.
+See `ds-ref-layout-grid` for layout principles (F-pattern, hierarchy,
+grouping, whitespace), KPI sizing rules, spacing/radius scale tokens,
+depth via layered rectangles, and per-archetype canvas-zone presets
+with golden-ratio hero sizing.
 
 ## Color principles
 
@@ -119,28 +102,6 @@ and the reflex_fonts_to_reject list.
 8. Searches without `earliest` / `latest`.
 9. Tables without drilldown.
 10. Raw `_time` in tables.
-
-## Spacing, radius, type scale
-
-| Token | px | Use |
-|---|---|---|
-| `S_2_5` | 20 | **Default gutter between panels** |
-| `R_CARD` | 8 | **Default card radius** |
-| `FS_KPI_MAJOR` | 48 | **Standard KPI majorValue** |
-
-Full scale tables in [PALETTE.md](PALETTE.md).
-
-## Depth and layering
-
-Dashboard Studio has no box-shadow, no backdrop-blur. Depth comes from
-**layered rectangles** — `splunk.rectangle` first in
-`layout.structure` (renders behind), KPIs after.
-
-**Array-order rule:** earlier = behind, later = in front. No
-`z-index`.
-
-**Shape layouts only:** `splunk.rectangle` / `splunk.ellipse` require
-`layout.type: "absolute"`. Silently ignored on grid / tabs.
 
 ## What Dashboard Studio cannot deliver
 
