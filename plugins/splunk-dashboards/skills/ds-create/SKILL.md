@@ -269,11 +269,35 @@ invoke `ds-update` to swap viz types before running the CLI.
 - [ ] KPI row has visual hierarchy — anchor KPI is hero-sized OR distinguished from supporting ones.
 - [ ] Sparklines on count-style KPIs (paired with a `ds.chain` to `\| timechart`).
 - [ ] `splunk.rectangle` panel-card behind KPI rows for depth (placed FIRST in `layout.structure`).
-- [ ] `splunk.markdown` section header(s) when panel count > 6.
-- [ ] Every table has a drilldown (no dead-end tables).
+- [ ] **Panel cards consistent — all main panels have a card OR none do.** Half-implemented depth ("severity strip has cards, the rest sits flat") looks worse than no depth. No partial-depth waivers allowed.
+- [ ] **`splunk.markdown` section header above every panel cluster ≥2 panels.** Default-ON for SOC and operational archetypes (the original "when panel count > 6" was too lax). Includes a 1-line description per zone explaining what data it shows and where to escalate.
+- [ ] **Every chart displaying an entity has a drilldown.** Entity types: `host` / `IP` / `user` / `hash` / `time-bucket` / `geo` / `technique-id` / `asset-id` / `service-name`. Applies to tables, bars, maps, punchcards, line charts with a `by`-clause, scatter — not just tables. Explicit waiver required if any entity-displaying panel has no drilldown. "Wall display has no input device" is NOT a valid waiver — see `ds-ref-archetypes` SOC wall sub-archetype.
+- [ ] **Brand-color demoted per `ds-ref-brand` if it collides with status semantics.** Containment-to-band ≥40px is explicitly banned. Brand-red on a SOC dashboard goes to wordmark-only or ≤5px accent stripe.
+- [ ] **Footer markdown with runbook / on-call / Slack channel for ops and SOC archetypes.** Wall doesn't read it; console operator does. Executive and analytical archetypes can waive with reason.
 - [ ] Every input has a `defaultValue`.
 - [ ] Every search bound to `$global_time.earliest$ / .latest$` via `defaults.dataSources.ds.search.options.queryParameters`.
 - [ ] Series colours from a categorical palette (semantic colours never leak to chart series).
 - [ ] Colour paired with icon / label / shape for status (red/green never alone).
 - [ ] Pie ≤6 slices (or replaced with bar).
 - [ ] Panel titles ≤40 chars, Title Case.
+
+### Scope discipline — deployed = production
+
+A "sketch" that gets deployed to Splunk is **no longer a sketch**. The moment `dashboard.json` lands in any Splunk instance — local lab, staging, or production — it becomes a real surface that real users can read, screenshot, share, and depend on. The visual-finishing checklist above is **not skippable based on authoring intent**.
+
+**Authoring intent is NOT a valid waiver:**
+
+- ❌ "This is just a sketch, I'll polish later" — no, you won't. The sketch ships.
+- ❌ "It's only for the demo" — demo dashboards screenshot widely.
+- ❌ "I'll add drilldowns in v2" — v2 rarely happens; v1 is what people remember.
+- ❌ "User said sketch, so I skipped Scope Check" — user's authoring intent does not relax the deploy-time gate.
+
+**If you plan to deploy, run all checklists.** Both Slop Test (taste) and Scope Check (structural completeness, see `ds-couture`). Authoring shortcuts that survive into deploy become field bugs the next session has to clean up.
+
+**Detection trigger:** any of these signals means deploy is imminent and Scope Check is mandatory:
+
+- The user invokes `ds-deploy`, `splunk_create_dashboard`, `splunk_update_dashboard`, or any equivalent MCP tool.
+- The user pastes a Splunk URL or app name and asks to "put this in".
+- The user says "deploy", "ship", "install", "push to Splunk", or any synonym.
+
+When any signal fires, do not let "this is a sketch" in the original conversation override the gate. Re-run the checklist. Fix gaps or document waivers explicitly.
