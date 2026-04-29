@@ -87,9 +87,62 @@ Before hand-off, run the dashboard against these four questions:
 
 If any answer is bad, loop back through the workflow tree at the relevant step.
 
+## Scope Check — structural completeness gate
+
+Slop Test catches taste bugs (visual hierarchy, palette leak, slop). **Scope Check catches structural completeness.** Both gates must pass before hand-off.
+
+This is a **non-skippable** gate. Every box must be ticked or have an explicit waiver with a written reason. "I forgot" is not a valid waiver. "I dropped this because it doesn't apply to this archetype" with an archetype-specific reason IS a valid waiver.
+
+```
+SCOPE CHECK — non-skippable
+
+☐ Drilldowns wired on every entity-displaying panel?
+   Entity types: host / IP / user / hash / time-bucket / geo / 
+                 technique-id / asset-id / service-name
+   "Wall display has no input device" is NOT a valid waiver — wall + 
+   analyst console run the same dashboard JSON; drilldowns have zero
+   visual cost.
+   Explicit waiver required if no, with reason.
+
+☐ Descriptive markdowns above every panel cluster ≥2 panels?
+   Section header + 1-line description per zone.
+   "No vertical real estate" is a weak waiver — section headers are
+   ~50px each, and a 4-zone dashboard loses ~200px out of 1080px.
+   Explicit waiver required if no, with reason.
+
+☐ Panel cards consistent (all panels OR no panels)?
+   Inconsistent depth treatment ("severity strip has cards, the rest
+   sits flat") is WORSE than no depth at all. The strip looks
+   intentional; everything else looks loose.
+   Inconsistent = automatic reject. No waiver allowed.
+
+☐ Tabs explicitly considered?
+   For SOC + ops archetypes, the wall + analyst console are the same
+   JSON. Tabs cost zero on the wall (it shows tab 1 only), big value
+   on the console.
+   "Not considered" = automatic reject.
+   "Considered and rejected because [archetype-specific reason]" = OK.
+
+☐ If brand-color collides with status semantics: is brand demoted per
+  `ds-ref-brand` Brand-color collision rule?
+   Collision without demotion = automatic reject. No waiver allowed.
+   Containment-to-band ≥40px is explicitly forbidden.
+
+☐ Footer / runbook link / escalation channel present for ops/SOC
+  archetypes?
+   New analyst on shift needs: where's the runbook, who do I page,
+   which Slack channel?
+   Explicit waiver required if no, with reason (executive summaries
+   often legitimately don't need this).
+```
+
+If any required box is unticked AND has no waiver, hand-off is blocked. The agent must EITHER fix the gap OR write a waiver explaining why this dashboard is the exception. Waivers go in the design brief produced at hand-off, so future audits can find them.
+
+**Why this gate exists:** field experience showed that under context pressure, an agent will rationalize past every soft-rule consultation. ds-ref-anti-patterns has the rules; ds-couture's job is to make sure they're applied. The Scope Check is the structural-completeness equivalent of the Slop Test's taste-completeness.
+
 ## Hand-off protocol
 
-When all four critique heuristics pass, produce a brief that downstream skills can act on:
+When all four critique heuristics pass AND Scope Check passes (every box ticked or waived), produce a brief that downstream skills can act on:
 
 - Archetype name + canvas dimensions
 - Theme variant
@@ -97,8 +150,11 @@ When all four critique heuristics pass, produce a brief that downstream skills c
 - Typography stack + scale
 - Layout zones with KPI / chart / table positions
 - Anti-pattern flags resolved (or explicit deferrals)
+- Scope Check status: PASS or PASS-WITH-WAIVERS (list waivers + reasons)
 
 Hand to `ds-create` (for fresh JSON authoring) or `ds-design` (for browser-based wireframing). Both pipeline skills consult `ds-ref-syntax` and the relevant `ds-viz-*` for option-level detail; you don't.
+
+Hand-off is **blocked** if Scope Check fails without waivers. Fix the gap or document the waiver before proceeding.
 
 ## What this skill DOES NOT do
 
