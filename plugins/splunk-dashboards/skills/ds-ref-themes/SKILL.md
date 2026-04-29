@@ -323,3 +323,43 @@ manual attention:
 When parity breaks, the dashboard should still ship — but mark the light
 variant as "auto-derived, review before print" until the edge case is
 resolved.
+
+## Token hierarchy — primitive vs semantic
+
+A theme system needs **two layers** of tokens:
+
+1. **Primitive tokens** — name the actual hex values. Stable across themes.
+   ```
+   --indigo-50:  #F5F3FF
+   --indigo-500: #635BFF
+   --indigo-900: #1E1A4D
+   --grey-50:    #FAFAF7
+   --grey-900:   #0B0C0E
+   ```
+
+2. **Semantic tokens** — name the role, point at primitives. Redefined per theme.
+   ```
+   /* Dark theme */
+   --color-canvas:  var(--grey-900)
+   --color-panel:   var(--grey-800)
+   --color-text:    var(--grey-50)
+   --color-accent:  var(--indigo-500)
+   
+   /* Light theme */
+   --color-canvas:  var(--grey-50)
+   --color-panel:   #FFFFFF
+   --color-text:    var(--grey-900)
+   --color-accent:  var(--indigo-500)
+   ```
+
+**Why two layers:** when adding a new theme variant (Dark-NOC, brand-tinted dark, high-contrast), you only redefine the **semantic layer**. Primitives stay constant. This prevents the "we changed the brand color in 47 places" failure mode.
+
+**For Splunk Studio specifically:** there is no native CSS-variable system in Studio JSON. The token discipline lives in the design brief and in `make_light.py`, not in runtime CSS. But the same principle applies: don't hard-code hex values across the dashboard JSON; reference them from a `defaults.viz.global` block where possible, or document them in the design brief so theme variants don't have to chase hex changes panel-by-panel.
+
+**The benefit even in Studio's limited token system:**
+
+- Adding Dark-NOC variant = redefine 6 semantic tokens (canvas, panel, stroke, text, dim text, accent), not 47 hex strings across 14 panels.
+- Brand color change = update one primitive in `make_light.py` COLOR_MAP and one entry in the design brief.
+- Auditing accessibility = check 6 semantic combinations against WCAG, not every panel × theme combination.
+
+If `make_light.py` is the closest Studio gets to a "redefine semantic" operation, treat it that way: keep the COLOR_MAP small and semantic (canvas → canvas, panel → panel), not a flat hex-to-hex translation.
