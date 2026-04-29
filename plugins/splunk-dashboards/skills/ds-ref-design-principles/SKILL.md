@@ -1,11 +1,11 @@
 ---
 name: ds-ref-design-principles
-description: Standalone Splunk Dashboard Studio design reference — covers the four canonical archetypes (executive summary, operational monitoring, analytical deep-dive, SOC overview), reflex defaults to refuse, absolute bans (status colour misuse, red/green only, pie >6, unbounded searches, defaultless inputs), KPI sizing, semantic colour conventions, typography, and the Splunk Dashboard Slop Test. Use when the user asks open-ended design questions ("what should my dashboard look like?", "which chart for X?"), or for the Slop Test before shipping. Companion file PALETTE.md covers the full palette; see `ds-ref-visual-encoding` for the 27-viz chart-selection decision table.
+description: Entry-point index for Splunk Dashboard Studio design references. Routes to the 10 specialized ds-ref-* skills covering archetypes, color, typography, layout-grid, visual-encoding, anti-patterns, personas, references, brand, and themes. Kept as an entry-point because external prompts and legacy invocations reach for "design-principles" by name. Use when a generic design question lands and you need to route to the right specialized reference.
 ---
 
-# ds-ref-design-principles — design reference
+# ds-ref-design-principles — design references index
 
-## The stance
+## Stance reminder
 
 A Splunk dashboard is not a report. It is a live surface that an
 operator, analyst, or executive scans under time pressure. Every pixel
@@ -13,110 +13,32 @@ either earns its place or steals attention from the one that should
 have had it.
 
 The default output of any generative tool — including Claude — is
-generic: four same-size KPIs in `#006D9C`, one line chart, one table,
-default canvas grey, no semantic colour, no hierarchy. That output
-passes a demo and fails a shift. This skill exists to refuse it.
+generic. That output passes a demo and fails a shift. The references
+linked below exist to refuse it.
 
-**The commitment**: pick an archetype early, derive theme from
-audience, apply semantic polarity to every status metric, treat
-absolute bans as non-negotiable.
+## Index — consult this skill when X
 
-## Required context
+| When you need... | Consult |
+|---|---|
+| The four canonical archetypes (executive, operational, analytical, SOC) | `ds-ref-archetypes` |
+| Color palettes, OKLCH, contrast tables, colorblind safety | `ds-ref-color` |
+| Font pairings, type scale, casing, number formatting | `ds-ref-typography` |
+| 4pt grid, F-pattern, hero KPI sizing, gutters, depth | `ds-ref-layout-grid` |
+| Chart-selection rationale, encoding channels, Tufte data-ink | `ds-ref-visual-encoding` |
+| Reflex defaults, absolute bans, the Slop Test | `ds-ref-anti-patterns` |
+| Audience personas (CISO, SOC operator, NOC, exec, etc.) | `ds-ref-personas` |
+| Best-in-class references and anti-references | `ds-ref-references` |
+| Brand discovery (color extraction, tone words, fallbacks) | `ds-ref-brand` |
+| Light vs dark theme parity, OKLCH rules, decision tree | `ds-ref-themes` |
 
-Before designing, know:
+## When in doubt, start here
 
-1. **Audience** — executives, SREs, SOC analysts, field technicians?
-2. **Viewing context** — 24/7 NOC wall, laptop at 09:00, printed PDF,
-   on-call phone?
-3. **Primary question** — what does the user need to answer in 5
-   seconds?
-4. **Decision consequence** — does a red KPI page someone, or inform
-   a quarterly review?
+If a prompt asks an open-ended design question ("what should my
+dashboard look like?", "which chart for X?", "is this dashboard
+slop?") and no specific ref is obviously right, scan the table above
+and pick the closest match. Most questions resolve to one or two refs.
 
-Ask if any are unknown. The codebase cannot tell you these.
-
-## Dashboard archetypes
-
-See `ds-ref-archetypes` for the four canonical layouts (executive
-summary, operational monitoring, analytical deep-dive, SOC overview)
-with panel-mix fingerprints, audience profiles, and hybrid guidance.
-
-## Reflex defaults to reject
-
-See `ds-ref-anti-patterns` for the 8 reflex defaults to refuse.
-
-## Absolute bans
-
-See `ds-ref-anti-patterns` for the 5 absolute bans (BAN/PATTERN/WHY/REWRITE format).
-
-## Chart selection — decision table
-
-See `ds-ref-visual-encoding` for the chart-selection decision table,
-visual encoding channels (color/size/position/shape), Tufte data-ink
-ratio, and the line-vs-bar-vs-pie / log-vs-linear / stacked-vs-grouped
-rules.
-
-## Layout, spacing, and depth
-
-See `ds-ref-layout-grid` for layout principles (F-pattern, hierarchy,
-grouping, whitespace), KPI sizing rules, spacing/radius scale tokens,
-depth via layered rectangles, and per-archetype canvas-zone presets
-with golden-ratio hero sizing.
-
-## Color principles
-
-See `ds-ref-color` for canonical palettes (categorical, sequential,
-diverging, RAG, SOC severity), OKLCH theory, WCAG contrast tables,
-colorblind-safe pairings, and the reflex_palettes_to_reject list.
-
-## Typography & text
-
-See `ds-ref-typography` for typography rules, font pairing recipes,
-modular type scales per archetype, number formatting, casing rules,
-and the reflex_fonts_to_reject list.
-
-## Common antipatterns (10 most frequent)
-
-1. >12 panels on one dashboard — split into tabs.
-2. Pie >6 slices — sorted bar instead.
-3. Stacked area for independent series — multi-series line.
-4. Red/green as sole differentiator — add icon/shape/label.
-5. Rainbow on ordered data — sequential gradient.
-6. Tiny singlevalues (<3×3 cells).
-7. Dropdowns without defaults.
-8. Searches without `earliest` / `latest`.
-9. Tables without drilldown.
-10. Raw `_time` in tables.
-
-## What Dashboard Studio cannot deliver
-
-- Animations / keyframes / pulsing alerts / transitions.
-- True glassmorphism / backdrop-blur.
-- Gradient text on KPIs.
-- Custom chart fonts (only `splunk.markdown` has `fontFamily`).
-- Pan/zoom map overlays.
-- Conditional viz visibility via expression — use
-  `containerOptions.visibility` with conditions instead.
-
-## The Splunk Dashboard Slop Test
-
-See `ds-ref-anti-patterns` for the 13-item quality gate.
-
-## See also
-
-- [PALETTE.md](PALETTE.md) — full palettes (`SERIES_CATEGORICAL_10`,
-  `SERIES_SOC_8`, `SERIES_STUDIO_20`), canvas tokens, spacing /
-  radius / type scale.
-- **`ds-couture`** — design-first companion. Adds the Design Context
-  Protocol (audience / tone / anti-reference / brand), visual taste,
-  hierarchy, depth, and the Slop Test rubric. **Pair this skill
-  with ds-couture for every dashboard** — `ds-ref-design-principles`
-  is the technical foundation, `ds-couture` is the visual judgement
-  on top of it.
-- **`ds-spl`** — SPL grammar reference for the queries that feed
-  the visualisations described here.
-- `ds-pick-viz` — viz selection router. Use first when picking
-  charts; cross-references `ds-ref-visual-encoding`.
-- `ds-ref-syntax` — JSON envelope.
-- `ds-ref-pitfalls` — cross-skill traps matrix (viz + interactivity + schema).
-- `ds-viz-bar` / `ds-viz-singlevalue` etc. — per-viz reference.
+For the full design workflow (audience → archetype → palette →
+typography → layout → encoding → anti-pattern check → hand-off), use
+`ds-couture` rather than this skill. `ds-couture` is the orchestrator;
+this is the index.
