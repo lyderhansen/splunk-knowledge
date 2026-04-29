@@ -19,7 +19,7 @@ For hver dashboard, gjør:
        plugins/splunk-dashboards/skills/<sti>/test-dashboard/dashboard.json
    ```
    Hvis brudd: oppdater `dataSource.name`-feltene per
-   `pipeline/ds-create`-tabellen, redeploy.
+   `ds-create`-tabellen, redeploy.
 4. **Kort sveip light-versjonen** — er fargene lesbare? KPI-tall
    synlige mot lys bakgrunn? Ingen mørk-tema-rester? Hvis ja → ✅ light.
 5. **Oppdater `viz/PROGRESS.md` (eller `interactivity/PROGRESS.md`)**:
@@ -104,8 +104,8 @@ disse 4 har feil → stopp QA, ordne deploy-pipeline-issue først.
 ### Bølge 7 — interactivity
 | # | Dashboard | Skill | Hva det tester |
 |---|---|---|---|
-| 26 | `ds_interactivity_core_dark` | `ds-tokens` + `ds-inputs` + `ds-defaults` + `ds-drilldowns` + `ds-visibility` | 5 sections, hver tester én skill — bytt input, klikk rad, se token-echo oppdatere |
-| 27 | `ds_interactivity_tabs_dark` | `ds-tabs` | Bytt mellom 3 tabs, layout-bytting fungerer |
+| 26 | `ds_interactivity_core_dark` | `ds-int-tokens` + `ds-int-inputs` + `ds-int-defaults` + `ds-int-drilldowns` + `ds-int-visibility` | 5 sections, hver tester én skill — bytt input, klikk rad, se token-echo oppdatere |
+| 27 | `ds_interactivity_tabs_dark` | `ds-int-tabs` | Bytt mellom 3 tabs, layout-bytting fungerer |
 
 ---
 
@@ -122,7 +122,7 @@ disse 4 har feil → stopp QA, ordne deploy-pipeline-issue først.
 
 - **Cross-viz konsistens** — leser KPI-er likt på tvers? Bruker alle
   `seriesColors` med DOS samme måte?
-- **`reference/ds-design-principles`-bidrag** — funn som gjelder mer
+- **`ds-ref-design-principles`-bidrag** — funn som gjelder mer
   enn én viz, løftes til design-principles-skillen.
 - **`viz/REVIEW.md`-oppdatering** — siste status etter QA-pass.
 
