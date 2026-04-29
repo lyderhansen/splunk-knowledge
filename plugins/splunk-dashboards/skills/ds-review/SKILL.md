@@ -24,10 +24,9 @@ description: Use this skill to audit a Splunk Dashboard Studio dashboard against
 ### 2. Visualization appropriateness
 
 Check each panel's `viz_type` against the shape of its data. Use the
-chart-selection decision table in `ds-ref-design-principles`
-(CHART-SELECTION.md) and `ds-pick-viz` for the canonical
-mappings. For per-viz option correctness, load the matching
-`ds-viz-<type>` GOTCHAS.md.
+chart-selection decision table in `ds-ref-visual-encoding` and
+`ds-pick-viz` for the canonical mappings. For per-viz option
+correctness, load the matching `ds-viz-<type>` GOTCHAS.md.
 
 - `splunk.pie` with > 6 categories — flag (unreadable).
 - `splunk.singlevalue` driven by a query returning many rows — flag (only first row shown).

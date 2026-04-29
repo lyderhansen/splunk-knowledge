@@ -219,11 +219,11 @@ Two passes are required:
 ### Per-viz JSON enrichment after the CLI writes `dashboard.json`
 
 - Set `layout.options.backgroundColor` to the canvas token from
-  `ds-ref-design-principles` PALETTE.md (`#0b0c0e` dark, `#FAFAF7` light,
+  `ds-ref-color` (`#0b0c0e` dark, `#FAFAF7` light,
   `#000000` NOC wall).
 - Populate per-viz `options` with the semantic palette (failure
   KPIs get `"majorColor": "#DC4E41"`, etc.) — the exact hex values
-  are in `ds-ref-design-principles` PALETTE.md.
+  are in `ds-ref-color`.
 - Add `splunk.rectangle` cards behind KPI rows for depth (place
   **first** in `layout.structure` — earlier = behind). See
   `ds-viz-rectangle` PATTERNS.md.
@@ -234,9 +234,8 @@ Two passes are required:
   singlevalue` PATTERNS.md.
 
 If the layout picked viz types that don't fit the data shape, use
-the "Chart selection" decision table in `ds-ref-design-principles`
-CHART-SELECTION.md and invoke `ds-update` to swap viz types before
-running the CLI.
+the chart-selection decision table in `ds-ref-visual-encoding` and
+invoke `ds-update` to swap viz types before running the CLI.
 
 ## Self-check before declaring `dashboard.json` ready
 
