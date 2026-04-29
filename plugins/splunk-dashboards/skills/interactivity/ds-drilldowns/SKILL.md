@@ -1,64 +1,67 @@
 ---
 name: ds-drilldowns
-description: Drilldowns are click handlers that fire when a user clicks a row, point, or marker in a panel. They power setToken (capture click context into a named token), linkToSearch (open Splunk search prefilled), linkToDashboard (navigate to another dashboard with form tokens), and customUrl (open an arbitrary external URL with URL-encoded values). Read when adding click-to-investigate behaviour, when wiring multi-panel drill flows, or when a click on a chart isn't triggering anything. Triggers on 'drilldown', 'click handler', 'eventHandlers', 'setToken', 'linkToSearch', 'linkToDashboard', 'customUrl', 'when I click a row'.
-version: 1.0
-verified_against: Splunk Enterprise 10.2.1
-test_dashboards:
-  - splunk-knowledge-testing/ds_interactivity_core_dark (§4)
-  - splunk-knowledge-testing/ds_interactivity_core_light (§4)
+description: Splunk Dashboard Studio drilldown reference — click handlers that fire on row, point, or marker click. Covers setToken (capture click context into named tokens), linkToSearch (open Splunk search prefilled), linkToDashboard (navigate with form tokens, ARRAY shape), customUrl (open external URL with URL-encoded values, |u mandatory). Use when the user asks about drilldowns, click handlers, eventHandlers, setToken, linkToSearch, linkToDashboard, customUrl, "when I click a row", or master-detail flows in Splunk Dashboard Studio.
 ---
 
-# `ds-drilldowns` — click handler reference
+# ds-drilldowns — click handler reference
 
-> Verified against `ds_interactivity_core_dark` / `_light` §4. Four
-> separate panels demonstrate one drilldown action each:
-> `setToken`, `linkToSearch`, `linkToDashboard`, `customUrl`.
+Verified against Splunk Enterprise 10.2.1.
+Live test bench: `splunk-knowledge-testing/ds_interactivity_core_dark`
+§4 Drilldown panels.
 
 ## What a drilldown is
 
-A drilldown is an entry in a visualization's `eventHandlers` array that
-runs when the user clicks something inside that panel. The handler
-declares a `type` and an `options` block specific to that type. Multiple
-handlers on one panel all fire on the same click — which is how the
-"§4 Drilldown source" panel in the live bench captures `selected_host`
-and `selected_action` in two separate `setToken` declarations.
+An entry in a visualization's `eventHandlers` array that runs when the
+user clicks something inside that panel. The handler declares a `type`
+and an `options` block specific to that type.
 
-Drilldowns require `options.drilldown: "all"` (or `"row"` / `"cell"` for
-tables) to be set on the panel — without it, clicks render no handler
-events.
+**Multiple handlers on one panel all fire on the same click**, in
+array order — capture token AND navigate is a common pattern.
+
+Drilldowns require `options.drilldown: "all"` (or `"row"` / `"cell"`
+for tables) to be set on the panel — without it, clicks render no
+handler events.
 
 ## The 4 action types
 
 | Type | Effect |
 |---|---|
-| `drilldown.setToken` | Capture click context into named tokens. Updates the dashboard in place. |
-| `drilldown.linkToSearch` | Open Splunk Search UI with a prefilled query and time range. |
-| `drilldown.linkToDashboard` | Navigate to another dashboard, optionally passing `form.<name>` URL tokens. |
-| `drilldown.customUrl` | Open an arbitrary URL (external system, ITSM ticket, runbook). |
+| `drilldown.setToken` | Capture click context into named tokens. Updates dashboard in place. |
+| `drilldown.linkToSearch` | Open Splunk Search UI with prefilled query and time range. |
+| `drilldown.linkToDashboard` | Navigate to another dashboard, optionally passing tokens. |
+| `drilldown.customUrl` | Open arbitrary URL (external system, ITSM, runbook). |
 
 ## Click context tokens
 
-Every drilldown action has access to a transient set of tokens that only
-exist during the click. These do **not** persist after the handler
-finishes — to keep them alive, copy into a named token via `setToken`.
+Transient — only exist during the click. Copy via `setToken` to
+persist.
 
 | Token | Available in | Meaning |
 |---|---|---|
-| `$row.<field>.value$` | Tables, events | Value of `<field>` in the clicked row |
-| `$row.<field>.name$` | Tables, events | Field name (rare, useful for generic handlers) |
-| `$click.value$` | Charts | Category / x-axis value of the clicked point |
-| `$click.value2$` | Scatter, bubble, dual-axis | Y-axis or secondary value |
-| `$click.name$` | Charts | Field name on x-axis |
-| `$click.name2$` | Charts | Field name on y-axis |
+| `$row.<field>.value$` | Tables, events | Value of `<field>` in clicked row. |
+| `$row.<field>.name$` | Tables, events | Field name (rare; generic handlers). |
+| `$click.value$` | Charts | Category / x-axis value. |
+| `$click.value2$` | Scatter, bubble, dual-axis | Y-axis or secondary value. |
+| `$click.name$` | Charts | Field name on x-axis. |
+| `$click.name2$` | Charts | Field name on y-axis. |
 
-`$row.*$` is what tables and event panels expose. `$click.*$` is what
-chart-style panels expose. They are mutually exclusive — a click on a
-table never produces `$click.value$`, and a click on a chart never
-produces `$row.<field>.value$`.
+Tables emit `$row.*$`; charts emit `$click.*$`. Mutually exclusive.
+
+## Do / Don't
+
+| ✅ Do | ❌ Don't |
+|---|---|
+| **Enable on panel:** `options.drilldown: "all"` (or `"row"` / `"cell"` for tables). | Skip — clicks fire no handlers. |
+| **`setToken.tokens`:** array of `{token, key}` objects. | `tokens: { selected_host: "row.host.value" }` — schema rejects map form. |
+| **`linkToDashboard.tokens`:** array of `{token, value}` objects. | `tokens: { "form.host": "$row.host.value$" }` (Simple-XML map) — silently dropped, link navigates with no tokens. |
+| **`key` / `value` are BARE** (`row.host.value`). | Wrap in `$...$` — treated as literal. |
+| **`linkToDashboard.token`:** destination name on receiving dashboard. **No `form.` prefix.** | `"token": "form.host"` — Studio resolves raw names; `form.<name>` is Simple-XML/Classic. |
+| **`customUrl`:** `\|u` filter on every interpolated token. | Skip `\|u` — `&` / `?` / `#` / `=` in values silently break the URL. |
+| **Charts vs tables:** `$click.*$` for charts, `$row.<field>.value$` for tables. | Read `$click.value$` from a table — produces empty token. |
+| **Multiple handlers:** stack in `eventHandlers` array (capture + navigate). | Try to share state across separate panels via `eventHandlers` — handlers are panel-local. |
+| **Shape panels (ellipse/rectangle):** use as static buttons (`linkToDashboard` / `customUrl`). | Expect click `name`/`value`/`series` payload — shapes have none. |
 
 ## `drilldown.setToken`
-
-The most common pattern. Verified shape from the live test bench:
 
 ```json
 "eventHandlers": [
@@ -66,32 +69,19 @@ The most common pattern. Verified shape from the live test bench:
     "type": "drilldown.setToken",
     "options": {
       "tokens": [
-        {"token": "selected_host",   "key": "row.host.value"},
-        {"token": "selected_action", "key": "row.action.value"}
+        { "token": "selected_host",   "key": "row.host.value" },
+        { "token": "selected_action", "key": "row.action.value" }
       ]
     }
   }
 ]
 ```
 
-Notes:
-
-- `tokens` is an **array** of `{token, key}` pairs. Don't write
-  `{key: value}` form — schema rejects it.
-- `key` does **not** start with `$`. It's the bare context-token name
-  (`row.host.value`, `click.value`, `click.value2`).
-- `token` is the destination name. The token does not need to exist
-  beforehand — `setToken` creates it.
-- After the click, `$selected_host$` is readable everywhere on the
-  dashboard. Use it in SPL, options, or `visibility`.
-
-The §5 visibility panels in the live bench all read `$selected_host$`,
-which is populated by §4's `setToken` handler.
+- `tokens` is an **array** of `{token, key}` pairs.
+- `key` is bare (`row.host.value`), no `$...$`.
+- `token` is destination name; created if it doesn't exist.
 
 ## `drilldown.linkToSearch`
-
-Opens the Splunk Search UI in a new (or current) tab with a prefilled
-query and time bounds.
 
 ```json
 {
@@ -105,21 +95,10 @@ query and time bounds.
 }
 ```
 
-| Option | Required | Notes |
-|---|---|---|
-| `query` | yes | Full SPL string, with token interpolation. |
-| `earliest` | no | Defaults to the dashboard's current time range. Set explicitly to override. |
-| `latest` | no | Same. |
-| `newTab` | no | `true` opens a new tab. Defaults to `false`. |
-| `app` | no | Splunk app to open Search in. Defaults to current app. |
-
-The `query` field is the right place to interpolate `$row.<field>.
-value$` and any other context tokens — they'll be resolved before the
-URL is constructed.
+`query` interpolates `$row.<field>.value$` and other context tokens
+before the URL is constructed.
 
 ## `drilldown.linkToDashboard`
-
-Verified shape from the live test bench:
 
 ```json
 {
@@ -129,42 +108,28 @@ Verified shape from the live test bench:
     "dashboard": "ds_interactivity_core_dark",
     "newTab": true,
     "tokens": [
-      {"token": "selected_host",        "value": "row.host.value"},
-      {"token": "global_time.earliest", "value": "global_time.earliest"},
-      {"token": "global_time.latest",   "value": "global_time.latest"}
+      { "token": "selected_host",        "value": "row.host.value" },
+      { "token": "global_time.earliest", "value": "global_time.earliest" },
+      { "token": "global_time.latest",   "value": "global_time.latest" }
     ]
   }
 }
 ```
 
-| Option | Required | Notes |
-|---|---|---|
-| `app` | yes | App ID containing the target dashboard. |
-| `dashboard` | yes | Dashboard ID (the URL slug, not the title). |
-| `tokens` | no | **Array of `{token, value}` objects** — same shape as `setToken`'s `tokens`, but the field is `value` (not `key`). |
-| `newTab` | no | `true` opens in a new tab. |
+**Hard rule:** `tokens` is an **array** of `{token, value}` objects,
+NOT a string-keyed map. The Simple-XML form `{ "form.host":
+"$row.host.value$" }` looks superficially right but Studio silently
+drops it.
 
-> **Hard rule.** `tokens` is an array of `{token, value}` objects, NOT
-> a string-keyed map. Setting `tokens: { "form.host": "$row.host.value$" }`
-> looks superficially right (it matches the Simple-XML form) but the
-> Studio editor silently drops the entry — the link navigates with no
-> tokens, and the target dashboard's inputs stay at their defaults.
-> Use the array shape and the editor accepts it.
+Differences from `setToken`:
 
-Two more differences from `setToken`:
+- Field name is `value` (not `key`).
+- Same bare-token-name convention (`row.host.value`, no `$...$`).
+- `token` is the destination name on the receiving dashboard. **No
+  `form.` prefix.** Studio resolves raw names.
 
-- The field name is `value` (not `key`).
-- The `value` field carries a **bare token name** (`row.host.value`,
-  `global_time.earliest`) — same convention as `setToken.tokens[].key`,
-  no `$…$` wrappers.
-- `token` is the **destination token name** on the receiving dashboard.
-  No `form.` prefix is required — Studio targets resolve raw token
-  names, unlike Simple-XML which required `form.<name>` URL params.
-
-The receiving dashboard must have an input declared with the destination
-token name (or another mechanism that writes that token). If the target
-dashboard has `inputs.input_host.options.token: "selected_host"`, the
-incoming `selected_host` value populates that input on load.
+The receiving dashboard must declare an input writing the destination
+token name, or some other mechanism that writes that token.
 
 ## `drilldown.customUrl`
 
@@ -178,173 +143,51 @@ incoming `selected_host` value populates that input on load.
 }
 ```
 
-| Option | Required | Notes |
-|---|---|---|
-| `url` | yes | Full URL with optional token interpolation. |
-| `newTab` | no | `true` opens in a new tab. |
+`|u` is **mandatory** for any token in a URL. Without it, values
+containing `&`, `?`, `#`, `=` silently break the URL.
 
-**`|u` is mandatory** for any token interpolated into a URL. Without it,
-a row value containing `&`, `?`, `#`, or `=` will silently break the
-URL. The live bench uses `$row.host.value|u$` and
-`$row.action.value|u$` for this reason.
-
-## Multiple handlers on one panel
-
-You can stack multiple handlers in `eventHandlers`. They all fire on
-the same click, in array order. Useful pattern: capture a token *and*
-navigate.
+## Multiple handlers — capture AND navigate
 
 ```json
 "eventHandlers": [
   {
     "type": "drilldown.setToken",
-    "options": {
-      "tokens": [{"token": "selected_host", "key": "row.host.value"}]
-    }
+    "options": { "tokens": [{ "token": "selected_host", "key": "row.host.value" }] }
   },
   {
     "type": "drilldown.linkToDashboard",
     "options": {
       "app": "search",
       "dashboard": "host_detail_view",
-      "tokens": [
-        {"token": "host", "value": "row.host.value"}
-      ]
+      "tokens": [{ "token": "host", "value": "row.host.value" }]
     }
   }
 ]
 ```
 
-The token write happens before the navigation — so on dashboard return,
-the source dashboard remembers the click context.
+Token write happens before navigation; on dashboard return, source
+dashboard remembers click context.
 
 ## Enabling drilldowns on the panel
 
-The handler list is necessary but not sufficient. You also need:
-
 ```json
-"options": {
-  "drilldown": "all"
-}
+"options": { "drilldown": "all" }
 ```
 
 Valid values:
 
-- `"all"` — any click on the panel fires handlers (default for charts).
+- `"all"` — any click fires handlers (default for charts).
 - `"row"` — table-only, click anywhere in a row.
-- `"cell"` — table-only, click a specific cell. `$row.<field>.value$`
-  is still the row value, but `$click.value$` is the cell value.
-- `"none"` — drilldowns disabled on this panel.
+- `"cell"` — table-only, specific cell. `$click.value$` is cell value.
+- `"none"` — disabled.
 
 If clicks aren't firing handlers, this is the second thing to check
 after handler shape.
 
-## Common gotchas
-
-- **`tokens` shape across actions: same array, slightly different key
-  name.** `setToken.tokens[].key` ↔ `linkToDashboard.tokens[].value` —
-  both are bare context-token names (`row.host.value`,
-  `global_time.earliest`), neither uses `$…$` wrappers. The fields are
-  named differently because `setToken`'s "where to read from" is the
-  `key`, while `linkToDashboard`'s "what to forward as" is the `value`.
-- **`linkToDashboard.tokens` is an array, not a map.** The Simple-XML
-  `{form.host: $value$}` map shape is silently rejected by the Studio
-  editor — the link works but no tokens are forwarded. Use
-  `[{token, value}, ...]`.
-- **`key` in `setToken` has no `$`.** Everywhere else, you'd write
-  `$row.host.value$`. Inside the `key` field of `setToken` (or
-  `linkToDashboard`'s `value`), you write `row.host.value` — bare. The
-  `$` form there is treated as a literal.
-- **No `form.` prefix on `linkToDashboard.tokens`.** Studio v2 resolves
-  raw token names — `{"token": "host", "value": "row.host.value"}`
-  populates the target's `host` token directly. The `form.<name>`
-  URL-param convention is Simple-XML / Classic; Studio doesn't need it.
-- **`customUrl` without `|u` breaks on special chars.** Always use
-  `$row.<field>.value|u$` for tokens going into URLs.
-- **Charts emit `$click.*$`, tables emit `$row.*$`.** Picking the wrong
-  one for the panel type results in unresolved (empty) tokens.
-- **Drilldown clicks on `splunk.ellipse`/`splunk.rectangle` produce no
-  `name`/`value`/`series`** — the per-viz drilldown table in the 10.4
-  PDF documents this. For shape panels, use them as static buttons
-  (linkToDashboard / customUrl) rather than expecting click context.
-- **`drilldown: "all"` must be set.** Frequently forgotten, especially
-  on tables which default to `"row"`.
-
-## Quick recipes
-
-### Click a row → filter the rest of the dashboard
-
-Source panel:
-
-```json
-"eventHandlers": [{
-  "type": "drilldown.setToken",
-  "options": {
-    "tokens": [{"token": "selected_host", "key": "row.host.value"}]
-  }
-}]
-```
-
-Downstream search:
-
-```spl
-| stats count by action where host="$selected_host$"
-```
-
-### Click a chart point → open Splunk Search
-
-```json
-"eventHandlers": [{
-  "type": "drilldown.linkToSearch",
-  "options": {
-    "query": "index=main sourcetype=$click.name$ host=$click.value$",
-    "earliest": "$global_time.earliest$",
-    "latest":   "$global_time.latest$",
-    "newTab": true
-  }
-}]
-```
-
-### Click a row → open ITSM ticket in new tab
-
-```json
-"eventHandlers": [{
-  "type": "drilldown.customUrl",
-  "options": {
-    "url": "https://itsm.example.com/incidents/new?subject=Investigate%20$row.host.value|u$",
-    "newTab": true
-  }
-}]
-```
-
-### Click a row → drill to host detail dashboard
-
-```json
-"eventHandlers": [{
-  "type": "drilldown.linkToDashboard",
-  "options": {
-    "app": "search",
-    "dashboard": "host_detail_view",
-    "newTab": true,
-    "tokens": [
-      {"token": "host",                 "value": "row.host.value"},
-      {"token": "global_time.earliest", "value": "global_time.earliest"},
-      {"token": "global_time.latest",   "value": "global_time.latest"}
-    ]
-  }
-}]
-```
-
-The target dashboard declares matching `host` and `global_time` inputs
-(the latter via `input.timerange` with `options.token: "global_time"`);
-the forwarded tokens populate them on load.
-
 ## See also
 
 - `ds-tokens` — `$row.*$` / `$click.*$` context tokens explained.
-- `ds-inputs` — receiving side: `form.<name>` inputs that catch URL
-  tokens from `linkToDashboard`.
+- `ds-inputs` — receiving side for `linkToDashboard`-forwarded tokens.
 - `ds-visibility` — what to do with `$selected_*$` tokens captured via
-  `setToken`.
-- `reference/ds-syntax` — legacy monolith with full event-handler option
-  reference.
+  `setToken` (RAG flips, panel show/hide).
+- `reference/ds-syntax` — full event-handler option reference.

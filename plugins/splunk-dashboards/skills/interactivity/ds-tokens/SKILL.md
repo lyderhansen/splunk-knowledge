@@ -1,224 +1,129 @@
 ---
 name: ds-tokens
-description: Tokens are how Dashboard Studio passes user-facing values into searches and visualization options. Read when wiring inputs to data sources, when a panel is not updating, or when adding token filters (|h, |u, |s). Covers $token$ syntax, $token.subfield$ for timerange tokens, $row.<field>.value$ inside drilldowns, $click.value$, token filters, and the most common 'tokens don't resolve' debugging steps. Triggers on 'tokens', 'token filter', '$tok$', 'inputs not affecting search', 'why is my panel not updating'.
-version: 1.0
-verified_against: Splunk Enterprise 10.2.1
-test_dashboards:
-  - splunk-knowledge-testing/ds_interactivity_core_dark (§1, §2)
-  - splunk-knowledge-testing/ds_interactivity_core_light (§1, §2)
+description: Splunk Dashboard Studio token reference — how dashboards pass user-facing values into searches and visualization options. Covers $token$ syntax, $token.subfield$ for timerange tokens, $row.<field>.value$ inside drilldowns, $click.value$, token filters (|h, |u, |s for multiselect IN-clauses), and the most common "tokens don't resolve" debugging steps. Use when the user asks about tokens, $tok$, why a panel isn't updating, multiselect into IN(), token filters, or how inputs wire to data sources in Splunk Dashboard Studio.
 ---
 
-# `ds-tokens` — token reference
+# ds-tokens — token reference
 
-> Verified live against `ds_interactivity_core_dark` / `_light`. Open the
-> dashboard, change any input at the top, and watch the **§1 Token echo**
-> panel string update in real time. That panel is just a `splunk.singlevalue`
-> bound to a `makeresults | eval msg=...` search that interpolates every
-> token — it's the simplest possible proof that token resolution works.
+Verified against Splunk Enterprise 10.2.1.
+Live test bench: `splunk-knowledge-testing/ds_interactivity_core_dark`
+§1 Token echo panel.
 
 ## What a token is
 
-A token is a named value that lives on the dashboard. Inputs *write* tokens
-when the user picks a value. Searches and visualization options *read*
-tokens via `$token_name$` syntax. When a token's value changes, every
-search and option that references it re-evaluates.
+A named value that lives on the dashboard. Inputs **write** tokens
+when the user picks a value. Searches and viz options **read** tokens
+via `$token_name$` syntax. When a token's value changes, every search
+and option that references it re-evaluates.
 
-Tokens have **no declaration block**. They come into existence the moment
-an input declares one in `options.token`, or a drilldown writes one via
+**No declaration block.** Tokens come into existence when an input
+declares one in `options.token`, or when a drilldown writes one via
 `drilldown.setToken`. There is no `tokens: { ... }` top-level key.
 
 ## The 4 places tokens come from
 
-1. **Inputs** — `inputs.<id>.options.token: "name"` declares a writeable
-   token. The user controls it via the rendered widget. Every input flavour
-   (timerange, dropdown, multiselect, text, checkbox, radio, number) emits
-   exactly one token.
-
+1. **Inputs** — `inputs.<id>.options.token: "name"` declares a
+   writeable token.
 2. **Drilldown setToken** — `eventHandlers[].type: "drilldown.setToken"`
    captures click context (`row.<field>.value`, `click.value`,
-   `click.value2`) into a named token. See `ds-drilldowns`.
-
-3. **URL parameters** — When you navigate to a dashboard from another
-   dashboard via `drilldown.linkToDashboard` with `tokens: { "form.host":
-   "..." }`, those `form.<name>` URL params populate matching input tokens
-   on load.
-
-4. **Defaults** (special) — The `defaults` block at the dashboard root
-   uses tokens like `$global_time.earliest$` to wire a global value into
-   every `ds.search`. See `ds-defaults`.
+   `click.value2`) into a named token.
+3. **URL parameters** — `drilldown.linkToDashboard` passes `form.<name>`
+   URL params that populate matching input tokens on load.
+4. **Defaults** — `defaults.tokens.default` initialises tokens to
+   stable values before first interaction.
 
 ## Reading a token
 
-### In SPL (`ds.search.options.query`)
-
 ```spl
+# In SPL (ds.search.options.query)
 | stats count by host | search status=$status$ index=$selected_index$
 ```
 
-### In a visualization option
+```json
+"options": { "majorValue": "$selected_count$" }
+```
+
+Inside DOS strings, escape literal `$`:
 
 ```json
 "options": {
-  "majorValue": "$selected_count$"
+  "majorValue": "> primary | seriesByName('count') | lastPoint() | prefix('\\$')"
 }
 ```
 
-### In a DOS expression
+## Do / Don't
 
-Inside DOS strings (the `> primary | ...` syntax), bare `$` characters get
-interpreted as token boundaries. Escape with `\$` when you need a literal
-dollar sign:
-
-```json
-"options": {
-  "majorValue": "> primary | seriesByName(\"count\") | lastPoint() | prefix(\"\\$\")"
-}
-```
-
-## Subfield accessors (timerange only)
-
-`input.timerange` is the one input type whose token is *not* a single
-string. It exposes two read-only sub-tokens:
-
-| Token | Value |
+| ✅ Do | ❌ Don't |
 |---|---|
-| `$global_time.earliest$` | The relative or absolute earliest expression (e.g. `-24h@h`) |
-| `$global_time.latest$` | The latest expression (e.g. `now`) |
-
-The bare token `$global_time$` is **not useful** — read either subfield
-instead. This is wired into searches via the `defaults` block (see
-`ds-defaults`).
-
-## Drilldown context tokens
-
-Inside `eventHandlers` only, additional contextual tokens exist:
-
-| Token | Meaning |
-|---|---|
-| `$row.<field>.value$` | The value of `<field>` in the clicked row (table/event panels) |
-| `$click.value$` | The category / x-axis value the user clicked (charts) |
-| `$click.value2$` | The series / second axis value (where applicable, e.g. y in scatter) |
-| `$click.name$` | Field name (where applicable) |
-| `$click.name2$` | Second field name |
-
-These do **not** persist after the click — they're scoped to the event
-handler. To make them persist, use `drilldown.setToken` to copy them into
-a named token. See `ds-drilldowns`.
+| **Multiselect into SPL `IN()`:** `IN ($status\|s$)`. Quotes each value. | `IN ($status$)` — joins with commas, no quotes; `web-01,web-02` parses literally and chokes on the dash. |
+| **Multiselect "All" sentinel:** `WHERE x IN ($tok\|s$) OR ("$tok$" = "*")`. | Skip the OR clause — selecting "*" produces invalid SPL. |
+| **Timerange:** `$global_time.earliest$` / `$global_time.latest$`. | Bare `$global_time$` — not useful, returns a non-string container. |
+| **URL drilldown:** `|u` filter mandatory inside `customUrl`. | Skip `|u` — values containing `&` or `?` silently corrupt the URL. |
+| **Markdown XSS-safe:** `|h` filter when interpolating user-controlled tokens. | Pass raw user-controlled tokens into `splunk.markdown` — XSS surface. |
+| **Initial state:** seed tokens via `defaults.tokens.default`. | Read tokens before any input has written — you'll get blank or break visibility conditions. |
+| **Drilldown token capture:** `drilldown.setToken` to persist `row.*` / `click.*` after the click. | Try to read `$row.<field>.value$` outside an event handler — scoped to the click only. |
+| **Token names:** match exactly across reads + writes. | `$selected_index$` vs `$select_index$` — typos = silent no-update. |
+| **Reserved namespaces:** avoid `form.*`, `row.*`, `click.*`, `<token>.earliest` / `.latest` for your own tokens. | Reuse reserved names — they collide with framework. |
 
 ## Token filters
 
-Append `|<filter>` to a token name to transform the value at substitution time:
+Append `|<filter>` to transform value at substitution time:
 
-| Syntax        | Filter                | Use case |
-|---------------|------------------------|---------|
-| `$token|s$`   | **Quote each value (string-quote filter)** | Multiselect tokens going into SPL `IN(...)` clauses. |
-| `$token|h$`   | HTML escape            | Injecting into `splunk.markdown` text panels (XSS-safe) |
-| `$token|u$`   | URL encode             | `drilldown.customUrl` and any URL-bound interpolation |
+| Filter | What it does | Use case |
+|---|---|---|
+| `\|s` | **Quote each value** (string-quote) | Multiselect → SPL `IN()` |
+| `\|h` | HTML escape | Inside `splunk.markdown` (XSS-safe) |
+| `\|u` | URL encode | `drilldown.customUrl`, any URL interpolation |
 
-Default (no filter) emits the raw value: a string for single-value
-tokens, a comma-separated joined list for multiselect arrays (no
-quoting around individual values).
+Default (no filter) emits raw value: a string for single tokens; a
+comma-separated joined list for multiselect arrays (no quoting).
 
-Example from the live test bench:
+## Subfield accessors (timerange only)
 
-```json
-"url": "https://example.com/investigate?host=$row.host.value|u$&action=$row.action.value|u$"
-```
+| Token | Value |
+|---|---|
+| `$global_time.earliest$` | Earliest expression (e.g. `-24h@h`). |
+| `$global_time.latest$` | Latest expression (e.g. `now`). |
 
-`|u` is mandatory inside `customUrl` — without it a row value containing
-`&` or `?` will silently corrupt the URL.
+Wired into searches via the `defaults` block — see `ds-defaults`.
 
-## Multiselect tokens
+## Drilldown context tokens (event-scoped)
 
-`input.multiselect` produces a token whose **runtime expansion** depends on
-context. The token *value* is an array.
+| Token | Meaning |
+|---|---|
+| `$row.<field>.value$` | Value of `<field>` in clicked row (table/event panels). |
+| `$click.value$` | Category / x-axis value the user clicked (charts). |
+| `$click.value2$` | Series / second axis value (scatter, bubble, sankey). |
+| `$click.name$` / `$click.name2$` | Field names where applicable. |
 
-- **Default** interpolation joins the array with commas, **no quoting
-  around values**: `["200", "404"]` → `200,404`. This is unsafe for SPL
-  fields whose values contain spaces or hyphens — `web-01,web-02`
-  parses literally as `web` then chokes on the dash.
-- **`|s` filter** quotes each value: `["web-01", "web-02"]` →
-  `"web-01","web-02"`. This is the documented form for SPL `IN()`
-  clauses.
+These do **not** persist after the click. Use `drilldown.setToken` to
+copy them into a named token. See `ds-drilldowns`.
 
-The canonical multiselect search pattern (verified in the Splunk doc
-"Network Traffic" example):
-
-```spl
-| where Username IN ($username|s$) OR ("$username$" = "*")
-```
-
-The `IN(...)` clause uses `|s` so the array becomes a properly-quoted
-list; the trailing `OR ("$tok$" = "*")` handles the "All" sentinel
-case where the user picks `*`.
-
-If you forget `|s`, multiselect with N>1 always produces invalid SPL
-the moment any value contains a space, hyphen, colon, or quote. The
-test bench's §1 Token echo demonstrates the right form — it renders
-the SPL `status IN ("200","404")` (quoted) instead of `status IN (200,
-404)` (unquoted).
-
-## "My panel is not updating" — debug ladder
+## "Panel not updating" — debug ladder
 
 In order from most-likely to least-likely:
 
-1. **Token name typo.** `$selected_index$` vs `$select_index$`. Cmd-F the
-   token name across the JSON; it must appear *exactly* the same wherever
-   it's read or written.
-2. **Input never wrote the token.** Verify `inputs.<id>.options.token`
-   matches what searches read. The widget can render fine and still write
-   to a different token name.
-3. **Input is not on the layout.** An input declared but not listed in
-   `layout.globalInputs` (or in a `tabs.layoutDefinitions[].inputs`) does
-   not render → can't be changed → token stays at `defaultValue`.
-4. **Search does not actually reference the token.** Maybe the search has
-   a hardcoded value that overrides where you think the token goes.
-5. **`enableSmartSources` is off.** When using DOS-typed tokens for input
-   items (the dynamic dropdown pattern), the parent `ds.search` must
-   have `options.enableSmartSources: true` to re-fire when the upstream
-   input changes. Without it, the dropdown items render once and freeze.
-6. **Scope problem with timerange.** Always use `$token.earliest$` /
-   `$token.latest$`, never bare `$token$`, for `input.timerange`.
+1. **Token name typo.** Cmd-F across the JSON; must appear *exactly*
+   the same wherever read or written.
+2. **Input never wrote the token.** Verify
+   `inputs.<id>.options.token` matches what searches read.
+3. **Input is not on the layout.** Declared but not listed in
+   `layout.globalInputs` or `tabs.layoutDefinitions[].inputs` →
+   doesn't render → can't be changed → token stays at `defaultValue`.
+4. **Search does not actually reference the token.** Hardcoded value
+   may be overriding where you think the token goes.
+5. **`enableSmartSources` is off.** Required for DOS-typed dynamic
+   dropdown items to refresh on upstream changes.
+6. **Scope problem with timerange.** Use `$token.earliest$` /
+   `$token.latest$`, never bare `$token$`.
 
-The §1 Token echo panel is purpose-built for step 4 — if the value shows
-up there, the token is resolving. If it doesn't, the wiring is broken
-upstream.
-
-## Reserved namespaces
-
-- `form.<name>` — populated from URL query params on dashboard load. Used
-  by `drilldown.linkToDashboard` to pass values across dashboards.
-- `row.<field>.value` / `row.<field>.name` — drilldown event scope only.
-- `click.*` — drilldown event scope only.
-- `<token>.earliest` / `<token>.latest` — automatic for `input.timerange`.
-
-Avoid using these prefixes for your own input tokens.
-
-## Common gotchas
-
-- **Quotes in DOS context.** Inside DOS strings, fields are referenced
-  with escaped double quotes: `seriesByName(\"count\")`. The token
-  expansion happens before DOS parses, so a token containing a `"` will
-  break DOS — sanitize with allow-listed values.
-- **Token filters apply at substitution time.** They run on the *value*,
-  not on the search. So `$search_text|s$` keeps the value raw — it does
-  *not* escape SPL metacharacters. There is no SPL-injection-safe filter;
-  use input allow-lists instead of free text where possible.
-- **`defaultValue` is a string for most inputs, an array for multiselect,
-  and a comma-separated string for timerange.** Schema validation rejects
-  the object form for timerange (see `ds-inputs`).
-- **`$row.<field>.value$` is case-sensitive.** Field name must match what
-  Splunk produces. If your SPL renames a field, the renamed name is what
-  the drilldown sees.
-- **You cannot read a token before any input has written to it.** On
-  first load, before defaults populate, inputs may briefly show empty
-  values. Set `defaultValue` on every input you depend on.
+The §1 Token echo panel in the live bench is purpose-built for step 4
+— if the value shows up there, the token is resolving. If not, the
+wiring is broken upstream.
 
 ## Quick recipes
 
-### Echo every token to a single panel
-
-Best debug pattern. The `§1 Token echo` panel in the live test bench:
+### Echo every token to a single panel (debug)
 
 ```json
 "ds_token_demo": {
@@ -228,24 +133,23 @@ Best debug pattern. The `§1 Token echo` panel in the live test bench:
   }
 },
 "viz_token_echo": {
-  "type": "splunk.singlevalue",
-  "dataSources": {"primary": "ds_token_demo"},
+  "type": "splunk.markdown",
   "options": {
-    "majorValue": "> primary | seriesByName(\"msg\") | lastPoint()"
+    "markdown": "**Resolved**: `index=$selected_index$ status=$status$ time=$global_time.earliest$..$global_time.latest$`"
   }
 }
 ```
 
-### Use a multiselect inside a search
+Markdown form is preferred — supports token interpolation natively
+without an SPL round-trip.
+
+### Multiselect inside a search
 
 ```spl
 | stats count by host | where status IN ($status|s$) OR ("$status$" = "*")
 ```
 
-`status` is declared as `input.multiselect` with `defaultValue:
-["200","201"]`. The `|s` filter quotes each array element so `IN()`
-parses cleanly even when values contain hyphens / spaces; the
-`OR ("$status$" = "*")` clause handles the "All" sentinel.
+`status` declared as `input.multiselect` with `defaultValue: ["200","201"]`.
 
 ### Pass tokens to another dashboard
 
@@ -255,23 +159,23 @@ parses cleanly even when values contain hyphens / spaces; the
   "options": {
     "app": "search",
     "dashboard": "host_detail_view",
-    "tokens": {
-      "form.host":     "$row.host.value$",
-      "form.earliest": "$global_time.earliest$"
-    }
+    "tokens": [
+      { "token": "host",     "value": "row.host.value" },
+      { "token": "earliest", "value": "global_time.earliest" }
+    ]
   }
 }
 ```
 
-The receiving dashboard must declare an input with `token: "host"` for
-`form.host` to land somewhere readable.
+`tokens` is an **array of `{token, value}` objects**, NOT a map.
+Receiving dashboard must declare inputs with matching `token` names.
 
 ## See also
 
-- `ds-inputs` — for declaring what writes tokens.
-- `ds-defaults` — for wiring tokens (specifically `global_time`) into every
+- `ds-inputs` — declaring widgets that write tokens.
+- `ds-defaults` — wiring tokens (especially `global_time`) into every
   `ds.search`.
-- `ds-drilldowns` — for the click-time tokens (`row.*`, `click.*`) and
+- `ds-drilldowns` — click-time tokens (`row.*`, `click.*`) +
   `setToken` action.
-- `ds-visibility` — for using token state to show/hide panels.
-- `reference/ds-syntax` — the legacy monolith. Same content, less focus.
+- `ds-visibility` — using token state to show/hide panels.
+- `reference/ds-syntax` — JSON envelope.

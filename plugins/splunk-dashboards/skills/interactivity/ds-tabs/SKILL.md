@@ -1,33 +1,27 @@
 ---
+name: ds-tabs
+description: Splunk Dashboard Studio tabbed layouts — split a single dashboard into multiple panel groups, each with its own grid layout, sharing the same global inputs and data sources. Provides patterns for 3-tab analyst workflows, tab-scoped inputs (input_host_filter only on Detail tab), tab-bar position, and the global vs tab-scoped input split. Use when the user asks about tabs, tabbed dashboards, multiple pages in one dashboard, layoutDefinitions, tab bar position, or splitting workflows by audience in Splunk Dashboard Studio.
+---
 
-## name: ds-tabs
-description: Tabs split a single dashboard into multiple panel groups, each with its own grid layout, sharing the same inputs and data sources. Read when a dashboard has too many panels for one screen, when separating workflows by audience (operations vs investigators), or when adding a "details" sub-page that doesn't deserve its own dashboard. Triggers on 'tabs', 'tabbed dashboard', 'multiple pages in one dashboard', 'layoutDefinitions', 'tab bar position'.
-version: 1.0
-verified_against: Splunk Enterprise 10.2.1
-test_dashboards:
-  - splunk-knowledge-testing/ds_interactivity_tabs_dark
-  - splunk-knowledge-testing/ds_interactivity_tabs_light
+# ds-tabs — tabbed layouts
 
-# `ds-tabs` — tabbed layouts
-
-> Verified against `ds_interactivity_tabs_dark` / `_light`. Three tabs
-> (Overview / Details / Threats), each with its own `layoutDefinitions`
-> entry, sharing the dashboard's global time input.
-
-## What tabs are
+Verified against Splunk Enterprise 10.2.1.
+Live test bench: `splunk-knowledge-testing/ds_interactivity_tabs_dark`.
 
 A tabbed layout splits a dashboard into N independently-laid-out
-sections. The user clicks a tab in a tab bar (top or bottom of the
-content area) to switch between them. Inputs declared at the dashboard
-root with `globalInputs` are visible across all tabs; tab-scoped inputs
-declared in `layoutDefinitions[].inputs` are visible only when that tab
-is active.
+sections. The user clicks a tab to switch between them.
 
-Tabs are mutually exclusive with `absolute` and `grid` at the dashboard
-root: `layout.type` is **either** absolute/grid **or** the dashboard
-declares `layout.tabs` (and no `layout.type`). You cannot embed tabs
-inside an absolute layout, and you cannot embed an absolute layout
-*outside* a tabbed dashboard.
+## When to use tabs (vs separate dashboards)
+
+| Use tabs when... | Use separate dashboards when... |
+|---|---|
+| Multiple views share the same input filters. | Distinct audiences (execs vs operators). |
+| User workflow moves between views without changing context. | URL needs to be shareable / bookmarkable per-view. |
+| Each view is small enough that it doesn't deserve own URL. | Filter scope differs (different time horizons, different inputs). |
+
+Common production pattern: "summary" dashboard (no tabs) + "detail"
+dashboard (with tabs for sub-sections). Drill from summary to detail
+via `linkToDashboard`.
 
 ## Required shape
 
@@ -36,9 +30,9 @@ inside an absolute layout, and you cannot embed an absolute layout
   "globalInputs": ["input_global_time"],
   "tabs": {
     "items": [
-      {"layoutId": "layout_overview", "label": "Overview"},
-      {"layoutId": "layout_details",  "label": "Details"},
-      {"layoutId": "layout_threats",  "label": "Threats"}
+      { "layoutId": "layout_overview", "label": "Overview" },
+      { "layoutId": "layout_details",  "label": "Details" },
+      { "layoutId": "layout_threats",  "label": "Threats" }
     ],
     "options": {
       "barPosition": "top",
@@ -46,52 +40,42 @@ inside an absolute layout, and you cannot embed an absolute layout
     }
   },
   "layoutDefinitions": {
-    "layout_overview": {
-      "type": "grid",
-      "structure": [ ... ]
-    },
-    "layout_details": {
-      "type": "grid",
-      "structure": [ ... ]
-    },
-    "layout_threats": {
-      "type": "grid",
-      "structure": [ ... ]
-    }
+    "layout_overview": { "type": "grid", "structure": [ ... ] },
+    "layout_details":  { "type": "grid", "structure": [ ... ] },
+    "layout_threats":  { "type": "grid", "structure": [ ... ] }
   }
 }
 ```
 
 Three keys at `layout`-level:
 
-- `globalInputs` — array of input IDs visible across all tabs (typically
-the global time picker).
-- `tabs.items` — array of `{layoutId, label}`. Order matches tab order
-left-to-right. Each `layoutId` must be a key in `layoutDefinitions`.
-- `tabs.options` — tab-bar styling (see below).
-- `layoutDefinitions` — keyed by tab ID. Each entry is itself a layout
-block (`type: "grid" | "absolute"`, plus its own `structure` and
-optional `inputs`).
+- `globalInputs` — array of input IDs visible across all tabs.
+- `tabs.items` — `[{layoutId, label}]`. Order matches tab order.
+- `tabs.options` — tab-bar styling.
+- `layoutDefinitions` — keyed by tab ID. Each entry is a layout block
+  (`type`, `structure`, optional `inputs`).
+
+## Do / Don't
+
+| ✅ Do | ❌ Don't |
+|---|---|
+| **Tabbed dashboard:** omit `layout.type` at root. | Set both `layout.type: "absolute"` AND `layout.tabs` — tabs ignored. |
+| **`layoutId` matches `tabs.items[].layoutId`** exactly. | Typo in either — blank tab. |
+| **Each tab needs `type` AND `structure`** in its `layoutDefinitions` entry. | Skip `type` on the inner layout — outer omission doesn't propagate. |
+| **Tab-scoped inputs:** declare in `layoutDefinitions[].inputs`. | Add tab-only inputs to `globalInputs` — they render across all tabs. |
+| **`globalInputs` for shared filters** (time picker, account picker). | Duplicate the same input across every tab's `inputs` array. |
+| **Mix grid + absolute** only with a specific reason. | Mix layout types arbitrarily — visually disorienting. |
+| **Performance:** gate searches in hidden tabs with `visibility` if cost matters. | Trust hidden tabs to defer searches — they dispatch on dashboard load by default. |
+| **Tabs are flat** — no nesting. | Embed a tabbed layout inside another tab — not supported. |
 
 ## `tabs.options`
 
-Verified working options:
-
-
-| Option        | Type                 | Default | Notes                                                                       |
-| ------------- | -------------------- | ------- | --------------------------------------------------------------------------- |
-| `barPosition` | `"top"` | `"bottom"` | `"top"` | Tab bar above or below content.                                             |
-| `showTabBar`  | boolean              | `true`  | When `false`, tabs are hidden — useful for programmatic tab switching only. |
-
-
-Hiding the tab bar (`showTabBar: false`) is rare but useful for
-embedded dashboards where another widget controls which tab is active
-via a token (you can drive `tabs` selection from a token in advanced
-patterns, though that's outside the verified test bench).
+| Option | Type | Default | Notes |
+|---|---|---|---|
+| `barPosition` | `"top"` \| `"bottom"` | `"top"` | Tab bar above or below content. |
+| `showTabBar` | boolean | `true` | `false` for programmatic tab switching only. |
 
 ## Tab-scoped inputs
-
-Each `layoutDefinitions` entry can declare its own inputs:
 
 ```json
 "layoutDefinitions": {
@@ -103,91 +87,28 @@ Each `layoutDefinitions` entry can declare its own inputs:
 }
 ```
 
-These render only when that tab is active. They do **not** appear in
-`layout.globalInputs`. Inputs declared neither globally nor in any tab's
-`inputs` array do not render.
-
-## Mixing tab-local layouts
-
-Each `layoutDefinitions` entry can independently choose `grid` or
-`absolute`. The verified test bench uses `grid` for all three tabs —
-that's the more common choice because grid auto-flows panel sizes.
-
-```json
-"layout_overview": { "type": "grid", "structure": [...] },
-"layout_details":  { "type": "absolute", "options": {"width": 1440, "height": 1200}, "structure": [...] }
-```
-
-Mixing types is legal but visually disorienting — pick one for the
-whole dashboard unless there's a specific reason.
-
-## When to use tabs (vs separate dashboards)
-
-Use tabs when:
-
-- Multiple views *share* the same input filters (one time picker, one
-host filter — same scope).
-- The user workflow naturally moves between views without changing
-context.
-- Each view is small enough that it doesn't deserve a separate URL.
-
-Use separate dashboards when:
-
-- Views have distinct audiences (executives vs operators).
-- The URL needs to be shareable / bookmarkable per-view.
-- Filter scope differs significantly (different time horizons, different
-inputs).
-
-A common production pattern is to pair: a "summary" dashboard with no
-tabs, and a "detail" dashboard with tabs for sub-sections. Drill from
-the summary into the detail dashboard via `linkToDashboard`, optionally
-landing on a specific tab via URL params (advanced).
-
-## Common gotchas
-
-- `**layout.type` must be omitted** when using tabs. Setting both
-`layout.type: "absolute"` and `layout.tabs` produces undefined behaviour
-(often "tabs ignored").
-- `**layoutDefinitions` keys must match `tabs.items[].layoutId*`*
-exactly. A typo → blank tab.
-- **Each tab's own layout still needs `type` and `structure`.** They're
-not optional on the inner layout — the outer dashboard's removal of
-`layout.type` doesn't propagate.
-- **Searches in hidden tabs still dispatch on dashboard load** by
-default. If performance matters, gate with `visibility` on individual
-panels, or split into separate dashboards.
-- **Tabs cannot be nested.** A tab cannot itself contain another tabbed
-layout.
-- `**globalInputs` always render** above the tab bar regardless of
-`barPosition`. Tab-scoped inputs render *inside* the tab content.
-- `**labels` are user-visible strings**, not slugs — internationalise
-freely. `layoutId` is the internal key — keep it stable.
-- **No URL-level tab state** by default. The currently selected tab is
-not preserved in the URL hash. Bookmarking always lands on the first
-tab. Workarounds exist (token-driven tab selection) but are not part of
-the verified surface.
+The input renders **only when that tab is active**. Inputs declared
+neither globally nor in any tab's `inputs` array do not render.
 
 ## Quick recipes
 
 ### 3-tab dashboard with shared time picker
-
-The verified test-bench shape — copy-pasteable:
 
 ```json
 "layout": {
   "globalInputs": ["input_global_time"],
   "tabs": {
     "items": [
-      {"layoutId": "tab_summary",  "label": "Summary"},
-      {"layoutId": "tab_detail",   "label": "Detail"},
-      {"layoutId": "tab_audit",    "label": "Audit"}
+      { "layoutId": "tab_summary", "label": "Summary" },
+      { "layoutId": "tab_detail",  "label": "Detail" },
+      { "layoutId": "tab_audit",   "label": "Audit" }
     ],
-    "options": {"barPosition": "top", "showTabBar": true}
+    "options": { "barPosition": "top", "showTabBar": true }
   },
   "layoutDefinitions": {
-    "tab_summary": {"type": "grid", "structure": [...]},
-    "tab_detail":  {"type": "grid", "structure": [...]},
-    "tab_audit":   {"type": "grid", "structure": [...]}
+    "tab_summary": { "type": "grid", "structure": [...] },
+    "tab_detail":  { "type": "grid", "structure": [...] },
+    "tab_audit":   { "type": "grid", "structure": [...] }
   }
 }
 ```
@@ -200,37 +121,43 @@ The verified test-bench shape — copy-pasteable:
     "type": "grid",
     "inputs": ["input_host_filter"],
     "structure": [
-      {"item": "viz_host_breakdown", "type": "block",
-       "position": {"x": 0, "y": 0, "w": 1440, "h": 600}}
+      { "item": "viz_host_breakdown", "type": "block",
+        "position": { "x": 0, "y": 0, "w": 1440, "h": 600 } }
     ]
   }
 }
 ```
-
-The host filter only appears when "Detail" is active.
 
 ### Hidden tab bar (programmatic switching)
 
 ```json
 "tabs": {
   "items": [
-    {"layoutId": "view_a", "label": "A"},
-    {"layoutId": "view_b", "label": "B"}
+    { "layoutId": "view_a", "label": "A" },
+    { "layoutId": "view_b", "label": "B" }
   ],
-  "options": {"barPosition": "top", "showTabBar": false}
+  "options": { "barPosition": "top", "showTabBar": false }
 }
 ```
 
-Plus an `input.dropdown` somewhere with the same items, driving tab
-selection via token. (Token-driven tab selection is documented but
-beyond the verified scope of this skill — test it before relying on it.)
+Pair with an `input.dropdown` driving tab selection via token.
+(Token-driven tab selection is documented but beyond verified scope —
+test before relying on it.)
+
+## Caveats
+
+- **No URL-level tab state by default.** Bookmarking always lands on
+  first tab. Token-driven workarounds exist.
+- **`globalInputs` always render above the tab bar** regardless of
+  `barPosition`. Tab-scoped inputs render inside tab content.
+- **`labels` are user-visible** — internationalise. `layoutId` is
+  internal — keep stable.
 
 ## See also
 
 - `ds-inputs` — `globalInputs` vs tab-scoped `inputs`.
-- `ds-defaults` — global time wiring works the same in tabbed dashboards.
+- `ds-defaults` — global time wiring works the same in tabbed
+  dashboards.
 - `ds-drilldowns` — `linkToDashboard.tokens` to land on a specific tab
-(token-driven only).
-- `reference/ds-syntax` — the legacy monolith, with the original layout
-reference covering grid, absolute, and tabs.
-
+  (token-driven only).
+- `reference/ds-syntax` — full layout reference.

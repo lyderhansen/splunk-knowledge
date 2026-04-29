@@ -1,262 +1,41 @@
 ---
 name: ds-viz-image
-description: |
-  splunk.image - the only way to put a real image (logo, screenshot, diagram,
-  background canvas, watermark) on a Dashboard Studio dashboard. Absolute
-  layout only. Verified against the 10.4 Dashboard Studio docs.
-version: 1.0.0
-verified_against: SplunkCloud-10.4.2604-DashStudio
-test_dashboards:
-  - ds_viz_image_dark
-  - ds_viz_image_light
-related:
-  - ds-viz-markdown
-  - ds-viz-rectangle
-  - ds-viz-ellipse
+description: Splunk Dashboard Studio splunk.image visualization — the only way to put a real image (logo, screenshot, diagram, background canvas, watermark) on a dashboard. Provides patterns for header logos, background canvases with KPI overlays, datacenter floor plans with rectangle hit-zones, faint watermarks, and the upload-vs-URL trade-off (PDF export caveat). Use when the user asks about images, logos, screenshots, architecture diagrams, floor plans, watermarks, or branded backgrounds in Splunk Dashboard Studio.
 ---
 
-# splunk.image
+# splunk.image — image renderer
 
-For logos in headers, screenshots in runbooks, architecture diagrams, datacenter
-floor plans, branded backgrounds, and faint watermarks. The only image renderer
-in Dashboard Studio.
+Verified against Splunk Cloud 10.4.2604.
+Live test bench: `ds_viz_image_dark` / `ds_viz_image_light`.
+
+The only image renderer in Dashboard Studio. For logos, screenshots,
+architecture diagrams, datacenter floor plans, branded backgrounds,
+and watermarks.
 
 ## When to use
 
-- **Logos** in dashboard headers (left of the title) or footers.
-- **Screenshots** of UIs or third-party tools as part of a runbook.
-- **Architecture diagrams** (prefer SVG so they stay crisp at any panel size).
-- **Background canvases** under a section, with KPIs layered on top.
+- **Logos** in dashboard headers / footers.
+- **Screenshots** of UIs / third-party tools as part of a runbook.
+- **Architecture diagrams** (prefer SVG — stays crisp at any panel
+  size).
+- **Background canvases** under a section, with KPIs on top.
 - **Watermarks** behind a dashboard ("CONFIDENTIAL", "DEMO DATA").
-- **Floor plans / facility maps** with rectangles and singleValues for sensors
-  and rooms placed at absolute coordinates on top.
-- **Branded section dividers** that go further than `splunk.rectangle` alone.
+- **Floor plans / facility maps** with rectangles + singlevalues
+  layered on top.
 
 ## When NOT to use
 
-- For inline icons next to text - use unicode glyphs or `splunk.markdown` with
-  inline image references.
-- For decorative shapes/gradients - use `splunk.rectangle` or
-  `splunk.ellipse` (they render in PDF/PNG export, external URL images don't).
-- For dynamic images driven by SPL - the `src` is **static**, no token
-  interpolation. (Workaround: use layout visibility tokens with multiple
-  pre-set image panels.)
-- In **grid** layouts - `splunk.image` requires **absolute** layout.
+- **Inline icons next to text** → unicode glyphs or
+  `splunk.markdown` with inline image references.
+- **Decorative shapes / gradients** → `splunk.rectangle` /
+  `splunk.ellipse` (they render in PDF/PNG export, external URL
+  images don't).
+- **Dynamic image driven by SPL** — `src` is **static**, no token
+  interpolation. Workaround: multiple pre-set image panels with
+  visibility tokens.
+- **Grid layouts** — image only renders in **absolute** layout.
 
-## Data shape
-
-`splunk.image` does not take a data source. The `src` option is the entire
-content.
-
-## Options (10.4 PDF)
-
-| Option                  | Type    | Default  | Notes                                                                  |
-| ----------------------- | ------- | -------- | ---------------------------------------------------------------------- |
-| `src`                   | string  | -        | URL of the image. Required. See "Image source" below.                  |
-| `preserveAspectRatio`   | boolean | `false`  | `false` stretches to fill panel; `true` letterboxes inside the panel.  |
-
-That's the entire option surface. Everything else - sizing, positioning,
-layering - comes from the `layout.structure` block, not from the visualization
-options.
-
-## Supported formats
-
-| Format | Recommended for                    | Renders in PDF/PNG? |
-| ------ | ---------------------------------- | ------------------- |
-| `png`  | Logos, screenshots, photos         | Yes (if uploaded)   |
-| `jpeg` | Photos, dense images               | Yes (if uploaded)   |
-| `gif`  | Static placeholders                | Yes (if uploaded)   |
-| `webp` | Photos with smaller file size      | Yes (if uploaded)   |
-| `svg`  | Diagrams, logos, icons (any size)  | Yes (if uploaded)   |
-
-PDF/PNG export rules are governed by the **image source**, not the format.
-
-## Image source: uploaded vs URL
-
-There are **two** ways to source an image, and which you pick has real
-operational consequences.
-
-### 1. Uploaded to KV store (recommended for production)
-
-Who can upload:
-
-- Splunk Enterprise: admins
-- Splunk Cloud: `sc_admins`
-- Power users with the right capability
-
-How:
-
-- Dashboard Studio editor -> Add panel -> Image -> Upload.
-- Or upload directly to the KV store via REST.
-
-Why prefer it:
-
-- **Renders in PDF/PNG exports** (URL images do not).
-- No CSP / allow-list configuration required.
-- Image travels with the dashboard.
-
-### 2. Referenced by URL (any user, but with caveats)
-
-Who can do it: anyone who can edit a dashboard.
-
-How:
-
-- Set `src` to an `http(s)://` URL or a Splunk-bundled `/en-US/static/...`
-  path.
-
-Caveats:
-
-- The URL **domain must be on the Dashboards Trusted Domains List** (also
-  surfaced in older docs as "dashboards image allow list"). Splunk blocks
-  unlisted domains as a security control. The exact in-app error reads:
-
-  > *External image URLs must now have their domains listed in the
-  > Dashboards Trusted Domains List by working with your administrator.
-  > Alternatively, you can upload the image directly into the dashboard.*
-
-  Configure in `$SPLUNK_HOME/etc/system/local/web.conf`:
-
-  ```
-  [settings]
-  dashboards_image_allow_list = www.splunk.com, splunk.com, cdn.example.com
-  ```
-
-  Restart Splunkweb to pick up changes. On Splunk Cloud, file a support
-  case to update the trust list.
-- **External URL images do NOT render in PDF/PNG export.** This silently
-  breaks scheduled PDF deliveries.
-- Splunk-bundled paths (`/en-US/static/app/<app>/...`) are always trusted
-  and never need allow-listing.
-
-Rule of thumb: for **dashboards that get exported as PDF**, always upload.
-For internal-only views, URLs are fine - but verify the domain is on the
-Trusted Domains List or every external panel will render as a placeholder.
-
-## Layout: absolute only
-
-`splunk.image` will not render inside a **grid** layout. The dashboard must
-use:
-
-```json
-"layout": {
-  "type": "absolute",
-  "options": { "width": 1440, "height": 900 },
-  "structure": [...]
-}
-```
-
-Inside `structure`, place the image with explicit `position` coordinates:
-
-```json
-{
-  "item": "viz_logo",
-  "type": "block",
-  "position": { "x": 20, "y": 20, "w": 240, "h": 80 }
-}
-```
-
-## Sizing & aspect ratio
-
-The `preserveAspectRatio` option works exactly like the SVG attribute of the
-same name:
-
-- **`false` (default):** image **stretches** in both dimensions to fill the
-  panel. Logos and photos look distorted unless the panel is exactly the
-  source aspect ratio. Use only for backgrounds where distortion is OK.
-- **`true`:** image is **scaled to fit** within the panel, preserving the
-  source aspect ratio. The longer axis fills the panel; the shorter axis
-  shows whitespace (letterboxing). Use for **logos, photos, diagrams**.
-
-## Layering (z-order)
-
-Z-order in Dashboard Studio is the **order of `structure` array items**:
-
-- Earlier item -> rendered **first** -> visually **lower** (background).
-- Later item -> rendered **after** -> visually **on top** (foreground).
-
-To put a KPI on top of an image background:
-
-```json
-"structure": [
-  { "item": "viz_background_layer", "position": { "x": 0,   "y": 0,   "w": 1440, "h": 400 } },
-  { "item": "viz_overlay_kpi",      "position": { "x": 950, "y": 80,  "w": 240,  "h": 80  } }
-]
-```
-
-This is the foundation for **datacenter floor plans, branded headers, and
-hero callouts**.
-
-## Verified patterns (test-dashboard reference)
-
-The patterns below are **all rendered and verified** in
-`ds_viz_image_dark` / `ds_viz_image_light`.
-
-| Panel    | What it demonstrates                                  | Where to use                                |
-| -------- | ----------------------------------------------------- | ------------------------------------------- |
-| (top)    | Trusted Domains List warning panel                    | Always include in image-heavy dashboards    |
-| 1        | Default `preserveAspectRatio=false` (stretches)       | Backgrounds where distortion is OK          |
-| 2        | `preserveAspectRatio=true` (letterboxes)              | Logos, photos, diagrams                     |
-| 3        | Logo in a square panel                                | Header logos in fixed corners               |
-| 4        | Same logo in a wide panel                             | Demonstrates panel-driven aspect ratio      |
-| 5        | Local Splunk-bundled `/en-US/static/...` path         | Always trusted; renders in PDF              |
-| 6        | External CDN URL (PNG)                                | Requires trust list; **no** PDF export      |
-| 7        | SVG image (external URL)                              | Diagrams, logos, anything that scales       |
-| 8        | Image as background layer                             | Branded section backdrops                   |
-| 9        | KPI overlay on top of background image                | Hero callouts, floor plan sensors           |
-| 10       | Faint watermark layer (pre-faded asset)               | "DEMO DATA", "CONFIDENTIAL"                 |
-| 11       | Markdown fallback panel for missing `src`             | Empty-state pattern (no image yet)          |
-| 12       | SVG architecture diagram pattern                      | Crisp at any panel size                     |
-| 13       | Datacenter floor plan                                 | Layer rectangles/sensors on top             |
-
-## Drilldown
-
-`splunk.image` does **not** fire `onSelectionChanged` events - it's a static
-visual. There is no "click on this region of the image to drill down".
-
-If you need clickable regions over an image (floor plans, maps, diagrams):
-
-1. Place the image at coordinates `(x, y, w, h)`.
-2. On top, place transparent **`splunk.rectangle`** panels at the click-
-   targets, each with its own drilldown.
-
-`splunk.rectangle` supports `onSelectionChanged` and `linkUrl`/`linkColor`.
-
-## Common gotchas
-
-1. **External URL images don't render in PDF/PNG export.** Scheduled PDF
-   reports will silently show blank panels where the image was. Upload to
-   KV store for any dashboard that gets exported.
-2. **`src` must be on the Dashboards Trusted Domains List.** Otherwise the
-   panel shows the placeholder image and the browser surfaces *"External
-   image URLs must now have their domains listed in the Dashboards Trusted
-   Domains List by working with your administrator."* Configure in
-   `web.conf` -> `dashboards_image_allow_list`. Splunk-bundled
-   `/en-US/static/...` paths are always trusted. The bench dashboard
-   (`ds_viz_image_dark`) embeds an explicit info-panel about this so
-   future editors don't have to re-discover it.
-3. **No grid-layout support.** The dashboard must be absolute layout.
-   Pasting an image panel into a grid dashboard fails to render.
-4. **No opacity option.** To make a faint watermark, **bake the opacity
-   into the asset** before upload (export from Figma/Sketch at 20%
-   opacity). There's no `opacity` or `alpha` option in `splunk.image`.
-5. **`preserveAspectRatio=false` is the default.** Logos look distorted
-   out of the box. Always set `true` unless you want stretch.
-6. **No token interpolation in `src`.** Writing `"src": "$logo_url$"`
-   renders literally as a missing image. Use multiple image panels +
-   layout visibility tokens for "swap image based on dropdown".
-7. **Z-order is array-order.** If your KPI is hidden behind the
-   background image, move the KPI **later** in `structure` (not earlier).
-8. **Splunk-bundled paths (`/en-US/static/...`) are always safe** -
-   allow-listed by default and render in PDF. Useful for placeholders
-   while you wait for your real asset to be uploaded.
-9. **SVGs scale, PNGs don't.** Use SVG for logos, icons, and diagrams.
-   Save PNGs at 2x or 3x panel size to avoid blur on Retina displays.
-10. **GIF animation works** in browser but **freezes on first frame** in
-    PDF/PNG export. Use SVG or a video link instead if you need motion.
-
-## Quick recipes
-
-### Header logo (top-left)
+## Quick start
 
 ```json
 {
@@ -270,63 +49,137 @@ If you need clickable regions over an image (floor plans, maps, diagrams):
 }
 ```
 
-Layout: `{"x": 20, "y": 20, "w": 240, "h": 60}`.
+Layout: `{ "x": 20, "y": 20, "w": 240, "h": 60 }`.
 
-### Background canvas with KPI overlay
+## Do / Don't
+
+| ✅ Do | ❌ Don't |
+|---|---|
+| **PDF / PNG export:** upload to KV store. | Reference external URL — does NOT render in PDF/PNG export, silently breaks scheduled deliveries. |
+| **Logos / photos / diagrams:** `preserveAspectRatio: true`. | Default `false` for logos — image stretches to fill panel and looks distorted. |
+| **External URLs:** allow-list domain via `dashboards_image_allow_list` in `web.conf`. | Reference any domain expecting it to load — Splunk shows placeholder + warning until allow-listed. |
+| **SVG for diagrams** — scales infinitely, renders crisp. | PNG diagrams expecting scale — they blur on Retina. Save PNGs at 2x–3x panel size. |
+| **Watermark opacity:** bake it into the asset (export from Figma at 20%). | Look for an `opacity` option — there isn't one. |
+| **Hit-zones over images:** transparent `splunk.rectangle` ON TOP. | Try to wire drilldown on `splunk.image` — it has no `onSelectionChanged`. |
+| **Splunk-bundled paths** (`/en-US/static/...`) — always trusted. | Use Splunk-bundled paths for production logos — they're better as placeholders. |
+
+## Two options total
+
+| Option | Type | Default | Notes |
+|---|---|---|---|
+| `src` | string | — | URL of the image. Required. |
+| `preserveAspectRatio` | boolean | `false` | `false` stretches; `true` letterboxes. |
+
+That's the entire option surface. Sizing, positioning, layering all
+come from `layout.structure`.
+
+## Image source: uploaded vs URL
+
+### 1. Uploaded to KV store (recommended for production)
+
+- Upload via Dashboard Studio editor → Add panel → Image → Upload.
+- Or upload directly via REST.
+- **Renders in PDF/PNG exports.**
+- No CSP / allow-list configuration required.
+- Image travels with the dashboard.
+
+### 2. Referenced by URL
+
+Set `src` to `http(s)://...` or Splunk-bundled `/en-US/static/...`.
+
+**Caveats:**
+
+- **Domain must be on Dashboards Trusted Domains List** ("dashboards
+  image allow list" in older docs). Configure in
+  `$SPLUNK_HOME/etc/system/local/web.conf`:
+
+  ```
+  [settings]
+  dashboards_image_allow_list = www.splunk.com, splunk.com, cdn.example.com
+  ```
+
+  Restart Splunkweb. On Splunk Cloud, file a support case.
+
+- **External URL images do NOT render in PDF/PNG export.**
+  Scheduled PDF reports show blank panels where the image was.
+
+- Splunk-bundled paths (`/en-US/static/app/<app>/...`) are always
+  trusted.
+
+**Rule of thumb:** for dashboards exported as PDF, always upload. For
+internal-only views, URLs are fine — but verify domain is on the
+trusted list.
+
+## Layout: absolute only
+
+```json
+"layout": {
+  "type": "absolute",
+  "options": { "width": 1440, "height": 900 },
+  "structure": [...]
+}
+```
+
+## Z-order = `structure` array order
+
+Earlier item = behind, later item = in front.
 
 ```json
 "structure": [
-  {
-    "item": "viz_bg",
-    "position": { "x": 0, "y": 0, "w": 1440, "h": 280 }
-  },
-  {
-    "item": "viz_kpi",
-    "position": { "x": 1180, "y": 100, "w": 240, "h": 80 }
-  }
+  { "item": "viz_background_layer", "position": { "x": 0,   "y": 0,   "w": 1440, "h": 400 } },
+  { "item": "viz_overlay_kpi",      "position": { "x": 950, "y": 80,  "w": 240,  "h": 80  } }
 ]
 ```
 
-`viz_bg` is `splunk.image` with `preserveAspectRatio: false`. `viz_kpi`
-sits on top because it's later in the array.
+This is the foundation for **floor plans, branded headers, hero
+callouts**.
 
-### Faint watermark across the dashboard
+## Supported formats
 
-```json
-{
-  "viz_watermark": {
-    "type": "splunk.image",
-    "options": {
-      "src": "/static/app/<app>/watermark-20pct.png",
-      "preserveAspectRatio": false
-    }
-  }
-}
-```
+| Format | Recommended for | PDF/PNG? |
+|---|---|---|
+| `png` | Logos, screenshots, photos | ✅ if uploaded |
+| `jpeg` | Photos | ✅ if uploaded |
+| `gif` | Static placeholders | ✅ if uploaded (animation freezes on first frame) |
+| `webp` | Smaller-file photos | ✅ if uploaded |
+| `svg` | Diagrams, logos, icons | ✅ if uploaded |
 
-Position it as the **first** entry in `structure` so everything else
-renders on top.
+PDF/PNG export rules are governed by the **image source**, not the
+format.
 
-### Empty-state fallback (no image yet)
+## Drilldown
 
-Use `splunk.markdown` with the same panel size:
+`splunk.image` does **not** fire `onSelectionChanged` events. For
+clickable regions:
 
-```json
-{
-  "viz_no_src": {
-    "type": "splunk.markdown",
-    "options": {
-      "markdown": "**No image configured.** Upload via Studio or set `options.src`.",
-      "backgroundColor": "#1A2440",
-      "fontColor": "#E8E8E8"
-    }
-  }
-}
-```
+1. Place the image at `(x, y, w, h)`.
+2. On top, place transparent `splunk.rectangle` panels at the
+   click-targets, each with its own drilldown.
+
+See `ds-viz-rectangle` PATTERNS for the hit-zone recipe.
+
+## Verified patterns
+
+13 panels in `ds_viz_image_dark`:
+
+- Trusted Domains warning panel (top — always include in image-heavy
+  dashboards).
+- 1: Default stretch (`preserveAspectRatio: false`).
+- 2: Letterbox (`preserveAspectRatio: true`).
+- 3–4: Logo in square vs wide panels (panel-driven aspect ratio).
+- 5: Splunk-bundled `/en-US/static/...` (always trusted, PDF-safe).
+- 6: External CDN PNG (requires allow-list, no PDF).
+- 7: SVG external URL.
+- 8: Background layer.
+- 9: KPI overlay on top of background image.
+- 10: Faint watermark (pre-faded asset, opacity baked in).
+- 11: Markdown fallback for missing `src` (empty state).
+- 12: SVG architecture diagram (crisp at any size).
+- 13: Datacenter floor plan with overlay rectangles.
 
 ## See also
 
-- `ds-viz-markdown` - typographic content, lighter than images
-- `ds-viz-rectangle` - colored shapes for click-targets over images
-- `ds-viz-ellipse` - circular highlights, status indicators
-- `ds-design-principles` - when to reach for an image vs a shape
+- `ds-viz-markdown` — typographic content, lighter than images.
+- `ds-viz-rectangle` — coloured shapes + click-targets over images.
+- `ds-viz-ellipse` — circular highlights, status indicators.
+- `ds-design-principles` — when to reach for image vs shape.
