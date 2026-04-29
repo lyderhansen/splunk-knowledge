@@ -122,29 +122,41 @@ catch it at `built`-stage rather than at deploy.
 - `state.json` has `current_stage=built`.
 - Next step: `ds-validate` (lint SPL, tokens, drilldowns) before `ds-deploy`.
 
-## Required reading — DO NOT skip these lookups
+## ⚠️ MUST LOAD — required reading before generating any JSON
+
+These skills MUST be loaded before you write a single line of
+dashboard.json. **This is not optional.** Skipping any of them
+produces output that fails schema validation, renders empty in
+Splunk, fails the Slop Test, or — most commonly — looks generic and
+AI-generated despite passing every technical check.
 
 The CLI builds the mechanical skeleton (data sources, visualizations,
 structure). It does **not** know per-viz option shapes, threshold
-semantics, or schema traps. Generating JSON without consulting the
-content skills below produces output that the schema validator
-rejects, the Splunk runtime renders empty, or that fails the Slop
-Test.
+semantics, schema traps, SPL grammar pitfalls, or visual taste.
+**Do not freestyle from training-data memory** — load the specific
+skills below.
 
-This is not optional. The 27 viz types each have their own option
-table, their own data-shape requirements, and their own gotchas. The
-6 interactivity skills each cover a separate part of the
-token / drilldown / visibility surface. **Do not freestyle from
-training-data memory** — load the specific skills below.
+### ALWAYS-LOAD (every dashboard, no exceptions)
 
-### Before deciding viz types
-
-1. **`ds-pick-viz`** — decision router. Given the question shape
-   in `requirements.md`, picks the right viz type and warns about
-   common mismatches (pie >6 slices, bar without sort, etc.).
-2. **`ds-ref-design-principles`** — archetype (executive / ops
-   / analytical / SOC), KPI sizing, semantic colour palette,
-   canvas tokens, the absolute bans, the Slop Test.
+1. **`ds-pick-viz`** — viz selection router. Given the question
+   shape in `requirements.md`, picks the right viz type and warns
+   about common mismatches (pie >6 slices, bar without sort,
+   scatter for time series).
+2. **`ds-ref-design-principles`** — archetype (executive / ops /
+   analytical / SOC), KPI sizing, semantic colour palette, canvas
+   tokens, absolute bans, the Slop Test rubric.
+3. **`ds-couture`** — visual taste, depth, hierarchy, typography,
+   colour discipline, KPI hero-sizing, sparkline placement,
+   panel-card rectangles. **Without this skill, your dashboard
+   will pass validation but look like AI slop.** The skill starts
+   with a Design Context Protocol (audience, tone, anti-reference,
+   brand) — answer those before touching JSON.
+4. **`ds-ref-syntax`** — Dashboard Studio JSON schema (top-level
+   keys, dataSources, inputs, defaults, layout, expressions,
+   drilldowns, DOS, token filters).
+5. **`ds-spl`** — SPL grammar + silent-fail traps for every
+   data source query you write (`case()` default, dotted-field
+   quoting, multiselect `\|s` filter, time-bound search hygiene).
 
 ### Before writing the JSON for ANY visualization
 
@@ -186,12 +198,23 @@ Read the matching `interactivity/<skill>` for any of:
 
 ### After writing the JSON, before validating
 
-**Always do a final pass against `ds-ref-pitfalls`** — the
-cross-skill traps matrix. Symptom-to-fix lookup table that catches
-issues that span multiple skills (e.g. "schema rejects CSV
-seriesColors" appears on sankey + timeline + linkgraph; "dataSource
-name regex" appears on every search; threshold-bucket overlap
-appears on singlevalue + ellipse + rectangle + filler/markergauge).
+Two passes are required:
+
+1. **`ds-ref-pitfalls`** — cross-skill traps matrix. Symptom-to-fix
+   lookup that catches issues spanning multiple skills (CSV
+   `seriesColors` rejected on sankey/timeline/linkgraph; dataSource
+   name regex; threshold-bucket overlap on
+   singlevalue/ellipse/rectangle/filler/markergauge; bubble layer
+   needing `\| geostats`; ISO-2 codes on `geo_countries`).
+
+2. **`ds-couture`** Slop Test (final pass) — runs through the visual
+   checklist: canvas-background set, KPI row has semantic polarity
+   AND visual hierarchy (anchor KPI hero-sized), depth from layered
+   rectangles, sparklines on count KPIs, markdown section headers,
+   no rainbow on ordered data, no red/green as sole differentiator,
+   pie ≤6 slices, panel titles ≤40 chars Title Case. **A dashboard
+   that passes ds-ref-pitfalls but fails ds-couture's Slop Test
+   still ships AI-slop.** Both must pass.
 
 ### Per-viz JSON enrichment after the CLI writes `dashboard.json`
 
@@ -217,10 +240,41 @@ running the CLI.
 
 ## Self-check before declaring `dashboard.json` ready
 
-- [ ] Read `ds-pick-viz` and `ds-ref-design-principles` for archetype + viz selection.
-- [ ] Read `ds-ref-syntax` for the JSON envelope.
-- [ ] Read **`ds-viz-<type>` for every distinct viz type** in the layout.
-- [ ] Read every relevant `ds-int-*` skill if the dashboard has inputs / tokens / drilldowns / visibility / tabs.
-- [ ] Final pass against `ds-ref-pitfalls`.
-- [ ] Slop Test from `ds-ref-design-principles`.
-- [ ] No "I know this from training data" decisions on options or DOS expressions.
+### Always-load skills (the 5 from MUST LOAD)
+
+- [ ] Read **`ds-pick-viz`** for viz selection.
+- [ ] Read **`ds-ref-design-principles`** for archetype + Slop Test rubric.
+- [ ] Read **`ds-couture`** + answered the Design Context Protocol
+  questions (audience, tone, anti-reference, brand).
+- [ ] Read **`ds-ref-syntax`** for the JSON envelope.
+- [ ] Read **`ds-spl`** for SPL grammar in every data source query.
+
+### Per-dashboard-content skills
+
+- [ ] Read **`ds-viz-<type>`** for every distinct viz type in the layout.
+- [ ] Read every relevant **`ds-int-*`** skill if the dashboard has
+  inputs / tokens / drilldowns / visibility / tabs.
+
+### Final passes
+
+- [ ] **`ds-ref-pitfalls`** — cross-skill traps (config / schema bugs).
+- [ ] **`ds-couture`** Slop Test — visual hierarchy, depth, taste.
+- [ ] No "I know this from training data" decisions on options, DOS
+  expressions, SPL grammar, or visual choices. Every decision is
+  traceable to a specific skill.
+
+### Visual finishing — non-negotiable items the CLI cannot do
+
+- [ ] `layout.options.backgroundColor` set explicitly (not Splunk default grey).
+- [ ] KPI row has semantic polarity (status = threshold-coloured majorColor; informational = static `#006D9C`).
+- [ ] KPI row has visual hierarchy — anchor KPI is hero-sized OR distinguished from supporting ones.
+- [ ] Sparklines on count-style KPIs (paired with a `ds.chain` to `\| timechart`).
+- [ ] `splunk.rectangle` panel-card behind KPI rows for depth (placed FIRST in `layout.structure`).
+- [ ] `splunk.markdown` section header(s) when panel count > 6.
+- [ ] Every table has a drilldown (no dead-end tables).
+- [ ] Every input has a `defaultValue`.
+- [ ] Every search bound to `$global_time.earliest$ / .latest$` via `defaults.dataSources.ds.search.options.queryParameters`.
+- [ ] Series colours from a categorical palette (semantic colours never leak to chart series).
+- [ ] Colour paired with icon / label / shape for status (red/green never alone).
+- [ ] Pie ≤6 slices (or replaced with bar).
+- [ ] Panel titles ≤40 chars, Title Case.

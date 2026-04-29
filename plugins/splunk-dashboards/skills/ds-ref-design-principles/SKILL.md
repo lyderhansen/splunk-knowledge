@@ -200,6 +200,16 @@ Run before completion. A single NO means rewrite:
   radius / type scale.
 - [CHART-SELECTION.md](CHART-SELECTION.md) — full 27-viz decision
   table.
+- **`ds-couture`** — design-first companion. Adds the Design Context
+  Protocol (audience / tone / anti-reference / brand), visual taste,
+  hierarchy, depth, and the Slop Test rubric. **Pair this skill
+  with ds-couture for every dashboard** — `ds-ref-design-principles`
+  is the technical foundation, `ds-couture` is the visual judgement
+  on top of it.
+- **`ds-spl`** — SPL grammar reference for the queries that feed
+  the visualisations described here.
+- `ds-pick-viz` — viz selection router. Use first when picking
+  charts; cross-references this skill's CHART-SELECTION.md.
 - `ds-ref-syntax` — JSON envelope.
 - `ds-ref-pitfalls` — cross-skill traps matrix (viz + interactivity + schema).
 - `ds-viz-bar` / `ds-viz-singlevalue` etc. — per-viz reference.

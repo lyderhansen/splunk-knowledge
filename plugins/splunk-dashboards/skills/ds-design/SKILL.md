@@ -51,26 +51,32 @@ Supported viz types: `splunk.singlevalue`, `splunk.line`, `splunk.column`, `splu
 - `state.json` has `current_stage=designed`.
 - Next step: `ds-create` to generate the full Dashboard Studio JSON from layout + data sources.
 
-## See also
+## ⚠️ MUST LOAD — before wireframing
 
-Before wireframing, invoke:
+Wireframing without context produces 12 evenly-sized panels in a
+grid that ignores reading order, visual hierarchy, and audience.
+Three skills MUST be consulted before placing the first panel:
 
-- **`ds-ref-design-principles`** for:
-  - The four dashboard archetypes (executive / operational / analytical
-    / SOC) — pick one based on `requirements.md` audience.
-  - Layout principles (F-pattern reading, visual hierarchy, grouping).
-  - KPI sizing rules.
-  - PALETTE.md for canvas tokens + series palettes.
-  - CHART-SELECTION.md — the 27-viz decision table.
+1. **`ds-couture`** — **start with the Design Context Protocol**
+   (audience, tone, anti-reference, brand). Without these
+   answers, the layout is a guess. The skill also sets the
+   archetype-specific layout shape (executive = anchor + 3 KPIs +
+   trend; SOC = top tile + tabs + master-detail; operational = tile
+   row + drill-down list; analytical = filters left + chart right).
+2. **`ds-ref-design-principles`** — archetype catalog,
+   F-pattern reading order, visual hierarchy, grouping rules,
+   KPI sizing (anchor 1.5x supporting), PALETTE.md, CHART-SELECTION.md
+   (the 27-viz decision table), and the absolute bans.
+3. **`ds-pick-viz`** — for every question in `data-sources.json`,
+   pick the viz that matches the data shape. Catches the common
+   mismatches early (pie >6 slices, bar without sort, scatter for
+   time-series, choropleth for non-spatial categories).
 
-- **`ds-pick-viz`** when you have a specific question shape in
-  `requirements.md` and need to pick the right viz. The decision
-  router catches the most common mismatches (pie >6 slices, bar
-  without sort, scatter for time-series). It cross-references the
-  per-viz `ds-viz-<type>` skills so you can dive deeper before
-  committing the layout.
+If you skip `ds-couture` you will produce a layout that passes
+schema validation but fails the Slop Test the moment the user
+opens it.
 
 Once the wireframe is set, `ds-create` will require loading the
 specific `ds-viz-<type>` skill for every viz type chosen here.
 Picking a viz at this stage that doesn't fit the data shape costs
-a re-design later — better to use `ds-pick-viz` now.
+a re-design later — use `ds-pick-viz` now.

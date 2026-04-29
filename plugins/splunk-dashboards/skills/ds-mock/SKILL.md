@@ -106,13 +106,32 @@ The CLI:
 
 After this skill completes, move to `ds-design` to wireframe the dashboard layout.
 
-## See also
+## ⚠️ MUST LOAD — before drafting any mock SPL
 
-When drafting `makeresults`-based mock SPL per question, the data
-shape of the mock must match what the eventual viz expects. Same
-rules as real data — see `ds-data-explore` "See also" for the per-viz
-SPL traps (geostats for bubble, lowercase source/target/value for
-sankey, `\| sort` before bar chart binding, etc.).
+Two skills MUST be consulted for every mock query you write:
+
+1. **`ds-spl`** — `makeresults` patterns, dotted-field quoting,
+   `case()` default trap, multiselect token filters, time-bound
+   search hygiene. Catches the silent-fail traps that produce
+   empty panels even when SPL parses cleanly.
+2. **`ds-pick-viz`** — confirms the mock data shape will satisfy
+   the viz the user expects. Same per-viz traps apply to mock as
+   to real data: `\| geostats` for bubble layers, lowercase
+   `source` / `target` / `value` for sankey, `\| sort` before bar
+   chart binding, full country names for `geom geo_countries`.
 
 For the `ds.test` JSON shape (when you want inline columnar data
 instead of `makeresults`), see `ds-ref-syntax` § dataSources.
+
+The most common mock-SPL traps (mirror of `ds-data-explore`):
+
+- `splunk.bar` / `splunk.column` — needs `\| sort` (no auto-sort).
+- `splunk.map` bubble layer — **requires** `\| geostats latfield=lat
+  longfield=lon …`, NOT `\| stats count by lat lon`.
+- `splunk.map` choropleth — needs `\| geom geo_<lookup> featureIdField=<col>`
+  and the right key shape (full names vs ISO-2 — see `ds-viz-map`
+  GOTCHAS).
+- `splunk.sankey` — needs lowercase `source` / `target` / `value`
+  field names exactly.
+- Any sparkline column on `splunk.table` — must be built with
+  `\| stats sparkline(...) by <key>`, NOT `\| eval x="..." \| makemv`.

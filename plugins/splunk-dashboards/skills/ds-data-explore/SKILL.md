@@ -74,17 +74,26 @@ The CLI:
 
 Move to `ds-design` to wireframe the layout.
 
-## See also
+## ⚠️ MUST LOAD — before drafting any SPL
 
-When drafting SPL per question, consult `ds-pick-viz` to confirm
-the question shape maps to a viz that exists. The decision router
-catches mismatches between the data shape your search returns and
-the viz the user expects (e.g. a dashboard question that begs for a
-choropleth but the SPL only returns a single row, or a "top N" that
-needs `\| sort - count \| head N` upstream of bar chart binding).
+Two skills MUST be consulted for every search you write:
 
-Per-viz data-shape requirements live in the matching `ds-viz-<type>/SKILL.md`
-"Quick start" section. The most common SPL traps:
+1. **`ds-spl`** — SPL grammar reference and silent-fail traps.
+   Covers `case()` default semantics (which silently swallows
+   uncategorised values), dotted-field quoting (`'host.name'`),
+   `where` vs `eval` argument shape, multiselect `\|s` token
+   filter, time-bound search hygiene
+   (`$global_time.earliest$ / .latest$`), and the patterns that
+   produce empty panels without errors.
+2. **`ds-pick-viz`** — confirms the question shape maps to a viz
+   that exists. Catches mismatches early between the SPL output
+   and the viz the user expects (a dashboard question that begs
+   for a choropleth but the SPL returns a single row; "top N"
+   missing `\| sort -count \| head N`).
+
+Per-viz data-shape requirements live in the matching
+`ds-viz-<type>/SKILL.md` "Quick start" section. The most common
+SPL traps:
 
 - `splunk.bar` / `splunk.column` — needs `\| sort` (no auto-sort).
 - `splunk.map` bubble layer — **requires** `\| geostats latfield=lat

@@ -140,6 +140,16 @@ matrix shows the pattern.
 ## See also
 
 - `ds-ref-design-principles` — design-level antipatterns (rainbow on
-ordered data, pie >6 slices, KPI uniformity).
+  ordered data, pie >6 slices, KPI uniformity).
+- **`ds-couture`** — visual-quality antipatterns the schema cannot catch:
+  KPI uniformity (no anchor), unset canvas colour leaving Splunk-grey
+  background, status colour without semantic intent, 12 panels in a
+  uniform grid with no zones, sparkline omitted on count KPIs,
+  rainbow on ordered axes. **Run `ds-couture` Slop Test as a final
+  pass; this skill catches config / schema bugs, ds-couture catches
+  taste bugs.**
+- **`ds-spl`** — SPL-level pitfalls: `case()` default trap,
+  multiselect IN without `\|s` filter, dotted-field quoting,
+  unbounded searches that return wrong rows in dashboards.
 - `ds-ref-syntax` — JSON envelope rules.
 - Per-viz `GOTCHAS.md` files — full detail behind every entry above.
