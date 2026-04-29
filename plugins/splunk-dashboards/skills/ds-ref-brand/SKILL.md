@@ -108,6 +108,62 @@ Example: a fintech says "trustworthy, bold, modern". Trustworthy is the dominant
 
 If the conflict is irreconcilable (the user insists on "Warm + Clinical" with both as dominant), surface it back to the user before continuing: "Warm and Clinical pull in opposite directions on the palette axis. Which one should win the canvas color and primary palette? The other will live in typography only."
 
+## Brand-color collision with status semantics
+
+When the brand-primary hue overlaps with a status color (RAG, SOC severity, alert), the dashboard's two most important signals fight for dominance. The eye cannot distinguish "brand red" from "alarm red" at a glance. This is the single most common brand-vs-function conflict on operational dashboards.
+
+**The rule (non-negotiable):**
+
+```
+IF brand-primary is in {red, orange, amber, yellow}
+   AND dashboard uses status semantics (RAG / SOC severity):
+
+   PRIORITY ORDER (apply the first that fits):
+     1. Use brand-secondary (if brand has one) as primary surface
+     2. ELSE use brand-neutral (black/white/grey) as primary surface
+     3. ELSE demote brand-primary to ≤5px accent stripe under header
+     4. ELSE wordmark-only (text colour, no fill block)
+
+   NOT ALLOWED:
+     ✗ Containment to a top band ≥40px tall
+       (brand mass overwhelms severity flare; perceptual signal collapses)
+     ✗ Using brand-red as canvas / panel fill / large accent
+     ✗ Using brand-red on more than one zone of the dashboard
+```
+
+**Why "containment to a top band" fails — the mathematical case:**
+
+A 1920 × 80 brand band = 153,600 px² of constant color.
+A 360 × 168 severity-CRIT tile = 60,480 px².
+
+The brand band is **2.5× larger than the alarm**. When severity flares, it drowns in the brand mass. "The brand band fades cognitively" is wishful thinking on a 24/7 surface where the eye keeps re-encountering it.
+
+**What "demote to wordmark-only" looks like:**
+
+- Canvas: `#0b0c0e` (dark) or `#000000` (NOC)
+- Brand zone: top 80px is dark — same as canvas
+- Brand identity: brand wordmark in the brand-primary color (e.g., red `#E2231A`) at the left
+- Optional: 4px brand-color accent line directly under the wordmark
+- Severity strip: full-width below, with status colors carrying ALL the signal
+
+The brand is recognized in <1 second by the wordmark. The remaining 99% of viewing time, status colors own the dashboard.
+
+**Brand-color collision examples (general families):**
+
+| Brand-primary family | In SOC context | Recommended treatment |
+|---|---|---|
+| Saturated red (any retail / FMCG / energy brand using red) | Demote — collides with critical-red | Wordmark-only on black canvas; ≤4px red accent under header |
+| Saturated green (any green-leading brand) | Demote — collides with healthy-green | Wordmark-only on dark canvas; status palette gets exclusive green |
+| Saturated orange / amber / yellow | Demote — collides with high/warning | Wordmark-only or thin accent stripe |
+| Brand-blue (info-blue families, B2B/SaaS/telecom) | **Keep** — blue is info, not status in most palettes | Brand-blue can be primary surface or accent freely |
+| Black + colored accents (editorial / industrial brands) | Keep black as primary | Black canvas, accents as the brand designed them |
+| Red + black combinations (energy / industrial) | Demote red, keep black | Black canvas, red strictly as wordmark accent |
+| Multi-color logos (no single dominant primary) | Identify primary, then apply rules above | Treat the primary as the collision case |
+
+**Corollary — non-status dashboards are exempt.** An executive summary or analytical deep-dive that does NOT rely on RAG/severity colors can use brand-red freely. The collision rule only fires when the dashboard's job depends on instant status recognition.
+
+**Cross-references:** see `ds-ref-color` for the canonical status palette hexes (so you can confirm "this brand color collides with that status hex"), and `ds-ref-anti-patterns` for the absolute ban on "status colors as series colors" (the reverse failure mode).
+
 ## Font fallbacks under Studio constraints
 
 Splunk Dashboard Studio has a hard platform constraint that brand-conscious designers always hit: **only the `splunk.markdown` visualization exposes a `fontFamily` option.** No other panel type — singlevalue, table, chart axes, legends, tooltip text, input labels — accepts a font override.
@@ -182,7 +238,7 @@ When the user says "match our brand book" or "look like Stripe / Linear / Vercel
 3. **Identify three brand tone words.** Read the brand's marketing copy, value proposition, "About" page. Three words that the brand uses about itself, not three words you generated. If the user can't supply them, derive them and ask for confirmation before continuing.
 4. **Translate tone words → palette family + typography + density** using the Tone-word translation table above. Apply the dominant-brand-attribute rule when words conflict.
 5. **Apply brand-tinted neutrals via OKLCH** at chroma 0.005–0.01 toward the primary hue.
-6. **Surface conflicts back to the user before writing JSON.** Common conflicts: brand font is paid-license and won't render in Studio (offer fallback); brand uses red as primary and the dashboard is a SOC monitor where red means "alert" (offer accent-color remap); brand wants playful and the user persona is a CISO at 3am (offer to suppress playful in operational dashboards while keeping it in the executive variant).
+6. **Surface conflicts back to the user before writing JSON.** Common conflicts: brand font is paid-license and won't render in Studio (offer fallback); brand uses red/orange/yellow as primary and the dashboard uses status semantics (apply the **Brand-color collision with status semantics** rule above — strict priority order, containment-to-band is NOT a valid resolution); brand wants playful and the user persona is a CISO at 3am (offer to suppress playful in operational dashboards while keeping it in the executive variant).
 
 **Output: a single brand brief**
 
