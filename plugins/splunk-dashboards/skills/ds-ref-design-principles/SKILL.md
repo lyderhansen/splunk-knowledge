@@ -95,6 +95,12 @@ Short version:
 - **Consistent column widths** — 2-column or 3-column grid; stick to
   it.
 
+## Color principles
+
+See `ds-ref-color` for canonical palettes (categorical, sequential,
+diverging, RAG, SOC severity), OKLCH theory, WCAG contrast tables,
+colorblind-safe pairings, and the reflex_palettes_to_reject list.
+
 ## Typography
 
 - **Panel titles** — 40 char max, 3–5 words, Title Case.
