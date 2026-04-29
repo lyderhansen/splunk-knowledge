@@ -46,28 +46,13 @@ Ask if any are unknown. The codebase cannot tell you these.
 
 Each archetype has a canvas-zone template — see [PALETTE.md](PALETTE.md).
 
-## REFLEX defaults to refuse
+## Reflex defaults to reject
 
-| # | Reflex | Why bad | Rewrite |
-|---|---|---|---|
-| 1 | **Uniform-colour KPI row** — all `majorColor: #006D9C`. | Loses semantic polarity; everything reads "neutral". | Classify each KPI's polarity. Use DOS threshold-colouring for status; static `#006D9C` only for true counts. |
-| 2 | **Uniform-size KPI row** — flat hierarchy. | Eye has no anchor. | One anchor KPI hero-sized (≥ 1.5× others). For SOC/analytical, rank by criticality. |
-| 3 | **Default Splunk canvas** — no `backgroundColor` set. | Signals untouched AI output. | Always set `layout.options.backgroundColor` per archetype. |
-| 4 | **"4 KPIs + 1 line + 1 table" autotemplate** — same composition regardless of archetype. | Fine for exec summary, wrong for everything else. | Archetype drives layout. SOC = geo + timeline + severity. Analytical = filter bar + scatter + multi-series + detail table. |
-| 5 | **Rainbow on ordered data** — severity as red/orange/yellow/green/blue/purple. | "Different kinds" not "more or less". | Sequential single-hue gradient (red → amber for severity). |
-| 6 | **Tables without drilldown** — `splunk.table` with no event handler. | Dead end. | Every table links to detail / sets a token / opens a search. |
-| 7 | **Raw `_time`** in tables. | Operators can't read epoch / ISO at a glance. | `\| eval _time=strftime(_time, "%Y-%m-%d %H:%M:%S")` in SPL. |
-| 8 | **Pie by default for breakdown** — `splunk.pie` regardless of cardinality. | Pie >6 slices unreadable. | `splunk.bar` (sorted), or `splunk.pie` ONLY if ≤6 categories AND one dominates. |
+See `ds-ref-anti-patterns` for the 8 reflex defaults to refuse.
 
-## ABSOLUTE bans (never acceptable)
+## Absolute bans
 
-| # | Pattern | Why | Rewrite |
-|---|---|---|---|
-| 1 | **Status colours as series colours** — `#DC4E41` etc. in `seriesColors`. | Operator muscle memory. Green line in time series reads as "OK" even when crashing. | Use `SERIES_CATEGORICAL_10` or `SERIES_STUDIO_20`. Reserve semantic palette for `majorColor` only. |
-| 2 | **Red/green as sole differentiator** — colour-only pass/fail. | ~8% of men colourblind. Excludes them entirely. | `splunk.singlevalueicon` (icon + colour). For tables, severity label column. |
-| 3 | **Pie >6 slices** — slice angles indistinguishable. | Pie fails its job. | `splunk.bar` (horizontal sorted). Aggregate to Top 5 + "Other" upstream. |
-| 4 | **Searches without `earliest` / `latest`** — full-index scans. | Single dashboard with 5 unbounded searches saturates indexer. | Bind `defaults.dataSources.ds.search.options.queryParameters.earliest` to `$global_time.earliest$`. |
-| 5 | **Inputs without `defaultValue`** — empty render. | User assumes dashboard broken. | Always set `defaultValue` (`"*"` for open filters). |
+See `ds-ref-anti-patterns` for the 5 absolute bans (BAN/PATTERN/WHY/REWRITE format).
 
 ## Chart selection — quick decision
 
@@ -170,28 +155,7 @@ Dashboard Studio has no box-shadow, no backdrop-blur. Depth comes from
 
 ## The Splunk Dashboard Slop Test
 
-> *If I showed this dashboard to an SRE, a SOC analyst, or a VP of
-> Engineering and said "an AI made this" — would they nod without
-> hesitation?*
-
-If yes, the dashboard has failed. A well-made Splunk dashboard makes
-an operator ask "who built this?" not "which model generated this?"
-
-Run before completion. A single NO means rewrite:
-
-- [ ] Archetype committed (one of four).
-- [ ] Theme derived from audience (NOC=dark, exec PDF=light).
-- [ ] Canvas `backgroundColor` set explicitly.
-- [ ] KPI row has semantic polarity (status ≠ informational).
-- [ ] KPI row has visual hierarchy (anchor KPI hero-sized).
-- [ ] Every table has a drilldown.
-- [ ] Every input has a `defaultValue`.
-- [ ] Every search is time-bounded.
-- [ ] Series colours from categorical palette (semantic never leaks).
-- [ ] Colour paired with icon / label / shape.
-- [ ] Pie ≤6 slices (or replaced with bar).
-- [ ] Panel titles ≤40 chars, Title Case.
-- [ ] Depth from layered rectangles where archetype calls for them.
+See `ds-ref-anti-patterns` for the 13-item quality gate.
 
 ## See also
 
