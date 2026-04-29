@@ -228,6 +228,22 @@ panel mix, canvas dimensions, and an ASCII layout sketch.
 +--------------------------------------------------+
 ```
 
+#### SOC wall sub-archetype — dual-context default
+
+The SOC overview is almost never deployed to a wall display only. The wall and the paired **analyst console** share the **same dashboard definition** — same JSON, same panels, same data sources. The wall is the always-on ambient surface; the console is the click-through investigation surface.
+
+This means:
+
+- **Drilldowns are mandatory** on every entity-displaying panel (host, IP, user, hash, severity bucket, geo location, MITRE technique-id). Zero visual cost on the wall (the wall ignores click handlers); critical value on the console (the analyst clicks through to investigate). "Wall display has no input device" is NOT a valid waiver for dropping drilldowns.
+- **Tabs add value, not subtract.** The wall shows tab 1 (auto-cycle or static via deep-link); the console gets all of them (live threats, past trends, compliance posture, asset health). Never reflexively reject tabs because "SOC walls don't have tabs" — that guideline applies only to pure ambient walls without paired consoles, which is rare.
+- **`eventActions` and row-level click handlers** belong on every events-viz and table panel. Same logic as drilldowns: invisible on the wall, essential on the console.
+- **Section header markdowns** explain what each zone shows and where to escalate. New analyst on shift needs to read the dashboard cold; section headers carry that load.
+- **Footer with runbook + on-call link + Slack channel** is mandatory for SOC archetypes. The wall doesn't read it; the console operator does.
+
+The dashboard is **dual-context by default**. Authoring a SOC overview as if it's "wall only" is a Scope Check rejection — see ds-couture's Scope Check gate.
+
+If a deployment is genuinely wall-only with no paired console (rare — confirm with the user before assuming), the interactivity affordances can be downgraded with explicit waivers. But the default is dual-context, not wall-only.
+
 ---
 
 ## Hybrids and smells
