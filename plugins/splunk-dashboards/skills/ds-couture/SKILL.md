@@ -23,7 +23,33 @@ Before you touch JSON: stop. Read the user's problem. Decide the audience. Decid
 
 Do NOT invoke for pure SPL tuning, pure data-modeling, or pure alert configuration.
 
-## Design Context Protocol — required before ANY design work
+## Fast path — pre-filled inputs template
+
+> **Before starting the Q&A flow, ASK the user:** "Have you filled out
+> a `ds-inputs.md` template? If yes, point me to it and I'll skip
+> the Design Context Q&A."
+
+If the user supplies a path to a filled `ds-inputs.md` (template lives
+in `templates/ds-inputs.md`):
+
+1. **Read the template end-to-end** before any other action.
+2. **Verify the five Design Context fields** (Sections 1.1, 1.2, 2.1,
+   3.1, 3.2) are filled. If any are blank, ask only those — not the
+   whole protocol.
+3. **Skip straight to the workflow tree** (persona → archetype →
+   theme → palette → typography → layout → encoding → anti-pattern
+   check → JSON hand-off).
+4. The template's Section 5 is your panel inventory. Section 6 is
+   your viz-type allow/deny list. Section 7 is your constraints.
+   Section 9.1 is your deployment target.
+5. **DO** confirm Sections 1.1 (job-to-be-done), 2.1 (archetype), and
+   3.1 (tone words) verbally back to the user as a one-line summary
+   before generating JSON. This catches misunderstandings cheaply.
+
+If the template is partially filled or absent, fall back to the
+Design Context Protocol Q&A below.
+
+## Design Context Protocol — required before ANY design work (Q&A fallback)
 
 Without context, you will produce an averaged-out, generic, AI-flavored dashboard. Code tells you what was built; it cannot tell you who it's for or how it should feel. Only the person requesting the dashboard can tell you that.
 
@@ -36,6 +62,8 @@ Without context, you will produce an averaged-out, generic, AI-flavored dashboar
 5. **Brand context** (if applicable) — Brand book, reference URL, logo. Consult `ds-ref-brand` for the discovery rules.
 
 **Refusal pattern:** if any of these is missing, ASK. Do not guess. Do not start designing. The cost of asking is cheap; the cost of regenerating a wrong-archetype dashboard is high.
+
+**Better than Q&A:** if you find yourself needing to ask 4+ Design Context questions in a row, suggest the user fill out `templates/ds-inputs.md` instead. One round-trip beats five.
 
 ## Workflow tree
 
