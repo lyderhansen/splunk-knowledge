@@ -273,7 +273,7 @@ guide in `ds-int-visibility`.
 ```json
 "layout": {
   "type": "absolute",
-  "options": { "width": 1440, "height": 960 },
+  "options": { "width": 1920, "height": 1080 },
   "structure": [
     { "item": "viz_p1", "type": "block",
       "position": { "x": 0, "y": 0, "w": 600, "h": 320 } }

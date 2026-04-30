@@ -53,9 +53,41 @@ L
 - **Consistent column widths** — 2-column or 3-column grid; stick to
   it.
 
+## Default canvas size
+
+**Minimum width: 1920 px.** Authored width below 1920 produces
+panels that look cramped on standard 27" monitors and wall displays
+(the dominant viewing context for Splunk dashboards). 1440 was an
+older default — keep for legacy compatibility but **don't choose it
+for new dashboards**.
+
+**Height: variable based on content.** Don't pad the canvas to fit a
+fixed height. Compute total content height from layered zones (header
++ KPI strip + chart row + table row + footer) and set the canvas
+height to fit. Splunk Dashboard Studio scrolls vertically when the
+canvas is taller than the viewport — that's the design intent for
+content-driven dashboards.
+
+```json
+"layout": {
+  "type": "absolute",
+  "options": { "width": 1920, "height": 1240 }   // height = content total
+}
+```
+
+Quick reference:
+
+| Archetype | Width | Typical height (content-driven) |
+|---|---|---|
+| Exec summary (legacy) | 1440 | 960 px (4 zones) |
+| Exec summary (new default) | 1920 | 1080–1280 px (4 zones with denser KPI strip) |
+| Operational NOC / SOC wall | 1920 | 1080 (full HD) — fits exactly on 27" |
+| Long-form report | 1920 | 1800–2400 px (multiple sections, scrolls) |
+| Embedded panel / widget | 1280–1440 | 600–800 px (constrained context) |
+
 ## Recommended canvas zones (per archetype)
 
-### Exec summary (1440 × 960 px)
+### Exec summary (1440 × 960 px) — legacy / constrained context only
 
 The classic four-zone layout for executive dashboards: input bar,
 hero KPI row, primary chart zone, secondary detail zone.

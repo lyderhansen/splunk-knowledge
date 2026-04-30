@@ -50,7 +50,7 @@ The `title` becomes the dashboard's top-level title (shown in the Splunk UI). `d
   "visualizations": { "viz_p1": { "type": "splunk.singlevalue", "title": "...", "dataSources": { "primary": "ds_1" }, "options": {} } },
   "inputs": {},
   "defaults": {},
-  "layout": { "type": "absolute", "options": { "width": 1440, "height": 960 }, "structure": [ { "item": "viz_p1", "type": "block", "position": { "x": 0, "y": 0, "w": 600, "h": 320 } } ] }
+  "layout": { "type": "absolute", "options": { "width": 1920, "height": 1080 }, "structure": [ { "item": "viz_p1", "type": "block", "position": { "x": 0, "y": 0, "w": 600, "h": 320 } } ] }
 }
 ```
 
