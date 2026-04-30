@@ -74,6 +74,7 @@ front.
 | ✅ Do | ❌ Don't |
 |---|---|
 | **Layout:** absolute only. | Paste into grid layout — fails silently. |
+| **Minimum visible size:** `w >= 2` AND `h >= 2`. | `h: 1` for hairline divider — renders **invisible** (Splunk collapses sub-2px shapes). Use `h: 2`. See GOTCHAS #13. |
 | **Pill chips:** `rx >= h/2` (e.g. `h: 24, rx: 12`). | Forget `rx` for status pills — corners look like cards, not chips. |
 | **Independent corners:** `ry: 4, rx: 8` for asymmetric pill / chamfer. | Set only `rx` and expect `ry` to differ — `ry` defaults to `rx`. |
 | **Status card RAG:** disjoint, gap-free buckets. | Overlap `[{to:70}, {from:60, to:80}]` — second bucket dead because top-down + first-match wins. |

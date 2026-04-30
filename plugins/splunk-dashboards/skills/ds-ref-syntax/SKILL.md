@@ -5,6 +5,33 @@ description: Splunk Dashboard Studio v2 JSON schema reference — top-level keys
 
 # ds-ref-syntax — Dashboard Studio JSON reference
 
+## Visualization ID naming convention
+
+Splunk's editor (and likely future strict validators) emit:
+
+> "Visualization IDs must start with `viz_` and contain only letters, numbers, dash, and underscore."
+
+**Rule:** every key under `visualizations` and every `dataSources` key should match `^[a-zA-Z0-9_-]+$` AND every visualization ID should start with `viz_`. Same applies to layout `structure[].item` references — they must match the visualization key.
+
+```json
+// ✅ Conformant
+"visualizations": {
+  "viz_kpi_critical": { ... },
+  "viz_card_kpi_critical": { ... },
+  "viz_shadow_kpi_critical": { ... }
+}
+
+// ❌ Non-conformant — no viz_ prefix
+"visualizations": {
+  "kpi_critical": { ... },
+  "shadow_kpi_critical": { ... }
+}
+```
+
+**Status on 10.2.1 / 10.4.2604:** non-prefixed IDs currently render successfully (confirmed empirically) but the editor's validator warns. Treat the `viz_` prefix as forward-compatible best practice — strict validation may be enforced in future versions.
+
+**dataSource IDs** have a separate naming rule: `[A-Za-z0-9 -_.]` per ds-viz-table. Slashes, parentheses, and `/` break the data-source picker even though the JSON parses.
+
 ## Top-level keys
 
 A Dashboard Studio definition is a JSON object with these keys:
@@ -109,9 +136,24 @@ base data.
   "title": "Failed Logins",
   "description": "Last 24 hours",
   "dataSources": { "primary": "ds_1" },
-  "options": { "majorColor": "#d13d3d" }
+  "options": { "majorColor": "#d13d3d" },
+  "cornerRadius": [12, 12, 12, 12]
 }
 ```
+
+> **Top-level vs `options` placement.** Most viz keys go inside
+> `options`. A few render-affecting keys live at the **top level**
+> (peer of `type` / `options` / `dataSources`):
+>
+> - `cornerRadius` — rounded panel chrome. Inside `options` is silently
+>   ignored on 10.2.1, the editor emits it at top level. See
+>   `ds-viz-singlevalue` OPTIONS.
+> - `dataSources`, `eventHandlers`, `context`, `containerOptions`,
+>   `showProgressBar`, `showLastUpdated`, `title`, `description` —
+>   structural keys, top level by design.
+>
+> When in doubt: copy a pattern from the editor (Source view), don't
+> guess.
 
 For per-type options, see the appropriate `ds-viz-<type>` skill.
 

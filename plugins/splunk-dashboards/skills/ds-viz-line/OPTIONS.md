@@ -3,18 +3,55 @@
 Cross-checked against `docs/SplunkCloud-10.4.2604-DashStudio.pdf`,
 *Line chart options* (line ~4962).
 
-## Time-axis convention
+## `lineSmoothing` and `lineWidth` — character of the line
+
+Two options that decide whether a trend reads as **engineered** (sharp, technical) or **editorial** (soft, premium).
+
+| Option | Values | Effect |
+|---|---|---|
+| `lineWidth` | number (px) | `2.5–3` reads better on dark canvas; `≤2` for light theme |
+| `lineSmoothing` | `"smooth"` / `"linear"` (default) | `"smooth"` produces Bezier curves between points (editorial / premium); `"linear"` produces straight segments (data-truthful / SOC) |
 
 ```json
-{
-  "xAxisTitleVisibility": "hide",
-  "xAxisLabelVisibility": "auto",
-  "xAxisMajorTickVisibility": "hide"
+"options": {
+  "lineWidth": 3,
+  "lineSmoothing": "smooth",
+  "seriesColors": ["#22C55E"]
 }
 ```
 
-Override only for sparkline (hide everything) or non-time x-axis
-(rare).
+**Decision rule:**
+- **SOC / operational dashboards** — `lineSmoothing: "linear"` always. Smooth curves visually interpolate between data points; for operational data that's a lie. Operators need to see the actual jagged truth.
+- **Executive / business / editorial** — `lineSmoothing: "smooth"` is OK if the dataset is sampled densely enough that Bezier doesn't materially distort the shape. Adds polish; trade-off is mild data-truth loss.
+- **Default if unspecified** — `linear`. Smoothing is opt-in.
+
+**`cornerRadius` available** on `splunk.line` for rounded panel chrome — `[12, 12, 12, 12]`. **Must be at the top level of the viz object**, NOT inside `options`. See `ds-viz-singlevalue` OPTIONS for full pattern.
+
+## Time-axis convention — hide axis titles by default
+
+For time-series line charts, **always set `axisTitleX` and `axisTitleY` to
+`{visibility: "hide"}`**. The panel title already explains what's being
+charted (e.g. "Incident Volume — Last 14 Days"). Repeating it as an
+axis label is decorative noise.
+
+```json
+"options": {
+  "axisLabelsX": { "visibility": "show" },   // tick labels (dates) — keep
+  "axisLabelsY": { "visibility": "show" },   // tick labels (numbers) — keep
+  "axisTitleX":  { "visibility": "hide" },   // title text — hide
+  "axisTitleY":  { "visibility": "hide" }    // title text — hide
+}
+```
+
+> **Default behaviour to remember:** if you omit `axisTitleX` / `axisTitleY`
+> entirely, Splunk renders titles based on the field name (e.g. "_time",
+> "incidents"), which clutters the chart. Hide explicitly.
+
+Override only when the chart appears OUTSIDE a titled panel (rare —
+e.g. a bare embed) or when the X-axis is non-time (categorical, rare).
+
+For sparklines (no axes at all), hide labels too: `axisLabelsX: hide`,
+`axisLabelsY: hide`.
 
 ## Line-specific options
 

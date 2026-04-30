@@ -3,6 +3,43 @@
 Cross-checked against `docs/SplunkCloud-10.4.2604-DashStudio.pdf`,
 *Single value options* (line ~11206). 22 documented options total.
 
+## `cornerRadius` — rounded panel corners (no rectangle layering needed)
+
+`cornerRadius: [topLeft, topRight, bottomRight, bottomLeft]` — same order as CSS `border-radius`. Set directly on the singlevalue panel for rounded corners on the panel chrome.
+
+> **CRITICAL placement (verified empirically on 10.2.1):** `cornerRadius`
+> must be set at the **top level** of the viz object (peer of `type`,
+> `options`, `dataSources`), NOT inside `options`. Editor-emitted JSON
+> places it both in `options` AND at top level, but only the top-level
+> position renders. Inside-`options` alone produces square corners.
+
+```json
+// ✅ Renders rounded corners
+"viz_kpi": {
+  "type": "splunk.singlevalue",
+  "options": {
+    "backgroundColor": "#11182A"
+  },
+  "cornerRadius": [12, 12, 12, 12],   // ← top-level, peer of options
+  "dataSources": { "primary": "ds_1" }
+}
+
+// ❌ Does NOT render — square corners
+"viz_kpi": {
+  "type": "splunk.singlevalue",
+  "options": {
+    "backgroundColor": "#11182A",
+    "cornerRadius": [12, 12, 12, 12]   // ← inside options is ignored
+  }
+}
+```
+
+**Available on:** `splunk.singlevalue`, `splunk.line`, `splunk.area`, `splunk.column`, `splunk.bar`, `splunk.table`, `splunk.pie`, `splunk.rectangle` (most chart viz types).
+
+**Anti-pattern (the layered-rectangle workaround):** putting a `splunk.rectangle` with `rx: 12` BEHIND the panel + `backgroundColor: transparent` on the panel. Double the JSON for the same result. Use top-level `cornerRadius` directly on the viz instead.
+
+**Anti-pattern #2 (placement):** `cornerRadius` inside `options` — editor accepts the JSON without warning, but renderer ignores it. Always at top level.
+
 ## Major value (the headline number)
 
 

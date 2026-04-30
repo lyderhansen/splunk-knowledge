@@ -82,3 +82,28 @@ If you build a 3-bucket RAG card but only test it with two values,
 you're not actually verifying the middle bucket. Drive the demo
 with at least one value per bucket (e.g. health = 20 / 60 / 95
 against thresholds 60 / 80) so each bucket is exercised on render.
+
+## 13. Minimum visible size: 2 px in width AND height
+
+A rectangle with `w: 1` or `h: 1` renders **invisible** on Studio's
+canvas — Splunk's rendering layer collapses sub-2px shapes to nothing
+even though the layout coordinates are accepted. Common trap:
+authoring a 1-pixel hairline divider expecting a thin separator line
+between zones.
+
+**Rule:** every rectangle that should be visible must be `w >= 2` and
+`h >= 2`. For hairline dividers, use `h: 2` (still reads as a
+hairline at desk-monitor distance, but actually renders).
+
+```json
+// ❌ Renders invisible
+{ "item": "hairline", "position": { "x": 32, "y": 372, "w": 1376, "h": 1 } }
+
+// ✅ Renders as a thin divider
+{ "item": "hairline", "position": { "x": 32, "y": 372, "w": 1376, "h": 2 } }
+```
+
+Same rule applies to vertical accent stripes — minimum `w: 2`. A
+4-px accent stripe (`w: 4`) is the safer brand-accent default; 1-px
+or 2-px brand stripes risk rendering thinner than authored or
+disappearing on retina/HiDPI scaling.

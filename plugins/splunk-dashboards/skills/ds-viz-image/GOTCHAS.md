@@ -1,5 +1,21 @@
 # splunk.image — gotchas
 
+## 0. `data:image/svg+xml;...` data URIs do NOT render
+
+`splunk.image`'s `src` field rejects data URIs silently — verified empirically on Splunk Enterprise 10.2.1. The panel renders blank or shows a broken-image placeholder. No console error, no validation feedback, just doesn't work.
+
+**Workaround for inline SVG icons:** use `splunk.choropleth.svg` instead. Its `svg` option DOES accept `data:image/svg+xml;utf8,<svg>...</svg>` data URIs. See `ds-viz-choropleth-svg` for the pattern.
+
+```json
+// ❌ Does NOT work
+{ "type": "splunk.image", "options": { "src": "data:image/svg+xml;utf8,<svg>...</svg>" } }
+
+// ✅ Works (use choropleth.svg as the icon renderer)
+{ "type": "splunk.choropleth.svg", "options": { "svg": "data:image/svg+xml;utf8,<svg>...</svg>", "backgroundColor": "transparent" } }
+```
+
+For real images (PNG / JPEG / hosted SVG): use `src` with an uploaded KV-store URL or app-static path (`/en-US/static/app/<app>/...`). Data URIs only work via the choropleth.svg trick.
+
 ## 1. External URL images do NOT render in PDF/PNG export
 
 Scheduled PDF reports will silently show blank panels where the

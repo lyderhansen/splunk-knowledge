@@ -14,6 +14,52 @@ elements that have unique `id` attributes, and a search returning rows
 matching those IDs to a numeric metric. Each path is filled with a
 colour derived from its metric value.
 
+## Hack: inline-SVG icon renderer (no upload, no KV store, no app-static path)
+
+`splunk.choropleth.svg`'s `svg` option accepts `data:image/svg+xml;utf8,<svg>...</svg>` data URIs — verified working on Splunk Enterprise 10.2.1. This makes it the **only** way to inline an SVG directly in dashboard JSON without uploading anything anywhere.
+
+`splunk.image` REJECTS data URIs silently. `splunk.singlevalueicon` REJECTS data URIs. Only `splunk.choropleth.svg` accepts them.
+
+**Pattern — inline SVG icon (no data binding):**
+
+```json
+{
+  "type": "splunk.choropleth.svg",
+  "options": {
+    "svg": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FF2942' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M12 2L4 6v6c0 5.5 3.8 10.7 8 12 4.2-1.3 8-6.5 8-12V6l-8-4z'/></svg>",
+    "backgroundColor": "transparent"
+  },
+  "context": {},
+  "containerOptions": {},
+  "showProgressBar": false,
+  "showLastUpdated": false
+}
+```
+
+**Encoding rules for inline SVG:**
+
+- `#` in colors → `%23` (URL-encode)
+- Single quotes around attribute values (avoids JSON escaping the doubles)
+- `xmlns` namespace required: `<svg xmlns='http://www.w3.org/2000/svg' ...>`
+- No `<?xml ...?>` prologue
+- Keep total size under ~3 KB; long SVGs work but bloat the JSON
+
+**When this beats KV-store / app-static SVG:**
+
+- Prototyping — instant iteration, no upload roundtrip
+- Single-instance dashboards — portable across instances without re-uploading
+- Tiny decorative icons — shield, lock, exclamation, check — under 200 bytes each
+- Demo / customer-pitch dashboards — copy/paste portability
+
+**When to use uploaded SVG instead (KV store or app-static):**
+
+- Logos and branded marks — too large for inline
+- Reused across many dashboards in the same instance
+- Need PDF/PNG export support (data-URI may not export reliably)
+- Production dashboards with frequent updates — single-source-of-truth via app-static
+
+**Decoration vs. data-driven:** when used as a static icon (no `areaIds` binding), the SVG renders as a non-interactive image — exactly what you need for inline icons. Just leave `context` empty and skip `areaIds`.
+
 ## When to use
 
 - **Floor plans / building schematics** — rack utilisation, room
