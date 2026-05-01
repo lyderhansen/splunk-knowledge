@@ -124,6 +124,18 @@ This is a **non-skippable** gate. Every box must be ticked or have an explicit w
 ```
 SCOPE CHECK — non-skippable
 
+☐ Layout is `absolute` (NOT grid)?
+   Grid layout is never valid in this design system UNLESS the user
+   explicitly requested grid. Rectangle depth layers, singlevalueicon,
+   and pixel-precise placement all require absolute.
+   Grid without explicit user request → automatic reject.
+
+☐ Every panel group has a shadow rectangle behind it?
+   Shadow = `splunk.rectangle` with fillColor 2–3 stops brighter than
+   canvas, placed BEFORE panels in structure array. Panels on top must
+   set explicit backgroundColor.
+   Missing shadows without explicit user request → automatic reject.
+
 ☐ Drilldowns wired on every entity-displaying panel?
    Entity types: host / IP / user / hash / time-bucket / geo / 
                  technique-id / asset-id / service-name
@@ -173,6 +185,8 @@ If any required box is unticked AND has no waiver, hand-off is blocked. The agen
 When all four critique heuristics pass AND Scope Check passes (every box ticked or waived), produce a brief that downstream skills can act on:
 
 - Archetype name + canvas dimensions
+- **Layout: `absolute` (mandatory — grid is never acceptable)**
+- **Shadow rectangles: one per panel group (mandatory — see `ds-ref-layout-grid`)**
 - Theme variant
 - Palette name + accent hex
 - Typography stack + scale
@@ -183,6 +197,16 @@ When all four critique heuristics pass AND Scope Check passes (every box ticked 
 Hand to `ds-create` (for fresh JSON authoring) or `ds-design` (for browser-based wireframing). Both pipeline skills consult `ds-ref-syntax` and the relevant `ds-viz-*` for option-level detail; you don't.
 
 Hand-off is **blocked** if Scope Check fails without waivers. Fix the gap or document the waiver before proceeding.
+
+**Hard gates enforced at hand-off (unless user explicitly overrides):**
+
+1. `layout.type` MUST be `"absolute"`. Grid layout → automatic reject
+   unless user explicitly requested grid.
+2. Every panel group MUST have a `splunk.rectangle` shadow behind it.
+   Missing shadows → automatic reject unless user explicitly opted out.
+
+These are the design system defaults. Only an explicit user request
+overrides them. See `ds-ref-layout-grid` MANDATORY sections.
 
 ## Aesthetic flavor — commit to one direction
 

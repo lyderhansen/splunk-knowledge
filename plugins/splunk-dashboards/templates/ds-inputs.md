@@ -135,7 +135,11 @@ table that the CISO can scan. So it's exec summary + one operational
 panel docked to the right. Not full operational dashboard."
 ```
 
-### 2.3 Canvas size
+### 2.3 Canvas size & layout
+
+> **Layout defaults to `absolute`.** Grid layout is only used if you explicitly request it. You do not need to specify absolute — it's the enforced default.
+
+> **Shadow rectangles are applied by default.** Every panel group gets a depth-layer rectangle behind it. Only omitted if you explicitly request no shadows.
 
 _Default: 1920 × content-driven height. See `ds-ref-layout-grid` for archetype × width guidance._
 

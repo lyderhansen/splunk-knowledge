@@ -21,3 +21,6 @@ docs/*.txt
 # Local sandbox / test scratch dirs
 /test[0-9]*/
 
+# Logo designer artifacts
+logos/
+

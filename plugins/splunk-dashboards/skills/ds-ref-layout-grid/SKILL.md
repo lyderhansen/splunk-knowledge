@@ -53,6 +53,77 @@ L
 - **Consistent column widths** — 2-column or 3-column grid; stick to
   it.
 
+## MANDATORY: Absolute layout
+
+**All dashboards MUST use `layout.type: "absolute"` unless the user
+explicitly requests grid.** Grid layout is not supported by this skill
+family by default. Reasons:
+
+1. `splunk.rectangle` (depth cards, shadow layers, dividers) only
+   renders in absolute layout — silently ignored in grid.
+2. `splunk.singlevalueicon` only renders in absolute layout.
+3. Pixel-precise panel placement is required for the golden-ratio
+   hero zones, gutter math, and z-order layering documented here.
+
+Grid layout is a Splunk feature for quick prototyping. Our design
+system does not use it. If you find yourself writing `"type": "grid"`
+without an explicit user request to do so, stop — you're in the wrong
+mode.
+
+**Override:** if the user explicitly says "use grid layout", comply —
+but warn that shadow rectangles and singlevalueicon will not render.
+
+**Required wrapper structure:**
+
+```json
+{
+  "layout": {
+    "type": "absolute",
+    "options": { "width": 1920, "height": <content-driven> },
+    "structure": [...]
+  }
+}
+```
+
+## MANDATORY: Shadow rectangles (depth layer)
+
+**Every panel group MUST have a `splunk.rectangle` shadow card behind
+it.** Dashboard Studio has no `box-shadow` CSS — depth is faked via a
+slightly brighter rectangle placed BEHIND panels in `structure` order.
+
+**Shadow recipe:**
+
+| Property | Value | Rationale |
+|---|---|---|
+| `fillColor` | 2–3 stops brighter than canvas (e.g. `#1F2937` on `#0B0C10` canvas) | Must be visibly distinct from canvas |
+| `fillOpacity` | 1.0 | Full opacity — no alpha tricks |
+| `strokeColor` | `"transparent"` | No border |
+| `rx` | 8 (matches `R_CARD`) | Rounded corners match panel corners |
+
+**Sizing:** shadow rect is panel group + 10 px inset on all sides.
+If a KPI group is at `x=40, y=80, w=1840, h=160`, the shadow rect is
+at `x=30, y=70, w=1860, h=180`.
+
+**Panels on top MUST set `backgroundColor`** to the surface color
+(e.g. `#13141A`) so the shadow peeks out only at the edges. Without
+explicit `backgroundColor`, panels are transparent and the shadow
+bleeds through.
+
+**Z-order:** shadow rects FIRST in `layout.structure`, then panels.
+Earlier = behind.
+
+```json
+"structure": [
+  { "item": "viz_shadow_kpi",  "position": { "x": 30, "y": 70, "w": 1860, "h": 180 } },
+  { "item": "viz_kpi_1",       "position": { "x": 40, "y": 80, "w": 440,  "h": 160 } },
+  { "item": "viz_kpi_2",       "position": { "x": 500, "y": 80, "w": 440, "h": 160 } }
+]
+```
+
+**Default enforcement:** a dashboard without shadow rectangles fails
+the Scope Check ("Panel cards consistent" gate). Every panel group
+gets a shadow unless the user explicitly requests otherwise.
+
 ## Default canvas size
 
 **Minimum width: 1920 px.** Authored width below 1920 produces
