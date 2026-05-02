@@ -110,9 +110,10 @@ After this skill completes, move to `ds-design` to wireframe the dashboard layou
 
 Two skills MUST be consulted for every mock query you write:
 
-1. **`ds-spl`** — `makeresults` patterns, dotted-field quoting,
-   `case()` default trap, multiselect token filters, time-bound
-   search hygiene. Catches the silent-fail traps that produce
+1. **`spl-gotchas`** (from `splunk-spl` plugin) — `makeresults`
+   patterns, dotted-field quoting, `case()` default trap, `spath
+   output=` not `as`, and 20+ more traps. Catches the silent-fail
+   traps that produce
    empty panels even when SPL parses cleanly.
 2. **`ds-pick-viz`** — confirms the mock data shape will satisfy
    the viz the user expects. Same per-viz traps apply to mock as

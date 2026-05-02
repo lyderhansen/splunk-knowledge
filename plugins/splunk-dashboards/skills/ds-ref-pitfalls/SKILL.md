@@ -148,8 +148,8 @@ matrix shows the pattern.
   rainbow on ordered axes. **Run `ds-couture` Slop Test as a final
   pass; this skill catches config / schema bugs, ds-couture catches
   taste bugs.**
-- **`ds-spl`** — SPL-level pitfalls: `case()` default trap,
-  multiselect IN without `\|s` filter, dotted-field quoting,
-  unbounded searches that return wrong rows in dashboards.
+- **`spl-gotchas`** (from `splunk-spl` plugin) — SPL-level pitfalls:
+  `case()` default trap, `spath output=` not `as`, dotted-field
+  quoting, unbounded searches that return wrong rows in dashboards.
 - `ds-ref-syntax` — JSON envelope rules.
 - Per-viz `GOTCHAS.md` files — full detail behind every entry above.

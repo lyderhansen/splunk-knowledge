@@ -154,9 +154,11 @@ skills below.
 4. **`ds-ref-syntax`** — Dashboard Studio JSON schema (top-level
    keys, dataSources, inputs, defaults, layout, expressions,
    drilldowns, DOS, token filters).
-5. **`ds-spl`** — SPL grammar + silent-fail traps for every
-   data source query you write (`case()` default, dotted-field
-   quoting, multiselect `\|s` filter, time-bound search hygiene).
+5. **`spl-gotchas`** (from `splunk-spl` plugin) — SPL silent-fail
+   traps + categorized command index. Covers `spath output=`,
+   `case()` default, dotted-field quoting, `matchValue` vs
+   `rangeValue`, and 20+ more traps. For full command syntax,
+   read `splunk-spl/reference/<command>.md`.
 
 ### Before writing the JSON for ANY visualization
 
@@ -246,7 +248,7 @@ invoke `ds-update` to swap viz types before running the CLI.
 - [ ] Read **`ds-couture`** + answered the Design Context Protocol
   questions (audience, tone, anti-reference, brand).
 - [ ] Read **`ds-ref-syntax`** for the JSON envelope.
-- [ ] Read **`ds-spl`** for SPL grammar in every data source query.
+- [ ] Read **`spl-gotchas`** (from `splunk-spl` plugin) for SPL grammar in every data source query.
 
 ### Per-dashboard-content skills
 

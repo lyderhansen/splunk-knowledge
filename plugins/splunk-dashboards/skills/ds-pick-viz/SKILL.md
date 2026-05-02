@@ -95,6 +95,6 @@ If the intent is ambiguous, ask **one** clarifying question instead of guessing.
 - `ds-ref-design-principles` — full archetype + chart-selection rationale (read when designing a whole dashboard, not picking one viz).
 - `ds-couture` — design-first companion. Use when the question is "this picks the right viz, but how do I make the dashboard look crafted?".
 - `ds-ref-syntax` — Dashboard Studio JSON schema (dataSources, layout, tokens, drilldowns).
-- `ds-spl` — SPL grammar reference for the queries that feed the viz.
+- `spl-gotchas` (from `splunk-spl` plugin) — SPL grammar reference for the queries that feed the viz.
 - `ds-viz-<type>` — per-type option reference (one skill per visualization).
 - `ds-ref-pitfalls` — cross-skill traps matrix — final pass after picking.

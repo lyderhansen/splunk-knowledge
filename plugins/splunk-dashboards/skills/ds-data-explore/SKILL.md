@@ -78,13 +78,12 @@ Move to `ds-design` to wireframe the layout.
 
 Two skills MUST be consulted for every search you write:
 
-1. **`ds-spl`** — SPL grammar reference and silent-fail traps.
-   Covers `case()` default semantics (which silently swallows
-   uncategorised values), dotted-field quoting (`'host.name'`),
-   `where` vs `eval` argument shape, multiselect `\|s` token
-   filter, time-bound search hygiene
-   (`$global_time.earliest$ / .latest$`), and the patterns that
-   produce empty panels without errors.
+1. **`spl-gotchas`** (from `splunk-spl` plugin) — SPL silent-fail
+   traps + categorized command index. Covers `spath output=`,
+   `case()` default, dotted-field quoting, `matchValue` vs
+   `rangeValue`, and 20+ more traps that produce empty panels
+   without errors. For full command syntax, read
+   `splunk-spl/reference/<command>.md`.
 2. **`ds-pick-viz`** — confirms the question shape maps to a viz
    that exists. Catches mismatches early between the SPL output
    and the viz the user expects (a dashboard question that begs

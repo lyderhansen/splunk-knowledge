@@ -254,4 +254,4 @@ These are starting points, not commands — confirm the flavor with the user bef
 - Archetype details → `ds-ref-archetypes`
 - JSON writing → `ds-create`
 - Wireframe editing → `ds-design`
-- SPL → `ds-spl`
+- SPL → `spl-gotchas` (from `splunk-spl` plugin)
