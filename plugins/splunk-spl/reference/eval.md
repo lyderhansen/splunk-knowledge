@@ -199,6 +199,45 @@ Add a derived field that a viz can use for conditional color or icon selection:
 - **`eval` is distributable streaming** — it runs on indexers. Keep `eval` before
   any transforming command (`stats`, `chart`, `timechart`) to maximize performance.
 
+## New in Splunk 10.2
+
+### Bitwise functions
+
+```spl
+| eval result = bit_and(0xFF, 0x0F)           -- 0x0F
+| eval result = bit_or(0xF0, 0x0F)            -- 0xFF
+| eval result = bit_not(0xFF, 8)              -- 0x00 (8-bit mask)
+| eval result = bit_xor(0xFF, 0x0F)           -- 0xF0
+| eval result = bit_shift_left(1, 4)          -- 16
+| eval result = bit_shift_right(16, 4)        -- 1
+```
+
+### Extended type conversion
+
+```spl
+| eval arr = toarray(1, 2, 3)                 -- JSON array [1,2,3]
+| eval b = tobool("true")                     -- boolean true
+| eval d = todouble("3.14")                   -- double 3.14
+| eval i = toint("42")                        -- integer 42
+| eval mv = tomv(json_array)                  -- multivalue from JSON array
+| eval obj = toobject("key", "val")           -- JSON object {"key":"val"}
+| eval masked = ipmask("255.255.255.0", src)  -- mask IP to subnet
+```
+
+### Extended type checking
+
+```spl
+| eval is_arr = isarray(field)                -- true if JSON array
+| eval is_bool = isbool(field)                -- true if boolean
+| eval is_dbl = isdouble(field)               -- true if double/float
+| eval is_int = isint(field)                   -- true if integer
+| eval is_mv = ismv(field)                     -- true if multivalue
+| eval is_obj = isobject(field)               -- true if JSON object
+```
+
+These complement the existing `isnum()`, `isstr()`, `isnull()`,
+`isnotnull()` functions with more specific type discrimination.
+
 ## See also
 
 - `stats.md` — aggregation; `eval` expressions can appear inside stats functions

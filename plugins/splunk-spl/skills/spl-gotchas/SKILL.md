@@ -12,6 +12,12 @@ description: SPL syntax traps and categorized command index for all Splunk searc
 3. Use the **command index** to find the right command for your task.
 4. For full syntax + parameters + examples, read `reference/<command>.md`.
 
+**Source versions:** Reference files are sourced from Splunk Enterprise
+Search Reference 8.2.12 with updates from 10.2.0 (2026-05-01). Commands
+marked "REMOVED in 10.2" in their reference file are no longer available
+in Splunk Enterprise 10.2+. New eval functions added in 10.2 (bitwise,
+extended type conversion/checking) are documented in `reference/eval.md`.
+
 ---
 
 ## Silent-fail traps (ranked by frequency)
