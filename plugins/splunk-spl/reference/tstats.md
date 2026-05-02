@@ -15,6 +15,8 @@ Source: Splunk Search Reference 8.2.12, page 614.
 | WHERE | option 2 | — | Index-level filter (e.g., `WHERE index=main`) |
 | BY field-list | no | — | Group-by fields |
 | summariesonly | no | false | Only use accelerated data (faster but may miss recent events) |
+| include_reduced_buckets | no | false | Include reduced buckets in results (10.2+) |
+| fillnull_value | no | — | Value to use for null BY-field values instead of dropping them (10.2+) |
 | span | no | — | Time span for bucketing (used with `_time` in BY clause) |
 
 ## Examples

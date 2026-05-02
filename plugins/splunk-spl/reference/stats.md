@@ -41,7 +41,22 @@ The `BY` clause is optional; omitting it produces a single summary row over all 
 | `first(field)` | First value encountered | NOT time-ordered — arbitrary |
 | `last(field)` | Last value encountered | NOT time-ordered — arbitrary |
 | `mode(field)` | Most frequent value | |
-| `rate(field)` | Rate of change | |
+| `rate(field)` | Per-second rate of change | 10.2+ |
+| `rate_avg(field)` | Average rate per second | 10.2+ |
+| `rate_sum(field)` | Sum of per-second rates | 10.2+ |
+| `earliest_time(field)` | Epoch time of earliest value | Returns epoch, not the value itself |
+| `latest_time(field)` | Epoch time of latest value | Returns epoch, not the value itself |
+| `per_day(field)` | Rate per day | 10.2+ |
+| `per_hour(field)` | Rate per hour | 10.2+ |
+| `per_minute(field)` | Rate per minute | 10.2+ |
+| `per_second(field)` | Rate per second | 10.2+ |
+| `estdc(field)` | Estimated distinct count | Lower memory than `dc()` |
+| `estdc_error(field)` | Error bound for `estdc()` | |
+| `sumsq(field)` | Sum of squares | |
+| `stdevp(field)` | Population standard deviation | vs `stdev` which is sample |
+| `varp(field)` | Population variance | vs `var` which is sample |
+| `upperperc95(field)` | Upper 95th percentile | Also `upperperc<N>` |
+| `sparkline(agg, span)` | Inline sparkline for tables | e.g. `sparkline(avg(cpu), 1h)` |
 
 ## Examples
 

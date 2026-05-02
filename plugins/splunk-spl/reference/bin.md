@@ -16,6 +16,7 @@ Source: Splunk Search Reference 8.2.12, page 212. Alias: `bucket`.
 | minspan | no | — | Minimum span when using `bins` |
 | start | no | — | Override bucket start value |
 | end | no | — | Override bucket end value |
+| aligntime | no | — | Align time buckets to a specific time (10.2+) |
 | AS newfield | no | overwrites field | Output field name |
 
 ## Examples

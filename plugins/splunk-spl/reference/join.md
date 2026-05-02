@@ -4,7 +4,15 @@ Source: Splunk Search Reference 8.2.12, page 362.
 
 ## Syntax
 
+### Classic syntax (field-list based)
+
     | join [type=inner|outer|left] [usetime=<bool>] [earlier=<bool>] [overwrite=<bool>] [max=<int>] <field-list> [<subsearch>]
+
+### SQL-style syntax (10.2+)
+
+    | join [join-options] [left=<alias>] [right=<alias>] where <alias>.<field>=<alias>.<field> <dataset-type>:<dataset-name>
+
+Where `dataset-type` is `datamodel`, `savedsearch`, or `inputlookup`.
 
 ## Parameters
 
@@ -30,6 +38,13 @@ index=main sourcetype=access_combined
 ```spl
 index=main sourcetype=firewall
 | join type=left src [search index=main sourcetype=auth | stats values(user) AS users by src]
+```
+
+### SQL-style join with dataset (10.2+)
+
+```spl
+index=main sourcetype=firewall
+| join left=L right=R where L.src = R.ip inputlookup:threat_intel.csv
 ```
 
 ## Gotchas

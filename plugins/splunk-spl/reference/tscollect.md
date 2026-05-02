@@ -1,6 +1,9 @@
-# tscollect — write results to tsidx for tstats
+# tscollect — write results to tsidx for tstats (DEPRECATED)
 
 Source: Splunk Search Reference 8.2.12, page 613.
+**Status: Deprecated since Splunk Enterprise 7.3.0.** The command still
+functions but may be removed in a future release. Use data model
+acceleration or `collect` to summary indexes instead.
 
 ## Syntax
 
