@@ -97,6 +97,7 @@ per-viz / interactivity / reference skill that owns the full fix.
 | `_time` label stuck on x-axis despite "hiding" it            | Wrong property: `showXAxisTitle` does NOT exist. Use `xAxisTitleVisibility: "hide"`.              | `ds-viz-area`, `ds-viz-line`, `ds-viz-column` |
 | Choropleth "d is not iterable" error on Color tab            | Context uses `{type:"range", ranges:[...]}` wrapper. Use a flat array instead.                   | `ds-viz-choropleth-svg` Do/Don't, `ds-svg` CANVAS-PATTERNS |
 | Data sources show "Unnamed" in Studio picker                 | Missing `options.name` on `ds.search`. Every dataSource MUST have a human-readable `name`.       | `ds-create` hard rule |
+| `must NOT have additional properties` on defaults block      | `defaults.visualizations.global.options` is invalid. Only `dataSources.global` is supported. Leave `defaults: {}` or use only `dataSources.global`. | `ds-couture` rule 13, `ds-int-defaults` |
 
 
 ## Layout traps

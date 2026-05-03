@@ -237,6 +237,12 @@ Hand-off is **blocked** if Scope Check fails without waivers. Fix the gap or doc
     `"extraLarge"`. Setting `"fontSize": 11` or any integer WILL break
     the panel. `fontColor` takes a hex string. `fontFamily` takes one
     of seven allowed values (see `ds-viz-markdown`).
+13. `defaults.visualizations.global` MUST NOT contain `options`.
+    Studio rejects `defaults.visualizations.global.options` with
+    "must NOT have additional properties". The `defaults` block only
+    supports `dataSources.global` (for shared query params like
+    time range). Set `backgroundColor` per-visualization, not globally.
+    When in doubt, leave `defaults: {}` empty.
 
 These are the design system defaults. Only an explicit user request
 overrides them. See `ds-ref-layout-grid` MANDATORY sections.
