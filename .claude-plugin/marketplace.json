@@ -15,16 +15,6 @@
       "author": {
         "name": "Lyder Hansen"
       }
-    },
-    {
-      "name": "splunk-agent-dashboard",
-      "description": "AI dashboard designer for Splunk Dashboard Studio. Three skills: create, improve, deploy.",
-      "source": "./plugins/splunk-agent-dashboard",
-      "category": "productivity",
-      "homepage": "https://github.com/lyderhansen/splunk-knowledge",
-      "author": {
-        "name": "Lyder Hansen"
-      }
     }
   ]
 }
