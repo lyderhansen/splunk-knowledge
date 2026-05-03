@@ -86,6 +86,24 @@ Panels in `layout.json` can carry a `drilldown` field:
 
 `ds-create` translates this into `options.drilldown = "all"` and `options.drilldownAction = <drilldown value>` on the matching visualization, enabling click-through behavior in the rendered dashboard.
 
+## Hard rule — every dataSource MUST have a `name`
+
+Every `ds.search` entry in `dataSources` **must** include
+`options.name`. Without it, the Splunk Dashboard Studio editor shows
+"Unnamed" in the data source picker, making the dashboard impossible
+to maintain. This is a non-negotiable requirement — no exceptions.
+
+```json
+"ds_health": {
+  "type": "ds.search",
+  "options": {
+    "query": "| makeresults | eval value=94",
+    "queryParameters": { "earliest": "0", "latest": "now" },
+    "name": "Health Score"
+  }
+}
+```
+
 ## Hard rule — dataSource `name` character set
 
 Every `dataSource.name` field this skill emits **must** match

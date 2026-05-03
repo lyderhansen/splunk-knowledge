@@ -1,6 +1,6 @@
 # Choropleth canvas templates for Splunk Dashboard Studio
 
-Five starter templates for `splunk.choropleth.svg`. Each template includes a complete SVG canvas, an SPL binding query, and the threshold block for the dashboard JSON snippet. The four binding options (`areaIds`, `areaValues`, `areaColors`, `context.thresholds`) follow the generic recipe in the last section — only the threshold values differ per template.
+Five starter templates for `splunk.choropleth.svg`. Each template includes a complete SVG canvas, an SPL binding query, and the threshold block for the dashboard JSON snippet. The four binding options (`areaIds`, `areaValues`, `areaColors`, `context.areaColorsEditorConfig`) follow the generic recipe in the last section — only the threshold values differ per template.
 
 **When to use this file:** You have a physical or logical topology you want to visualise in Studio and need a ready-made SVG + SPL pair to start from. Pick the template whose shape most closely matches your environment, swap the `id` attributes to match your SPL field values, adjust threshold ranges, and inline the escaped SVG string into the `"svg"` option.
 
@@ -201,13 +201,13 @@ Paste these four option keys into any `splunk.choropleth.svg` definition:
 ```json
 "areaIds":    "> primary | seriesByName('region')",
 "areaValues": "> primary | seriesByName('value')",
-"areaColors": "> areaValues | rangeValue(thresholds)",
+"areaColors": "> areaValues | rangeValue(areaColorsEditorConfig)",
 "context": {
-  "thresholds": { "type": "range", "ranges": [
-    { "from": 0,  "to": 60, "value": "#36a44a" },
+  "areaColorsEditorConfig": [
+    { "to": 60, "value": "#36a44a" },
     { "from": 60, "to": 80, "value": "#f4c51c" },
-    { "from": 80,           "value": "#dc3333" }
-  ]}
+    { "from": 80, "value": "#dc3333" }
+  ]
 }
 ```
 

@@ -132,7 +132,7 @@ See [SVG-AUTHORING.md](SVG-AUTHORING.md) for the full guide.
 | **Path IDs:** match `areaIds` values **exactly** (case-sensitive). | `id="rack-a"` with data row `RACK-A` — silent no-fill. |
 | **`<path d="...">`:** every coloured region. | `<rect>`, `<circle>`, `<polygon>` for coloured regions — Splunk skips them. Convert to paths in Inkscape. |
 | **Embed inline** or `data:image/svg+xml` URI. | Web-hosted SVG URL — unsupported per PDF. |
-| **Threshold config** in `context.<configName>`. | Inline thresholds in the option string — invalid DOS. |
+| **Threshold config** in `context.<configName>` as a **flat array** of `{from, to, value}` objects. Use `areaColorsEditorConfig` as the key name for compatibility with the Studio visual editor. | `"type": "range", "ranges": [...]` wrapper — causes `"d is not iterable"` error. Inline thresholds in the option string — invalid DOS. |
 | **`areaColors` is a DOS string:** `> primary \| seriesByName('<col>') \| rangeValue(<config>)`. | `"areaColors": "#FF0000"` — every region becomes literal string `#FF0000`, no fills. |
 | **Decorations** (lines, labels, backgrounds) outside coloured paths. | Wrap labels inside `<path>` IDs — they pick up the fill colour. |
 | **Encode large SVGs** as `data:image/svg+xml;base64,...`. | Inline 50 kB+ raw SVG in JSON — terse source matters for review. |
