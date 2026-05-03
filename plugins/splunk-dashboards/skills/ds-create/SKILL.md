@@ -134,8 +134,9 @@ catch it at `built`-stage rather than at deploy.
 
 These defaults are non-negotiable unless the user explicitly overrides:
 
-1. **`showXAxisTitle: false`** on every `splunk.area`, `splunk.line`,
-   `splunk.column` viz. The `_time` label adds zero information.
+1. **`xAxisTitleVisibility: "hide"`** on every `splunk.area`,
+   `splunk.line`, `splunk.column` viz. The `_time` label adds zero
+   information. NOT `showXAxisTitle` — that property does not exist.
 
 2. **Time fields in tables** must be formatted:
    `| eval _time=strftime(_time, "%Y-%m-%d %H:%M")` — drop the

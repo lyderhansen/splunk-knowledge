@@ -207,8 +207,9 @@ Hand-off is **blocked** if Scope Check fails without waivers. Fix the gap or doc
    Missing shadows → automatic reject unless user explicitly opted out.
 3. Every `ds.search` MUST have `options.name` set to a human-readable
    label. "Unnamed" data sources → automatic reject.
-4. `showXAxisTitle` MUST be `false` on all timecharts. The `_time`
-   label adds no information — the axis values already show time.
+4. `xAxisTitleVisibility` MUST be `"hide"` on all timecharts. The
+   `_time` label adds no information. The property is NOT
+   `showXAxisTitle` — that does not exist in Studio.
 5. Time fields in tables MUST be formatted cleanly:
    `| eval _time=strftime(_time, "%Y-%m-%d %H:%M")` — no timezone suffix.
 
@@ -228,6 +229,11 @@ Hand-off is **blocked** if Scope Check fails without waivers. Fix the gap or doc
 10. Inline SVG icons via `ds-svg` MUST NOT collide with panel titles.
     Position icons inside the panel body or beside the value, never
     overlapping the title text.
+11. `splunk.markdown` MUST NOT contain raw HTML (`<span>`, `<div>`,
+    `<style>`). Studio strips/escapes all HTML tags. Use plain markdown
+    syntax only: `**bold**`, `*italic*`, headings, lists. For font
+    control, use `fontFamily`, `fontSize`, `fontColor` in the viz
+    options — NOT inline CSS.
 
 These are the design system defaults. Only an explicit user request
 overrides them. See `ds-ref-layout-grid` MANDATORY sections.
