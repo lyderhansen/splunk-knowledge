@@ -92,6 +92,11 @@ per-viz / interactivity / reference skill that owns the full fix.
 | `input.<id>.type: must be equal to one of the allowed values` | Tried `input.radio` / `input.number` / `input.date` — only 5 types exist.                       | `ds-int-inputs` 5 flavours                                 |
 | `must NOT have additional properties` on multiselect          | Tried `valuePrefix` / `valueSuffix` / `delimiter` — Studio v2 doesn't support. Use `|s` filter. | `ds-int-inputs` `input.multiselect`                        |
 | Validator rejects `splunk.choropleth.map` viz type            | Doesn't exist. Use `splunk.map` with `choropleth` layer.                                        | `ds-viz-map` Common confusions                         |
+| `fontSize: 11` (number) silently breaks panel                | `fontSize` is an **enum string**: `extraSmall`, `small`, `default`, `large`, `extraLarge`. Never a number. | `ds-viz-markdown`, `ds-couture` rule 12 |
+| Markdown panel shows raw `<span>` / `<div>` tags              | Studio strips all raw HTML. Use plain markdown (`**bold**`, headings) + `fontColor`/`fontSize` in options. | `ds-viz-markdown`, `ds-couture` rule 11 |
+| `_time` label stuck on x-axis despite "hiding" it            | Wrong property: `showXAxisTitle` does NOT exist. Use `xAxisTitleVisibility: "hide"`.              | `ds-viz-area`, `ds-viz-line`, `ds-viz-column` |
+| Choropleth "d is not iterable" error on Color tab            | Context uses `{type:"range", ranges:[...]}` wrapper. Use a flat array instead.                   | `ds-viz-choropleth-svg` Do/Don't, `ds-svg` CANVAS-PATTERNS |
+| Data sources show "Unnamed" in Studio picker                 | Missing `options.name` on `ds.search`. Every dataSource MUST have a human-readable `name`.       | `ds-create` hard rule |
 
 
 ## Layout traps
