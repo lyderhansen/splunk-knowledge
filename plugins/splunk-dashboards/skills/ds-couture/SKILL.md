@@ -243,6 +243,16 @@ Hand-off is **blocked** if Scope Check fails without waivers. Fix the gap or doc
     supports `dataSources.global` (for shared query params like
     time range). Set `backgroundColor` per-visualization, not globally.
     When in doubt, leave `defaults: {}` empty.
+14. Canvas background color: use `layout.options.backgroundColor`
+    (NOT a full-canvas rectangle). This is cleaner and avoids an extra
+    viz in the structure:
+    `"layout": { "options": { "width": 1920, "height": 1080, "backgroundColor": "#0a1628" } }`
+    Reserve gradient rectangles for accent washes only.
+15. `splunk.fillergauge` orientation MUST match panel shape.
+    Wide panel (w > h) → `"orientation": "horizontal"`.
+    Tall panel (h > w) → `"orientation": "vertical"` (default).
+    Wrong orientation = gauge fills perpendicular to the panel,
+    looking broken.
 
 These are the design system defaults. Only an explicit user request
 overrides them. See `ds-ref-layout-grid` MANDATORY sections.
