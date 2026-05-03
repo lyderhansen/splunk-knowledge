@@ -1,143 +1,101 @@
 # splunk-knowledge
 
-A Claude Code plugin marketplace for authoring Splunk artifacts end-to-end. Currently hosts **splunk-dashboards** — a complete workflow for building, validating, and deploying Splunk Dashboard Studio dashboards from idea to installable app.
+A Claude Code plugin marketplace for Splunk. Two plugins that cover dashboards and SPL — from idea to deployed app.
 
 ## Install
 
-In Claude Code:
-
 ```
-/plugin marketplace add lyderhansen/splunk-knowledge
-/plugin install splunk-dashboards@splunk-knowledge
-```
-
-To pull updates later:
-
-```
-/plugin marketplace update splunk-knowledge
+/install-plugin lyderhansen/splunk-knowledge/plugins/splunk-dashboards
+/install-plugin lyderhansen/splunk-knowledge/plugins/splunk-spl
 ```
 
 ## Plugins
 
-### splunk-dashboards (v2.4.0)
+### splunk-dashboards v2.9.0
 
-A professional toolkit for Splunk Dashboard Studio (v2). It ships two layers:
+End-to-end toolkit for Splunk Dashboard Studio (v2). 60+ skills across five families.
 
-1. **An action pipeline** — eleven skills that walk a project from scope to deployed dashboard.
-2. **A granular reference library** — one skill per visualization type, one per interactivity concept, plus a viz-picker router and design-principles. The skill loader picks the smallest skill that matches the current task.
-
-**Pipeline:**
+**Pipeline** — walks a project from scope to deploy:
 
 ```
-ds-init ─▶ ds-data-explore | ds-mock ─▶ ds-design ─▶ ds-create ─▶ ds-validate ─▶ ds-deploy
-                                                                          │
-                                                          ds-review ◀─────┤
-                                                          ds-update ◀─────┤
-                                                          ds-critique ◀───┤
-                                                          ds-polish ◀─────┘
+ds-init → ds-data-explore / ds-mock → ds-design → ds-create → ds-validate → ds-deploy
+                                                                    ↕
+                                              ds-review · ds-update · ds-critique · ds-polish
 ```
 
-**Pipeline skills** (workspace-aware, in `plugins/splunk-dashboards/skills/pipeline/`):
-
-| Skill | Stage transition | Purpose |
+| Family | Count | What it covers |
 |---|---|---|
-| `ds-init` | → scoped | Scoping questions, requirements.md, workspace setup |
-| `ds-data-explore` | scoped → data-ready | Draft SPL against real indexes (MCP-aware) |
-| `ds-mock` | scoped → data-ready | Inline synthetic data via `makeresults` |
-| `ds-design` | data-ready → designed | Local browser wireframe editor (Gridstack.js DnD) |
-| `ds-create` | designed → built | Build Dashboard Studio JSON with optional theme |
-| `ds-validate` | built → validated | Lint SPL, tokens, drilldowns, data-source refs |
-| `ds-deploy` | validated → deployed | XML envelope + optional Splunk TA tarball |
-| `ds-review` | (standalone) | Audit against best practices, write review.md |
-| `ds-update` | (standalone) | Apply natural-language edits to any dashboard |
-| `ds-critique` | (standalone) | Quantitative UX critique with persona-based testing |
-| `ds-polish` | (standalone) | Final pre-ship pass: alignment, spacing, micro-detail |
+| Pipeline | 11 | Scope, data, wireframe, build, lint, deploy, review, update, critique, polish |
+| Visualizations | 26 | One skill per viz type (`ds-viz-line`, `ds-viz-table`, `ds-viz-sankey`, ...) + `ds-pick-viz` router |
+| Interactivity | 6 | Tokens, inputs, drilldowns, tabs, visibility, defaults |
+| Design references | 10 | Archetypes, color, typography, layout, visual encoding, anti-patterns, personas, brand, themes, references |
+| Asset generation | 1 | `ds-svg` — custom SVG icons, logos, choropleth canvases (floor plans, rack diagrams, pipelines) |
 
-**Reference library** (`plugins/splunk-dashboards/skills/`):
+**Key skills:**
 
-| Folder | Skills | Content |
+- **ds-couture** — design-first orchestrator. Runs the Design Context Protocol (audience, tone, brand) before any JSON. Routes to the 10 ds-ref-* design references. Refuses to design in the dark.
+- **ds-svg** — generates custom SVGs for dashboards. Icons for `singlevalueicon`, images for `splunk.image`, data-driven canvases for `splunk.choropleth.svg`. Inherits palette from ds-couture. Includes 8 icon exemplars, 14-category taxonomy, and 5 choropleth templates.
+- **ds-create** — builds the complete Dashboard Studio JSON from layout + data sources. MUST-LOAD gates ensure per-viz skills are read before writing.
+- **ds-pick-viz** — routes from intent ("trend over time", "top N by category") to the right visualization type.
+
+**Absolute layout + shadow rectangles are the design system defaults.** Grid layout and no-shadows are only valid if the user explicitly requests them.
+
+### splunk-spl v1.0.0
+
+SPL (Search Processing Language) syntax reference. Two-layer architecture:
+
+| Layer | Loaded | Content |
 |---|---|---|
-| `reference/` | `ds-syntax`, `ds-design-principles`, `ds-viz` (legacy) | JSON schema, archetypes, chart-selection rationale, color/typography. `ds-viz` is the legacy monolithic per-viz reference and will be removed once content is migrated into `viz/`. |
-| `viz/` | `ds-pick-viz` + 26 `ds-viz-<type>` | Router skill (intent → viz type) plus one skill per visualization (`ds-viz-line`, `ds-viz-sankey`, `ds-viz-markergauge`, `ds-viz-table`, etc.). |
-| `interactivity/` | `ds-tokens`, `ds-inputs`, `ds-drilldowns`, `ds-tabs`, `ds-visibility`, `ds-defaults` | One skill per interactivity concept. |
-| `design/` | (reserved) | Future split of `ds-design-principles` — out of scope today. |
+| **spl-gotchas** (skill) | Eagerly | 21 silent-fail traps + 151-command categorized index |
+| **reference/** (150 files) | On demand | One file per SPL command — syntax, parameters, examples, gotchas |
 
-> **Migration in progress (v2.4.0):** The 26 `viz/ds-viz-*` and 6 `interactivity/` skills are currently **stubs** (frontmatter + content placeholder). Until migration is complete, `reference/ds-viz/SKILL.md` is the authoritative per-viz reference. The router (`ds-pick-viz`) is fully functional today against the stub names.
+All content sourced from Splunk Enterprise Search Reference 10.2.0.
 
-**Themes** (via `ds-create --theme`):
+**What it catches:**
 
-- `clean` — minimal (default, no-op)
-- `pro` — dark default
-- `glass` — premium hero
-- `exec` — editorial light
-- `noc` — mission-control
-- Legacy `clean`/`ops`/`soc` aliases still work.
+- `spath output=` not `as` (silent wrong-column)
+- `case()` needs explicit default (silent null)
+- `matchValue` vs `rangeValue` in table formatting
+- `sort` 10K default limit (silent truncation)
+- `join` 50K subsearch limit
+- Dotted field names need tick-quoting in `where`/`eval`
 
-Themes detect SPL semantics (failure / success / latency / count / volume / critical) and apply `majorColor` + sparklines automatically.
-
-**Aurora design framework:**
-
-The Aurora framework codifies professionally-tuned themes and six composition patterns that make generated dashboards look world-class while respecting Splunk's own design language. All native Dashboard Studio JSON — no CSS, no JS, Enterprise + Cloud compatible.
-
-- **Patterns:** `card-kpi`, `hero-kpi`, `sparkline-in-kpi`, `compare-prev`, `annotations`, `section-zones`. Apply via `--pattern` or use the theme's default package.
-- **Polish scorecard:** `ds-review` produces a weighted 0–10 score across 10 dimensions with actionable `ds-update` suggestions for gaps.
-
-See `docs/superpowers/specs/2026-04-23-aurora-design-framework-design.md` for the full spec.
-
-**Example flow:**
-
-```bash
-/ds-init                           # scope: "Monitor failed authentications"
-/ds-mock                           # generate makeresults-based mock SPL
-/ds-design launch my-dash          # browser wireframe editor
-/ds-create build my-dash --title "Auth Monitor" --theme pro
-/ds-validate check my-dash
-/ds-deploy build my-dash --label "Auth Monitor" --as-app
-```
-
-You end up with `dashboard.xml` and a `my_dash.tar.gz` Splunk TA in `./.splunk-dashboards/my-dash/`.
-
-## Requirements
-
-- Python 3.9+ (system Python works — no external dependencies)
-- A browser (for `ds-design`'s local wireframe editor)
-- Optionally: Splunk MCP server for real-data exploration in `ds-data-explore`
+**Includes:**
+- `command-types.md` — performance classification guide (distributable streaming, centralized streaming, generating, transforming, orchestrating, dataset processing)
+- Commands marked REMOVED or DEPRECATED in 10.2 (`audit`, `datamodelsimple`, `tscollect`)
+- New 10.2 features: `eval` bitwise/type functions, `stats` 15 new aggregation functions, `join` SQL-style dataset syntax
 
 ## Repository layout
 
 ```
 splunk-knowledge/
-├── .claude-plugin/marketplace.json   # Marketplace metadata
 ├── plugins/
-│   └── splunk-dashboards/
-│       ├── .claude-plugin/plugin.json
-│       ├── skills/
-│       │   ├── pipeline/             # 11 lifecycle skills
-│       │   ├── reference/            # ds-syntax, ds-design-principles, ds-viz (legacy)
-│       │   ├── viz/                  # ds-pick-viz + 26 ds-viz-<type> stubs
-│       │   ├── interactivity/        # 6 interactivity stubs
-│       │   └── design/               # (reserved, empty)
-│       ├── src/splunk_dashboards/    # Python modules (stdlib only)
-│       ├── templates/                # Bundled dashboard patterns
-│       └── tests/                    # pytest tests
-├── docs/superpowers/                  # Specs and plans
-└── CLAUDE.md                          # Repo policies
+│   ├── splunk-dashboards/          60+ skills, v2.9.0
+│   │   ├── skills/
+│   │   │   ├── ds-init .. ds-polish    pipeline (11)
+│   │   │   ├── ds-viz-*                visualizations (26)
+│   │   │   ├── ds-int-*                interactivity (6)
+│   │   │   ├── ds-ref-*                design references (10)
+│   │   │   ├── ds-svg/                 SVG generator (4 files)
+│   │   │   ├── ds-couture/             design orchestrator
+│   │   │   └── ds-pick-viz/            viz router
+│   │   └── _schemas/                   28 viz JSON schemas
+│   └── splunk-spl/                 150 reference files, v1.0.0
+│       ├── skills/spl-gotchas/         eagerly-loaded traps + index
+│       └── reference/                  per-command markdown files
+├── .claude-plugin/marketplace.json
+├── CLAUDE.md
+└── README.md
 ```
 
-## Development
+## Requirements
 
-Tests run on stdlib Python — no venv needed:
-
-```bash
-cd plugins/splunk-dashboards
-python3 -m pytest -v
-```
-
-All plugin artifacts are authored in English (see `CLAUDE.md`). Brainstorming / planning can happen in any language.
+- Claude Code (CLI, desktop, or IDE extension)
+- Optionally: Splunk MCP server for real-data exploration in `ds-data-explore`
 
 ## License
 
-MIT.
+MIT
 
 ## Author
 

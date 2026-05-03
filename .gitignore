@@ -24,3 +24,8 @@ docs/*.txt
 # Logo designer artifacts
 logos/
 
+# SVG generation artifacts
+svgs/
+
+# Agent dashboard scratch
+.splunk-agent/
