@@ -205,6 +205,29 @@ Hand-off is **blocked** if Scope Check fails without waivers. Fix the gap or doc
    unless user explicitly requested grid.
 2. Every panel group MUST have a `splunk.rectangle` shadow behind it.
    Missing shadows → automatic reject unless user explicitly opted out.
+3. Every `ds.search` MUST have `options.name` set to a human-readable
+   label. "Unnamed" data sources → automatic reject.
+4. `showXAxisTitle` MUST be `false` on all timecharts. The `_time`
+   label adds no information — the axis values already show time.
+5. Time fields in tables MUST be formatted cleanly:
+   `| eval _time=strftime(_time, "%Y-%m-%d %H:%M")` — no timezone suffix.
+
+**Wow-factor defaults (apply unless the archetype demands restraint):**
+
+6. Canvas background MUST NOT be flat black. Add 1-2 low-opacity
+   gradient rectangles to create depth. See `ds-ref-layout-grid`
+   "Gradient background" section.
+7. Card corner radius: `rx=4-8`, NOT `rx=12+`. Large radii look
+   bloated. Reference: Stripe uses rx=6, Linear uses rx=4.
+8. Faux glow on hero panels. Use 2-layer low-opacity accent rectangles
+   behind the primary panel group. See `ds-ref-layout-grid` "Faux glow"
+   section.
+9. Color palette MUST include at least one non-semantic accent beyond
+   green/yellow/red. Purple (#8b5cf6), teal (#06b6d4), or violet
+   (#a78bfa) give dashboards personality.
+10. Inline SVG icons via `ds-svg` MUST NOT collide with panel titles.
+    Position icons inside the panel body or beside the value, never
+    overlapping the title text.
 
 These are the design system defaults. Only an explicit user request
 overrides them. See `ds-ref-layout-grid` MANDATORY sections.

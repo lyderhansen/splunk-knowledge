@@ -130,6 +130,26 @@ not subject to this regex (the codebase convention is `ds_*` snake_case).
 `ds-validate` enforces this with `dataSource-name-illegal-chars` —
 catch it at `built`-stage rather than at deploy.
 
+## Hard defaults — applied to every dashboard
+
+These defaults are non-negotiable unless the user explicitly overrides:
+
+1. **`showXAxisTitle: false`** on every `splunk.area`, `splunk.line`,
+   `splunk.column` viz. The `_time` label adds zero information.
+
+2. **Time fields in tables** must be formatted:
+   `| eval _time=strftime(_time, "%Y-%m-%d %H:%M")` — drop the
+   timezone suffix (+00:00) and milliseconds.
+
+3. **Canvas background** must include at least one low-opacity
+   gradient rectangle. See `ds-ref-layout-grid` "Gradient background."
+
+4. **Card `rx`** must be 4-8, not 12+. Large radii look amateur.
+
+5. **Choropleth context** must use a flat array with key name
+   `areaColorsEditorConfig`, NOT a `{type: "range", ranges: [...]}`
+   wrapper. The wrapper causes "d is not iterable" in Studio.
+
 ## Splunk Enterprise and Cloud compatibility
 
 `ds-create` emits **native Dashboard Studio v2 JSON only** — no custom CSS, no JavaScript, no app dependencies. Output runs unmodified on Splunk Enterprise (9.x+) and Splunk Cloud.

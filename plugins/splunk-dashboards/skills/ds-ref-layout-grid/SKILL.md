@@ -124,6 +124,56 @@ Earlier = behind.
 the Scope Check ("Panel cards consistent" gate). Every panel group
 gets a shadow unless the user explicitly requests otherwise.
 
+## Faux glow — soft depth via layered rectangles
+
+Dashboard Studio has no blur, glow, or box-shadow. Simulate soft
+depth by stacking 2-3 rectangles with decreasing opacity and
+increasing size behind a panel group:
+
+```json
+"structure": [
+  { "item": "viz_glow_outer", "position": { "x": 16, "y": 66, "w": 1888, "h": 208 } },
+  { "item": "viz_glow_mid",   "position": { "x": 24, "y": 74, "w": 1872, "h": 192 } },
+  { "item": "viz_card",       "position": { "x": 32, "y": 82, "w": 1856, "h": 176 } },
+  { "item": "viz_kpi_1",      "position": { "x": 48, "y": 90, "w": 440,  "h": 160 } }
+]
+```
+
+| Layer | fillOpacity | fillColor | rx | Purpose |
+|---|---|---|---|---|
+| `viz_glow_outer` | 0.04 | accent color | 16 | Outermost halo |
+| `viz_glow_mid` | 0.08 | accent color | 12 | Middle glow |
+| `viz_card` | 0.6 | surface color | 6 | Card background |
+
+Use the dashboard's accent color for glow layers (e.g. `#8b5cf6` for
+purple glow, `#10b981` for green). The low opacity (0.04–0.08) creates
+a subtle halo effect that adds dimension without being distracting.
+
+**rx values:** use small radii (4–8) for cards. rx=12+ looks bloated
+and cheap. Reference dashboards (Stripe, Linear, Vercel) use rx=4-8.
+
+## Gradient background — simulated depth on canvas
+
+Flat black canvases look AI-generated. Add subtle gradient depth via
+2-3 full-canvas rectangles with low-opacity fills:
+
+```json
+"structure": [
+  { "item": "viz_bg_gradient_1", "position": { "x": 0, "y": 0, "w": 1920, "h": 1080 } },
+  { "item": "viz_bg_gradient_2", "position": { "x": 400, "y": 0, "w": 1120, "h": 600 } },
+  ...panels...
+]
+```
+
+| Layer | fillColor | fillOpacity | Purpose |
+|---|---|---|---|
+| `viz_bg_gradient_1` | `#1e1b4b` (deep indigo) | 0.3 | Full canvas base wash |
+| `viz_bg_gradient_2` | `#7c3aed` (violet) | 0.04 | Top-center highlight |
+
+This creates a subtle color shift across the canvas. Keep opacity
+under 0.1 for highlight layers — anything higher looks like a colored
+rectangle, not a gradient.
+
 ## Default canvas size
 
 **Minimum width: 1920 px.** Authored width below 1920 produces
