@@ -198,6 +198,18 @@ Read the matching `interactivity/<skill>` for any of:
 | Conditional show/hide panels | `ds-int-visibility` (`containerOptions.visibility` only; `isSet()` is Cloud-only) |
 | Multi-tab dashboard | `ds-int-tabs` |
 
+### Before generating custom SVG assets
+
+If any panel in the layout uses `splunk.choropleth.svg` with a custom
+canvas, `splunk.singlevalueicon` with a custom icon, or `splunk.image`
+with a custom logo/diagram that needs to be generated:
+
+- **`ds-svg`** — custom SVG generator. Provides icon exemplars,
+  choropleth canvas templates, and the data-URI encoding rules for
+  inline SVG. Without this skill, you will freestyle SVGs that break
+  Splunk's parsing or look inconsistent with the dashboard's design
+  language.
+
 ### After writing the JSON, before validating
 
 Two passes are required:

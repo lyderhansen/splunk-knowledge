@@ -27,6 +27,7 @@ skills/
   ds-polish                  pipeline · final pre-ship pass (alignment, spacing, consistency)
 
   ds-couture                 design-first companion · Design Context Protocol + archetype + restraint
+  ds-svg                     SVG generator · custom icons, logos, choropleth canvases (floor plans, racks, pipelines)
   ds-spl                     SPL grammar reference · eval / stats / where / rex / tstats / lookups
 
   ds-pick-viz                router · from intent ("trend over time") to viz type

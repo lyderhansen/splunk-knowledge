@@ -202,3 +202,6 @@ is in SVG geometry, not configuration.
   (custom SVG).
 - `ds-viz-singlevalue` — layer KPIs on top of SVG choropleth.
 - `ds-ref-design-principles` — when SVG choropleth is the right answer.
+- `ds-svg` — generate custom SVG canvases (floor plans, rack diagrams,
+  pipeline flows, network topology) with region IDs for choropleth
+  binding.

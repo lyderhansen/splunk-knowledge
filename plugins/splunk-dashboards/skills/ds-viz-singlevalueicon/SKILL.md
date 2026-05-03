@@ -118,3 +118,5 @@ artefacts, prefer `"icon": "default"`.
 - `ds-viz-singlevalue` — sparkline-driven tile.
 - `ds-viz-singlevalueradial` — fill ring instead of icon.
 - `ds-viz-markergauge` / `ds-viz-fillergauge` — banded value displays.
+- `ds-svg` — generate custom SVG icons when the built-in `"default"`
+  icon is insufficient.

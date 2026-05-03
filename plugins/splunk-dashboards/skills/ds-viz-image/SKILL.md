@@ -172,3 +172,4 @@ See `ds-viz-rectangle` PATTERNS for the hit-zone recipe.
 - `ds-viz-rectangle` — coloured shapes + click-targets over images.
 - `ds-viz-ellipse` — circular highlights, status indicators.
 - `ds-ref-design-principles` — when to reach for image vs shape.
+- `ds-svg` — generate custom logos, branded headers, and diagram SVGs.

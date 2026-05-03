@@ -103,6 +103,7 @@ Hand-off (JSON brief) → ds-create / ds-design
 | "What's a calibration reference?" | `ds-ref-references` |
 | "How do I match the brand?" | `ds-ref-brand` |
 | "Light or dark? Both?" | `ds-ref-themes` |
+| "Custom icon / SVG / floor plan?" | `ds-svg` |
 
 ## Designer's eye — critique heuristics
 
