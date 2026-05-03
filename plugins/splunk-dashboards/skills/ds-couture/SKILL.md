@@ -231,9 +231,12 @@ Hand-off is **blocked** if Scope Check fails without waivers. Fix the gap or doc
     overlapping the title text.
 11. `splunk.markdown` MUST NOT contain raw HTML (`<span>`, `<div>`,
     `<style>`). Studio strips/escapes all HTML tags. Use plain markdown
-    syntax only: `**bold**`, `*italic*`, headings, lists. For font
-    control, use `fontFamily`, `fontSize`, `fontColor` in the viz
-    options — NOT inline CSS.
+    syntax only: `**bold**`, `*italic*`, headings, lists.
+12. `fontSize` on ANY viz is an **enum string**, NEVER a number.
+    Valid values: `"extraSmall"`, `"small"`, `"default"`, `"large"`,
+    `"extraLarge"`. Setting `"fontSize": 11` or any integer WILL break
+    the panel. `fontColor` takes a hex string. `fontFamily` takes one
+    of seven allowed values (see `ds-viz-markdown`).
 
 These are the design system defaults. Only an explicit user request
 overrides them. See `ds-ref-layout-grid` MANDATORY sections.
