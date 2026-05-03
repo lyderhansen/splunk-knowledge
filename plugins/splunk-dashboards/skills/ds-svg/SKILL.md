@@ -245,6 +245,24 @@ conventions defined there are mandatory — not advisory. Do not skip this step.
 These files contain encoding rules, viewBox standards, path-naming requirements, and
 theme-safety checks that are not repeated in this file.
 
+## Icon quality gate
+
+**Always copy from exemplars first.** ICON-PATTERNS.md contains ~30
+verified icon SVGs. If the requested icon matches or is close to an
+exemplar, adapt it — do not generate from scratch.
+
+**For concepts without an exemplar:** complex or unfamiliar shapes
+(vehicles, anatomy, gauges, machinery) are hard to get right from a
+text description alone. Before generating, use web search to study how
+the concept looks in established icon libraries (Lucide, Heroicons,
+Feather, Material Symbols). Study the geometry — which shapes, what
+proportions — then build your SVG from that understanding.
+
+**Manual QA required for:** gauges/dials, animals, human figures,
+vehicles, buildings, tools, musical instruments — anything where
+proportions determine recognizability. Generate, preview, and ask the
+user before delivering.
+
 ## See also
 
 - `ds-couture` — design context provider; run before this skill for any aesthetically
