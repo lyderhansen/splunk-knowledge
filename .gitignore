@@ -29,3 +29,4 @@ svgs/
 
 # Agent dashboard scratch
 .splunk-agent/
+docs/*.md
