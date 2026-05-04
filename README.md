@@ -33,8 +33,8 @@ ds-init → ds-data-explore / ds-mock → ds-design → ds-create → ds-validat
 
 **Key skills:**
 
-- **ds-couture** — design-first orchestrator. Runs the Design Context Protocol (audience, tone, brand) before any JSON. Routes to the 10 ds-ref-* design references. Refuses to design in the dark.
-- **ds-svg** — generates custom SVGs for dashboards. Icons for `singlevalueicon`, images for `splunk.image`, data-driven canvases for `splunk.choropleth.svg`. Inherits palette from ds-couture. Includes 8 icon exemplars, 14-category taxonomy, and 5 choropleth templates.
+- **ds-couture** — design-first orchestrator. Runs the Design Context Protocol (audience, tone, brand) before any JSON. Routes to the 10 ds-ref-* design references. Enforces 15 hard rules (layout, shadows, palette, typography, axis labels, dataSource naming). Refuses to design in the dark.
+- **ds-svg** — generates custom SVGs for dashboards. Icons for `singlevalueicon`, images for `splunk.image`, data-driven canvases for `splunk.choropleth.svg`. Inherits palette from ds-couture. Includes 30 icon exemplars, 14-category taxonomy, and 5 choropleth canvas templates.
 - **ds-create** — builds the complete Dashboard Studio JSON from layout + data sources. MUST-LOAD gates ensure per-viz skills are read before writing.
 - **ds-pick-viz** — routes from intent ("trend over time", "top N by category") to the right visualization type.
 
