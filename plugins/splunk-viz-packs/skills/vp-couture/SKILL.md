@@ -185,9 +185,10 @@ Pre-built inventories. Use as starting points, not mandates.
 Before designing anything, research the brand's existing visual
 language. This prevents "generic dark dashboard with blue accents."
 
-**Use `/impeccable teach`** to establish design context. This creates
-an `.impeccable.md` file with audience, brand personality, and
-constraints that inform all downstream decisions.
+**Establish design context first:**
+- Who is the audience? In what context do they use this?
+- What jobs are they trying to get done?
+- How should the interface feel? (3 brand personality words)
 
 **Then research the brand:**
 - Visit the brand's website/app and study colors, typography, spacing,
@@ -200,40 +201,45 @@ constraints that inform all downstream decisions.
 - Identify domain-specific visual metaphors (F1 = tyre compounds,
   Disney = franchise badges, SOC = kill chain stages)
 
-**Use `/impeccable:shape`** to plan the UX of the viz pack. The
-discovery interview will surface constraints and priorities.
+**Plan the UX** before jumping to code. Run a discovery interview to
+surface constraints, priorities, and what makes this pack UNFORGETTABLE.
 
 ### Step 3: Design direction
 
-**Use these impeccable principles for color:**
+**Color principles:**
 - OKLCH over HSL — perceptually uniform steps look equal
 - Tint neutrals toward the brand hue (even 0.005 chroma creates
   subconscious cohesion)
 - 60-30-10 rule: 60% surface, 30% text/borders, 10% accent. Accents
   work BECAUSE they're rare
+- If the palette feels too monochromatic, add strategic color to
+  specific elements — don't spread it everywhere
 
-**Use these impeccable principles for typography:**
+**Typography principles:**
 - Reject reflex fonts (Inter, DM Sans, Space Grotesk — they create
-  monoculture). Find a font that fits the brand as a physical object
+  monoculture across projects). Find a font that fits the brand as a
+  physical object — a museum exhibit caption, a hand-painted shop
+  sign, a fabric label
 - Three concrete brand words → font search (NOT "modern" or "clean")
 - Pair one display font + one mono font. Max 2 fonts total
-
-**Use `/impeccable:colorize`** if the palette feels too monochromatic.
-**Use `/impeccable:typeset`** to evaluate font choices.
+- Cross-check: the right font for "elegant" is NOT necessarily a
+  serif. If your pick lines up with the obvious pattern, look further
 
 ### Step 8: Design critique
 
 After building, review the result before shipping:
 
-**Use `/impeccable:critique`** to score the design across visual
-hierarchy, information architecture, and emotional resonance.
+**Score the design** across visual hierarchy, information architecture,
+emotional resonance, and brand fidelity. Quantify it — don't accept
+"looks fine."
 
-**Use `/impeccable:bolder`** if the design plays it too safe — a
-common failure mode where technically correct vizs lack personality.
+**Is it too safe?** The most common failure mode is technically correct
+vizs that lack personality. If the dashboard could belong to any brand,
+it needs more character. Amplify what makes it distinctive.
 
-**Use `/impeccable:delight`** to add micro-interactions and polish
-that make the viz pack memorable (hover effects, transitions,
-surprise details).
+**Add delight:** hover effects, micro-interactions, transitions, and
+unexpected polish that make the viz pack memorable. Functional is the
+floor, not the ceiling.
 
 ## Design Brief Output Format
 
@@ -277,7 +283,7 @@ Before hand-off, every item must pass. Failure blocks hand-off.
 
 | Check | Rule | Fail = |
 |---|---|---|
-| Brand research | `/impeccable teach` ran, brand visual language studied | Blocked |
+| Brand research | Brand visual language studied, signature element identified | Blocked |
 | Full custom coverage | Every data panel uses a custom viz (L1) | Blocked |
 | Font count | Max 2 custom fonts | Blocked |
 | Palette completeness | Dark AND light mode tokens defined | Blocked |
@@ -323,7 +329,7 @@ a parts bin, not a product.
 
 ### Don't skip brand research
 The most common failure: jumping straight to code without studying
-the brand's actual visual language. Run `/impeccable teach` first.
+the brand's actual visual language. Research the brand first.
 Visit the brand's website. Extract real colors. Note their typography.
 Identify the signature element. Without this, the viz pack will look
 like "generic dark + brand color accent" — which is exactly what the
