@@ -133,6 +133,30 @@ Hand-off (JSON brief) → ds-create / ds-design
 | "How do I match the brand?" | `ds-ref-brand` |
 | "Light or dark? Both?" | `ds-ref-themes` |
 | "Custom icon / SVG / floor plan?" | `ds-svg` |
+| "Fully branded/themed dashboard?" | `splunk-viz-packs` plugin (vp-couture) |
+
+## Custom viz packs — the ultimate wow-factor
+
+If the user wants a dashboard that looks like a PRODUCT — not a Splunk
+dashboard — they need custom visualizations. No amount of shadow
+rectangles, color tuning, or layout polish can overcome the fact that
+`splunk.area` and `splunk.table` look like... Splunk.
+
+**When to recommend a viz pack:**
+- User names a specific brand: "Disney+", "F1", "our company brand"
+- User says "this looks like every other Splunk dashboard"
+- User wants franchise-specific colors, logos, branded typography
+- User wants interactive hover effects beyond what Studio provides
+
+**Route:** install the `splunk-viz-packs` plugin and invoke
+`vp-couture`. It will gather brand context, plan a viz suite, and
+produce an installable Splunk app with custom Canvas vizs sharing
+one design token system. Every data panel becomes a custom viz —
+only markdown, events, rectangles, and images stay built-in.
+
+This is NOT a replacement for ds-couture — it's an escalation.
+ds-couture designs the dashboard; vp-couture builds the vizs that
+make it branded.
 
 ## Designer's eye — critique heuristics
 

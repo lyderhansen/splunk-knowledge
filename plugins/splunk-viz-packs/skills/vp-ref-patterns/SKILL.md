@@ -412,3 +412,275 @@ function parseNum(val, fallback) {
     return isNaN(n) ? fallback : n;
 }
 ```
+
+## Hover tooltip system
+
+Every viz MUST show a tooltip on hover. Canvas has no built-in
+tooltip — use a DOM element positioned at the cursor.
+
+### Tooltip setup (in initialize)
+
+```javascript
+initialize: function() {
+    SplunkVisualizationBase.prototype.initialize.apply(this, arguments);
+    // ... canvas creation ...
+
+    this._tooltip = document.createElement('div');
+    this._tooltip.style.cssText =
+        'position:absolute;display:none;padding:6px 12px;' +
+        'background:rgba(0,0,0,0.9);color:#E5EAF2;font-size:12px;' +
+        'border-radius:6px;pointer-events:none;white-space:nowrap;' +
+        'z-index:100;font-family:"Inter",sans-serif;' +
+        'border:1px solid rgba(255,255,255,0.12);' +
+        'box-shadow:0 4px 12px rgba(0,0,0,0.4);';
+    this.el.style.position = 'relative';
+    this.el.appendChild(this._tooltip);
+
+    this._hitRegions = [];
+    var self = this;
+    this.canvas.addEventListener('mousemove', function(e) {
+        self._onMouseMove(e);
+    });
+    this.canvas.addEventListener('mouseleave', function() {
+        self._tooltip.style.display = 'none';
+        self.canvas.style.cursor = 'default';
+        if (self._hoverIdx !== -1) {
+            self._hoverIdx = -1;
+            self._render(self._lastData, self._lastConfig);
+        }
+    });
+    this._hoverIdx = -1;
+},
+```
+
+### Mouse move handler
+
+```javascript
+_onMouseMove: function(e) {
+    var rect = this.canvas.getBoundingClientRect();
+    var mx = e.clientX - rect.left;
+    var my = e.clientY - rect.top;
+    var hit = this._hitTest(mx, my);
+
+    if (hit !== null) {
+        var region = this._hitRegions[hit];
+        this._tooltip.innerHTML = region.tip;
+        this._tooltip.style.display = 'block';
+
+        // Position tooltip — flip if near edge
+        var tx = mx + 14;
+        var ty = my - 10;
+        if (tx + 180 > this.el.offsetWidth) tx = mx - 180;
+        if (ty < 0) ty = my + 20;
+        this._tooltip.style.left = tx + 'px';
+        this._tooltip.style.top = ty + 'px';
+        this.canvas.style.cursor = 'pointer';
+
+        if (this._hoverIdx !== hit) {
+            this._hoverIdx = hit;
+            this._render(this._lastData, this._lastConfig);
+        }
+    } else {
+        this._tooltip.style.display = 'none';
+        this.canvas.style.cursor = 'default';
+        if (this._hoverIdx !== -1) {
+            this._hoverIdx = -1;
+            this._render(this._lastData, this._lastConfig);
+        }
+    }
+},
+```
+
+### Hit-test patterns per viz type
+
+**Rectangular regions (table rows, KPI tiles, bar segments):**
+```javascript
+_hitTest: function(mx, my) {
+    for (var i = 0; i < this._hitRegions.length; i++) {
+        var r = this._hitRegions[i];
+        if (mx >= r.x && mx <= r.x + r.w &&
+            my >= r.y && my <= r.y + r.h) {
+            return i;
+        }
+    }
+    return null;
+},
+```
+
+Register during _render:
+```javascript
+this._hitRegions = [];
+// For each row/bar/segment:
+this._hitRegions.push({
+    x: rx, y: ry, w: rw, h: rh,
+    tip: '<b>' + label + '</b>: ' + value
+});
+```
+
+**Donut/pie segments (angle-based):**
+```javascript
+_hitTest: function(mx, my) {
+    var dx = mx - this._cx;
+    var dy = my - this._cy;
+    var dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < this._innerR || dist > this._outerR) return null;
+    var angle = Math.atan2(dy, dx);
+    if (angle < -Math.PI / 2) angle += Math.PI * 2;
+    for (var i = 0; i < this._hitRegions.length; i++) {
+        var r = this._hitRegions[i];
+        if (angle >= r.startAngle && angle < r.endAngle) return i;
+    }
+    return null;
+},
+```
+
+**Line/area chart (x-position to nearest data point):**
+```javascript
+_hitTest: function(mx, my) {
+    if (mx < this._chartLeft || mx > this._chartRight) return null;
+    if (my < this._chartTop || my > this._chartBottom) return null;
+    var pct = (mx - this._chartLeft) / (this._chartRight - this._chartLeft);
+    var idx = Math.round(pct * (this._numPoints - 1));
+    idx = Math.max(0, Math.min(this._numPoints - 1, idx));
+    return idx;
+},
+```
+
+### Hover visual effects
+
+Apply during `_render` when `this._hoverIdx !== -1`:
+
+**Table row highlight:**
+```javascript
+if (ri === self._hoverIdx) {
+    ctx.fillStyle = theme.withAlpha(t.accent, 0.12);
+    ctx.fillRect(padX, ry, w - padX * 2, rowH);
+}
+```
+
+**Chart crosshair + data dots:**
+```javascript
+if (self._hoverIdx >= 0 && self._hoverIdx < numPoints) {
+    var hx = padL + (self._hoverIdx / (numPoints - 1)) * chartW;
+    // Vertical crosshair
+    ctx.strokeStyle = theme.withAlpha(t.text, 0.3);
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(hx, padT);
+    ctx.lineTo(hx, padT + chartH);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    // Data point dots
+    for (var s = 0; s < numSeries; s++) {
+        var hy = padT + chartH - ((allSeries[s][self._hoverIdx] - niceMin) / niceRange) * chartH;
+        ctx.beginPath();
+        ctx.arc(hx, hy, 5, 0, Math.PI * 2);
+        ctx.fillStyle = colors[s % colors.length];
+        ctx.fill();
+        ctx.strokeStyle = t.panel;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+}
+```
+
+**Donut segment highlight:**
+```javascript
+if (j === self._hoverIdx) {
+    ctx.save();
+    // Slightly larger radius on hover
+    ctx.beginPath();
+    ctx.arc(cx, cy, outerR + 4, angle, angle + slice);
+    ctx.arc(cx, cy, innerR - 2, angle + slice, angle, true);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.restore();
+}
+```
+
+### Tooltip HTML formatting
+
+Use `innerHTML` for rich tooltips:
+
+```javascript
+this._hitRegions.push({
+    tip: '<b style="color:' + color + '">' + name + '</b><br>' +
+         value + ' (' + pct.toFixed(1) + '%)'
+});
+```
+
+### Cleanup in destroy
+
+```javascript
+destroy: function() {
+    if (this._tooltip && this._tooltip.parentNode) {
+        this._tooltip.parentNode.removeChild(this._tooltip);
+    }
+    SplunkVisualizationBase.prototype.destroy.apply(this, arguments);
+}
+```
+
+## Category/franchise badge colors
+
+Reusable pattern for assigning brand-specific colors to data categories:
+
+```javascript
+var FRANCHISE_COLORS = {
+    'marvel': '#E23636',
+    'star wars': '#FFE81F',
+    'pixar': '#00B3E6',
+    'disney': '#0063E5',
+    'national geographic': '#FFCC00',
+    'hulu': '#1CE783',
+    'espn': '#FF4438',
+    'critical': '#D41F1F',
+    'warning': '#CBA700',
+    'ok': '#118832'
+};
+
+function categoryColor(name, fallback) {
+    return FRANCHISE_COLORS[(name || '').toLowerCase()] || fallback || '#6B7280';
+}
+```
+
+Draw as pill badge:
+```javascript
+var badgeColor = categoryColor(cellVal);
+var badgeW = ctx.measureText(cellVal).width + 20;
+var badgeH = rowH * 0.6;
+var badgeY = cellY - badgeH / 2;
+roundRect(ctx, cx - 4, badgeY, badgeW, badgeH, badgeH / 2);
+ctx.fillStyle = withAlpha(badgeColor, 0.2);
+ctx.fill();
+ctx.strokeStyle = withAlpha(badgeColor, 0.6);
+ctx.lineWidth = 1;
+ctx.stroke();
+ctx.fillStyle = badgeColor;
+ctx.fillText(cellVal, cx + 6, cellY);
+```
+
+## Number formatting with decimals control
+
+The `fmtNum` compact mode rounds small values aggressively (7.27 → 7).
+Always pair it with a `decimals` option:
+
+```javascript
+function formatValue(raw, decimals, compact) {
+    if (raw === null || raw === undefined || isNaN(raw)) return '—';
+    if (decimals >= 0) return raw.toFixed(decimals);
+    if (compact) return fmtNum(raw, { compact: true });
+    return String(raw);
+}
+```
+
+| Value | decimals=-1 (auto) | decimals=0 | decimals=1 | decimals=2 |
+|---|---|---|---|---|
+| 164200000 | 164.2M | 164200000 | 164200000.0 | 164200000.00 |
+| 5800000000 | 5.8B | 5800000000 | 5800000000.0 | ... |
+| 7.27 | 7 (WRONG!) | 7 | 7.3 | 7.27 |
+| 3.8 | 4 (WRONG!) | 4 | 3.8 | 3.80 |
+| 87.4 | 87 | 87 | 87.4 | 87.40 |
+
+**Rule:** always expose `decimals` in the formatter for KPI vizs.
