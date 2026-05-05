@@ -1,6 +1,6 @@
 ---
 name: ds-ref-references
-description: Named best-in-class dashboard examples for mental calibration — NYTimes pandemic graphics, Stripe Sigma analytics, Datadog Service Map, Linear status pages, FT visual journalism. Per-reference: archetype it exemplifies, what makes it work, what would not transfer to Splunk's constraints. Plus anti-references — named examples to refuse (default Grafana grids, 2010-era PowerPoint exec slides, neon SOC walls). Use when ds-couture needs a reference point ("make it feel like X"), or when calibrating taste.
+description: Named best-in-class dashboard examples for mental calibration — NYTimes pandemic graphics, Stripe Sigma analytics, Splunk ITSI service map, Linear status pages, FT visual journalism. Per-reference: archetype it exemplifies, what makes it work, what would not transfer to Splunk's constraints. Plus anti-references — named examples to refuse (default uniform grids, 2010-era PowerPoint exec slides, neon SOC walls). Use when ds-couture needs a reference point ("make it feel like X"), or when calibrating taste.
 ---
 
 # ds-ref-references — Best-in-class examples and anti-references
@@ -52,14 +52,14 @@ When the user says "make it look like X" or "I want this to feel like
    typographic rhythm, density level, or motion feel. Without that, "like
    X" is a vibe — not a brief.
 3. **Check the anti-reference list before generating.** If the request
-   sounds like a default Grafana grid, a 2010-era PowerPoint slide, or a
+   sounds like a default uniform grid, a 2010-era PowerPoint slide, or a
    neon SOC wall, refuse and propose an archetype-driven alternative.
 4. **Use the "like X" translation guide** to compress a named reference
    into concrete decisions: theme, palette, typography, spacing,
    density, criticality.
 
 The reference set is curated, not exhaustive. Refresh annually as named
-brands evolve — Stripe redesigns, Linear adds chrome, Datadog ships a
+brands evolve — Stripe redesigns, Linear adds chrome, products ship
 new module. A reference frozen in 2026 will mislead by 2028.
 
 ## Best-in-class references
@@ -91,7 +91,7 @@ new module. A reference frozen in 2026 will mislead by 2028.
   font; Studio only allows fontFamily on splunk.markdown); subtle
   hover motion on KPI cards; in-product query builder UI
 
-### Datadog Service Map
+### Splunk ITSI service map
 
 - **Archetype:** operational monitoring
 - **What works:** node-link graph as primary signal; status color on
@@ -188,14 +188,14 @@ new module. A reference frozen in 2026 will mislead by 2028.
 
 ## Anti-references
 
-### "Default Grafana grid"
+### "Default uniform grid"
 
 - 3×3 panels of identical size, default colors, no hierarchy, every
   panel a line chart, legend in the same place on every panel.
 - **Refusal rationale:** this is what AI generates by default and what
-  beginner Grafana users ship before learning hierarchy. Refuse and
-  propose archetype-driven layout — one hero zone, supporting context,
-  detail at the bottom.
+  beginners ship before learning hierarchy. Refuse and propose
+  archetype-driven layout — one hero zone, supporting context, detail
+  at the bottom.
 
 ### "2010-era PowerPoint exec slide"
 
@@ -258,7 +258,7 @@ When user says "make it like Stripe":
 - **Density:** low (3-5 panels per zone, big hero number)
 - **Criticality:** low (their analytics are deliberate, not pager-bound)
 
-When user says "make it like Datadog":
+When user says "make it like Splunk ITSI":
 
 - **Theme:** dark
 - **Palette:** status semantic (red/orange/yellow/green) + categorical

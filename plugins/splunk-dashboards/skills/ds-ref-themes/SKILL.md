@@ -115,7 +115,7 @@ When does a dashboard start dark vs light vs both?
 - **Branded dashboard following corporate identity → derive theme from
   brand luminance balance.** If the brand book is light-dominant
   (Stripe, Linear, Apple-style), start light. If brand is dark-dominant
-  (Datadog, GitHub-dark, NewRelic), start dark. If brand is balanced
+  (Splunk ES, GitHub-dark), start dark. If brand is balanced
   (Splunk, IBM), default to dark for ops content and light for executive
   content.
 

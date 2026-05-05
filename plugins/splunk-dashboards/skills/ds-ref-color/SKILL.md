@@ -576,13 +576,13 @@ Curated palettes from named brands whose look transfers cleanly to dashboard con
 | **Stripe** | H≈275 (indigo) | Refined / professional | Tinted neutrals, single accent, generous whitespace, clean type hierarchy |
 | **Linear** | H≈290 (violet) | Editorial-minimal | Dotted dividers, tight type, sparse accents, dark-mode default |
 | **Cloudflare** | H≈50 (orange) | Bold industrial | High-chroma orange + dark grey, geometric maps, status semantic strict |
-| **Datadog** | H≈300 + H≈210 (purple+cyan) | Technical / data-dense | Cool palette, strict status-semantic separation, monospace as accent |
+| **Splunk ES** | H≈300 + H≈210 (purple+cyan) | Technical / data-dense | Cool palette, strict status-semantic separation, monospace as accent |
 | **Vercel** | mono (black/white) | Brutalist minimal | Type and space carry everything, no color decoration, generous negative space |
 | **Notion** | warm cream + black | Editorial classic-light | Off-white canvas, jet-black text, single warm accent, generous line-height |
 
 **How to use:**
 
-1. Pick the brand whose flavor matches your archetype + persona (SOC wall → Cloudflare's industrial orange; exec light → Stripe's refined indigo; analytical → Datadog's data-dense).
+1. Pick the brand whose flavor matches your archetype + persona (SOC wall → Cloudflare's industrial orange; exec light → Stripe's refined indigo; analytical → Splunk ES's data-dense).
 2. Extract the primary hue in OKLCH (oklch.com or browser devtools).
 3. Build the project palette around THAT hue using OKLCH math (tinted neutrals at 0.005–0.01 chroma, status palette unchanged, series-categorical lightly hue-shifted toward the brand).
 4. The palette should feel like the brand without copying hex values directly.
