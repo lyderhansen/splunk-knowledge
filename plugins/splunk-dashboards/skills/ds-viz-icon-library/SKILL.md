@@ -34,6 +34,7 @@ Complete panel JSON for a security icon tile with background, shadow, and label:
   "type": "icon_library.icon_library",
   "dataSources": { "primary": "ds_stub" },
   "options": {
+    "backgroundColor": "transparent",
     "icon_library.icon_library.iconName": "shield",
     "icon_library.icon_library.iconColor": "#06B6D4",
     "icon_library.icon_library.iconSize": "0",
@@ -143,6 +144,7 @@ to every key.
 
 | Do | Don't |
 |---|---|
+| **ALWAYS** set `backgroundColor: "transparent"` on the viz (not in the namespace options — on the viz itself) | Default bg shows a dark box behind the icon that clashes with shadow cards |
 | Use `customIcon` for any Material Symbols name not in the dropdown | Guess icon names — browse fonts.google.com/icons and copy the exact name |
 | Set `iconSize: "0"` for auto-scaling icons that adapt to panel size | Use fixed pixel sizes that break when the panel is resized |
 | Add `bgShape: "rounded_rect"` for KPI-style icon card tiles | Leave `bgShape: "none"` when the icon will float invisibly on a matching background |

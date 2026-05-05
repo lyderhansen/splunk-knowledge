@@ -282,6 +282,16 @@ Hand-off is **blocked** if Scope Check fails without waivers. Fix the gap or doc
     Tall panel (h > w) → `"orientation": "vertical"` (default).
     Wrong orientation = gauge fills perpendicular to the panel,
     looking broken.
+16. Markdown **section headers** use `fontSize: "default"` or
+    `"large"` — NOT `"extraSmall"`. Reserve `"extraSmall"` for subtle
+    labels ABOVE KPI values. Section headers like "Alert Status" or
+    "Threat Trends" must be readable at a glance. Position section
+    header markdowns with 15-20px vertical gap above the panel group
+    they describe — not flush against the top.
+17. `icon_library.icon_library` panels MUST set
+    `"backgroundColor": "transparent"` on the viz level (outside the
+    namespace options). Without it, icons render with a dark box
+    background that clashes with shadow cards.
 
 These are the design system defaults. Only an explicit user request
 overrides them. See `ds-ref-layout-grid` MANDATORY sections.
