@@ -223,6 +223,8 @@ Worked examples of what each per-viz skill catches:
 | `splunk.timeline` | `ds-viz-timeline` | `category` must be DOS string, not bare field name. |
 | `splunk.table` with sparklines | `ds-viz-table` + SPARKLINE-DATA.md | `eval x="..." \| makemv` only types row 1 — use `\| stats sparkline()`. |
 | `splunk.markdown` | `ds-viz-markdown` | GFM pipe-tables NOT supported; only 7 fontFamily values allowed. |
+| `icon_library.icon_library` | `ds-viz-icon-library` | All options need `icon_library.icon_library.` prefix; needs ds.test stub dataSource. |
+| `infographic_shapes.infographic_shapes` | `ds-viz-infographic-shapes` | All options need `infographic_shapes.infographic_shapes.` prefix; boolean values must be strings `"true"`/`"false"`. |
 
 ### Before adding interactivity
 

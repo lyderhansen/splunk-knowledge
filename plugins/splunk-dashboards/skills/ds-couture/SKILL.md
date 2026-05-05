@@ -23,6 +23,35 @@ Before you touch JSON: stop. Read the user's problem. Decide the audience. Decid
 
 Do NOT invoke for pure SPL tuning, pure data-modeling, or pure alert configuration.
 
+## Enhanced viz apps — check early
+
+Before starting the Design Context Q&A, check if the user has these
+optional Splunk apps installed. They dramatically improve visual
+quality — real gradients, glow, shadows, 2500+ icons.
+
+**Ask the user:**
+> "Do you have `icon_library` and `infographic_shapes` installed on
+> your Splunk instance? These apps add professional icons and shape
+> effects (gradient, glow, shadow) to dashboards. If not installed,
+> I can still build the dashboard using native Splunk viz — you can
+> install the apps later and I'll tell you how."
+
+If the user has Splunk MCP connected, verify programmatically via
+`splunk_list_apps` and check for `icon_library` and
+`infographic_shapes` in the response.
+
+**Three outcomes:**
+1. **Both installed** → use `icon_library.icon_library` for icons and
+   `infographic_shapes.infographic_shapes` for shapes/effects. Load
+   `ds-viz-icon-library` and `ds-viz-infographic-shapes` skills.
+2. **Not installed, build anyway** → use the custom viz types in JSON.
+   The dashboard will work once the user installs the apps. Note which
+   apps are needed in the design brief.
+3. **Not installed, use native only** → fall back to
+   `splunk.rectangle`, `splunk.ellipse`, `splunk.choropleth.svg`
+   (inline SVG hack), and faux glow via stacked rects. Load
+   `ds-ref-layout-grid` for fallback patterns.
+
 ## Fast path — pre-filled inputs template
 
 > **Before starting the Q&A flow, ASK the user:** "Have you filled out
