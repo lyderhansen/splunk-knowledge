@@ -25,6 +25,16 @@
       "author": {
         "name": "Lyder Hansen"
       }
+    },
+    {
+      "name": "splunk-viz-packs",
+      "description": "Build fully themed Splunk custom visualization apps with shared design tokens, Canvas 2D rendering, and AppInspect-ready packaging. 5 skills covering orchestration, scaffolding, per-viz Canvas source, and 20 hard rules from shipping real apps.",
+      "source": "./plugins/splunk-viz-packs",
+      "category": "productivity",
+      "homepage": "https://github.com/lyderhansen/splunk-knowledge",
+      "author": {
+        "name": "Lyder Hansen"
+      }
     }
   ]
 }

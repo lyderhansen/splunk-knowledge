@@ -1,17 +1,18 @@
 # splunk-knowledge
 
-A Claude Code plugin marketplace for Splunk. Two plugins that cover dashboards and SPL — from idea to deployed app.
+A Claude Code plugin marketplace for Splunk. Three plugins that cover dashboards, SPL, and custom visualizations — from idea to deployed app.
 
 ## Install
 
 ```
 /install-plugin lyderhansen/splunk-knowledge/plugins/splunk-dashboards
 /install-plugin lyderhansen/splunk-knowledge/plugins/splunk-spl
+/install-plugin lyderhansen/splunk-knowledge/plugins/splunk-viz-packs
 ```
 
 ## Plugins
 
-### splunk-dashboards v2.9.1
+### splunk-dashboards v2.9.2
 
 End-to-end toolkit for Splunk Dashboard Studio (v2). 61 skills across six families.
 
@@ -34,7 +35,7 @@ ds-init → ds-data-explore / ds-mock → ds-design → ds-create → ds-validat
 
 **Key skills:**
 
-- **ds-couture** — design-first orchestrator. Runs the Design Context Protocol (audience, tone, brand) before any JSON. Checks for enhanced viz apps (`icon_library`, `infographic_shapes`). Enforces 15 hard rules (layout, shadows, palette, typography, axis labels, dataSource naming, fontSize enum, no HTML in markdown, gradient backgrounds). Refuses to design in the dark.
+- **ds-couture** — design-first orchestrator. Runs the Design Context Protocol (audience, tone, brand) before any JSON. Checks for enhanced viz apps. Enforces 17 hard rules + 3 composition principles (scale contrast, punch color, viz rhythm). Refuses to design in the dark.
 - **ds-viz-icon-library** — 2500+ Material Symbols icons via the `icon_library` Splunk app. Configurable color, size, background shape, shadow, glow, labels, and data-driven styling. Optional dependency — requires app installation.
 - **ds-viz-infographic-shapes** — 37 PowerPoint-style shapes with real gradient fills, drop shadow, glow, reflection, animations, and 25+ embedded fonts via the `infographic_shapes` Splunk app. Optional dependency.
 - **ds-svg** — generates custom SVGs for choropleth canvases (`splunk.choropleth.svg`). Includes 30 icon exemplars, 14-category taxonomy, and 5 choropleth canvas templates (rack, floor plan, pipeline, network, office).
@@ -46,6 +47,25 @@ ds-init → ds-data-explore / ds-mock → ds-design → ds-create → ds-validat
 **Optional Splunk apps for enhanced visuals:**
 - `icon_library` — 2500+ Material Symbols icons (embedded font, air-gap safe)
 - `infographic_shapes` — shapes with gradient, glow, shadow, animation (Canvas 2D)
+
+### splunk-viz-packs v1.0.0
+
+Build fully themed Splunk custom visualization apps — branded viz suites with shared design tokens, Canvas 2D rendering, and AppInspect-ready packaging. Takes brand context (palette, fonts, tone) and produces installable Splunk apps.
+
+| Family | Count | What it covers |
+|---|---|---|
+| Orchestration | 1 | `vp-couture` — brand context → viz suite plan |
+| Build | 2 | `vp-create` (scaffold + package), `vp-viz` (per-viz Canvas source) |
+| References | 2 | `vp-ref-gotchas` (20 hard rules from shipping real apps), `vp-ref-patterns` (Canvas 2D recipes) |
+
+**Key capabilities:**
+- Multi-viz themed apps (like ACME's 16 vizs sharing one design system)
+- Shared `theme.js` design tokens (dark/light mode, brand palette, font stacks)
+- Domain templates: F1, SOC, retail, healthcare, infrastructure
+- Every gotcha from shipping `icon_library` and `infographic_shapes` codified as hard rules
+- Output: tarball ready for `splunk install app`
+
+**Requires:** `splunk-custom-visualizations` repo for build infrastructure.
 
 ### splunk-spl v1.0.0
 
@@ -77,7 +97,7 @@ All content sourced from Splunk Enterprise Search Reference 10.2.0.
 ```
 splunk-knowledge/
 ├── plugins/
-│   ├── splunk-dashboards/          61 skills, v2.9.1
+│   ├── splunk-dashboards/          61 skills, v2.9.2
 │   │   ├── skills/
 │   │   │   ├── ds-init .. ds-polish    pipeline (11)
 │   │   │   ├── ds-viz-*                visualizations (28, incl. icon-library + infographic-shapes)
@@ -90,6 +110,13 @@ splunk-knowledge/
 │   └── splunk-spl/                 149 commands + guide, v1.0.0
 │       ├── skills/spl-gotchas/         eagerly-loaded traps + index
 │       └── reference/                  per-command markdown files
+│   └── splunk-viz-packs/           5 skills, v1.0.0
+│       └── skills/
+│           ├── vp-couture/             brand → viz suite orchestrator
+│           ├── vp-create/              scaffold + theme.js + package
+│           ├── vp-viz/                 per-viz Canvas source builder
+│           ├── vp-ref-gotchas/         20 hard rules (FATAL/BROKEN/REJECTED)
+│           └── vp-ref-patterns/        Canvas 2D recipes + effects
 ├── .claude-plugin/marketplace.json
 ├── CLAUDE.md
 └── README.md
