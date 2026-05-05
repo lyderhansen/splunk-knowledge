@@ -239,29 +239,29 @@ where stopping to explore concepts would interrupt the dashboard build unnecessa
 Before generating any SVG for this skill, read `SVG-CONVENTIONS.md` in this directory. All
 conventions defined there are mandatory — not advisory. Do not skip this step.
 
-- For icon mode: also read `ICON-PATTERNS.md` before generating.
 - For choropleth canvas mode: also read `CANVAS-PATTERNS.md` before generating.
+- For icon mode: see the decision tree below.
 
 These files contain encoding rules, viewBox standards, path-naming requirements, and
 theme-safety checks that are not repeated in this file.
 
-## Icon quality gate
+## Icon decision tree
 
-**Always copy from exemplars first.** ICON-PATTERNS.md contains ~30
-verified icon SVGs. If the requested icon matches or is close to an
-exemplar, adapt it — do not generate from scratch.
+**If the `icon_library` Splunk app is installed** (check via
+`splunk_list_apps` or ask the user):
+→ Use `icon_library.icon_library` for icons. It has 2500+ Material
+  Symbols with glow, shadow, backgrounds, and data-driven color.
+→ Do NOT read `ICON-PATTERNS.md` — it wastes ~800 lines of context.
+→ Read `ds-viz-icon-library` instead.
+→ Only use ds-svg for custom icons that don't exist in Material
+  Symbols (rare) or for choropleth canvases.
 
-**For concepts without an exemplar:** complex or unfamiliar shapes
-(vehicles, anatomy, gauges, machinery) are hard to get right from a
-text description alone. Before generating, use web search to study how
-the concept looks in established icon libraries (Lucide, Heroicons,
-Feather, Material Symbols). Study the geometry — which shapes, what
-proportions — then build your SVG from that understanding.
-
-**Manual QA required for:** gauges/dials, animals, human figures,
-vehicles, buildings, tools, musical instruments — anything where
-proportions determine recognizability. Generate, preview, and ask the
-user before delivering.
+**If `icon_library` is NOT installed:**
+→ Read `ICON-PATTERNS.md` for the 30 exemplar SVGs.
+→ Copy and adapt from exemplars — do not generate from scratch.
+→ For concepts without an exemplar, use web search to study the shape
+  in Lucide/Heroicons/Feather before generating.
+→ Manual QA required for complex shapes (gauges, vehicles, anatomy).
 
 ## See also
 
