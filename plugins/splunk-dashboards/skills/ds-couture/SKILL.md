@@ -239,8 +239,13 @@ Hand-off is **blocked** if Scope Check fails without waivers. Fix the gap or doc
 4. `xAxisTitleVisibility` MUST be `"hide"` on all timecharts. The
    `_time` label adds no information. The property is NOT
    `showXAxisTitle` — that does not exist in Studio.
-5. Time fields in tables MUST be formatted cleanly:
-   `| eval _time=strftime(_time, "%Y-%m-%d %H:%M")` — no timezone suffix.
+5. Time fields — formatting depends on viz type:
+   **Tables only:** `| eval _time=strftime(_time, "%Y-%m-%d %H:%M")` — no
+   timezone suffix.
+   **Charts (area, line, column) — NEVER format `_time`.** These viz
+   types require `_time` as epoch. `strftime` converts it to a string
+   which kills the x-axis — the chart renders empty. Splunk auto-formats
+   epoch time on the x-axis.
 
 **Wow-factor defaults (apply unless the archetype demands restraint):**
 

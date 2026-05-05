@@ -138,9 +138,13 @@ These defaults are non-negotiable unless the user explicitly overrides:
    `splunk.line`, `splunk.column` viz. The `_time` label adds zero
    information. NOT `showXAxisTitle` — that property does not exist.
 
-2. **Time fields in tables** must be formatted:
-   `| eval _time=strftime(_time, "%Y-%m-%d %H:%M")` — drop the
-   timezone suffix (+00:00) and milliseconds.
+2. **Time fields — tables vs charts:**
+   **Tables:** `| eval _time=strftime(_time, "%Y-%m-%d %H:%M")` — drop
+   the timezone suffix (+00:00) and milliseconds.
+   **Charts (area, line, column): NEVER `strftime` on `_time`.** Chart
+   viz types need `_time` as epoch. Converting to string kills the
+   x-axis — the chart renders empty with no data points. Splunk
+   auto-formats epoch time on chart axes.
 
 3. **Canvas background** must include at least one low-opacity
    gradient rectangle. See `ds-ref-layout-grid` "Gradient background."
@@ -150,6 +154,12 @@ These defaults are non-negotiable unless the user explicitly overrides:
 5. **Choropleth context** must use a flat array with key name
    `areaColorsEditorConfig`, NOT a `{type: "range", ranges: [...]}`
    wrapper. The wrapper causes "d is not iterable" in Studio.
+
+6. **`icon_library` panels** MUST set `"backgroundColor": "transparent"`
+   on the viz level (outside the namespace options). This is the viz-level
+   `backgroundColor`, not `icon_library.icon_library.bgColor`. Without it,
+   icons render with a dark box background that clashes with shadow cards
+   and canvas. Apply by default on EVERY `icon_library.icon_library` panel.
 
 ## Splunk Enterprise and Cloud compatibility
 

@@ -101,6 +101,15 @@ per-viz / interactivity / reference skill that owns the full fix.
 | `must NOT have additional properties` on defaults block      | `defaults.visualizations.global.options` is invalid. Only `dataSources.global` is supported. Leave `defaults: {}` or use only `dataSources.global`. | `ds-couture` rule 13, `ds-int-defaults` |
 
 
+## Time axis traps
+
+
+| Symptom                                                       | Likely cause                                                                                             | Fix lives in                                              |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| Area / line / column chart renders empty or shows no data points | `_time` converted to string via `eval _time=strftime(...)`. Chart viz types require `_time` as epoch — string kills the x-axis. | `ds-couture` rule 5 clarification, `ds-create` hard rules |
+| X-axis shows raw epoch numbers instead of formatted dates     | Normal — Splunk auto-formats epoch `_time` on the x-axis. Do NOT manually format `_time` for charts.    | `ds-viz-area`, `ds-viz-line`, `ds-viz-column`             |
+
+
 ## Layout traps
 
 
