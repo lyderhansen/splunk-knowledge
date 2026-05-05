@@ -328,6 +328,99 @@ The Design Context Protocol asks for "tone" as one of the 5 required inputs. Ton
 
 These are starting points, not commands — confirm the flavor with the user before locking it.
 
+## Composition principles — making dashboards pop
+
+Three graphic-design principles that separate "functional" from "wow."
+Apply these AFTER selecting archetype and flavor but BEFORE placing
+panels. They are non-negotiable unless the archetype explicitly
+demands uniformity (rare — only status-page with identical tiles).
+
+### 1. Scale contrast (hero vs. supporting)
+
+**Rule:** One element dominates. Everything else is smaller.
+
+A dashboard where every panel is the same size has no focal point —
+the eye wanders and retention drops. Pick ONE hero element per zone
+(the biggest number, the most important trend, the primary map) and
+give it 1.5–2× the area of supporting panels.
+
+| Pattern | Hero | Supporting | Ratio |
+|---|---|---|---|
+| KPI strip | One large singlevalue (w=480) | Three smaller (w=280 each) | 1.7× |
+| Chart zone | Primary area chart (w=1200, h=420) | Side bar chart (w=680, h=420) | 1.8× area |
+| Table zone | Full-width table (h=360) | Compact summary strip (h=120) | 3× height |
+
+**60/40 attention rule:** 60% of visual weight to the hero, 40% to
+context. If you squint at the dashboard and everything looks the same
+size, hierarchy is broken.
+
+**Anti-pattern:** four equal-width columns of singlevalues. Fix: make
+the most critical KPI wider, or pull it out as a standalone hero above
+the row.
+
+### 2. Color discipline — one punch color
+
+**Rule:** The fewer the colors, the harder the accent hits.
+
+Most AI-generated dashboards use 4-6 colors distributed uniformly.
+This creates visual noise where nothing stands out. Instead:
+
+| Layer | Role | Color treatment |
+|---|---|---|
+| Canvas + cards | Background | Near-black or dark navy. Single hue. |
+| Supporting data | Context | Slate/gray tones only (`#64748B`, `#94A3B8`) |
+| Primary metric | Focal point | ONE saturated accent (`#06B6D4`, `#8B5CF6`, `#F59E0B`) |
+| Status semantics | Alerts only | Green/yellow/red — reserved for threshold meaning |
+
+**The punch color appears in max 3 places:** the hero KPI value, the
+primary chart series, and the faux glow. Everywhere else is neutral.
+
+**Faux glow amplifies punch:** Use the same accent at 0.04-0.08
+opacity behind the hero panel group. This makes the accent feel like
+it radiates from the most important element.
+
+**Anti-pattern:** rainbow `seriesColors` on a 5-series chart with no
+hierarchy. Fix: one accent series in color, rest in gray with 0.4
+opacity via `seriesOpacities`.
+
+### 3. Viz-type rhythm — vary the density
+
+**Rule:** Repeating the same viz type creates monotony. Vary density
+across zones like a newspaper front page.
+
+A well-composed dashboard has three density layers:
+
+| Zone | Density | Viz types | Character |
+|---|---|---|---|
+| **Header/KPI** | Sparse — big numbers, lots of air | `singlevalue`, `singlevalueicon`, `fillergauge` | Scannable in 2 seconds |
+| **Body/charts** | Medium — focused data story | `area`, `column`, `line`, `choropleth` | 5-15 second engagement |
+| **Detail/table** | Dense — reference data | `table` with heatmap rows, `events` | 30+ second drill-down |
+
+**Rhythm principle:** if you have 6 panels vertically, avoid
+six-of-the-same. Ideal sequence: `icon strip` → `markdown header` →
+`wide area chart` → `markdown header` → `3-column KPI group` →
+`table`. Each zone has its own visual texture.
+
+**Anti-pattern:** five column charts stacked vertically with the same
+height. Fix: consolidate into one multi-series chart, replace others
+with a KPI strip summarizing the key insight, and add a detail table.
+
+### Applying these principles
+
+At the **Layout / canvas zones** step in the workflow tree:
+
+1. **Identify the hero** per zone — what's the single most important
+   thing? Give it 1.5-2× scale.
+2. **Count your colors** — if more than 1 accent + gray + status RAG,
+   you have too many. Cut.
+3. **Audit viz variety** — if any viz type repeats 3+ times in a row,
+   the dashboard needs rhythm. Replace middle occurrences with a
+   different density layer.
+
+These checks are part of the Designer's Eye critique heuristics. The
+"5-second story" test fails if scale contrast is missing. The "strip
+colors test" fails if too many accents compete.
+
 ## What this skill DOES NOT do
 
 - Specific palette tables → `ds-ref-color`

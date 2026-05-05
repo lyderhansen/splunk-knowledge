@@ -432,3 +432,109 @@ px gutter to feel deliberate.
 behind a panel group, the rectangle inset is the gutter / 2 — a 20
 px gutter means the card's inner edge is 10 px outside each panel
 edge. See "KPI grouping with background cards" above.
+
+## Viz rhythm zones — density layering
+
+A dashboard that repeats the same viz type vertically reads as
+monotonous. Compose dashboards like a magazine page — vary density
+per zone to create visual rhythm and guide the eye.
+
+### The three density layers
+
+| Layer | Purpose | Panel height | Viz types | Reading time |
+|---|---|---|---|---|
+| **Sparse** | Hero metrics, instant scan | 120–180 px | `singlevalue`, `singlevalueicon`, `fillergauge`, `markergauge` | 2 sec |
+| **Medium** | Data story, trends | 320–480 px | `area`, `column`, `line`, `choropleth`, `punchcard` | 5–15 sec |
+| **Dense** | Reference, drill-down | 280–400 px | `table` (heatmap rows), `events` | 30+ sec |
+
+### Rhythm sequences (1920 × content-driven)
+
+**SOC/NOC pattern:**
+```
+y=20   [input bar]                        sparse   h=40
+y=80   [icon strip — 6 singlevalueicon]   sparse   h=180
+y=280  [hero area chart + side bar]       medium   h=420
+y=720  [alert table with heatmap]         dense    h=320
+y=1060 [footer]                           sparse   h=20
+```
+
+**Executive pattern:**
+```
+y=20   [input bar]                        sparse   h=40
+y=80   [hero KPI — 1 large + 3 small]    sparse   h=160
+y=260  [primary trend chart]              medium   h=360
+y=640  [3-column summary KPIs]            sparse   h=140
+y=800  [detail table]                     dense    h=240
+y=1060 [footer]                           sparse   h=20
+```
+
+**Analytical pattern:**
+```
+y=16   [multi-row filter bar]             sparse   h=80
+y=112  [scatter/correlation chart]        medium   h=320
+y=448  [cross-reference KPI strip]        sparse   h=140
+y=604  [investigation table]              dense    h=480
+```
+
+### Rhythm rules
+
+1. **Never repeat the same density layer more than twice in a row.**
+   If you have three medium zones stacked, replace the middle with a
+   sparse summary or a dense table.
+2. **Sparse → medium → dense is the natural flow** (overview first,
+   detail last). But breaking the flow intentionally (medium → sparse
+   → dense) creates a visual "breath" between heavy sections.
+3. **Every density transition needs a section header** (markdown with
+   `fontSize: "default"` or `"large"`). Headers are the visual break
+   between layers.
+
+## Scale contrast patterns
+
+When the hero element in a zone needs to dominate, use these tested
+ratios:
+
+### Asymmetric KPI strip (hero + supporting)
+
+```json
+"structure": [
+  { "item": "viz_shadow",    "position": { "x": 30, "y": 70, "w": 1860, "h": 200 } },
+  { "item": "viz_kpi_hero",  "position": { "x": 40, "y": 80, "w": 560,  "h": 180 } },
+  { "item": "viz_kpi_2",     "position": { "x": 620, "y": 80, "w": 380,  "h": 180 } },
+  { "item": "viz_kpi_3",     "position": { "x": 1020, "y": 80, "w": 380, "h": 180 } },
+  { "item": "viz_kpi_4",     "position": { "x": 1420, "y": 80, "w": 380, "h": 180 } }
+]
+```
+
+The hero KPI is 560 px wide (1.5× the 380 px supporting KPIs). Give
+it a larger `majorFontSize` or pair it with a trend line to visually
+anchor the strip.
+
+### Hero chart with sidebar
+
+```json
+"structure": [
+  { "item": "viz_shadow_main", "position": { "x": 30, "y": 270, "w": 1230, "h": 440 } },
+  { "item": "viz_shadow_side", "position": { "x": 1280, "y": 270, "w": 610, "h": 440 } },
+  { "item": "viz_chart_hero",  "position": { "x": 40, "y": 280, "w": 1210, "h": 420 } },
+  { "item": "viz_chart_side",  "position": { "x": 1290, "y": 280, "w": 590, "h": 420 } }
+]
+```
+
+Hero chart: 1210 px. Side chart: 590 px. Ratio: 2.05×. The hero gets
+the complex multi-series story; the sidebar shows a complementary
+single-metric view (top-N bar, donut, gauge).
+
+### Punch color concentration
+
+In a multi-series chart, make ONE series the accent color and all
+others neutral:
+
+```json
+"options": {
+  "seriesColors": ["#06B6D4", "#475569", "#475569", "#475569", "#475569"],
+  "seriesOpacities": [1, 0.5, 0.5, 0.5, 0.5]
+}
+```
+
+The accent series (#06B6D4) pops while supporting series recede. This
+maintains data completeness without overwhelming the visual hierarchy.
