@@ -163,23 +163,77 @@ Pre-built inventories. Use as starting points, not mandates.
 ## Workflow
 
 ```
-1. Gather design context (brand, domain, tone, fonts)
+1. Brand research — understand the visual language
        ↓
-2. Select viz inventory (from template or custom)
+2. Design context (brand, domain, tone, fonts)
        ↓
-3. Generate design brief:
-   ├── theme.js token specification
-   ├── Font list with base64 embedding plan
-   ├── Color palette (dark mode + light mode)
-   └── Per-viz specification:
-       ├── Data contract (required fields, optional fields)
-       ├── Settings with defaults
-       └── Visual description (sketch in words)
+3. Design direction — palette, typography, aesthetic flavor
        ↓
-4. Quality Gate (see below)
+4. Viz inventory (from template or custom)
        ↓
-5. Hand off to vp-create (scaffold the app) → vp-viz (per-viz code)
+5. Design brief with per-viz specs
+       ↓
+6. Quality Gate
+       ↓
+7. Build → vp-create (scaffold) → vp-viz (per-viz code)
+       ↓
+8. Design critique — review the result
 ```
+
+### Step 1: Brand research
+
+Before designing anything, research the brand's existing visual
+language. This prevents "generic dark dashboard with blue accents."
+
+**Use `/impeccable teach`** to establish design context. This creates
+an `.impeccable.md` file with audience, brand personality, and
+constraints that inform all downstream decisions.
+
+**Then research the brand:**
+- Visit the brand's website/app and study colors, typography, spacing,
+  imagery style, and interaction patterns
+- Identify the brand's signature visual element — the one thing that
+  makes it instantly recognizable (Disney+ = the blue gradient header,
+  F1 = the carbon fiber texture + timing tower, Netflix = the red N)
+- Extract the exact hex values from the brand's digital presence
+- Note what fonts they use (even if we substitute with similar)
+- Identify domain-specific visual metaphors (F1 = tyre compounds,
+  Disney = franchise badges, SOC = kill chain stages)
+
+**Use `/impeccable:shape`** to plan the UX of the viz pack. The
+discovery interview will surface constraints and priorities.
+
+### Step 3: Design direction
+
+**Use these impeccable principles for color:**
+- OKLCH over HSL — perceptually uniform steps look equal
+- Tint neutrals toward the brand hue (even 0.005 chroma creates
+  subconscious cohesion)
+- 60-30-10 rule: 60% surface, 30% text/borders, 10% accent. Accents
+  work BECAUSE they're rare
+
+**Use these impeccable principles for typography:**
+- Reject reflex fonts (Inter, DM Sans, Space Grotesk — they create
+  monoculture). Find a font that fits the brand as a physical object
+- Three concrete brand words → font search (NOT "modern" or "clean")
+- Pair one display font + one mono font. Max 2 fonts total
+
+**Use `/impeccable:colorize`** if the palette feels too monochromatic.
+**Use `/impeccable:typeset`** to evaluate font choices.
+
+### Step 8: Design critique
+
+After building, review the result before shipping:
+
+**Use `/impeccable:critique`** to score the design across visual
+hierarchy, information architecture, and emotional resonance.
+
+**Use `/impeccable:bolder`** if the design plays it too safe — a
+common failure mode where technically correct vizs lack personality.
+
+**Use `/impeccable:delight`** to add micro-interactions and polish
+that make the viz pack memorable (hover effects, transitions,
+surprise details).
 
 ## Design Brief Output Format
 
@@ -223,37 +277,33 @@ Before hand-off, every item must pass. Failure blocks hand-off.
 
 | Check | Rule | Fail = |
 |---|---|---|
+| Brand research | `/impeccable teach` ran, brand visual language studied | Blocked |
+| Full custom coverage | Every data panel uses a custom viz (L1) | Blocked |
 | Font count | Max 2 custom fonts | Blocked |
 | Palette completeness | Dark AND light mode tokens defined | Blocked |
 | Data contracts | Every viz has required/optional fields listed | Blocked |
 | Settings defaults | Every viz has settings with sensible defaults | Blocked |
-| No duplication | No viz duplicates what built-in Splunk does well | Blocked |
+| Number formats | Every KPI has decimals/unit/scale specified (L3) | Blocked |
+| Hover tooltips | Every viz has mousemove tooltip + visual highlight | Blocked |
+| Branded header | Dashboard has logo/wordmark header element (L2) | Blocked |
+| App naming | App name = brand name (L4) | Blocked |
 | Viz count | 5-8 vizs total (not 3, not 15) | Warning |
 | Field configurability | No hardcoded field names — all via formatter | Blocked |
 | Bundle size estimate | Total font base64 under 800KB | Warning |
 
-**"Duplicates built-in" test:** if the user's requirement can be met by
-`splunk.line` with custom `seriesColors`, `splunk.singlevalue` with
-`trendDisplay`, or `splunk.column` with `stackMode` — do NOT build a
-custom viz. The built-in wins because it gets free upgrades, supports
-PDF export, and has zero maintenance burden.
-
 ## Anti-patterns
 
-### Don't rebuild built-in vizs
-If `splunk.fillergauge` with themed `gaugeColors` achieves the same
-look, don't build `fill_gauge`. Custom vizs exist for layouts and
-interactions that built-in vizs CANNOT do — not for reskinning.
+### Don't use built-in Splunk vizs for data panels
+The whole point of a viz pack is branded expression. A Disney+
+dashboard with `splunk.area` and `splunk.table` is just a dark
+dashboard with blue accents. Every data panel — table, chart, gauge,
+KPI, donut — must be a custom Canvas viz from the pack. The custom
+vizs ARE the product. (See L1 for the exemption list.)
 
 ### Don't embed 5 fonts
 Two max. One display, one mono. If the brand font isn't available in
-woff2, pick the closest geometric/grotesque from Google Fonts and move
-on. Brand fidelity at 1.5MB bundle size is not worth it.
-
-### Don't build 20 vizs
-A pack with 20 vizs is a framework, not a product. Frameworks need
-maintenance teams. Pick 5-8 that define the theme and use built-in
-Splunk vizs (with themed colors) for the rest.
+woff2, pick the closest match from Google Fonts and move on. Brand
+fidelity at 1.5MB bundle size is not worth it.
 
 ### Don't hardcode field names
 Every field must come from formatter settings. The user will rename
@@ -270,6 +320,20 @@ are missing, the viz renders an error state — not a blank canvas.
 Every viz in the pack shares ONE `theme.js`. If `single_value_tile`
 uses JetBrains Mono and `ring_gauge` uses Inter, the pack looks like
 a parts bin, not a product.
+
+### Don't skip brand research
+The most common failure: jumping straight to code without studying
+the brand's actual visual language. Run `/impeccable teach` first.
+Visit the brand's website. Extract real colors. Note their typography.
+Identify the signature element. Without this, the viz pack will look
+like "generic dark + brand color accent" — which is exactly what the
+Disney+ v1 dashboard looked like before we added franchise badges
+and custom vizs.
+
+### Don't ship without hover
+Canvas vizs without hover tooltips feel dead and unfinished. Every
+data-displaying viz must have mousemove tooltip + visual highlight.
+See `vp-ref-gotchas` I1/I2.
 
 ## Integration with ds-couture
 
