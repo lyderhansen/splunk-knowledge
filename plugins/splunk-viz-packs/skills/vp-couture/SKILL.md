@@ -298,12 +298,21 @@ If the user has already run `ds-couture` for a dashboard design:
 
 These rules were learned from building and testing real viz packs.
 
-### L1. Minimum 60% custom viz coverage
+### L1. All data vizs must be custom — only markdown and events exempt
 
-If a themed dashboard has 8 visible data panels and only 3 use custom
-vizs, it looks generic — the standard Splunk panels dominate the
-brand. Target: at least 60% of data panels must use custom vizs
-from the pack. Markdown headers and rectangle shadows don't count.
+Every viz that displays data MUST be a custom viz from the pack.
+The only built-in Splunk vizs allowed in a themed dashboard are:
+
+- `splunk.markdown` — text headers, section labels, footers
+- `splunk.events` — raw event log display
+- `splunk.rectangle` — shadow cards, dividers (structural, not data)
+- `splunk.image` — logo, static images (structural, not data)
+
+Everything else — tables, charts, gauges, KPIs, donuts, bars — must
+be custom. If the dashboard has a table, build a custom table viz.
+If it has a line chart, build a custom line chart viz. Using built-in
+`splunk.area` or `splunk.table` in a themed pack defeats the purpose —
+the standard Splunk chrome breaks the brand identity.
 
 ### L2. Branded header is mandatory
 
