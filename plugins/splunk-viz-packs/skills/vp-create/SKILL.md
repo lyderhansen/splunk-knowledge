@@ -332,6 +332,57 @@ COPYFILE_DISABLE=1 tar czf {{PACK_ID}}.tar.gz \
   {{PACK_ID}}
 ```
 
+## Bundled images
+
+Brand logos, icons, and other images go in `static/` at the app root.
+Splunk serves these at `/static/app/{pack_id}/filename`.
+
+```
+static/
+  logo.svg                    (brand logo — SVG preferred for crisp scaling)
+  logo_dark.svg               (dark-background variant if needed)
+  appIcon.png                 (36x36 Splunk app icon)
+  appIcon_2x.png              (72x72 HiDPI)
+  appIconAlt.png              (36x36 alternate)
+  appIconAlt_2x.png           (72x72 alternate HiDPI)
+```
+
+Reference in dashboard JSON:
+```json
+"viz_logo": {
+    "type": "splunk.image",
+    "options": {
+        "src": "/static/app/{{PACK_ID}}/logo.svg",
+        "preserveAspectRatio": true
+    }
+}
+```
+
+**NEVER use external URLs** for images — they require domain allow-list
+configuration and fail in PDF export. Always bundle images in `static/`.
+
+**Splunk restart required** after installing the app for new static
+files to be served.
+
+## XML dashboard generation
+
+Dashboard Studio v2 stores dashboards as JSON inside XML CDATA. When
+the dashboard JSON changes, the XML MUST be regenerated:
+
+```xml
+<dashboard version="2" theme="dark">
+    <label>Dashboard Title</label>
+    <description>Description</description>
+    <definition><![CDATA[{...compact JSON...}]]></definition>
+</dashboard>
+```
+
+**Compact the JSON** (no whitespace) before embedding — XML CDATA
+doesn't require escaping but large whitespace wastes file size.
+
+**Rule: every time you modify dashboard.json, regenerate the XML.**
+Stale XML = users install the app and see an old dashboard.
+
 ## Quality checks after scaffolding
 
 - [ ] All 5 stanzas in app.conf (`[install]`, `[id]`, `[package]`, `[ui]`, `[launcher]`)

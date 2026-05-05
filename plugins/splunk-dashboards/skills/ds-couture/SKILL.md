@@ -249,9 +249,12 @@ Hand-off is **blocked** if Scope Check fails without waivers. Fix the gap or doc
 
 **Wow-factor defaults (apply unless the archetype demands restraint):**
 
-6. Canvas background MUST NOT be flat black. Add 1-2 low-opacity
-   gradient rectangles to create depth. See `ds-ref-layout-grid`
-   "Gradient background" section.
+6. Canvas background: use `layout.options.backgroundColor` to set the
+   base color. Do NOT add low-opacity gradient wash rectangles on top
+   of the canvas — they add visual noise without benefit and create a
+   washed-out look. If you want depth, use shadow rectangles behind
+   panel groups (rule 2) and faux glow (rule 8) on hero elements.
+   A solid dark background is better than a muddy gradient wash.
 7. Card corner radius: `rx=4-8`, NOT `rx=12+`. Large radii look
    bloated. Reference: Stripe uses rx=6, Linear uses rx=4.
 8. Faux glow on hero panels. Use 2-layer low-opacity accent rectangles

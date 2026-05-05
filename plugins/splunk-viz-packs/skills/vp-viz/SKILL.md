@@ -427,6 +427,45 @@ SPL → formatData (data only) → updateView (data + config)
 7. **Build** — webpack, verify ES5, check bundle format
 8. **Test in Splunk** — install app, verify in Studio + ad-hoc search
 
+## Hover tooltip — mandatory on every viz
+
+See `vp-ref-gotchas` I1 and I2. Every viz MUST implement:
+
+1. **DOM tooltip element** — created in `initialize`, positioned on
+   `mousemove`, hidden on `mouseleave`
+2. **Hit-test function** — `_hitTest(mx, my)` returns `{label, value}`
+   or null
+3. **Visual highlight** — hover state changes appearance (brighter row,
+   crosshair line, segment stroke)
+4. **Cleanup in destroy** — remove tooltip element, remove event
+   listeners
+
+The tooltip is a `<div>` appended to `this.el`, NOT drawn on Canvas
+(Canvas can't do pointer-events:none or z-index above Studio chrome).
+
+## Decimals setting — standard on all KPI/value vizs
+
+Every viz that displays a formatted number MUST expose a `decimals`
+formatter option:
+- `-1` (default) = auto-compact via fmtNum
+- `0` = integer
+- `1`, `2`, `3` = fixed decimal places
+
+```javascript
+var decimals = parseInt(getOption(config, ns, 'decimals', '-1'), 10);
+var displayValue;
+if (isNaN(rawValue)) {
+    displayValue = '—';
+} else if (decimals >= 0) {
+    displayValue = rawValue.toFixed(decimals);
+} else {
+    displayValue = theme.fmtNum(rawValue, { compact: true });
+}
+```
+
+Without this, small values like 7.27 round to 7 and percentages like
+3.8 round to 4.
+
 ## Common mistakes
 
 | Mistake | Consequence | Fix |

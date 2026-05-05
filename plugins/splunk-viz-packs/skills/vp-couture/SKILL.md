@@ -294,6 +294,60 @@ If the user has already run `ds-couture` for a dashboard design:
    identical to (or derived from) the dashboard's palette. Two products,
    one brand.
 
+## Hard lessons — codified rules from shipping
+
+These rules were learned from building and testing real viz packs.
+
+### L1. Minimum 60% custom viz coverage
+
+If a themed dashboard has 8 visible data panels and only 3 use custom
+vizs, it looks generic — the standard Splunk panels dominate the
+brand. Target: at least 60% of data panels must use custom vizs
+from the pack. Markdown headers and rectangle shadows don't count.
+
+### L2. Branded header is mandatory
+
+Every themed dashboard MUST have a branded header element — logo,
+wordmark, or styled title bar. Without it, the dashboard is just
+"dark theme with colored accents." The header is the first thing
+the eye sees; it must immediately communicate the brand.
+
+Use `splunk.image` pointing to `/static/app/{pack_name}/logo.svg`
+for bundled images (no external URLs — they fail on domain allow
+lists). Include the logo file in the app's `static/` directory.
+
+### L3. Design brief MUST specify number format per KPI
+
+For every KPI in the dashboard, the brief must define:
+- **Raw value scale** — is 7.27 literally $7.27 or $7.27M?
+- **Display decimals** — 0, 1, 2, or auto-compact?
+- **Unit and position** — "$" before, "%" after, "M" after?
+
+Without this, the viz code will auto-compact 7.27 → 7 (rounds to
+integer) or 3800000 → 3.8M when you meant 3.8%.
+
+### L4. App name = brand name
+
+The app ID becomes the viz type prefix in every dashboard JSON:
+`disney_plus_viz.kpi_tile`, `f1_viz_pack.ers_gauge`. Name the app
+after the brand so the JSON reads naturally. Never use generic names
+like `custom_viz` or `my_viz`.
+
+### L5. Always regenerate XML when JSON changes
+
+Dashboard Studio v2 dashboards are stored as JSON inside XML CDATA.
+If you update the JSON definition, you MUST regenerate the XML in
+`default/data/ui/views/`. Otherwise the installed app has stale
+dashboards.
+
+### L6. No gradient wash rectangles on canvas
+
+Low-opacity colored rectangles overlaid on the canvas create a
+washed-out, muddy look — not depth. Use a solid
+`layout.options.backgroundColor` for the base, shadow rectangles
+behind panel groups for depth, and faux glow on hero elements for
+accent.
+
 ## What this skill does NOT do
 
 | Task | Responsible skill |
