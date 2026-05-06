@@ -133,6 +133,7 @@ per-viz / interactivity / reference skill that owns the full fix.
 | SVG choropleth no fills                             | `<rect>` / `<circle>` not picked up — only `<path>` with unique `id`.                                  | `ds-viz-choropleth-svg` Do/Don't |
 | Markdown `fontFamily` schema error                  | Only 7 fonts allowed: Splunk Platform Sans/Data Sans/Platform Mono, Arial, Helvetica, Times New Roman, Comic Sans MS. No custom fonts. | `ds-viz-markdown` §fontFamily |
 | Markdown `fontSize` schema error                    | Only enum values: extraSmall, small, default, large, extraLarge. No numbers like "14" or "11".         | `ds-viz-markdown` §fontSize      |
+| Markdown panel has scrollbar                        | Panel width or height too small for text at chosen fontSize. Heading text needs ~40px/line, body ~24px/line. Always oversize then tighten. | `ds-viz-markdown` Do/Don't |
 
 
 ## Performance

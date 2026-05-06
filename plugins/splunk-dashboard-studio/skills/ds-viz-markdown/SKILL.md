@@ -61,6 +61,8 @@ actually scan and understand.
 | **Padded coloured blocks:** stack `splunk.rectangle` BEHIND the markdown. | Set `backgroundColor` expecting padding — colour touches panel border. |
 | **Reference-style links:** define `[ref]: url` in same markdown string. | Forget the `[ref]: url` definition — `[text][ref]` renders as literal text. |
 | **Drilldown:** embed markdown links `[text](url)`. | Try to wire `onSelectionChanged` / token updates — markdown has no event handlers. |
+| **Panel sizing:** width and height MUST fit the text at chosen fontSize. No scrollbars. | Make the panel too narrow/short — a scrollbar appears and clips the text. |
+| **Size estimation:** `extraLarge` ≈ 20px per line + 16px padding. `default` ≈ 14px + 12px. Budget 40px per heading line, 24px per body line. | Guess the panel height — always overestimate, then tighten. |
 
 ## `fontFamily` — seven allowed values
 

@@ -172,7 +172,17 @@ These defaults are non-negotiable unless the user explicitly overrides:
    `extraSmall`, `small`, `default`, `large`, `extraLarge`.
    Numeric values (`"14"`, `"11"`) cause schema validation error.
 
-8. **`icon_library` panels** MUST set `"backgroundColor": "transparent"`
+8. **Markdown panels must never produce scrollbars.** Size the panel
+   width and height to fit ALL text at the chosen fontSize. Budget:
+   - `extraLarge` heading: ~40px per line height
+   - `large`: ~30px per line
+   - `default`: ~24px per line
+   - `small` / `extraSmall`: ~18px per line
+   - Add 16px vertical padding
+   Always oversize the panel, then tighten. A clipped markdown with
+   a scrollbar is worse than 20px extra whitespace.
+
+9. **`icon_library` panels** MUST set `"backgroundColor": "transparent"`
    on the viz level (outside the namespace options). This is the viz-level
    `backgroundColor`, not `icon_library.icon_library.bgColor`. Without it,
    icons render with a dark box background that clashes with shadow cards
