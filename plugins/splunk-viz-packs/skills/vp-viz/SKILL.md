@@ -412,6 +412,119 @@ shows total. Segments colored from theme palette.
 
 **Data contract:** requires category + value fields. Multi-row input.
 
+### Heat Grid / Matrix
+
+**Draws:** rows × columns grid where each cell is colored by value
+intensity. Time × category, host × metric, hour × day-of-week.
+Like a GitHub contribution graph or a security incident heatmap.
+
+**Key elements:** cell rectangles with lerpColor from low→high,
+row/column labels, hover tooltip per cell, optional cell value text.
+
+**Settings:** `rowField`, `colField`, `valueField`, `lowColor`,
+`highColor`, `showValues`, `cellRadius`, `theme`
+
+**Data contract:** row label, column label, numeric value. Multi-row.
+
+### Spark Strip
+
+**Draws:** horizontal row of mini sparkline areas, one per metric.
+Each spark has a label, current value, and micro trend line. Compact
+way to show 4-8 metrics with trend in a small vertical space.
+
+**Key elements:** per-metric: label (whisper), value (body), tiny
+area fill below a polyline. All sparks same height, stacked vertically
+or in a row.
+
+**Settings:** `metrics` (CSV field names), `labels` (CSV), `sparkHeight`,
+`showValue`, `colors`, `theme`
+
+**Data contract:** time series with multiple value columns. Multi-row.
+
+### Radar / Spider Chart
+
+**Draws:** multi-axis polygon on a radial grid. Each axis represents
+a dimension (performance, security, reliability, etc). The filled
+polygon shows how the entity scores on each. Great for comparing
+profiles (e.g., server health across 5 dimensions).
+
+**Key elements:** radial grid lines, axis labels at each point,
+filled polygon with semi-transparent fill, optional second polygon
+for comparison, center origin at 0.
+
+**Settings:** `fields` (CSV of dimension fields), `labels` (CSV),
+`maxValue`, `fillOpacity`, `showGrid`, `showComparison`, `colors`, `theme`
+
+**Data contract:** one row per entity, one column per dimension.
+
+### Needle Gauge (Speedometer)
+
+**Draws:** semicircular dial with a physical needle pointing to the
+current value. Tick marks around the arc, colored zones (blue→gold→red).
+More dramatic than ring gauge — feels like a real instrument.
+
+**Key elements:** arc background with zone coloring, tick marks with
+numbers, needle drawn as a triangle from center, center cap circle,
+value text below.
+
+**Settings:** `field`, `maxValue`, `zones` (CSV of zone boundaries),
+`zoneColors` (CSV), `label`, `unit`, `theme`
+
+**Data contract:** single numeric value.
+
+### Status Matrix / Health Grid
+
+**Draws:** grid of colored squares/dots, each representing a service
+or host. Color = status (green/amber/red/grey). Compact way to show
+50-200 entities at a glance. Like a datacenter floor LED board.
+
+**Key elements:** grid of rounded squares with status color, label
+below each (truncated), hover tooltip with details, optional grouping
+headers.
+
+**Settings:** `nameField`, `statusField`, `columns`, `cellSize`,
+`showLabels`, `statusColors` (CSV), `theme`
+
+**Data contract:** name + status field. Multi-row (one per entity).
+
+### Waterfall Chart
+
+**Draws:** bars that show how an initial value is increased or
+decreased by successive categories — visualizes the "bridge" between
+start and end. Positive deltas go up (green), negative go down (red),
+totals are neutral.
+
+**Key elements:** floating bars connected by thin lines, positive
+bars above the running total, negative bars below, total bar at end,
+value labels on each bar.
+
+**Settings:** `categoryField`, `valueField`, `positiveColor`,
+`negativeColor`, `totalColor`, `showConnectors`, `showValues`, `theme`
+
+**Data contract:** category + value. Multi-row. First and last row
+can be totals.
+
+### Horizontal Bar List
+
+**Draws:** simple ranked horizontal bars with labels left, values
+right, bar fill proportional to value. Clean alternative to
+splunk.bar when you want minimal chrome and brand-specific styling.
+
+**Key elements:** label (left-aligned), bar fill (proportional width),
+value text (right-aligned), optional delta indicator, hover highlight.
+
+**Settings:** `labelField`, `valueField`, `maxBars`, `barColor`,
+`showValues`, `unit`, `theme`
+
+**Data contract:** label + value. Multi-row sorted by value.
+
+---
+
+**Viz variety rule:** a dashboard with 5 vizs of the same type (all
+donuts, all gauges) lacks visual rhythm. Aim for 3+ distinct viz
+types per dashboard. The taxonomy above gives you options beyond the
+usual KPI/gauge/donut/table set.
+
 ## Formatter HTML template
 
 ```html

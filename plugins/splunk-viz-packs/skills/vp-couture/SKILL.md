@@ -350,6 +350,7 @@ Before hand-off, every item must pass. Failure blocks hand-off.
 | Branded header | Dashboard has logo/wordmark header element (L2) | Blocked |
 | App naming | App name = brand name (L4) | Blocked |
 | Viz count | 5-8 vizs total (not 3, not 15) | Warning |
+| Viz variety | Minimum 3 DISTINCT viz types — no all-gauges or all-donuts | Warning |
 | Field configurability | No hardcoded field names — all via formatter | Blocked |
 | accentIntensity | Every viz has accentIntensity setting (0-100, default 50) | Blocked |
 | Transparent canvas | Vizs use clearRect(), never fillRect() with bg color | Blocked |

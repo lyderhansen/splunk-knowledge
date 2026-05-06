@@ -409,6 +409,45 @@ function drawHGrid(ctx, t, x, y, w, h, divisions) {
 }
 ```
 
+**Grid lines must be SUBTLE.** They exist to help the eye align
+values — not to decorate. If grid lines compete with data lines for
+attention, they're too strong. Use `t.grid` (typically 4-6% opacity).
+The baseline (y=0) can be slightly stronger (`t.edgeStrong`).
+
+## Data rendering principles
+
+Rules that apply to every data-displaying viz:
+
+**Trend over decoration.** Heavy gradients, glow, and shadows on
+data elements (lines, bars, areas) obscure the actual data. Mood
+recipes (ambient light, vignette, texture) go on the BACKGROUND,
+not on data elements.
+
+**Direct labeling.** For datasets with <8 items, label values
+directly on or next to the data element instead of relying on a
+separate legend. Eliminates eye-travel.
+
+**Tabular/monospaced figures.** Use `theme.FONTS.data` (monospace)
+for ALL numeric values — KPIs, axis labels, table cells, tooltips.
+Proportional fonts cause column misalignment and visual jitter.
+
+**Color is never the ONLY indicator.** A red gauge segment must ALSO
+have tick marks, zone labels, or text. ~8% of men are colorblind.
+
+**Stagger entrance for lists.** When rendering multiple rows,
+stagger by 20-40ms per row for a cascade effect:
+```javascript
+// In _render, after computing all rows:
+var self = this;
+for (var i = 0; i < rows.length; i++) {
+    (function(idx) {
+        setTimeout(function() {
+            self._drawRow(ctx, idx);
+        }, idx * 30);
+    })(i);
+}
+```
+
 ## Animation
 
 ### Timer lifecycle
