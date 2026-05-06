@@ -455,10 +455,55 @@ shows total. Segments colored from theme palette.
 
 **Rules:**
 - Section labels MUST be exact (see vp-ref-gotchas B5)
-- Use 3 standard sections for simple vizs, more only when genuinely complex
 - Every control-group MUST have `help="..."` attribute
 - JS defaults MUST match `value="..."` attributes (B7)
 - Color picker swatches should come from the pack's theme palette
+
+**Every visual property must be configurable (B15).** If `_render()`
+uses a color, size, toggle, or position, it MUST have a formatter
+setting. The complete minimum settings list:
+
+```html
+<!-- SECTION 1: Data configurations -->
+<form class="splunk-formatter-section" section-label="Data configurations">
+    <!-- field: which SPL field to read -->
+    <!-- deltaField: trend delta field (if applicable) -->
+    <!-- categoryField / valueField: for composition vizs -->
+    <!-- maxRows: for table/list vizs -->
+</form>
+
+<!-- SECTION 2: Data display -->
+<form class="splunk-formatter-section" section-label="Data display">
+    <!-- label: text label -->
+    <!-- labelPlacement: top / bottom / left / none -->
+    <!-- unit: suffix or prefix -->
+    <!-- unitPosition: before / after -->
+    <!-- decimals: fixed decimal places (-1 = auto) -->
+    <!-- showDelta: show trend arrow (true/false) -->
+    <!-- showLegend / showReadout: for composition vizs -->
+    <!-- showPosition: for ranked tables -->
+    <!-- alignment: left / center / right -->
+</form>
+
+<!-- SECTION 3: Color and style -->
+<form class="splunk-formatter-section" section-label="Color and style">
+    <!-- theme: dark / light -->
+    <!-- accentColor: primary highlight (color picker) -->
+    <!-- colors: CSV hex for multi-series (text input) -->
+    <!-- accentIntensity: glow/effect strength 0-100 -->
+</form>
+
+<!-- SECTION 4: Gauge settings (only for gauge vizs) -->
+<form class="splunk-formatter-section" section-label="Gauge settings">
+    <!-- maxValue: scale maximum -->
+    <!-- redZoneStart: threshold for danger zone -->
+    <!-- segments: number of arc segments -->
+</form>
+```
+
+Add sections only when the viz genuinely needs them. A simple KPI
+tile needs sections 1-3. A gauge adds section 4. Don't create
+empty sections.
 
 ## visualization.css template
 

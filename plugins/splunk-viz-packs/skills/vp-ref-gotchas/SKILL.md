@@ -509,6 +509,44 @@ formatData: function(data) {
 },
 ```
 
+### B15. Every visual property must be configurable via formatter
+
+If the viz code uses a color, size, toggle, or position — there MUST
+be a corresponding setting in `formatter.html` and a `getOption()`
+read in `_render()`. No hardcoded visual properties.
+
+**Mandatory formatter settings for every viz:**
+
+| Category | Settings | Type |
+|---|---|---|
+| **Theme** | `theme` (dark/light) | radio |
+| **Colors** | `accentColor`, `colors` (CSV hex) | color-picker / text |
+| **Typography** | `label`, `labelPlacement` (top/bottom/left/none) | text / dropdown |
+| **Values** | `field`, `unit`, `unitPosition` (before/after), `decimals` | text / radio |
+| **Trends** | `showDelta`, `deltaField` | radio / text |
+| **Effects** | `showGlow` or `accentIntensity` (0-100 slider) | radio / text |
+| **Layout** | `alignment` (left/center/right) | radio |
+
+**Domain-specific settings (add when applicable):**
+
+| Setting | When | Type |
+|---|---|---|
+| `maxValue`, `redZoneStart` | Gauges with threshold bands | text |
+| `segments` | Segmented arcs | text |
+| `showPosition` | Tables with ranking | radio |
+| `badgeField` | Tables with category badges | text |
+| `showReadout`, `showLegend` | Donuts/composition vizs | radio |
+| `maxRows` | Tables | text |
+| `colors` | Multi-series charts, donuts | text (CSV hex) |
+
+**Test:** for every `var x = getOption(config, ns, 'something', default)`
+in the source, there MUST be a matching `<splunk-control-group>` in
+`formatter.html` with the same key and a matching default value (B7).
+
+**Anti-pattern:** hardcoding `ctx.fillStyle = '#DC0000'` anywhere
+except as a fallback default. Colors come from theme tokens OR
+formatter settings — never inline hex in render logic.
+
 ## REJECTED — fails AppInspect / Splunk Cloud vetting
 
 ### R1. app.conf must have 5 stanzas
@@ -809,6 +847,8 @@ Before writing ANY viz code, verify:
 - [ ] No config reads in `formatData`
 - [ ] Formatter section labels are exact lowercase match
 - [ ] JS defaults match formatter HTML defaults
+- [ ] Every `getOption()` call has a matching `<splunk-control-group>` in formatter (B15)
+- [ ] No hardcoded hex colors in `_render()` — all from theme tokens or formatter settings
 - [ ] app.conf has all 5 stanzas with `is_configured = 0`
 - [ ] default.meta has global `[]` stanza with `sc_admin`
 - [ ] savedsearches.conf.spec documents every custom setting
