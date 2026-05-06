@@ -285,6 +285,9 @@ Before hand-off, every item must pass. Failure blocks hand-off.
 |---|---|---|
 | Brand research | Brand visual language studied, signature element identified | Blocked |
 | Full custom coverage | Every data panel uses a custom viz (L1) | Blocked |
+| Unique rendering | Each viz has brand-specific _render() code (L7) | Blocked |
+| Panel chrome defined | Brand-specific chrome, not generic drawPanel() (L8) | Blocked |
+| Depth treatment | Shadow/flush/stroke chosen per brand (L9) | Blocked |
 | Font count | Max 2 custom fonts | Blocked |
 | Palette completeness | Dark AND light mode tokens defined | Blocked |
 | Data contracts | Every viz has required/optional fields listed | Blocked |
@@ -299,17 +302,44 @@ Before hand-off, every item must pass. Failure blocks hand-off.
 
 ## Anti-patterns
 
+### Don't copy vizs between brands and swap colors
+THIS IS THE #1 FAILURE MODE. Building Disney+, Netflix, and Red Bull
+with the same 5 viz source files and different theme.js produced
+dashboards that looked nearly identical — same panel chrome, same
+arc shapes, same layout rhythm, different hex values.
+
+**Color tokens are NOT enough for brand identity.** The Canvas
+rendering code itself — how shapes are drawn, what chrome exists,
+how elements are sized and positioned — defines the visual identity
+far more than palette tokens.
+
+**Rule:** every brand gets UNIQUE `visualization_source.js` files
+by default. The shared `theme.js` provides colors and fonts, but
+the `_render()` function must be brand-specific. A Red Bull speed
+gauge has segmented arcs with red zone markings and shift lights.
+A Disney+ subscriber gauge has a smooth gradient ring with soft glow.
+They are fundamentally different drawings, not recolored copies.
+
+**Only reuse viz code** if the user explicitly asks for a "quick
+theme swap" or "just change the colors." Treat it as a downgrade
+from the default, not the standard approach.
+
+### Don't use `drawPanel()` on every viz
+The generic `theme.drawPanel()` function (1px border, rounded rect)
+creates identical-looking panel chrome across all vizs and all brands.
+This is the "AI dashboard" look.
+
+Instead, design panel chrome per brand:
+- F1/Racing: no border, sharp edges, dark panels that blend with bg
+- Streaming: soft rounded cards, subtle edge
+- Industrial: heavy borders, square corners, thick stroke
+- Medical: clean white panels, thin separator lines
+
 ### Don't use built-in Splunk vizs for data panels
-The whole point of a viz pack is branded expression. A Disney+
-dashboard with `splunk.area` and `splunk.table` is just a dark
-dashboard with blue accents. Every data panel — table, chart, gauge,
-KPI, donut — must be a custom Canvas viz from the pack. The custom
-vizs ARE the product. (See L1 for the exemption list.)
+Every data panel must be a custom Canvas viz from the pack. (See L1.)
 
 ### Don't embed 5 fonts
-Two max. One display, one mono. If the brand font isn't available in
-woff2, pick the closest match from Google Fonts and move on. Brand
-fidelity at 1.5MB bundle size is not worth it.
+Two max. One display, one mono.
 
 ### Don't hardcode field names
 Every field must come from formatter settings. The user will rename
@@ -418,6 +448,42 @@ Dashboard Studio v2 dashboards are stored as JSON inside XML CDATA.
 If you update the JSON definition, you MUST regenerate the XML in
 `default/data/ui/views/`. Otherwise the installed app has stale
 dashboards.
+
+### L7. Each brand gets unique viz rendering code
+
+Color tokens in theme.js define palette. But the Canvas _render()
+function defines the VISUAL IDENTITY — shape language, chrome style,
+arc segmentation, text positioning, animation behavior. Copying vizs
+between brands and swapping theme.js produces identical dashboards
+with different hex values.
+
+By default, write unique visualization_source.js per brand per viz.
+Only reuse code if the user explicitly requests a "quick theme swap."
+
+### L8. Panel chrome is brand-dependent, not universal
+
+`drawPanel()` (1px border, rounded rect) is ONE chrome style. It
+should not be the default for every brand:
+- F1: sharp edges, no visible border, dark bg that merges with canvas
+- Streaming: soft radius (6-8px), subtle 1px edge
+- Industrial: square corners, 2px stroke, high contrast
+- Medical: white panels, hairline separator, no shadow
+
+Define the panel chrome in the design brief. Don't default to
+`drawPanel()`.
+
+### L9. Shadow rectangles are optional, not mandatory
+
+ds-couture's "every panel group MUST have a shadow rectangle" was
+too rigid. Shadow rects create depth but also create visual sameness.
+Some brands look better WITHOUT shadows:
+- F1 telemetry: panels should feel INTEGRATED with the dark bg, not
+  floating above it. No shadow = flush = technical.
+- Industrial: thick borders create depth, shadows are redundant.
+
+Shadow rectangles are RECOMMENDED for executive and editorial styles.
+They are NOT mandatory for technical, industrial, or race-engineer
+styles.
 
 ### L6. No gradient wash rectangles on canvas
 

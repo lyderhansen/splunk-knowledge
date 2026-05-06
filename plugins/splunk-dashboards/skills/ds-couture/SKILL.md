@@ -184,7 +184,13 @@ SCOPE CHECK — non-skippable
    and pixel-precise placement all require absolute.
    Grid without explicit user request → automatic reject.
 
-☐ Every panel group has a shadow rectangle behind it?
+☐ Panel depth treatment considered?
+   Default: shadow `splunk.rectangle` behind panel groups. But shadow
+   is NOT mandatory for all styles:
+   - Executive/editorial → shadow rects (floating cards, depth)
+   - Technical/industrial/F1 → panels flush with bg (integrated, dense)
+   - SOC wall → thin border stroke, no shadow (maximum density)
+   Explicitly state which depth treatment and why.
    Shadow = `splunk.rectangle` with fillColor 2–3 stops brighter than
    canvas, placed BEFORE panels in structure array. Panels on top must
    set explicit backgroundColor.
@@ -240,7 +246,7 @@ When all four critique heuristics pass AND Scope Check passes (every box ticked 
 
 - Archetype name + canvas dimensions
 - **Layout: `absolute` (mandatory — grid is never acceptable)**
-- **Shadow rectangles: one per panel group (mandatory — see `ds-ref-layout-grid`)**
+- **Depth treatment: shadow rects / flush / border stroke (chosen per archetype)**
 - Theme variant
 - Palette name + accent hex
 - Typography stack + scale
@@ -256,8 +262,9 @@ Hand-off is **blocked** if Scope Check fails without waivers. Fix the gap or doc
 
 1. `layout.type` MUST be `"absolute"`. Grid layout → automatic reject
    unless user explicitly requested grid.
-2. Every panel group MUST have a `splunk.rectangle` shadow behind it.
-   Missing shadows → automatic reject unless user explicitly opted out.
+2. Depth treatment MUST be explicitly chosen per archetype: shadow
+   rectangles (executive/editorial), flush with bg (technical/racing),
+   or border stroke (industrial/SOC). "Not considered" → reject.
 3. Every `ds.search` MUST have `options.name` set to a human-readable
    label. "Unnamed" data sources → automatic reject.
 4. `xAxisTitleVisibility` MUST be `"hide"` on all timecharts. The

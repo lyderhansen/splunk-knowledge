@@ -5,6 +5,23 @@ description: "Build a single custom Splunk visualization within a themed viz pac
 
 # vp-viz — build one visualization
 
+## Critical: unique rendering per brand
+
+**Do NOT copy viz source code between brands and swap colors.** Each
+brand gets unique `_render()` code. A Red Bull speed gauge draws
+segmented arcs with red zone markings and shift lights. A Disney+
+subscriber gauge draws a smooth gradient ring with soft glow. They
+share `theme.js` for color tokens but nothing else in the render path.
+
+The blueprints below are STARTING POINTS for inspiration — not
+templates to copy verbatim. Study the brand's real-world design
+language, then write Canvas code that matches THAT, using theme tokens
+for colors only.
+
+**`drawPanel()` is optional.** Some brands want panel chrome (rounded
+rects with borders). Others want panels flush with the background
+(no chrome, no border). Define this in the design brief.
+
 ## When to use
 
 After `vp-create` has scaffolded the app directory and `shared/theme.js`
