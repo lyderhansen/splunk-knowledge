@@ -444,6 +444,33 @@ six-of-the-same. Ideal sequence: `icon strip` → `markdown header` →
 height. Fix: consolidate into one multi-series chart, replace others
 with a KPI strip summarizing the key insight, and add a detail table.
 
+### 4. Hero image as background — depth through layers
+
+**Rule:** A brand-relevant hero image as a background layer transforms
+"widgets on dark canvas" into a branded experience.
+
+**Composition pattern (z-order = structure array order):**
+
+1. `splunk.image` — full canvas width, top 50-60% height, `preserveAspectRatio: true`
+2. `splunk.rectangle` — dimming overlay (bg color at 30-40% opacity)
+3. `splunk.rectangle` — vignette at bottom edge (bg color at 85-95%, 80-120px tall)
+4. `splunk.rectangle` — semi-transparent grouping panels (bg color at 85-92%)
+5. Data vizs, KPIs, gauges — on top of the panels
+
+| Theme | Overlay color | Overlay opacity | Panel opacity |
+|---|---|---|---|
+| Dark | `#0B0E1A` (canvas bg) | 0.30–0.40 | 0.85–0.92 |
+| Light | `#F0F2F5` (canvas bg) | 0.30–0.40 | 0.85–0.92 |
+
+**When to use:** branded dashboards (F1, Disney+, corporate), hero
+archetypes, executive summaries with brand identity.
+
+**When NOT to use:** SOC walls (distraction), dense operational
+dashboards (wastes vertical space), status pages (no narrative).
+
+Image must be bundled in `appserver/static/images/` — see
+`ds-viz-image` §3.
+
 ### Applying these principles
 
 At the **Layout / canvas zones** step in the workflow tree:

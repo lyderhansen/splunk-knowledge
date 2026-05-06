@@ -105,6 +105,31 @@ function severityColor(t, sev) {
 }
 ```
 
+### Branded gauge gradient
+
+For segmented arc gauges, use `lerpColor` to create smooth branded
+transitions instead of flat single colors. Map segment position (0→1)
+to the brand palette:
+
+```javascript
+// Red Bull: navy blue → sky blue → gold → red
+for (var i = 0; i < segments; i++) {
+    var segPct = (i + 0.5) / segments;
+    var color;
+    if (segPct >= redZonePct) {
+        color = t.red;
+    } else if (segPct > redZonePct * 0.75) {
+        color = t.gold;
+    } else {
+        color = lerpColor('#1E3A6E', '#4A8FE7', segPct / redZonePct);
+    }
+    // ... draw segment with color
+}
+```
+
+Never use generic green→yellow→red — it looks like a gaming HUD, not
+a branded instrument. Derive colors from the brand palette.
+
 ## Text utilities
 
 ### Fit text to width

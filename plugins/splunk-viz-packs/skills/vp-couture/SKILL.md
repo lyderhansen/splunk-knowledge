@@ -421,9 +421,9 @@ wordmark, or styled title bar. Without it, the dashboard is just
 "dark theme with colored accents." The header is the first thing
 the eye sees; it must immediately communicate the brand.
 
-Use `splunk.image` pointing to `/static/app/{pack_name}/logo.svg`
+Use `splunk.image` pointing to `/static/app/{pack_name}/images/logo.svg`
 for bundled images (no external URLs — they fail on domain allow
-lists). Include the logo file in the app's `static/` directory.
+lists). Include the logo file in `appserver/static/images/`.
 
 ### L3. Design brief MUST specify number format per KPI
 
@@ -492,6 +492,75 @@ washed-out, muddy look — not depth. Use a solid
 `layout.options.backgroundColor` for the base, shadow rectangles
 behind panel groups for depth, and faux glow on hero elements for
 accent.
+
+### L10. Hero image as visual anchor
+
+A dashboard without a hero image is widgets on a dark background.
+A brand-relevant hero (car photo, product render, facility shot)
+transforms the whole dashboard.
+
+**Composition pattern:**
+1. `splunk.image` at z-layer 0, full canvas width, top 50-60% of height
+2. `splunk.rectangle` dimming overlay (30-40% opacity bg color) at z-layer 1
+3. `splunk.rectangle` vignette at bottom (85-95% opacity, 80-120px tall) to fade into data area
+4. Semi-transparent panels (85-92% opacity bg color) floated over the image for gauges/data
+5. Data elements ON TOP of the panels
+
+Dark theme: overlay `#0B0E1A` at 35%, panels at 88%.
+Light theme: overlay `#F0F2F5` at 35%, panels at 88%.
+
+The car/product should remain visible between the side panels.
+This is a RECOMMENDED pattern, not mandatory — some dashboards
+(SOC walls, status pages) work better without a hero image.
+
+### L11. 60-30-10 color rule
+
+Too many saturated colors = toy look. Enforce strict distribution:
+- **60% neutral** — background, panels, text at reduced opacity
+- **30% brand primary** — one dominant color (Red Bull navy blue, Disney+ blue)
+- **10% accent** — danger red, success green, highlight gold — ONLY for status and alerts
+
+If the dashboard uses more than 3 saturated colors at full brightness
+simultaneously, it will look cheap. Gauge segments, chart fills, and
+data badges count toward the 10%. Headers, labels, and chrome should
+be neutral.
+
+### L12. Light theme is not an inversion
+
+Light theme requires independent design, not `s/dark/light/g`:
+- **Background:** `#F0F2F5` (NOT pure white — too harsh)
+- **Panel:** `#FFFFFF` with subtle `rgba(0,0,0,0.06)` edge
+- **Text:** `#0B0E1A` primary, `rgba(11,14,26,0.60)` dim
+- **Gauge unfilled:** `rgba(0,0,0,0.06)` (NOT `rgba(255,255,255,0.04)`)
+- **Grid lines:** `rgba(0,0,0,0.06)` (NOT white-based)
+- **Hero dimming overlay:** `#F0F2F5` at 35% (NOT black)
+- **Panel overlay:** `#FFFFFF` at 88% (NOT dark)
+- **Accent colors:** May need lower chroma — `#DC0000` on white is harsher than on `#0B0E1A`
+
+The `getTheme('light')` function in theme.js MUST return a
+complete independent palette, not derived values.
+
+Every viz MUST be tested in both themes before shipping. A viz
+that looks polished in dark but broken in light is not done.
+
+### L13. Semi-transparent grouping panels
+
+Floating panels with 85-92% opacity background create visual
+hierarchy without heavy borders or drop shadows:
+- Group related elements (gauges + gear + ERS together)
+- Panel color matches canvas bg (just barely visible as a region)
+- Stroke at 3-4% white opacity for subtle edge definition
+- rx:4 for slight softness (not 0 = harsh, not 8 = bubbly)
+
+This is the middle ground between "everything flat on canvas"
+(no hierarchy) and "every panel in a card" (too much chrome).
+
+### L14. Section labels at 30% opacity
+
+Section headers ("TELEMETRY", "SECTOR TIMES", "TYRE STRATEGY")
+should be extraSmall fontSize at 30% text opacity. They organize
+without competing with data. Never use `## Heading` style markdown
+for section labels in themed dashboards — too heavy.
 
 ## What this skill does NOT do
 

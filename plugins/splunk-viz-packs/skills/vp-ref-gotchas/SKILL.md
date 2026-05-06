@@ -296,6 +296,45 @@ Format: `{app_id}.{viz_name}`. Nothing else.
 
 Get any one wrong and the setting silently fails.
 
+### B11. parseFloat truncates string values
+
+`parseFloat("1:21.584")` returns `1`. `parseFloat("+4.271s")` returns
+`4`. Any KPI-type viz that displays a single value MUST detect
+non-numeric strings and display them as-is.
+
+```javascript
+var rawStr = String(row[colIdx[field]]);
+var rawValue = parseFloat(rawStr);
+var isNumeric = !isNaN(rawValue) && String(rawValue) === rawStr.replace(/^[+\s]+/, '');
+
+var displayValue;
+if (!rawStr) {
+    displayValue = '—';
+} else if (!isNumeric) {
+    displayValue = rawStr;  // lap times, gaps, formatted strings
+} else if (decimals >= 0) {
+    displayValue = rawValue.toFixed(decimals);
+} else {
+    displayValue = fmtNum(rawValue, { compact: true });
+}
+```
+
+Common values that break: `1:21.584` (lap time), `+4.271s` (gap),
+`P1` (position), `DNS` (did not start), `3.8%` (percentage with unit
+baked in).
+
+### B12. Gauge colors must match brand, not default green
+
+The default gauge palette (green→yellow→red) is generic and
+off-brand. Gauge segment colors MUST derive from the brand palette:
+
+- **Red Bull:** blue→lightblue→gold→red (navy #1E3A6E → sky #4A8FE7)
+- **Disney+:** blue→purple gradient (brand blue #0063E5)
+- **Netflix:** dark grey→red (cinema feel)
+
+Use `lerpColor(brandLow, brandHigh, segmentPct)` for smooth branded
+transitions. Reserve red for the actual red zone only.
+
 ## REJECTED — fails AppInspect / Splunk Cloud vetting
 
 ### R1. app.conf must have 5 stanzas
@@ -344,13 +383,21 @@ has no `admin` role).
 
 ### R3. No macOS artifacts in tarball
 
+macOS tar silently adds `._` resource fork entries to the archive.
+Splunk sees these as extra top-level directories and rejects the
+upload: **"archive contains more than one immediate subdirectory:
+and {app_name}"**.
+
+`COPYFILE_DISABLE=1` is MANDATORY on macOS:
+
 ```bash
 find app_dir -name '._*' -delete
 find app_dir -name '.DS_Store' -delete
 COPYFILE_DISABLE=1 tar czf app.tar.gz --exclude='.*' app_dir
 ```
 
-`.DS_Store`, `._*` files → AppInspect failure.
+`.DS_Store`, `._*` files → AppInspect failure. Missing
+`COPYFILE_DISABLE=1` → Splunk install rejection.
 
 ### R4. No nested archives
 
