@@ -205,6 +205,26 @@ var fontSize = userSize > 0
     : Math.max(14, Math.min(72, Math.min(w, h) * 0.35));
 ```
 
+## KPI tile vertical stacking
+
+**NEVER use percentage-of-height** (`h * 0.28`, `h * 0.55`) for
+label/value/trend positioning. At small panel heights (100-150px),
+percentage positions collapse and elements overlap.
+
+**Use additive positioning:**
+```javascript
+var pad = 10;
+var labelY = pad + labelSize;
+var valueY = labelY + labelSize / 2 + 6 + valueSize / 2;
+var trendY = valueY + valueSize / 2 + 4 + trendSize / 2;
+```
+
+Each element sits below the previous with an explicit pixel gap.
+This guarantees separation at any panel height.
+
+**Trend delta goes BELOW the value, not beside it.** At typical
+KPI widths, a large monospace number fills the horizontal space.
+
 ## Effects
 
 ### Drop shadow (multi-pass for intensity)

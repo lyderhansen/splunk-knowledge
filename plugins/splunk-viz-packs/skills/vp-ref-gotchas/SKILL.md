@@ -92,7 +92,37 @@ var color = config[ns + 'color'] || '#fff';
 for (var i = 0; i < items.length; i++) { ... }
 ```
 
-### F4. Only externalize what you import
+### F4. getInitialDataParams must use ROW_MAJOR_OUTPUT_MODE
+
+`getInitialDataParams` MUST return `outputMode: SplunkVisualizationBase.ROW_MAJOR_OUTPUT_MODE`. 
+Using the string `'json'` silently delivers data in a different structure — the viz receives
+an object without `fields`/`rows`, every `fieldIndex()` returns `-1`, and every viz renders
+its "No data" fallback with no error in the console.
+
+```javascript
+// WRONG — data arrives in wrong format, viz shows "No data"
+getInitialDataParams: function() {
+    return { outputMode: 'json', count: 10000 };
+}
+
+// CORRECT — data arrives as { fields: [{name:...}], rows: [[...]] }
+getInitialDataParams: function() {
+    return {
+        outputMode: SplunkVisualizationBase.ROW_MAJOR_OUTPUT_MODE,
+        count: 10000
+    };
+}
+```
+
+`SplunkVisualizationBase` is available as the AMD module parameter — use
+the constant, not a string. Valid modes:
+- `SplunkVisualizationBase.ROW_MAJOR_OUTPUT_MODE` — `{fields, rows}` (use this)
+- `SplunkVisualizationBase.COLUMN_MAJOR_OUTPUT_MODE` — `{fields, columns}`
+- `SplunkVisualizationBase.RAW_OUTPUT_MODE` — raw JSON
+
+**NEVER use `'json'`, `'xml'`, or any arbitrary string.**
+
+### F5. Only externalize what you import
 
 ```javascript
 // If you only use SplunkVisualizationBase:
@@ -640,6 +670,7 @@ Before writing ANY viz code, verify:
 - [ ] KPI/value vizs have `decimals` formatter option (default -1 = auto)
 - [ ] App name matches brand/project (not generic `custom_viz`)
 - [ ] Images bundled in `appserver/static/images/` (not root `static/`, not external URLs)
+- [ ] `getInitialDataParams` returns `outputMode: SplunkVisualizationBase.ROW_MAJOR_OUTPUT_MODE` (NOT `'json'`)
 - [ ] Bundle verified: starts with `define([...], function(`
 - [ ] Package excludes: node_modules, src, .DS_Store, ._*, .git*
 - [ ] README documents `"backgroundColor": "transparent"` requirement

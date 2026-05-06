@@ -160,25 +160,51 @@ Pre-built inventories. Use as starting points, not mandates.
 | `incident_ticker` | Scrolling incident feed |
 | `topology_map` | Node-edge service topology |
 
-## Workflow
+## Workflow — NO STEPS MAY BE SKIPPED
+
+**MANDATORY:** Every step below MUST be executed in order. Skipping
+steps 1-3 produces generic output. Skipping step 6 ships bugs.
+Skipping step 8 ships mediocrity. There are no shortcuts.
+
+If time is limited, reduce VIZ COUNT (3 instead of 6) — do NOT
+reduce DESIGN DEPTH. Three unique vizs beat six generic ones.
 
 ```
-1. Brand research — understand the visual language
+1. Brand research — understand the visual language        [BLOCKING]
        ↓
-2. Design context (brand, domain, tone, fonts)
+2. Design context (brand, domain, tone, fonts)            [BLOCKING]
        ↓
-3. Design direction — palette, typography, aesthetic flavor
+3. Design direction — palette, typography, aesthetic       [BLOCKING]
        ↓
 4. Viz inventory (from template or custom)
        ↓
 5. Design brief with per-viz specs
        ↓
-6. Quality Gate
+6. Quality Gate — ALL checks must pass                    [BLOCKING]
        ↓
 7. Build → vp-create (scaffold) → vp-viz (per-viz code)
        ↓
-8. Design critique — review the result
+8. Design critique — review the result                    [BLOCKING]
 ```
+
+**STOP gates:** Steps marked [BLOCKING] must produce an artifact
+before proceeding. Step 1 produces brand research notes. Steps 2-3
+produce the design brief. Step 6 produces a checklist with all
+items checked. Step 8 produces a critique score. If ANY of these
+is missing, the build was rushed and the output will be generic.
+
+### Subagent enforcement
+
+When delegating to `vp-viz` subagents, the prompt MUST include:
+1. The full design brief (not just "use HBO Max colors")
+2. The brand-specific panel chrome description (not "use drawPanel()")
+3. The anti-pattern list (copy from the Anti-patterns section below)
+4. Explicit instruction: "Do NOT use theme.drawPanel() — use the
+   brand-specific chrome described in the brief"
+5. Explicit instruction: "outputMode MUST be
+   SplunkVisualizationBase.ROW_MAJOR_OUTPUT_MODE, NEVER 'json'"
+
+Without these in the prompt, subagents default to generic patterns.
 
 ### Step 1: Brand research
 

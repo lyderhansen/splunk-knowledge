@@ -50,8 +50,9 @@ define([
 ], function(SplunkVisualizationBase) {
 
     // ── Imports ─────────────────────────────────────────────────
-    // theme.js is bundled via webpack resolve alias
-    var theme = require('../../shared/theme');
+    // Use the webpack alias — NOT a relative path.
+    // Relative paths from viz/src/ don't resolve to pack root.
+    var theme = require('shared/theme');
 
     // ── Helpers ─────────────────────────────────────────────────
 
@@ -175,24 +176,36 @@ expose in `formatter.html`. Use theme tokens for all colors.
 **Draws:** large centered value, under-label, optional delta arrow,
 optional micro-sparkline.
 
-**Key render logic:**
+**Layout rule: NEVER use percentage-of-height for label+value stacking.**
+Percentage positioning collapses at small panel heights (100-150px).
+Use additive positioning:
 ```javascript
-var valueFontSize = Math.max(14, Math.min(72, Math.min(w, h) * 0.35));
-var labelFontSize = Math.max(8, Math.min(20, Math.min(w, h) * 0.09));
+var pad = 10;
+var labelFontSize = Math.max(8, Math.min(14, h * 0.11));
+var valueFontSize = Math.max(14, Math.min(48, h * 0.32));
+var trendFontSize = Math.max(8, Math.min(12, h * 0.10));
 
-ctx.font = 'bold ' + valueFontSize + 'px ' + theme.FONTS.mono;
-ctx.fillStyle = valueColor;
-ctx.textAlign = 'center';
-ctx.textBaseline = 'middle';
-ctx.fillText(formattedValue, w / 2, h * 0.42);
-
-ctx.font = labelFontSize + 'px ' + theme.FONTS.ui;
-ctx.fillStyle = t.textDim;
-ctx.fillText(label, w / 2, h * 0.68);
+var labelY = pad + labelFontSize;
+var valueY = labelY + labelFontSize / 2 + 6 + valueFontSize / 2;
+var trendY = valueY + valueFontSize / 2 + 4 + trendFontSize / 2;
 ```
 
-**Settings:** `field`, `label`, `unit`, `unitPosition`, `valueColor`,
-`showDelta`, `deltaField`, `showSparkline`, `sparklineField`, `theme`
+**Trend delta MUST be positioned BELOW the value, not beside it.**
+At typical KPI tile widths (200-400px), a large monospace value
+leaves no horizontal room for trend text at the same line. Stack
+vertically: label → value → trend+arrow.
+
+**String value passthrough (B11):** `parseFloat()` truncates string
+values like `"1:21.584"` → `1`. Detect non-numeric strings:
+```javascript
+var rawStr = String(row[colIdx[field]]);
+var rawValue = parseFloat(rawStr);
+var isNumeric = !isNaN(rawValue) && String(rawValue) === rawStr.replace(/^[+\s]+/, '');
+var displayValue = isNumeric ? fmtNum(rawValue) : rawStr;
+```
+
+**Settings:** `field`, `label`, `unit`, `unitPosition`, `decimals`,
+`showDelta`, `deltaField`, `accentColor`, `theme`
 
 **Data contract:** configurable field (default: `value`). Reads last
 row. Optional: `delta` field for trend arrow.

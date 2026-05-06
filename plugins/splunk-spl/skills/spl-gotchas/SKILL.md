@@ -148,6 +148,18 @@ extended type conversion/checking) are documented in `reference/eval.md`.
 **Right:** `| fields - _time` in SPL
 **Why:** `_time` is exempt from `showInternalFields` in Dashboard Studio tables. The only way to hide it is to exclude it in SPL.
 
+### 22. tostring() format arg only accepts 3 values
+
+**Wrong:** `| eval display = tostring(round(val, 3), "0.000")`
+**Right:** `| eval display = tostring(round(val, 3))`
+**Why:** `tostring()` format argument only accepts `"hex"`, `"commas"`, or `"duration"`. Numeric format patterns (`"0.000"`, `"#,###"`) are NOT valid — they cause eval errors. For decimal precision, use `round(x, N)` before `tostring()`. For comma-separated display, use `tostring(val, "commas")`. For time display, use `tostring(val, "duration")`.
+
+### 23. strftime on _time kills chart x-axis
+
+**Wrong:** `| eval _time=strftime(_time, "%H:%M")` before a timechart/area/line
+**Right:** Keep `_time` as epoch for charts, only use strftime in tables via `| eval display_time=strftime(_time, "%H:%M")`
+**Why:** Converting `_time` to a string destroys the numeric axis. Splunk charts need epoch values for the x-axis. Only use strftime for display in table columns, never to replace `_time` in chart searches.
+
 ---
 
 ## Command index

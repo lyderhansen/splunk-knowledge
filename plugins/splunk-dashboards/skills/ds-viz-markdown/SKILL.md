@@ -87,6 +87,28 @@ Plus DOS token interpolation: `$myFont$`, `$primary:fontName|s$`.
 
 Plus schema-supported `fontFamily` (above).
 
+### CRITICAL: `fontSize` is a strict enum — NOT a number
+
+`fontSize` only accepts these exact string values:
+- `"extraSmall"`, `"small"`, `"default"`, `"large"`, `"extraLarge"`
+- A DOS expression: `"> \"small\""` 
+- A token: `"$myFontSize$"`
+
+**BANNED values that cause schema validation errors:**
+
+| BANNED value | Error | Correct alternative |
+|---|---|---|
+| `14` (number) | `must be string` | `"default"` |
+| `"14"` (number string) | `must match pattern` | `"default"` |
+| `"11"` (number string) | `must match pattern` | `"extraSmall"` |
+| `"16"` (number string) | `must match pattern` | `"large"` |
+| `"20"` (number string) | `must match pattern` | `"extraLarge"` |
+| `"medium"` | `must match pattern` | `"default"` |
+
+The schema regex requires one of the five named sizes, a `$token$`
+reference, or a DOS expression starting with `>`. Pixel values and
+arbitrary strings are silently rejected.
+
 ## Supported markdown syntax
 
 CommonMark-ish subset:
