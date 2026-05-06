@@ -1,7 +1,7 @@
 {
   "name": "splunk-admin",
-  "description": "Splunk administration reference covering all ~52 configuration files (every stanza, every setting) and all REST API endpoints (every operation, every parameter). Two-layer system: eagerly-loaded gotcha skills with precedence rules, pipeline mapping, and endpoint indexes, plus lazy-loaded per-file and per-endpoint reference. Sourced from Splunk Enterprise 10.2.",
-  "version": "1.0.0",
+  "description": "Splunk administration reference covering all ~61 configuration files, all REST API endpoints, CLI commands, and troubleshooting diagnostics. Four eagerly-loaded skills (conf files, REST API, CLI, troubleshooting) with gotchas and indexes, plus lazy-loaded per-file reference. Sourced from Splunk Enterprise 10.2.",
+  "version": "1.1.0",
   "author": {
     "name": "Lyder Hansen"
   },
@@ -14,6 +14,9 @@
     "configuration",
     "conf-files",
     "rest-api",
+    "cli",
+    "troubleshooting",
+    "btool",
     "splunk-enterprise"
   ]
 }
