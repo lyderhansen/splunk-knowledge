@@ -89,22 +89,34 @@ CSS. Two is the ceiling.
 If the domain is data-heavy (SOC, NOC, infra), use mono for display
 too — one font total.
 
-## Viz Type Taxonomy
+## Viz Type Inspiration
 
-| Category | Viz types | When needed |
+The table below is a STARTING POINT — not a constraint. You have
+full Canvas 2D freedom. If the brand or data calls for a viz type
+that doesn't exist in this table, INVENT IT. The best viz packs
+have at least one viz that makes someone say "I've never seen that
+in Splunk before."
+
+| Category | Example types | Inspiration |
 |---|---|---|
-| **KPI** | `single_value_tile`, `sparkline_tile` | Every pack |
-| **Gauge** | `ring_gauge`, `arc_gauge`, `bar_gauge`, `fill_gauge` | Threshold/SLA metrics |
-| **Status** | `status_chip`, `status_board`, `traffic_light` | Service health |
-| **Flow** | `process_flow`, `pipeline`, `funnel` | Conversion/workflow |
-| **Spatial** | `track_map`, `floor_plan`, `network_topology` | Physical layout |
-| **Time** | `live_ticker`, `timeline`, `schedule_board` | Real-time feeds |
-| **Ranking** | `leaderboard`, `h_bar_list`, `top_n` | Competitive/ranked data |
-| **Composition** | `donut`, `waterfall`, `stacked_bar` | Part-to-whole |
+| **KPI** | single value, sparkline tile, stat card | Bloomberg terminal, Tesla instrument cluster |
+| **Gauge** | ring, needle, segmented arc, fill bar | F1 telemetry, car dashboard, medical monitors |
+| **Status** | health grid, status matrix, traffic light | Datadog service map, AWS health dashboard |
+| **Chart** | area, bar, radar, horizon, spark strip | FT data journalism, Stripe analytics |
+| **Flow** | pipeline, waterfall, funnel, sankey | Figma flow diagrams, Vercel deploy pipeline |
+| **Spatial** | track map, floor plan, network topology | F1 circuit map, datacenter floor, network diagram |
+| **Time** | live ticker, timeline, schedule board | Bloomberg news ticker, airport departures |
+| **Ranking** | leaderboard, horizontal bars, top-N | ESPN standings, app store rankings |
+| **Composition** | donut, treemap, stacked, waterfall | NYT election results, GitHub language breakdown |
+| **Matrix** | heat grid, punchcard, correlation | GitHub contributions, Spotify listening patterns |
 
-**Selection rule:** pick 5-8 total. The universal three plus 2-5
-domain-specific. If you're above 8, you're building a framework —
-stop and cut.
+**Rules:**
+- 5-8 vizs total per pack
+- Minimum 3 DISTINCT categories — no all-gauges or all-donuts
+- Let the DATA drive the viz choice, not habit
+- If you catch yourself defaulting to donut + ring gauge + KPI tile
+  for the third brand in a row, STOP and ask: what would a graphic
+  designer choose for THIS specific data story?
 
 ## Domain Templates
 
