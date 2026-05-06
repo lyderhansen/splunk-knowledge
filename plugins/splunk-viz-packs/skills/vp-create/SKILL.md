@@ -514,6 +514,147 @@ Custom fonts (Inter, Roboto, Georgia, system-ui) → schema error.
 
 Numeric values ("14", "11") → schema error.
 
+## Custom viz type format in dashboard JSON
+
+When a dashboard references a custom viz, the `type` field MUST use
+the format `{app_id}.{viz_name}`:
+
+```json
+"viz_speed_gauge": {
+    "type": "redbull_viz.ring_gauge",
+    "dataSources": { "primary": "ds_speed" },
+    "options": {
+        "backgroundColor": "transparent",
+        "redbull_viz.ring_gauge.field": "value",
+        "redbull_viz.ring_gauge.maxValue": "370"
+    }
+}
+```
+
+| Part | Value | Source |
+|---|---|---|
+| `type` | `{app_id}.{viz_name}` | app.conf `[id] name` + visualizations.conf stanza |
+| `options` prefix | `{app_id}.{viz_name}.{setting}` | Namespace from formatter.html |
+| `backgroundColor` | `"transparent"` | ALWAYS — lets Canvas control the background |
+
+**Common mistakes:**
+- `"type": "custom.ring_gauge"` — wrong, `custom` is not the app id
+- `"type": "ring_gauge"` — wrong, missing app id prefix
+- Missing `"backgroundColor": "transparent"` — Splunk's panel bg covers the Canvas
+
+## backgroundColor on custom viz panels
+
+Every custom viz panel MUST set `"backgroundColor": "transparent"` at
+the viz level. Without this, Splunk renders a default panel background
+ON TOP of the Canvas — the viz draws behind it, invisible.
+
+```json
+"viz_kpi": {
+    "type": "mypack.kpi_tile",
+    "options": {
+        "backgroundColor": "transparent",
+        "mypack.kpi_tile.field": "value"
+    }
+}
+```
+
+This is the **viz-level** `backgroundColor` property, NOT a namespaced
+option. It sits alongside the namespaced settings in `options`.
+
+If the user wants a custom background (gradient, panel color), add it
+as a configurable setting in the viz source code and renderer — NOT
+via the Dashboard Studio `backgroundColor` property.
+
+## Z-order in absolute layout
+
+`structure` array order = z-order. Earlier items render BEHIND later
+items.
+
+```json
+"structure": [
+    {"item": "viz_hero_image"},      // z=0 (furthest back)
+    {"item": "viz_dimming_overlay"},  // z=1
+    {"item": "viz_panel_bg"},        // z=2
+    {"item": "viz_kpi_tile"},        // z=3 (furthest front)
+]
+```
+
+**Common mistake:** putting a `splunk.rectangle` shadow card AFTER the
+viz it's supposed to be behind. The rectangle renders ON TOP and
+covers the viz.
+
+**Rule:** background layers first, then panels/cards, then data vizs,
+then overlays (tooltips, badges).
+
+## Cache busting — increment `build` on every update
+
+When you update a viz pack and reinstall, Splunk caches the old
+`visualization.js`. Users see old rendering despite the new code.
+
+**Fix:** increment `build` in `app.conf` on every release:
+
+```ini
+[install]
+is_configured = 0
+build = 2       # was 1 → increment on EVERY code change
+```
+
+The browser uses `build` as a cache key. Same build number = cached.
+Different build number = fresh load.
+
+**Rule:** before packaging, ALWAYS check app.conf and increment `build`.
+
+## Drilldown from custom vizs
+
+Custom Canvas vizs can fire drilldown events that navigate to other
+dashboards or set tokens.
+
+```javascript
+// In initialize():
+this.canvas.addEventListener('click', function(e) {
+    self._onClick(e);
+});
+
+// Click handler:
+_onClick: function(e) {
+    var rect = this.canvas.getBoundingClientRect();
+    var mx = e.clientX - rect.left;
+    var my = e.clientY - rect.top;
+    var hit = this._hitTest(mx, my);
+    if (hit !== null) {
+        var region = this._hitRegions[hit];
+        var payload = {
+            action: SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN,
+            data: region.drilldownData
+        };
+        this.drilldownToPayload(payload);
+    }
+},
+```
+
+The `drilldownData` object should contain the field name and value:
+```javascript
+{ drilldownData: { 'click.name': 'host', 'click.value': 'web01' } }
+```
+
+Dashboard JSON wires the event handler:
+```json
+"eventHandlers": [
+    {
+        "type": "drilldown.setToken",
+        "options": {
+            "tokens": [
+                { "token": "selected_host", "value": "$click.value$" }
+            ]
+        }
+    }
+]
+```
+
+**Note:** `drilldownToPayload` is a method on `SplunkVisualizationBase`.
+Wrap in try/catch (vp-ref-gotchas C5) since the parent frame may
+block the navigation.
+
 ## XML dashboard generation
 
 Dashboard Studio v2 stores dashboards as JSON inside XML CDATA. When

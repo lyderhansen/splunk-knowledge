@@ -830,39 +830,49 @@ my_viz.gauge                   ← bad: meaningless
 The app ID appears in every `"type":` reference in every dashboard
 JSON. Make it count.
 
-## Pre-commit checklist
+## Pre-commit checklist — tiered
 
-Before writing ANY viz code, verify:
+### TIER 1: MUST (blocks shipping — viz won't work without these)
 
-- [ ] webpack.config.js has `target: ['web', 'es5']` + all environment flags
-- [ ] visualization_source.js is pure ES5 (no const/let/arrow/template)
+- [ ] webpack target `['web', 'es5']` + all environment flags
+- [ ] Source is pure ES5 (no const/let/arrow/template)
 - [ ] Source uses `require()`/`module.exports`, NOT `define()` (F6)
-- [ ] Uses `SplunkVisualizationBase.extend({...})` object literal, NOT prototypal constructor (F7)
-- [ ] `formatData` is present in the extend object (B15)
-- [ ] Canvas background uses `clearRect()`, NOT `fillRect()` with theme colors (B13)
-- [ ] All fonts embedded as base64 in visualization.css
-- [ ] Font readiness polled before Canvas text drawing
-- [ ] HiDPI scaling with devicePixelRatio
-- [ ] `getOption()` + `getNS()` helpers used for all config reads
+- [ ] Uses `SplunkVisualizationBase.extend({...})` object literal (F7)
+- [ ] `getInitialDataParams` returns `outputMode: SplunkVisualizationBase.ROW_MAJOR_OUTPUT_MODE`
+- [ ] Canvas uses `clearRect()`, NOT `fillRect()` with bg color (B13)
+- [ ] HiDPI scaling with `devicePixelRatio`
+- [ ] `getOption()` + `getNS()` for ALL config reads
 - [ ] No config reads in `formatData`
-- [ ] Formatter section labels are exact lowercase match
-- [ ] JS defaults match formatter HTML defaults
-- [ ] Every `getOption()` call has a matching `<splunk-control-group>` in formatter (B15)
-- [ ] No hardcoded hex colors in `_render()` — all from theme tokens or formatter settings
-- [ ] app.conf has all 5 stanzas with `is_configured = 0`
-- [ ] default.meta has global `[]` stanza with `sc_admin`
-- [ ] savedsearches.conf.spec documents every custom setting
-- [ ] No `[triggers]` stanza in any conf file
-- [ ] Hover tooltip implemented (DOM div + mousemove + hitTest)
-- [ ] Hover highlight on interactive elements (crosshair, row bg, segment stroke)
-- [ ] KPI/value vizs have `decimals` formatter option (default -1 = auto)
-- [ ] App name matches brand/project (not generic `custom_viz`)
-- [ ] Images downloaded and bundled in `appserver/static/images/` — NEVER external URLs (F8)
-- [ ] `getInitialDataParams` returns `outputMode: SplunkVisualizationBase.ROW_MAJOR_OUTPUT_MODE` (NOT `'json'`)
-- [ ] Bundle verified: starts with `define([...], function(`
-- [ ] Package excludes: node_modules, src, .DS_Store, ._*, .git*
-- [ ] README documents `"backgroundColor": "transparent"` requirement
-- [ ] MutationObserver hides placeholders (if viz renders without data)
+- [ ] JS defaults match formatter HTML defaults (B7)
+- [ ] app.conf: 5 stanzas, `is_configured = 0`, `build` incremented
+- [ ] default.meta: global `[]` with `sc_admin`, `[lookups]` exported
+- [ ] No `[triggers]` stanza anywhere
+- [ ] Dashboard JSON: `"backgroundColor": "transparent"` on every custom viz panel
+- [ ] Dashboard JSON: type = `{app_id}.{viz_name}` (not `custom.X`)
+- [ ] Bundle starts with `define([...], function(`
+- [ ] Package: `COPYFILE_DISABLE=1`, excludes node_modules/src/.DS_Store
+
+### TIER 2: SHOULD (quality — dashboard looks wrong without these)
+
+- [ ] Hover tooltip (DOM div + mousemove + hitTest)
+- [ ] Hover highlight (crosshair, row bg, segment glow)
+- [ ] Every `getOption()` has matching formatter control (B15)
+- [ ] No hardcoded hex in `_render()` — theme tokens or settings
+- [ ] KPI vizs: `decimals` setting (default -1 = auto)
+- [ ] KPI vizs: string passthrough for non-numeric values (B11)
+- [ ] Gauge vizs: brand-colored segments, not green→red (B12)
+- [ ] App name = brand name (not `custom_viz`)
+- [ ] Images in `appserver/static/images/` (never external URLs)
+- [ ] Z-order: bg layers first → panels → vizs → overlays
+- [ ] Animations cleared in `destroy()`
+- [ ] Shadow state reset after every glow draw
 - [ ] Drilldown wrapped in try/catch
-- [ ] All animations cleared in `destroy()`
-- [ ] Canvas shadow state reset after every shadow/glow draw
+
+### TIER 3: POLISH (distinguishes good from great)
+
+- [ ] Fonts embedded as base64, font readiness polled
+- [ ] savedsearches.conf.spec documents every setting
+- [ ] Demo data via CSV lookups (not makeresults)
+- [ ] Markdown panels sized to avoid scrollbars
+- [ ] `aria-label` on canvas with primary value for accessibility
+- [ ] Canvas `cursor: pointer` on hoverable elements

@@ -584,6 +584,72 @@ See `vp-ref-gotchas` I1 and I2. Every viz MUST implement:
 The tooltip is a `<div>` appended to `this.el`, NOT drawn on Canvas
 (Canvas can't do pointer-events:none or z-index above Studio chrome).
 
+## Drilldown — click navigation from Canvas vizs
+
+Custom vizs can fire drilldown events when the user clicks on a
+data element (table row, gauge segment, chart point).
+
+**In the viz source:**
+```javascript
+// In initialize():
+this.canvas.addEventListener('click', function(e) {
+    self._onClick(e);
+});
+
+// Click handler:
+_onClick: function(e) {
+    var rect = this.canvas.getBoundingClientRect();
+    var mx = e.clientX - rect.left;
+    var my = e.clientY - rect.top;
+    var hit = this._hitTest(mx, my);
+    if (hit === null) return;
+    var region = this._hitRegions[hit];
+    try {
+        this.drilldownToPayload({
+            action: SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN,
+            data: region.drilldownData
+        });
+    } catch (e) { /* parent frame may block */ }
+},
+```
+
+**Hit region data format:**
+```javascript
+this._hitRegions.push({
+    x: rx, y: ry, w: rw, h: rh,
+    tip: 'Driver: Verstappen',
+    drilldownData: { 'click.name': 'Driver', 'click.value': 'Verstappen' }
+});
+```
+
+**In dashboard JSON — wire the event handler:**
+```json
+"viz_table": {
+    "type": "mypack.data_table",
+    "options": { ... },
+    "eventHandlers": [
+        {
+            "type": "drilldown.setToken",
+            "options": {
+                "tokens": [
+                    { "token": "selected", "value": "$click.value$" }
+                ]
+            }
+        }
+    ]
+}
+```
+
+**Or navigate to another dashboard:**
+```json
+"eventHandlers": [
+    {
+        "type": "drilldown.linkToDashboard",
+        "options": { "app": "search", "dashboard": "detail_view" }
+    }
+]
+```
+
 ## Decimals setting — standard on all KPI/value vizs
 
 Every viz that displays a formatted number MUST expose a `decimals`
