@@ -110,6 +110,30 @@ Set `src` to `http(s)://...` or Splunk-bundled `/en-US/static/...`.
 internal-only views, URLs are fine — but verify domain is on the
 trusted list.
 
+### 3. App-bundled (recommended for custom viz packs)
+
+When the dashboard ships inside a Splunk app (e.g. a custom viz pack),
+bundle images in `appserver/static/images/` and reference them at
+`/static/app/{app_name}/images/filename`:
+
+```json
+"viz_hero": {
+    "type": "splunk.image",
+    "options": {
+        "src": "/static/app/redbull_viz/images/rb20_front.jpg",
+        "preserveAspectRatio": true
+    }
+}
+```
+
+**Path:** `appserver/static/images/` — NOT root `static/`. Root
+`static/` is reserved for Splunk app icons (appIcon.png).
+
+**Requires Splunk restart** after app install for new static files
+to be served. Images are always trusted (no allow-list needed).
+PDF/PNG export behavior depends on Splunk version — test before
+relying on it for scheduled reports.
+
 ## Layout: absolute only
 
 ```json

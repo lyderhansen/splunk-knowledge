@@ -129,6 +129,7 @@ per-viz / interactivity / reference skill that owns the full fix.
 | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | -------------------------------- |
 | External image URL renders as placeholder           | Domain must be on `dashboards_image_allow_list`. Splunk-bundled `/en-US/static/...` is always trusted. | `ds-viz-image`                   |
 | External image URL doesn't render in PDF/PNG export | Only uploaded KV-store images render. Always upload for PDF.                                           | `ds-viz-image` Do/Don't          |
+| App-bundled image "not found" after install         | Image in wrong path. Must be `appserver/static/images/`, not root `static/`. Needs Splunk restart.    | `ds-viz-image` §3                |
 | SVG choropleth no fills                             | `<rect>` / `<circle>` not picked up — only `<path>` with unique `id`.                                  | `ds-viz-choropleth-svg` Do/Don't |
 
 
