@@ -425,6 +425,25 @@ COPYFILE_DISABLE=1 tar czf {{PACK_ID}}.tar.gz \
   {{PACK_ID}}
 ```
 
+## Completion output — MANDATORY
+
+When the build and packaging is complete, ALWAYS print:
+
+```
+✅ Viz pack ready for install
+
+  File: {{PACK_ID}}.tar.gz
+  Path: /full/absolute/path/to/{{PACK_ID}}.tar.gz
+  Size: XX KB
+  Vizs: kpi_tile, ring_gauge, area_chart, data_table, content_donut
+
+Install: Upload via Splunk Web → Manage Apps → Install from File
+Restart: Required for static images to be served
+```
+
+This tells the user exactly where the file is and what to do with it.
+Do NOT skip this output. Do NOT abbreviate the path.
+
 ## Bundled images
 
 Brand logos, hero images, icons, and other static assets go in
