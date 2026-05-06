@@ -135,6 +135,81 @@ externals: ['api/SplunkVisualizationBase', 'api/SplunkVisualizationUtils']
 Externalizing unused modules wastes an AMD slot and webpack emits
 warnings.
 
+### F6. Source MUST use require(), NEVER define()
+
+Webpack's `libraryTarget: 'amd'` wraps the output in `define()`.
+If the source ALSO uses `define()`, you get a double AMD wrapper
+that breaks RequireJS — every viz shows `REQUIREJS_ERROR_MESSAGE
+Script error`.
+
+```javascript
+// WRONG — double AMD wrapper, viz won't load
+define([
+    'api/SplunkVisualizationBase'
+], function(SplunkVisualizationBase) {
+    var theme = require('shared/theme');
+    return SplunkVisualizationBase.extend({ ... });
+});
+
+// CORRECT — webpack adds the AMD wrapper
+var SplunkVisualizationBase = require('api/SplunkVisualizationBase');
+var theme = require('shared/theme');
+
+module.exports = SplunkVisualizationBase.extend({ ... });
+```
+
+### F7. MUST use extend({...}) object literal, NEVER prototypal constructors
+
+`SplunkVisualizationBase.extend()` expects a plain object with method
+properties. Passing a constructor function does NOT register the
+prototype methods — the viz loads but shows no data (blank panel).
+
+```javascript
+// WRONG — extend(Constructor) doesn't copy prototype methods
+function MyViz(el) { SplunkVisualizationBase.call(this, el); }
+MyViz.prototype.initialize = function() { ... };
+MyViz.prototype.updateView = function() { ... };
+SplunkVisualizationBase.extend(MyViz);   // BROKEN
+module.exports = MyViz;                  // exports wrong thing
+
+// ALSO WRONG — fragile, sub-method scoping issues
+module.exports = SplunkVisualizationBase.extend(MyViz.prototype);
+
+// CORRECT — always use an object literal
+module.exports = SplunkVisualizationBase.extend({
+    initialize: function() {
+        SplunkVisualizationBase.prototype.initialize.apply(this, arguments);
+        // canvas setup, tooltip, event listeners...
+    },
+    getInitialDataParams: function() {
+        return {
+            outputMode: SplunkVisualizationBase.ROW_MAJOR_OUTPUT_MODE,
+            count: 10000
+        };
+    },
+    formatData: function(data) { ... },
+    updateView: function(data, config) { ... },
+    reflow: function() { ... },
+    destroy: function() { ... }
+});
+```
+
+### F8. Images must be bundled in the app, never external URLs
+
+Dashboard hero images, logos, and brand assets MUST be downloaded
+and placed in `appserver/static/images/`. External URLs fail on
+Splunk instances with domain allowlists, air-gapped environments,
+and Splunk Cloud — where outbound requests are blocked.
+
+```
+WRONG:  "src": "https://images.unsplash.com/photo-abc123?w=1920"
+RIGHT:  "src": "/static/app/{pack_name}/images/hero.jpg"
+```
+
+Download the image during build, save to `appserver/static/images/`,
+and reference via the Splunk static path. This also eliminates
+load-time latency from external CDNs.
+
 ## BROKEN — renders but wrong
 
 ### B1. Canvas font rendering requires explicit wait
@@ -364,6 +439,75 @@ off-brand. Gauge segment colors MUST derive from the brand palette:
 
 Use `lerpColor(brandLow, brandHigh, segmentPct)` for smooth branded
 transitions. Reserve red for the actual red zone only.
+
+### B13. Canvas background must use clearRect, never fillRect
+
+Vizs that fill the canvas with `ctx.fillStyle = t.bg; ctx.fillRect(0,
+0, w, h)` paint an opaque background that overrides Dashboard Studio's
+`"backgroundColor": "transparent"` option. The user loses control
+over the panel background.
+
+```javascript
+// WRONG — overrides panel backgroundColor
+ctx.fillStyle = t.bg;
+ctx.fillRect(0, 0, w, h);
+
+// CORRECT — transparent canvas, panel CSS controls background
+ctx.clearRect(0, 0, w, h);
+```
+
+Let Dashboard Studio's `backgroundColor` option control the panel
+background. Vizs should only draw their content on a clear canvas.
+
+### B14. Variables in _draw() are not accessible from sub-methods
+
+If your viz splits rendering into `_draw()` → `_drawCenter()`,
+`_drawTicks()`, etc., local variables in `_draw()` are NOT in scope
+inside the sub-methods. This causes `ReferenceError: x is not defined`
+at runtime.
+
+```javascript
+// WRONG — gi is local to _draw, invisible to _drawCenter
+_draw: function(parsed, config) {
+    var gi = 0.8;
+    this._drawCenter(ctx, parsed);     // gi is not defined!
+},
+_drawCenter: function(ctx, parsed) {
+    ctx.shadowBlur = 12 * gi;          // ReferenceError
+}
+
+// CORRECT — store on this
+_draw: function(parsed, config) {
+    this._gi = 0.8;
+    this._drawCenter(ctx, parsed);
+},
+_drawCenter: function(ctx, parsed) {
+    ctx.shadowBlur = 12 * (this._gi || 1);
+}
+```
+
+### B15. Always include formatData in the extend object
+
+Splunk calls `formatData` during its data pipeline. If missing, the
+viz may silently fail or receive data in an unexpected format. Always
+include it, even as a passthrough:
+
+```javascript
+formatData: function(data) {
+    if (!data || !data.rows || data.rows.length === 0) {
+        if (this._lastGoodData) return this._lastGoodData;
+        return data;
+    }
+    var fields = data.fields;
+    var colIdx = {};
+    for (var i = 0; i < fields.length; i++) {
+        colIdx[fields[i].name] = i;
+    }
+    var result = { colIdx: colIdx, rows: data.rows };
+    this._lastGoodData = result;
+    return result;
+},
+```
 
 ## REJECTED — fails AppInspect / Splunk Cloud vetting
 
@@ -654,6 +798,10 @@ Before writing ANY viz code, verify:
 
 - [ ] webpack.config.js has `target: ['web', 'es5']` + all environment flags
 - [ ] visualization_source.js is pure ES5 (no const/let/arrow/template)
+- [ ] Source uses `require()`/`module.exports`, NOT `define()` (F6)
+- [ ] Uses `SplunkVisualizationBase.extend({...})` object literal, NOT prototypal constructor (F7)
+- [ ] `formatData` is present in the extend object (B15)
+- [ ] Canvas background uses `clearRect()`, NOT `fillRect()` with theme colors (B13)
 - [ ] All fonts embedded as base64 in visualization.css
 - [ ] Font readiness polled before Canvas text drawing
 - [ ] HiDPI scaling with devicePixelRatio
@@ -669,7 +817,7 @@ Before writing ANY viz code, verify:
 - [ ] Hover highlight on interactive elements (crosshair, row bg, segment stroke)
 - [ ] KPI/value vizs have `decimals` formatter option (default -1 = auto)
 - [ ] App name matches brand/project (not generic `custom_viz`)
-- [ ] Images bundled in `appserver/static/images/` (not root `static/`, not external URLs)
+- [ ] Images downloaded and bundled in `appserver/static/images/` — NEVER external URLs (F8)
 - [ ] `getInitialDataParams` returns `outputMode: SplunkVisualizationBase.ROW_MAJOR_OUTPUT_MODE` (NOT `'json'`)
 - [ ] Bundle verified: starts with `define([...], function(`
 - [ ] Package excludes: node_modules, src, .DS_Store, ._*, .git*

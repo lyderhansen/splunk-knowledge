@@ -203,6 +203,16 @@ When delegating to `vp-viz` subagents, the prompt MUST include:
    brand-specific chrome described in the brief"
 5. Explicit instruction: "outputMode MUST be
    SplunkVisualizationBase.ROW_MAJOR_OUTPUT_MODE, NEVER 'json'"
+6. Explicit instruction: "Use require()/module.exports, NEVER
+   define() — webpack adds the AMD wrapper (see gotchas F6)"
+7. Explicit instruction: "Use SplunkVisualizationBase.extend({...})
+   object literal, NEVER prototypal constructor pattern (see F7)"
+8. Explicit instruction: "Canvas background must use clearRect(),
+   NEVER fillRect() with theme colors (see B13)"
+9. Explicit instruction: "Include accentIntensity setting (0-100,
+   default 50) — multiply all glow/shadow/accent opacities by gi"
+10. Explicit instruction: "Download hero/brand images to
+    appserver/static/images/ — NEVER use external URLs (see F8)"
 
 Without these in the prompt, subagents default to generic patterns.
 
@@ -287,7 +297,7 @@ VIZ INVENTORY (N vizs)
 ----------------------
 1. {viz_name}
    Data contract: {field1} (required), {field2} (required), {field3} (optional)
-   Settings: {setting1}={default}, {setting2}={default}
+   Settings: {setting1}={default}, {setting2}={default}, accentIntensity=50
    Visual: {one-paragraph description of what it looks like}
 
 2. {viz_name}
@@ -296,6 +306,18 @@ VIZ INVENTORY (N vizs)
 THEME TOKENS (theme.js)
 -----------------------
 {token name → value mapping}
+
+STANDARD SETTINGS (every viz gets these)
+----------------------------------------
+accentIntensity: 0-100 (default 50) — glow/accent effect strength
+accentColor: hex (default from palette) — primary accent
+theme: dark|light (default dark)
+backgroundColor: transparent (set via Dashboard Studio panel option)
+
+IMAGE ASSETS
+------------
+{image}: {source URL} → download to appserver/static/images/{filename}
+NEVER reference external URLs in dashboards — always bundle locally.
 
 FONT EMBEDDING
 --------------
@@ -324,6 +346,10 @@ Before hand-off, every item must pass. Failure blocks hand-off.
 | App naming | App name = brand name (L4) | Blocked |
 | Viz count | 5-8 vizs total (not 3, not 15) | Warning |
 | Field configurability | No hardcoded field names — all via formatter | Blocked |
+| accentIntensity | Every viz has accentIntensity setting (0-100, default 50) | Blocked |
+| Transparent canvas | Vizs use clearRect(), never fillRect() with bg color | Blocked |
+| Images bundled | All images downloaded to appserver/static/images/, no external URLs | Blocked |
+| Data source names | Every dashboard data source has a `"name"` property | Blocked |
 | Bundle size estimate | Total font base64 under 800KB | Warning |
 
 ## Anti-patterns

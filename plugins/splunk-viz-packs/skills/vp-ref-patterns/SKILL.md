@@ -1057,3 +1057,75 @@ These techniques are POWERFUL but DANGEROUS. Guidelines:
 **One rule:** if the mood technique competes with the DATA for
 attention, you've used too much. The data is the story. The mood
 is the stage lighting.
+
+## Accent intensity multiplier
+
+Every viz MUST expose an `accentIntensity` setting (0-100, default
+50) that scales all glow, shadow, ambient, and accent effects. This
+lets dashboard authors dial mood up or down per-panel without
+editing source code.
+
+### Reading the setting
+
+```javascript
+// In _render() or updateView():
+var gi = theme.parseNum(
+    theme.getOption(config, ns, 'accentIntensity', '50'), 50
+) / 50;
+this._gi = gi; // store on this for sub-methods (B14)
+```
+
+`gi` is a multiplier: 0 = off, 1 = default (50/50), 2 = max (100/50).
+
+### Applying to effects
+
+```javascript
+// Ambient light
+theme.drawAmbientLight(ctx, w, h, accent, 0.07 * gi);
+
+// Accent lines
+theme.drawAccentLines(ctx, w, h, accent, 0.06 * gi);
+
+// Vignette
+theme.drawVignette(ctx, w, h, 0.40 * gi);
+
+// Text glow radius
+theme.drawTextGlow(ctx, text, x, y, font, color, 14 * gi);
+
+// Shadow blur on arcs, dots, nodes
+ctx.shadowBlur = 12 * gi;
+
+// Backlight gradient opacity
+topGrad.addColorStop(0, theme.withAlpha(accent, 0.18 * gi));
+
+// Glass panel highlight
+var topHighlight = 'rgba(255,255,255,' + (0.10 * gi) + ')';
+```
+
+### In sub-methods
+
+Variables defined in `_draw()` are NOT accessible from separate
+methods like `_drawCenter()` or `_drawDots()`. Access via `this`:
+
+```javascript
+// In _drawCenter, _drawTicks, _drawDots, etc.:
+var gi = this._gi || 1;
+ctx.shadowBlur = 12 * gi;
+```
+
+### Formatter control
+
+Add to the "Color and style" section of every `formatter.html`:
+
+```html
+<splunk-control-group
+  label="Accent intensity"
+  help="Glow and accent effect strength (0=off, 50=default, 100=max)">
+  <splunk-text-input
+    name="{{VIZ_NAMESPACE}}.accentIntensity"
+    value="50">
+  </splunk-text-input>
+</splunk-control-group>
+```
+
+JS default (`'50'`) MUST match formatter default (`value="50"`).

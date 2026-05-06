@@ -44,125 +44,191 @@ exists. This skill writes the four files that make one viz work:
 Every `visualization_source.js` follows this exact structure. Do not
 deviate from the lifecycle method signatures.
 
+**CRITICAL:** Use `require()`/`module.exports`. NEVER use `define()` —
+webpack's `libraryTarget:'amd'` adds the AMD wrapper automatically.
+Using `define()` in source creates a double-wrapper that breaks
+RequireJS (see vp-ref-gotchas F6).
+
+**CRITICAL:** Use `SplunkVisualizationBase.extend({...})` object
+literal. NEVER use prototypal constructor pattern — it silently
+fails to register methods (see vp-ref-gotchas F7).
+
 ```javascript
-define([
-    'api/SplunkVisualizationBase'
-], function(SplunkVisualizationBase) {
+var SplunkVisualizationBase = require('api/SplunkVisualizationBase');
+var theme = require('shared/theme');
 
-    // ── Imports ─────────────────────────────────────────────────
-    // Use the webpack alias — NOT a relative path.
-    // Relative paths from viz/src/ don't resolve to pack root.
-    var theme = require('shared/theme');
+// ── Viz-specific helpers ────────────────────────────────────
+// (import from theme.js or define here as top-level functions)
 
-    // ── Helpers ─────────────────────────────────────────────────
+module.exports = SplunkVisualizationBase.extend({
+    initialize: function() {
+        SplunkVisualizationBase.prototype.initialize.apply(
+            this, arguments
+        );
+        this.el.style.overflow = 'hidden';
+        this.el.style.position = 'relative';
 
-    function getOption(config, ns, key, defaultValue) {
-        var v = config[ns + key];
-        if (v !== undefined && v !== null) return v;
-        v = config[key];
-        if (v !== undefined && v !== null) return v;
-        return defaultValue;
-    }
+        var canvas = document.createElement('canvas');
+        canvas.style.display = 'block';
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        this.el.appendChild(canvas);
+        this.canvas = canvas;
 
-    function getNS(viz) {
-        try {
-            var info = viz.getPropertyNamespaceInfo();
-            if (info && info.propertyNamespace) return info.propertyNamespace;
-        } catch (e) {}
-        return '';
-    }
+        this._lastData = null;
+        this._lastConfig = null;
+        this._lastGoodData = null;
 
-    // ── Viz-specific helpers ────────────────────────────────────
-    // (roundRect, lerpColor, etc. — import from theme.js or define here)
+        // Tooltip (mandatory — see vp-ref-gotchas I1)
+        this._tooltip = document.createElement('div');
+        this._tooltip.style.cssText =
+            'position:absolute;display:none;padding:6px 10px;' +
+            'background:rgba(6,9,16,0.92);color:#E2E8F0;font-size:11px;' +
+            'border-radius:2px;pointer-events:none;white-space:nowrap;' +
+            'z-index:100;font-family:"JetBrains Mono",monospace;' +
+            'border:1px solid rgba(0,136,204,0.35);';
+        this.el.appendChild(this._tooltip);
 
-    // ── Visualization ───────────────────────────────────────────
+        this._hoverIdx = -1;
+        this._hitRegions = [];
 
-    return SplunkVisualizationBase.extend({
-        initialize: function() {
-            SplunkVisualizationBase.prototype.initialize.apply(
-                this, arguments
-            );
-            this.el.style.overflow = 'hidden';
-            var canvas = document.createElement('canvas');
-            canvas.style.display = 'block';
-            this.el.appendChild(canvas);
-            this.canvas = canvas;
-            this._lastData = null;
-            this._lastConfig = null;
-        },
-
-        getInitialDataParams: function() {
-            return {
-                outputMode: SplunkVisualizationBase.ROW_MAJOR_OUTPUT_MODE,
-                count: 50
-            };
-        },
-
-        formatData: function(data) {
-            if (!data || !data.rows || data.rows.length === 0) {
-                if (this._lastGoodData) return this._lastGoodData;
-                throw new SplunkVisualizationBase.VisualizationError(
-                    'Awaiting data'
-                );
+        var self = this;
+        this.canvas.addEventListener('mousemove', function(e) {
+            self._onMouseMove(e);
+        });
+        this.canvas.addEventListener('mouseleave', function() {
+            self._tooltip.style.display = 'none';
+            self.canvas.style.cursor = 'default';
+            if (self._hoverIdx !== -1) {
+                self._hoverIdx = -1;
+                self._render(self._lastData, self._lastConfig);
             }
-            var fields = data.fields;
-            var colIdx = {};
-            for (var i = 0; i < fields.length; i++) {
-                colIdx[fields[i].name] = i;
-            }
-            var result = { colIdx: colIdx, rows: data.rows };
-            this._lastGoodData = result;
-            return result;
-        },
+        });
+    },
 
-        updateView: function(data, config) {
-            if (!data) return;
-            this._lastData = data;
-            this._lastConfig = config;
-            this._render(data, config);
-        },
+    getInitialDataParams: function() {
+        return {
+            outputMode: SplunkVisualizationBase.ROW_MAJOR_OUTPUT_MODE,
+            count: 10000
+        };
+    },
 
-        _render: function(data, config) {
-            var el = this.el;
-            var w = el.offsetWidth;
-            var h = el.offsetHeight;
-            if (w <= 0 || h <= 0) return;
+    formatData: function(data) {
+        if (!data || !data.rows || data.rows.length === 0) {
+            if (this._lastGoodData) return this._lastGoodData;
+            return data;
+        }
+        var fields = data.fields;
+        var colIdx = {};
+        for (var i = 0; i < fields.length; i++) {
+            colIdx[fields[i].name] = i;
+        }
+        var result = { colIdx: colIdx, rows: data.rows };
+        this._lastGoodData = result;
+        return result;
+    },
 
-            var dpr = window.devicePixelRatio || 1;
-            var canvas = this.canvas;
-            canvas.width = w * dpr;
-            canvas.height = h * dpr;
-            canvas.style.width = w + 'px';
-            canvas.style.height = h + 'px';
+    updateView: function(data, config) {
+        if (!data) return;
+        this._lastData = data;
+        this._lastConfig = config;
 
-            var ctx = canvas.getContext('2d');
-            if (!ctx) return;
-            ctx.scale(dpr, dpr);
-            ctx.clearRect(0, 0, w, h);
+        var self = this;
+        theme.loadFonts(function() {
+            self._render(data, config);
+        });
+    },
 
-            var ns = getNS(this);
-            var t = theme.getTheme(
-                getOption(config, ns, 'theme', 'dark')
-            );
+    _render: function(data, config) {
+        var el = this.el;
+        var w = el.offsetWidth;
+        var h = el.offsetHeight;
+        if (w <= 0 || h <= 0) return;
 
-            // ── DRAW HERE ───────────────────────────────────────
-            // All coordinates use w, h (CSS pixels)
-            // All colors from t (theme tokens)
-            // All settings via getOption(config, ns, 'key', 'default')
-        },
+        var dpr = window.devicePixelRatio || 1;
+        var canvas = this.canvas;
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+        canvas.style.width = w + 'px';
+        canvas.style.height = h + 'px';
 
-        reflow: function() {
-            if (this._lastConfig) {
+        var ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.scale(dpr, dpr);
+        ctx.clearRect(0, 0, w, h);  // NEVER fillRect with t.bg (B13)
+
+        var ns = theme.getNS(this);
+        var t = theme.getTheme(
+            theme.getOption(config, ns, 'theme', 'dark')
+        );
+        var accentColor = theme.getOption(config, ns, 'accentColor', '#0088CC');
+        var gi = theme.parseNum(
+            theme.getOption(config, ns, 'accentIntensity', '50'), 50
+        ) / 50;
+        this._gi = gi; // accessible from sub-methods (B14)
+
+        // ── DRAW HERE ───────────────────────────────────────
+        // All coordinates use w, h (CSS pixels)
+        // All colors from t (theme tokens)
+        // All settings via theme.getOption(config, ns, 'key', 'default')
+        // All glow/accent effects multiplied by gi
+    },
+
+    _onMouseMove: function(e) {
+        var rect = this.canvas.getBoundingClientRect();
+        var mx = e.clientX - rect.left;
+        var my = e.clientY - rect.top;
+        var hit = this._hitTest(mx, my);
+        if (hit !== null) {
+            var region = this._hitRegions[hit];
+            this._tooltip.innerHTML = region.tip;
+            this._tooltip.style.display = 'block';
+            var tx = mx + 14;
+            var ty = my - 10;
+            if (tx + 180 > this.el.offsetWidth) tx = mx - 180;
+            if (ty < 0) ty = my + 20;
+            this._tooltip.style.left = tx + 'px';
+            this._tooltip.style.top = ty + 'px';
+            this.canvas.style.cursor = 'pointer';
+            if (this._hoverIdx !== hit) {
+                this._hoverIdx = hit;
                 this._render(this._lastData, this._lastConfig);
             }
-        },
-
-        destroy: function() {
-            SplunkVisualizationBase.prototype.destroy.apply(
-                this, arguments
-            );
+        } else {
+            this._tooltip.style.display = 'none';
+            this.canvas.style.cursor = 'default';
+            if (this._hoverIdx !== -1) {
+                this._hoverIdx = -1;
+                this._render(this._lastData, this._lastConfig);
+            }
         }
-    });
+    },
+
+    _hitTest: function(mx, my) {
+        for (var i = 0; i < this._hitRegions.length; i++) {
+            var r = this._hitRegions[i];
+            if (mx >= r.x && mx <= r.x + r.w &&
+                my >= r.y && my <= r.y + r.h) {
+                return i;
+            }
+        }
+        return null;
+    },
+
+    reflow: function() {
+        if (this._lastConfig) {
+            this._render(this._lastData, this._lastConfig);
+        }
+    },
+
+    destroy: function() {
+        if (this._tooltip && this._tooltip.parentNode) {
+            this._tooltip.parentNode.removeChild(this._tooltip);
+        }
+        SplunkVisualizationBase.prototype.destroy.apply(
+            this, arguments
+        );
+    }
 });
 ```
 
