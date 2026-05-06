@@ -395,6 +395,23 @@ doesn't require escaping but large whitespace wastes file size.
 **Rule: every time you modify dashboard.json, regenerate the XML.**
 Stale XML = users install the app and see an old dashboard.
 
+## Required cross-plugin skills
+
+Before writing ANY SPL in savedsearches.conf or dashboard JSON data
+sources, load **`spl-gotchas`** from the `splunk-spl` plugin. Key
+traps that affect viz pack SPL:
+
+- **#22**: `tostring()` format arg only accepts `hex`/`commas`/`duration`
+- **#23**: `strftime` on `_time` kills chart x-axis — only use in tables
+- **#2**: `case()` without default returns NULL silently
+- **#5**: `sort` default limit is 10,000 — use `sort 0` for unlimited
+
+For full command syntax, read `splunk-spl/reference/<command>.md`.
+
+When writing dashboard JSON that uses custom vizs alongside built-in
+Splunk vizs, load **`ds-ref-syntax`** from `splunk-dashboards` for
+the Dashboard Studio JSON schema.
+
 ## Quality checks after scaffolding
 
 - [ ] All 5 stanzas in app.conf (`[install]`, `[id]`, `[package]`, `[ui]`, `[launcher]`)
@@ -403,7 +420,8 @@ Stale XML = users install the app and see an old dashboard.
 - [ ] No `[triggers]` stanza anywhere
 - [ ] theme.js exports ES5 module (var, function, no const/let/arrow)
 - [ ] webpack targets `['web', 'es5']` with all environment flags
-- [ ] All viz dirs contain: formatter.html, visualization.css, harness.json
+- [ ] All viz dirs contain: formatter.html, visualization.css
 - [ ] savedsearches.conf.spec documents every custom setting
 - [ ] Bundle starts with `define([` after build
 - [ ] Tarball excludes: node_modules, _build, src, .DS_Store, ._*, .git*, *.tar.gz
+- [ ] SPL in savedsearches.conf checked against `spl-gotchas` traps
