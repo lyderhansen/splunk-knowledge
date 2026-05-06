@@ -409,7 +409,7 @@ traps that affect viz pack SPL:
 For full command syntax, read `splunk-spl/reference/<command>.md`.
 
 When writing dashboard JSON that uses custom vizs alongside built-in
-Splunk vizs, load **`ds-ref-syntax`** from `splunk-dashboards` for
+Splunk vizs, load **`ds-ref-syntax`** from `splunk-dashboard-studio` for
 the Dashboard Studio JSON schema.
 
 ## Quality checks after scaffolding

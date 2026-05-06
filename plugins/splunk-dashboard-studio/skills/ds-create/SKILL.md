@@ -29,7 +29,7 @@ After `ds-design` has written `design/layout.json` and advanced state to `design
 ## How to invoke
 
 ```bash
-PYTHONPATH=<repo-root>/plugins/splunk-dashboards/src \
+PYTHONPATH=<repo-root>/plugins/splunk-dashboard-studio/src \
 python3 -m splunk_dashboards.create build <project-name> \
   --title "<dashboard title>" \
   --description "<optional description>"

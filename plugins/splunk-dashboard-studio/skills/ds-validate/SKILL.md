@@ -30,7 +30,7 @@ After `ds-create` has produced `dashboard.json` and advanced state to `built`. A
 ## How to invoke
 
 ```bash
-PYTHONPATH=<repo-root>/plugins/splunk-dashboards/src \
+PYTHONPATH=<repo-root>/plugins/splunk-dashboard-studio/src \
 python3 -m splunk_dashboards.validate check <project-name>
 ```
 
@@ -40,11 +40,11 @@ While the full validator (`splunk_dashboards.validate`) is still under
 construction, you can run the standalone `name`-field audit on its own:
 
 ```bash
-python3 plugins/splunk-dashboards/scripts/audit_data_source_names.py \
+python3 plugins/splunk-dashboard-studio/scripts/audit_data_source_names.py \
     [path/to/dashboard.json | path/to/dir ...]
 ```
 
-With no arguments it walks `plugins/splunk-dashboards/skills/`. Output
+With no arguments it walks `plugins/splunk-dashboard-studio/skills/`. Output
 is one tab-separated row per violation: `<file>\t<ds_id>\t<bad_chars>\t<name>`.
 Exit code is 0 if clean, 1 if any violations. Pipe through `cut`/`sort`
 to triage.

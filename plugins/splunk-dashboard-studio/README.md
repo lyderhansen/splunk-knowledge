@@ -1,4 +1,4 @@
-# splunk-dashboards
+# splunk-dashboard-studio
 
 A Claude Code / Cursor plugin for guided authoring of Splunk Dashboard Studio (v2) dashboards.
 
@@ -77,7 +77,7 @@ The reference, viz, and interactivity skills can also be read **standalone** whe
 
 ## Workspace
 
-Each dashboard project lives in `./.splunk-dashboards/<project-name>/` relative to the current working directory.
+Each dashboard project lives in `./.splunk-dashboard-studio/<project-name>/` relative to the current working directory.
 
 ## Versioning
 

@@ -1,7 +1,7 @@
 {
-  "name": "splunk-dashboards",
+  "name": "splunk-dashboard-studio",
   "description": "Professional toolkit for Splunk Dashboard Studio (v2). End-to-end pipeline (scope, data, design, build, validate, deploy, review, polish) plus a granular reference: one skill per visualization type (ds-viz-*), per interactivity concept (ds-int-tokens, ds-int-inputs, ds-int-drilldowns, ds-int-tabs, ds-int-visibility, ds-int-defaults), a viz-picker router (ds-pick-viz), the design-principles + JSON-schema references, design-first orchestrator ds-couture pairing with 10 specialized design refs (ds-ref-archetypes / ds-ref-color / ds-ref-typography / ds-ref-layout-grid / ds-ref-visual-encoding / ds-ref-anti-patterns / ds-ref-personas / ds-ref-references / ds-ref-brand / ds-ref-themes), ds-spl SPL grammar reference, and ds-svg custom SVG generator (icons, images, choropleth canvases). Pipeline skills carry MUST-LOAD blocks that route to the correct content skill before generating JSON.",
-  "version": "2.9.4",
+  "version": "3.0.0",
   "author": {
     "name": "Lyder Hansen"
   },

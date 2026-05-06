@@ -1,6 +1,6 @@
 ---
 name: ds-init
-description: Use this skill to scope a new Splunk Dashboard Studio dashboard. Runs an interactive question flow, creates a workspace under ./.splunk-dashboards/<project>/, and writes requirements.md. Also accepts --autopilot to run non-interactively with defaults, --quick for minimum scoping, and --resume to continue from an existing workspace. Entry point for the splunk-dashboards plugin pipeline.
+description: Use this skill to scope a new Splunk Dashboard Studio dashboard. Runs an interactive question flow, creates a workspace under ./.splunk-dashboard-studio/<project>/, and writes requirements.md. Also accepts --autopilot to run non-interactively with defaults, --quick for minimum scoping, and --resume to continue from an existing workspace. Entry point for the splunk-dashboard-studio plugin pipeline.
 ---
 
 # ds-init — Splunk Dashboard scoping
@@ -12,7 +12,7 @@ When the user says they want to build a new Splunk Dashboard Studio dashboard an
 ## What it does
 
 1. Asks the user a ten-question scoping flow (below).
-2. Creates `./.splunk-dashboards/<project-name>/` with `state.json`.
+2. Creates `./.splunk-dashboard-studio/<project-name>/` with `state.json`.
 3. Writes `requirements.md` under the workspace.
 4. Prints the next recommended skill (`ds-data-explore` or `ds-mock`).
 
@@ -67,7 +67,7 @@ Ask these one at a time. Prefer multiple-choice where options are listed.
 Once all answers are collected, assemble them into a JSON payload and invoke:
 
 ```bash
-PYTHONPATH=<path-to-repo>/plugins/splunk-dashboards/src python3 -m splunk_dashboards.requirements from-json - <<'JSON'
+PYTHONPATH=<path-to-repo>/plugins/splunk-dashboard-studio/src python3 -m splunk_dashboards.requirements from-json - <<'JSON'
 {
   "project": "<kebab-case-project-name>",
   "goal": "<goal sentence>",
@@ -85,7 +85,7 @@ PYTHONPATH=<path-to-repo>/plugins/splunk-dashboards/src python3 -m splunk_dashbo
 JSON
 ```
 
-The CLI writes `.splunk-dashboards/<project>/state.json` and `.splunk-dashboards/<project>/requirements.md` in the current working directory.
+The CLI writes `.splunk-dashboard-studio/<project>/state.json` and `.splunk-dashboard-studio/<project>/requirements.md` in the current working directory.
 
 ## Next step
 

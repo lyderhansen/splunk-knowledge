@@ -1,4 +1,4 @@
-# Known Issues — splunk-dashboards plugin
+# Known Issues — splunk-dashboard-studio plugin
 
 Tracked bugs, polish gaps, and deferred work. Items here are known and
 explicitly deferred — not things we forgot.
