@@ -592,7 +592,7 @@ Before writing ANY viz code, verify:
 - [ ] Hover highlight on interactive elements (crosshair, row bg, segment stroke)
 - [ ] KPI/value vizs have `decimals` formatter option (default -1 = auto)
 - [ ] App name matches brand/project (not generic `custom_viz`)
-- [ ] Images bundled in `static/` (not external URLs)
+- [ ] Images bundled in `appserver/static/images/` (not root `static/`, not external URLs)
 - [ ] Bundle verified: starts with `define([...], function(`
 - [ ] Package excludes: node_modules, src, .DS_Store, ._*, .git*
 - [ ] README documents `"backgroundColor": "transparent"` requirement

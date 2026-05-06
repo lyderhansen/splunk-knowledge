@@ -16,34 +16,37 @@ All packs are created at:
 
 ```
 examples/{pack_name}/
-  README.md
   default/
     app.conf
     visualizations.conf
     savedsearches.conf
+    data/ui/views/               (bundled dashboards)
   metadata/
     default.meta
   README/
     savedsearches.conf.spec
   static/
-    appIcon.png                 (36x36)
+    appIcon.png                 (36x36 — ONLY app icons here)
     appIcon_2x.png              (72x72)
     appIconAlt.png              (36x36)
     appIconAlt_2x.png           (72x72)
   shared/
-    theme.js
+    theme.js                    (dev only — bundled into viz.js by webpack)
   _build/
     webpack.config.js
     package.json
-  appserver/static/visualizations/
-    {viz_1}/
-      src/visualization_source.js
-      formatter.html
-      visualization.css
-      preview.png
-      harness.json
-    {viz_2}/
-      ...
+  appserver/static/
+    images/                     (logos, hero images, brand assets)
+      logo.svg
+      hero.jpg
+    visualizations/
+      {viz_1}/
+        src/visualization_source.js
+        formatter.html
+        visualization.css
+        preview.png
+      {viz_2}/
+        ...
 ```
 
 ## theme.js template
@@ -334,32 +337,41 @@ COPYFILE_DISABLE=1 tar czf {{PACK_ID}}.tar.gz \
 
 ## Bundled images
 
-Brand logos, icons, and other images go in `static/` at the app root.
-Splunk serves these at `/static/app/{pack_id}/filename`.
+Brand logos, hero images, icons, and other static assets go in
+`appserver/static/images/` — NOT in the root `static/` directory.
+Splunk serves `appserver/static/` at `/static/app/{pack_id}/`.
+
+```
+appserver/static/images/
+  logo.svg                    (brand logo — SVG preferred for crisp scaling)
+  logo_dark.svg               (dark-background variant if needed)
+  hero.jpg                    (hero/background image if applicable)
+```
+
+App icons are the only files that belong in root `static/`:
 
 ```
 static/
-  logo.svg                    (brand logo — SVG preferred for crisp scaling)
-  logo_dark.svg               (dark-background variant if needed)
   appIcon.png                 (36x36 Splunk app icon)
   appIcon_2x.png              (72x72 HiDPI)
   appIconAlt.png              (36x36 alternate)
   appIconAlt_2x.png           (72x72 alternate HiDPI)
 ```
 
-Reference in dashboard JSON:
+Reference images in dashboard JSON:
 ```json
 "viz_logo": {
     "type": "splunk.image",
     "options": {
-        "src": "/static/app/{{PACK_ID}}/logo.svg",
+        "src": "/static/app/{{PACK_ID}}/images/logo.svg",
         "preserveAspectRatio": true
     }
 }
 ```
 
 **NEVER use external URLs** for images — they require domain allow-list
-configuration and fail in PDF export. Always bundle images in `static/`.
+configuration and fail in PDF export. Always bundle in
+`appserver/static/images/`.
 
 **Splunk restart required** after installing the app for new static
 files to be served.
