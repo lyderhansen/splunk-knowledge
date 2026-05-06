@@ -507,3 +507,38 @@ Without this, small values like 7.27 round to 7 and percentages like
 | `formatData` reads config | Stale cached values | Move to `updateView` |
 | Font drawn before ready | Tofu glyphs forever | Poll with loadFont() |
 | No `destroy()` cleanup | Memory leaks on nav | Clear timers, disconnect observers |
+
+## Creative freedom — what the rules DON'T constrain
+
+The rules in `vp-ref-gotchas` protect against TECHNICAL failure:
+ES5 syntax, webpack config, outputMode, font CORS, AppInspect.
+Those are NON-NEGOTIABLE.
+
+**Everything else is yours.**
+
+Inside `_render()`, you have a Canvas 2D context with zero
+constraints. You can draw anything a browser can render. The
+gotchas tell you HOW to ship code that works. They say NOTHING
+about what that code should look like.
+
+**You are not limited to the blueprints above.** The KPI tile,
+ring gauge, area chart, donut, and table blueprints are STARTING
+POINTS. If the brand calls for a viz that doesn't match any
+blueprint — a radar chart, a particle field, a speedometer with
+a physical needle, a heat map with cell animations — BUILD IT.
+
+**Consult `vp-ref-patterns` mood recipes** for Canvas techniques
+that create atmosphere: ambient light, glass panels, noise
+texture, data glow, cinematic typography, gradient mesh, accent
+lines, animated pulse rings. These are the tools that make the
+difference between "a Splunk dashboard" and "something someone
+screenshots and shares."
+
+**The only creative constraint:** if a visual effect competes
+with the DATA for attention, it's too much. The data is the
+story. Effects are the stage lighting. A spotlight draws the
+eye TO the actor — it doesn't become the show.
+
+**Default stance:** be AMBITIOUS. A safe, generic viz that
+nobody notices is worse than a bold viz that makes one person
+say "wait, that's Splunk?" Ship something with a point of view.
