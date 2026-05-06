@@ -7,9 +7,9 @@
   },
   "plugins": [
     {
-      "name": "splunk-dashboards",
+      "name": "splunk-dashboard-studio",
       "description": "End-to-end toolkit for Splunk Dashboard Studio (v2). 60+ skills covering pipeline, visualizations, interactivity, design references, and SVG generation.",
-      "source": "./plugins/splunk-dashboards",
+      "source": "./plugins/splunk-dashboard-studio",
       "category": "productivity",
       "homepage": "https://github.com/lyderhansen/splunk-knowledge",
       "author": {
