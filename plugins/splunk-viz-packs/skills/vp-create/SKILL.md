@@ -19,8 +19,13 @@ examples/{pack_name}/
   default/
     app.conf
     visualizations.conf
+    transforms.conf              (lookup definitions)
     savedsearches.conf
     data/ui/views/               (bundled dashboards)
+  lookups/
+    demo_kpis.csv                (demo data for KPI vizs)
+    demo_timeseries.csv          (demo data for charts)
+    demo_table.csv               (demo data for tables)
   metadata/
     default.meta
   README/
@@ -177,6 +182,9 @@ export = system
 
 [visualizations/{{VIZ_2}}]
 export = system
+
+[lookups]
+export = system
 ```
 
 One `[visualizations/name]` stanza per viz in the pack.
@@ -203,13 +211,95 @@ disabled = 0
 search_fragment = {{FRAGMENT_80}}
 ```
 
+## Demo data — CSV lookups (preferred over makeresults)
+
+Since viz packs are installable Splunk apps, bundle demo data as
+CSV lookup files. This produces cleaner SPL, realistic data, and
+dashboards that work immediately after install — no index needed.
+
+### transforms.conf template
+
+```ini
+[{{PACK_ID}}_demo_kpis]
+filename = demo_kpis.csv
+
+[{{PACK_ID}}_demo_timeseries]
+filename = demo_timeseries.csv
+
+[{{PACK_ID}}_demo_table]
+filename = demo_table.csv
+```
+
+### CSV file conventions
+
+Place CSV files in `lookups/` at the app root. Use descriptive
+column names that match the viz's expected field names.
+
+**KPI data** (`lookups/demo_kpis.csv`):
+```csv
+metric,value,delta,unit
+Revenue,4200000,12.3,$
+Users,287000,5.1,
+Latency,42,-8.2,ms
+Error Rate,0.3,0.05,%
+```
+
+**Time series** (`lookups/demo_timeseries.csv`):
+```csv
+_time,speed,throttle,brake
+1714900000,312,98,0
+1714900004,280,85,12
+1714900008,95,20,85
+1714900012,240,92,0
+```
+
+**Table data** (`lookups/demo_table.csv`):
+```csv
+Driver,Lap,Sector1,Sector2,Sector3,Compound,Gap
+Verstappen,42,28.412,24.891,28.281,Medium,
+Norris,42,28.721,25.044,28.437,Hard,+1.234
+Leclerc,42,28.903,25.102,28.612,Soft,+3.456
+```
+
+### Dashboard data source using lookup
+
+```json
+"ds_kpis": {
+    "type": "ds.search",
+    "options": {
+        "query": "| inputlookup {{PACK_ID}}_demo_kpis.csv",
+        "queryParameters": { "earliest": "-24h", "latest": "now" }
+    },
+    "name": "Demo KPIs"
+}
+```
+
+For time series that need `_time` as epoch:
+```json
+"ds_trace": {
+    "type": "ds.search",
+    "options": {
+        "query": "| inputlookup {{PACK_ID}}_demo_timeseries.csv | eval _time=_time",
+        "queryParameters": { "earliest": "-24h", "latest": "now" }
+    },
+    "name": "Demo trace"
+}
+```
+
+### When to use makeresults instead
+
+Use `| makeresults` only when the data must be dynamic (random
+values, current timestamps). For static demo data that shows off
+the viz, CSV lookups are always better — cleaner SPL, realistic
+values, and no `random()%20` artifacts.
+
 ## savedsearches.conf template
 
-One example search per viz using makeresults for zero-dependency rendering:
+One example search per viz using the bundled lookup data:
 
 ```ini
 [{{PACK_LABEL}} - {{Viz Label}}]
-search = | makeresults count=24 | streamstats count as i | eval value=round(100+50*sin(i/3.0)+random()%20,0) | stats latest(value) as value
+search = | inputlookup {{PACK_ID}}_demo_kpis.csv | head 1
 dispatch.earliest_time = -24h
 dispatch.latest_time = now
 display.general.type = visualizations
@@ -417,6 +507,7 @@ the Dashboard Studio JSON schema.
 - [ ] All 5 stanzas in app.conf (`[install]`, `[id]`, `[package]`, `[ui]`, `[launcher]`)
 - [ ] `is_configured = 0` (not `true`)
 - [ ] `sc_admin` in default.meta global `[]` stanza
+- [ ] `[lookups]` stanza with `export = system` in default.meta
 - [ ] No `[triggers]` stanza anywhere
 - [ ] theme.js exports ES5 module (var, function, no const/let/arrow)
 - [ ] webpack targets `['web', 'es5']` with all environment flags
@@ -424,4 +515,7 @@ the Dashboard Studio JSON schema.
 - [ ] savedsearches.conf.spec documents every custom setting
 - [ ] Bundle starts with `define([` after build
 - [ ] Tarball excludes: node_modules, _build, src, .DS_Store, ._*, .git*, *.tar.gz
+- [ ] Demo data in `lookups/` as CSV (not `makeresults` with `random()`)
+- [ ] `transforms.conf` defines each lookup with `filename = <csv>`
+- [ ] Dashboard data sources use `| inputlookup` for demo data
 - [ ] SPL in savedsearches.conf checked against `spl-gotchas` traps
