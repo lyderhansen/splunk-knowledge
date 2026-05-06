@@ -134,6 +134,13 @@ catch it at `built`-stage rather than at deploy.
 
 These defaults are non-negotiable unless the user explicitly overrides:
 
+0. **Canvas minimum: 1920 × 1080 px.** No exceptions. Never use
+   1440, 1280, or any width below 1920. Every Splunk dashboard
+   target (analyst workstation, 27" monitor, SOC wall) is 1080p+.
+   ```json
+   "layout": { "type": "absolute", "options": { "width": 1920, "height": 1080 } }
+   ```
+
 1. **`xAxisTitleVisibility: "hide"`** on every `splunk.area`,
    `splunk.line`, `splunk.column` viz. The `_time` label adds zero
    information. NOT `showXAxisTitle` — that property does not exist.

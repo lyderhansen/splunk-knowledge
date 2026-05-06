@@ -466,6 +466,20 @@ configuration and fail in PDF export. Always bundle in
 **Splunk restart required** after installing the app for new static
 files to be served.
 
+## Canvas size — minimum 1920 × 1080
+
+Every bundled dashboard MUST use at minimum 1920 × 1080 px. No 1440,
+no 1280. Splunk dashboards are viewed on 1080p+ screens — analyst
+workstations, 27" monitors, SOC walls. Designing smaller wastes
+screen real estate and looks unprofessional.
+
+```json
+"layout": {
+    "type": "absolute",
+    "options": { "width": 1920, "height": 1080, "backgroundColor": "#0B0E1A" }
+}
+```
+
 ## XML dashboard generation
 
 Dashboard Studio v2 stores dashboards as JSON inside XML CDATA. When

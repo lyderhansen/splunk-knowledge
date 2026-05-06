@@ -176,35 +176,36 @@ rectangle, not a gradient.
 
 ## Default canvas size
 
-**Minimum width: 1920 px.** Authored width below 1920 produces
-panels that look cramped on standard 27" monitors and wall displays
-(the dominant viewing context for Splunk dashboards). 1440 was an
-older default — keep for legacy compatibility but **don't choose it
-for new dashboards**.
+**Minimum canvas: 1920 × 1080 px.** No exceptions. Dashboards below
+this resolution look cramped, waste screen real estate on modern
+monitors, and signal "I didn't think about the viewing context."
 
-**Height: variable based on content.** Don't pad the canvas to fit a
-fixed height. Compute total content height from layered zones (header
-+ KPI strip + chart row + table row + footer) and set the canvas
-height to fit. Splunk Dashboard Studio scrolls vertically when the
-canvas is taller than the viewport — that's the design intent for
-content-driven dashboards.
+Every Splunk dashboard is viewed on 1080p+ screens — analyst
+workstations (1920×1080), 27" monitors (2560×1440), SOC walls
+(1920×1080 per tile), executive laptops (1920×1200+). Designing
+for less than 1920×1080 is designing for hardware that doesn't
+exist in the target environment.
+
+**Width: always 1920.** No 1440, no 1280, no 1600.
+
+**Height: minimum 1080, variable based on content.** Compute total
+content height from layered zones (header + KPI strip + chart row
++ table row + footer). Splunk scrolls vertically when needed.
 
 ```json
 "layout": {
   "type": "absolute",
-  "options": { "width": 1920, "height": 1240 }   // height = content total
+  "options": { "width": 1920, "height": 1080 }
 }
 ```
 
-Quick reference:
-
-| Archetype | Width | Typical height (content-driven) |
+| Archetype | Width | Typical height |
 |---|---|---|
-| Exec summary (legacy) | 1440 | 960 px (4 zones) |
-| Exec summary (new default) | 1920 | 1080–1280 px (4 zones with denser KPI strip) |
-| Operational NOC / SOC wall | 1920 | 1080 (full HD) — fits exactly on 27" |
-| Long-form report | 1920 | 1800–2400 px (multiple sections, scrolls) |
-| Embedded panel / widget | 1280–1440 | 600–800 px (constrained context) |
+| Standard dashboard | 1920 | 1080 (fits one screen) |
+| Exec summary | 1920 | 1080–1280 (4 zones, denser KPI strip) |
+| NOC / SOC wall | 1920 | 1080 (exact full HD per tile) |
+| Long-form report | 1920 | 1800–2400 (multiple sections, scrolls) |
+| Branded viz pack | 1920 | 1080–1200 (hero image + data) |
 
 ## Recommended canvas zones (per archetype)
 
