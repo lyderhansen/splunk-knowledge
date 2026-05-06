@@ -73,6 +73,9 @@ production Splunk deployments.
 | 3 | **Pie >6 slices** — slice angles indistinguishable. | Pie fails its job. | `splunk.bar` (horizontal sorted). Aggregate to Top 5 + "Other" upstream. |
 | 4 | **Searches without `earliest` / `latest`** — full-index scans. | Single dashboard with 5 unbounded searches saturates indexer. | Bind `defaults.dataSources.ds.search.options.queryParameters.earliest` to `$global_time.earliest$`. |
 | 5 | **Inputs without `defaultValue`** — empty render. | User assumes dashboard broken. | Always set `defaultValue` (`"*"` for open filters). |
+| 6 | **Solid-color banner** — flat single-color rectangle as header. | Screams "AI-generated" and "PowerPoint 2010." Zero design value. | Gradient (2-3 stops), image banner, or no banner at all. |
+| 7 | **50/50 symmetric panels** — left and right columns identical width. | No visual hierarchy, feels like a spreadsheet. | 60/40 or 70/30 asymmetry. One side is primary. |
+| 8 | **Uniform spacing** — every gap identical (16px everywhere). | Mechanical, not designed. No visual grouping. | 8px within groups, 24-32px between sections, 48px+ between zones. |
 
 ## The Splunk Dashboard Slop Test
 

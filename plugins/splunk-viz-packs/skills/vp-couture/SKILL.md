@@ -403,6 +403,116 @@ Every field must come from formatter settings. The user will rename
 `status` to `severity` or `_time` to `event_time`. If the viz breaks,
 the viz is wrong.
 
+### Don't use solid-color banners
+A flat, single-color rectangle as a "branded header" is the laziest
+form of design. It looks like PowerPoint 2010. Instead:
+- **Gradient:** 2-3 color gradient along the banner (brand primary → darker shade)
+- **Gradient + texture:** subtle noise or pattern on top of gradient
+- **Image banner:** hero image cropped to banner height with text overlay
+- **No banner at all:** sometimes the brand identity comes from the
+  viz chrome, hero image, and typography — not a colored stripe
+
+If the dashboard has a hero background image (L10), a banner is
+usually redundant.
+
+## Design scoring — quantitative quality gate
+
+**Run this scoring BEFORE step 7 (build) and AFTER step 8 (critique).**
+
+Rate each dimension 1-10. Minimum average: 7. Any dimension below 5 = blocked.
+
+### Dimension 1: Visual hierarchy (1-10)
+
+| Score | Meaning |
+|---|---|
+| 1-3 | Everything same size. No focal point. Eye wanders. |
+| 4-6 | Some contrast but subtle. Multiple elements compete for attention. |
+| 7-8 | Clear hero element per zone. Supporting data recedes. Labels whisper. |
+| 9-10 | 2-second story. One element dominates. Eyes follow intended path. |
+
+**Typographic tension test:** measure the ratio between your largest
+text (hero value) and smallest text (label). Under 3:1 = flat.
+Target ≥ 4:1. Three tiers required:
+
+| Tier | Size | Opacity | Example |
+|---|---|---|---|
+| **Hero** | 36-72px bold | 100% | The ONE most important number |
+| **Body** | 14-24px | 60-80% | Supporting values, secondary data |
+| **Whisper** | 8-11px uppercase | 25-35% | Labels, section headers, metadata |
+
+### Dimension 2: Whitespace quality (1-10)
+
+| Score | Meaning |
+|---|---|
+| 1-3 | Everything edge-to-edge. No breathing room. |
+| 4-6 | Uniform padding everywhere — the AI default. Mechanical, not designed. |
+| 7-8 | Intentional variation. Dense within groups, spacious between sections. |
+| 9-10 | Whitespace IS the design. Negative space creates tension and focus. |
+
+**Spacing variation test:** if every gap is the same (16px everywhere),
+score ≤ 5. Fix: 8px within groups, 24-32px between sections, 48px+
+between major zones.
+
+### Dimension 3: Brand distinctiveness (1-10)
+
+| Score | Meaning |
+|---|---|
+| 1-3 | Generic dark dashboard with colored accents. Could be any brand. |
+| 4-6 | Colors match but forms are generic. "Themed" not "branded." |
+| 7-8 | Shape language, typography, and chrome feel brand-specific. |
+| 9-10 | Recognizable with colors removed. Someone could name the brand from silhouette. |
+
+### Dimension 4: Emotional resonance (1-10)
+
+| Score | Meaning |
+|---|---|
+| 1-3 | Spreadsheet with dark mode. Zero emotional response. |
+| 4-6 | "Professional" but forgettable. Nobody screenshots this. |
+| 7-8 | Creates mood. You WANT to look at it. Invites interaction. |
+| 9-10 | "Wait, that's Splunk?" Makes someone share it. |
+
+## Anti-AI aesthetic checklist — step 8 gate
+
+Run after design critique. 3+ items present = BLOCKED.
+
+| # | AI tell | What it looks like | Fix |
+|---|---|---|---|
+| 1 | Uniform spacing | 16px gap everywhere | 8px within groups, 32px+ between sections |
+| 2 | Symmetric layout | Left column = right column width | 60/40 or 70/30 asymmetry |
+| 3 | Same-size values | Every KPI is 24px | ONE hero 48px+, rest 14-18px |
+| 4 | Rainbow variety | Each panel different color | 60-30-10 rule, max 2 saturated |
+| 5 | Everything centered | All text center-aligned | Left-align data, right-align numbers |
+| 6 | Flat depth | Every panel at same visual level | 3 layers: bg → mid-ground → foreground |
+| 7 | Generic chrome | roundRect 1px border everywhere | Brand-specific panel treatment |
+| 8 | No visual anchor | No hero image, no dominant element | Hero image, oversized gauge, or statement |
+| 9 | Overcomplete | Shows everything equally | Ask: what can I REMOVE? |
+| 10 | Solid-color banner | Flat single-color rectangle for branding | Gradient, pattern, image, or no banner |
+| 11 | No tension | Nothing bold, nothing quiet, all medium | Contrast: big vs small, dense vs sparse |
+
+**Scoring:** Count present tells. 0-1 = pass. 2 = warning. 3+ = blocked.
+
+## Intentional asymmetry principle
+
+Symmetry is comfortable but forgettable. Asymmetry creates energy
+and directs attention.
+
+**Panel widths:** 60/40 or 70/30. NEVER 50/50 for side-by-side panels.
+The wider panel is the primary content. The narrower is supporting.
+
+**Vertical rhythm:** vary density through the dashboard:
+```
+Top:      Tight KPI strip (dense, scannable)
+Middle:   Generous hero zone (spacious, dominant)
+Bottom:   Dense data area (tables, detail)
+```
+
+**Hero placement:** rule of thirds. Place the most important element
+at 1/3 from left or 1/3 from top — not dead center.
+
+**Exception:** symmetry IS valid for KPI strips (5 equal-width tiles)
+because the data type is uniform. But even then, one tile should be
+visually differentiated (larger font, accent color, border).
+
 ### Don't skip the data contract
 "It takes any SPL output" is not a data contract. Specify: this viz
 requires a `value` field (number) and a `label` field (string).

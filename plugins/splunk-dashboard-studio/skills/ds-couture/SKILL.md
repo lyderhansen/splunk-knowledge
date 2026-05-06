@@ -487,6 +487,32 @@ These checks are part of the Designer's Eye critique heuristics. The
 "5-second story" test fails if scale contrast is missing. The "strip
 colors test" fails if too many accents compete.
 
+### 5. No solid-color banners
+
+A flat, single-color rectangle as a "branded header" is the laziest
+form of dashboard branding. It screams "AI-generated" and adds zero
+design value. **Never use a solid-color banner.**
+
+| Instead of | Use |
+|---|---|
+| Solid red banner | Gradient: brand primary → 30% darker shade, horizontal |
+| Solid blue banner | Gradient + subtle noise texture overlay |
+| Solid dark banner | Hero image cropped to banner height with text overlay |
+| Any solid banner | No banner — let typography + viz chrome carry the brand |
+
+If the dashboard already has a hero background image (§4), a banner
+is redundant.
+
+### 6. Intentional asymmetry
+
+Symmetry is comfortable but forgettable. Asymmetry creates energy.
+
+- **Panel widths:** 60/40 or 70/30 for side-by-side. NEVER 50/50.
+- **Spacing:** 8px within groups, 24-32px between sections, 48px+ between zones.
+- **Hero placement:** rule of thirds (1/3 from left or top), not dead center.
+- **Exception:** KPI strips can be equal-width, but one tile should be
+  visually differentiated (larger number, accent border, different chrome).
+
 ## What this skill DOES NOT do
 
 - Specific palette tables → `ds-ref-color`

@@ -186,15 +186,43 @@ function drawDelta(ctx, x, y, size, value, upColor, downColor) {
 }
 ```
 
-## Auto-scaling formulas
+## Typographic tension — 3-tier size system
 
-| Element | Formula | Min | Max |
-|---|---|---|---|
-| Primary value | `Math.min(w, h) * 0.35` | 14 | 72 |
-| Title / label | `Math.min(w, h) * 0.09` | 8 | 20 |
-| Unit text | `valueFontSize * 0.45` | 8 | 28 |
-| Padding | `Math.max(8, Math.min(w, h) * 0.04)` | 8 | — |
-| Icon | `Math.min(w, h) * 0.6` | 16 | 200 |
+Great design has DRAMATIC size contrast — not everything slightly
+different, but hero text 4-6× larger than labels. The ratio creates
+visual hierarchy that tells the eye where to look.
+
+| Tier | Formula | Min | Max | Opacity | Role |
+|---|---|---|---|---|---|
+| **Hero** | `Math.min(w, h) * 0.35` | 36 | 72 | 100% | ONE dominant value per viz |
+| **Body** | `Math.min(w, h) * 0.14` | 14 | 24 | 60-80% | Supporting values, secondary |
+| **Whisper** | `Math.min(w, h) * 0.07` | 8 | 11 | 25-35% | Labels, headers, metadata |
+
+**The rule:** hero ÷ whisper ≥ 4:1. If your largest text is 24px and
+smallest is 14px, the ratio is 1.7:1 — flat, no hierarchy, AI-looking.
+
+```javascript
+var heroSize = Math.max(36, Math.min(72, Math.min(w, h) * 0.35));
+var bodySize = Math.max(14, Math.min(24, Math.min(w, h) * 0.14));
+var whisperSize = Math.max(8, Math.min(11, Math.min(w, h) * 0.07));
+
+// Hero — bold, full opacity
+ctx.font = 'bold ' + heroSize + 'px ' + theme.FONTS.data;
+ctx.fillStyle = t.text;
+
+// Body — regular weight, reduced opacity
+ctx.font = bodySize + 'px ' + theme.FONTS.data;
+ctx.fillStyle = t.textDim;
+
+// Whisper — uppercase, very dim
+ctx.font = whisperSize + 'px ' + theme.FONTS.ui;
+ctx.fillStyle = t.textFaint;
+ctx.fillText(label.toUpperCase(), x, y);
+```
+
+| Unit text | `heroSize * 0.45` | 8 | 28 | Same as hero | Suffix/prefix |
+| Padding | `Math.max(8, Math.min(w, h) * 0.04)` | 8 | — | — | Element spacing |
+| Icon | `Math.min(w, h) * 0.6` | 16 | 200 | — | Panel icon |
 
 **User override pattern:** `0` = auto, positive value = explicit.
 
@@ -202,7 +230,7 @@ function drawDelta(ctx, x, y, size, value, upColor, downColor) {
 var userSize = parseInt(getOption(config, ns, 'fontSize', '0'), 10);
 var fontSize = userSize > 0
     ? userSize
-    : Math.max(14, Math.min(72, Math.min(w, h) * 0.35));
+    : Math.max(36, Math.min(72, Math.min(w, h) * 0.35));
 ```
 
 ## KPI tile vertical stacking
