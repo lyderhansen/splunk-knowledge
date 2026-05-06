@@ -170,22 +170,27 @@ If time is limited, reduce VIZ COUNT (3 instead of 6) — do NOT
 reduce DESIGN DEPTH. Three unique vizs beat six generic ones.
 
 ```
-1. Brand research — understand the visual language        [BLOCKING]
+1. Brand research — understand the visual language        [BLOCKING] [OPUS]
        ↓
-2. Design context (brand, domain, tone, fonts)            [BLOCKING]
+2. Design context (brand, domain, tone, fonts)            [BLOCKING] [OPUS]
        ↓
-3. Design direction — palette, typography, aesthetic       [BLOCKING]
+3. Design direction — palette, typography, aesthetic       [BLOCKING] [OPUS]
        ↓
-4. Viz inventory (from template or custom)
+4. Viz inventory (from template or custom)                           [OPUS]
        ↓
-5. Design brief with per-viz specs
+5. Design brief with per-viz specs                                   [OPUS]
        ↓
-6. Quality Gate — ALL checks must pass                    [BLOCKING]
+6. Quality Gate — ALL checks must pass                    [BLOCKING] [OPUS]
        ↓
-7. Build → vp-create (scaffold) → vp-viz (per-viz code)
+7. Build → vp-create (scaffold) → vp-viz (per-viz code)             [SONNET]
        ↓
-8. Design critique — review the result                    [BLOCKING]
+8. Design critique — review the result                    [BLOCKING] [OPUS]
 ```
+
+**Model selection:** Steps 1-6 and 8 require judgment, taste, and
+evaluative reasoning — use **Opus**. Step 7 is implementation —
+use **Sonnet** (faster, cheaper, equally reliable for code).
+When dispatching subagents for step 7, set `model: "sonnet"`.
 
 **STOP gates:** Steps marked [BLOCKING] must produce an artifact
 before proceeding. Step 1 produces brand research notes. Steps 2-3

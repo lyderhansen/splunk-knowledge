@@ -45,6 +45,23 @@ vp-create — build + package tarball
 
 **Always load `vp-ref-gotchas` before writing ANY viz code.**
 
+## Model selection
+
+| Task | Model | Why |
+|---|---|---|
+| Brand research, design decisions, palette selection | **Opus** | Judgment, creativity, taste |
+| Design brief, viz inventory planning | **Opus** | Strategic decisions |
+| Design critique, quality gate review | **Opus** | Evaluative reasoning |
+| Writing visualization_source.js | **Sonnet** | Fast, reliable code generation |
+| Writing formatter.html, CSS, conf files | **Sonnet** | Mechanical, well-specified |
+| Webpack build, packaging, file operations | **Sonnet** | Execution, not judgment |
+| Dashboard JSON layout | **Sonnet** | Structured output |
+| CSV lookup data generation | **Sonnet** | Data creation |
+
+**Default:** Opus plans, Sonnet builds. When dispatching subagents,
+use `model: "sonnet"` for implementation tasks and `model: "opus"`
+for design/review tasks.
+
 ## Prerequisites
 
 | Dependency | Required? | Why |
