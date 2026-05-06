@@ -11,7 +11,7 @@ Tunes deployment-server agent management helpers: SPL polling cadence, splunkd H
 | Location | `$SPLUNK_HOME/etc/system/local/` |
 | Pipeline phase | N/A |
 | Restart required | Yes |
-| Related files | `server.conf`, `telemetry.conf` |
+| Related files | `server.conf` |
 
 ## Stanzas and settings
 
