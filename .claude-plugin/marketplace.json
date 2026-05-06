@@ -35,6 +35,16 @@
       "author": {
         "name": "Lyder Hansen"
       }
+    },
+    {
+      "name": "splunk-admin",
+      "description": "Splunk administration reference with all ~52 configuration files and all REST API endpoints. Eagerly-loaded gotcha skills plus lazy per-file and per-endpoint reference sourced from Splunk Enterprise 10.2.",
+      "source": "./plugins/splunk-admin",
+      "category": "productivity",
+      "homepage": "https://github.com/lyderhansen/splunk-knowledge",
+      "author": {
+        "name": "Lyder Hansen"
+      }
     }
   ]
 }
