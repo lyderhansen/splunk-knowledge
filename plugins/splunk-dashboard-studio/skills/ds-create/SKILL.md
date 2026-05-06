@@ -162,7 +162,17 @@ These defaults are non-negotiable unless the user explicitly overrides:
    `areaColorsEditorConfig`, NOT a `{type: "range", ranges: [...]}`
    wrapper. The wrapper causes "d is not iterable" in Studio.
 
-6. **`icon_library` panels** MUST set `"backgroundColor": "transparent"`
+6. **`fontFamily` on `splunk.markdown`** — strict allow-list, ONLY these 7:
+   `Splunk Platform Sans`, `Splunk Data Sans`, `Splunk Platform Mono`,
+   `Arial`, `Helvetica`, `Times New Roman`, `Comic Sans MS`.
+   Custom fonts (`Inter`, `Roboto`, `Georgia`, `system-ui`, etc.)
+   cause schema validation error: `must match a schema in anyOf`.
+
+7. **`fontSize` on `splunk.markdown`** — strict enum, ONLY:
+   `extraSmall`, `small`, `default`, `large`, `extraLarge`.
+   Numeric values (`"14"`, `"11"`) cause schema validation error.
+
+8. **`icon_library` panels** MUST set `"backgroundColor": "transparent"`
    on the viz level (outside the namespace options). This is the viz-level
    `backgroundColor`, not `icon_library.icon_library.bgColor`. Without it,
    icons render with a dark box background that clashes with shadow cards

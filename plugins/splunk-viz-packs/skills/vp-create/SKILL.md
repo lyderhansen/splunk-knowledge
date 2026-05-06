@@ -499,6 +499,21 @@ screen real estate and looks unprofessional.
 }
 ```
 
+## Markdown panels in bundled dashboards
+
+`splunk.markdown` has strict schema validation:
+
+**fontFamily** — ONLY these 7 values:
+`Splunk Platform Sans`, `Splunk Data Sans`, `Splunk Platform Mono`,
+`Arial`, `Helvetica`, `Times New Roman`, `Comic Sans MS`
+
+Custom fonts (Inter, Roboto, Georgia, system-ui) → schema error.
+
+**fontSize** — ONLY these enum values:
+`extraSmall`, `small`, `default`, `large`, `extraLarge`
+
+Numeric values ("14", "11") → schema error.
+
 ## XML dashboard generation
 
 Dashboard Studio v2 stores dashboards as JSON inside XML CDATA. When

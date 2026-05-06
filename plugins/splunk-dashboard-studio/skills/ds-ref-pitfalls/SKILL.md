@@ -131,6 +131,8 @@ per-viz / interactivity / reference skill that owns the full fix.
 | External image URL doesn't render in PDF/PNG export | Only uploaded KV-store images render. Always upload for PDF.                                           | `ds-viz-image` Do/Don't          |
 | App-bundled image "not found" after install         | Image in wrong path. Must be `appserver/static/images/`, not root `static/`. Needs Splunk restart.    | `ds-viz-image` §3                |
 | SVG choropleth no fills                             | `<rect>` / `<circle>` not picked up — only `<path>` with unique `id`.                                  | `ds-viz-choropleth-svg` Do/Don't |
+| Markdown `fontFamily` schema error                  | Only 7 fonts allowed: Splunk Platform Sans/Data Sans/Platform Mono, Arial, Helvetica, Times New Roman, Comic Sans MS. No custom fonts. | `ds-viz-markdown` §fontFamily |
+| Markdown `fontSize` schema error                    | Only enum values: extraSmall, small, default, large, extraLarge. No numbers like "14" or "11".         | `ds-viz-markdown` §fontSize      |
 
 
 ## Performance
