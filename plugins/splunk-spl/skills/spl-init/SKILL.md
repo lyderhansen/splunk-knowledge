@@ -10,7 +10,7 @@ description: "Entry point for the splunk-spl plugin. Routes to the right SPL res
 Two-layer SPL knowledge system for writing, reviewing, and debugging
 Splunk Search Processing Language:
 
-1. **spl-gotchas** (eagerly loaded) — 23 silent-fail traps ranked by
+1. **spl-gotchas** (eagerly loaded) — 26 silent-fail traps ranked by
    frequency + categorized command index with when-to-use descriptions
 2. **reference/*.md** (lazy loaded) — per-command deep reference for
    all ~152 SPL commands, read on demand
