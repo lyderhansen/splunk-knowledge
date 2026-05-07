@@ -500,7 +500,7 @@ Every field must come from formatter settings. The user will rename
 `status` to `severity` or `_time` to `event_time`. If the viz breaks,
 the viz is wrong.
 
-### Branded header — go beyond a solid-color banner
+### 🎨 Branded header — go beyond a solid-color banner
 Every themed dashboard should have a branded header element — logo,
 wordmark, or styled title bar. Without it, the dashboard is "dark theme
 with colored accents." Use `splunk.image` pointing to
@@ -518,7 +518,7 @@ design. It looks like PowerPoint 2010. Instead:
 
 If the dashboard has a hero background image, a banner is usually redundant.
 
-### Consider a hero image as visual anchor
+### 🎨 Consider a hero image as visual anchor
 
 A dashboard without a hero image is widgets on a dark background.
 A brand-relevant hero (car photo, product render, facility shot)
@@ -601,6 +601,87 @@ be extraSmall fontSize at 30% text opacity. They organize without
 competing with data. Never use `## Heading` style markdown for section
 labels in themed dashboards — too heavy.
 
+## Design ambition — what separates good from great
+
+Technical rules (🔒) protect against broken vizs. They are
+non-negotiable. Everything below is about the OTHER 70% — the creative
+decisions that make someone screenshot a dashboard and share it.
+
+### The graphic designer question
+
+Before finalizing any design decision, ask:
+
+1. **"What would a graphic designer do that an AI wouldn't?"**
+   AI defaults: centered text, uniform spacing, symmetrical layout,
+   5 same-size KPIs in a row, gradient from brand color to darker.
+   Designer moves: one oversized hero element, intentional negative
+   space, asymmetric tension, unexpected accent placement.
+
+2. **"What's the ONE unexpected detail?"**
+   The detail that makes someone look twice. A subtle texture in the
+   gauge track. A micro-animation on the needle. An oversized position
+   number that bleeds off the panel edge. A whisper-thin accent line
+   that ties the composition together.
+
+3. **"Would this get likes on Dribbble?"**
+   Not as a goal — as a smell test. If the answer is "it's functional
+   but nobody would screenshot it," push further.
+
+### Creative latitude — what you're FREE to do
+
+These are NOT rules. They are permissions. Use them.
+
+**Color:**
+- Go beyond the 5-color palette — use alpha variants, tinted greys,
+  luminance shifts, complementary accents for hover/active states
+- Gradient fills on arcs, bars, backgrounds — not just solid colors
+- Glow and shadow colors can differ from the fill color
+- Dark-on-dark depth: 3-4 shades of near-black create layering
+
+**Typography:**
+- Extreme size contrast: hero value at 48-72px, labels at 8-10px
+- Letter-spacing on uppercase labels (1-3px tracking)
+- Font weight as hierarchy tool: 700 for values, 300 for labels
+- Tabular figures for number columns (monospace alignment)
+- Condensed fonts for dense data, expanded for hero display
+
+**Composition:**
+- Asymmetric layouts: 60/40, rule of thirds, golden ratio
+- Negative space is a design element, not wasted space
+- One element per zone should dominate — not equal weight
+- Bleed: elements that extend to panel edge feel intentional
+- Layered depth: background texture → panel → data → accent
+
+**Effects (use freely, data is still king):**
+- Subtle noise/grain texture on backgrounds (2-5% opacity)
+- Inner shadow on panels for depth
+- Gradient mesh as background atmosphere
+- Accent glow on hero values (data attention, not decoration)
+- Thin accent lines (1px, 10-20% opacity) as visual connectors
+- Vignette darkening toward edges for focus
+
+**Viz form:**
+- A gauge doesn't have to be an arc — it could be a vertical
+  thermometer, a horizontal fill bar, a radial burst, or a number
+  with a background fill
+- A table doesn't have to be rows — it could be cards, a grid of
+  chips, or a stacked column view
+- A timeline doesn't have to be horizontal — vertical timelines,
+  spiral timelines, or stacked blocks all work
+
+### What this freedom does NOT override
+
+🔒 Technical rules are still absolute:
+- ES5 syntax, file paths, formatter components, outputMode (F1-F12)
+- HiDPI scaling, clearRect, getOption, formatData rules (B1-B17)
+- AppInspect requirements (R1-R7)
+- `backgroundColor: transparent`, 1920×1080 minimum, font/size enums
+
+The creative latitude above applies to everything INSIDE `_render()`:
+what you draw, how you draw it, how it feels. The technical rules
+apply to everything AROUND `_render()`: how the viz loads, receives
+data, and integrates with Splunk.
+
 ## Design scoring — quantitative quality gate
 
 **Run this scoring BEFORE step 7 (build) and AFTER step 8 (critique).**
@@ -609,7 +690,7 @@ Rate each dimension 1-10. Score each dimension. Low scores are warnings,
 not blockers. A brutalist dashboard that scores 5 on emotional resonance
 but 10 on brand distinctiveness is a valid design choice.
 
-### Dimension 1: Visual hierarchy (1-10)
+### 🎨 Dimension 1: Visual hierarchy (1-10)
 
 | Score | Meaning |
 |---|---|
@@ -628,7 +709,7 @@ Target ≥ 4:1. Three tiers required:
 | **Body** | 14-24px | 60-80% | Supporting values, secondary data |
 | **Whisper** | 8-11px uppercase | 25-35% | Labels, section headers, metadata |
 
-### Dimension 2: Whitespace quality (1-10)
+### 🎨 Dimension 2: Whitespace quality (1-10)
 
 | Score | Meaning |
 |---|---|
@@ -641,7 +722,7 @@ Target ≥ 4:1. Three tiers required:
 score ≤ 5. Fix: 8px within groups, 24-32px between sections, 48px+
 between major zones.
 
-### Dimension 3: Brand distinctiveness (1-10)
+### 🎨 Dimension 3: Brand distinctiveness (1-10)
 
 | Score | Meaning |
 |---|---|
@@ -650,7 +731,7 @@ between major zones.
 | 7-8 | Shape language, typography, and chrome feel brand-specific. |
 | 9-10 | Recognizable with colors removed. Someone could name the brand from silhouette. |
 
-### Dimension 4: Emotional resonance (1-10)
+### 🎨 Dimension 4: Emotional resonance (1-10)
 
 | Score | Meaning |
 |---|---|
@@ -679,7 +760,7 @@ Run after design critique. 3+ items present = BLOCKED.
 
 **Scoring:** Count present tells. 0-1 = pass. 2 = warning. 3+ = blocked.
 
-## Intentional asymmetry principle
+## 🎨 Intentional asymmetry principle
 
 Symmetry is comfortable but forgettable. Asymmetry creates energy
 and directs attention.

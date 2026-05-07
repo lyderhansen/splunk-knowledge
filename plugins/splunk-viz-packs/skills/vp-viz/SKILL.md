@@ -265,44 +265,40 @@ module.exports = SplunkVisualizationBase.extend({
 });
 ```
 
-## Viz type blueprints
+## Viz type blueprints — inspiration, not templates
 
-Each blueprint shows what to draw in `_render` and what settings to
-expose in `formatter.html`. Use theme tokens for all colors.
+> 🔒 = Non-negotiable technical rule (breaks if violated)
+> 🎨 = Creative starting point (adapt, reimagine, surprise)
+
+These blueprints show WHAT each viz type expresses and what settings
+to expose. They are NOT templates to copy verbatim. Study the brand's
+real-world design language, then write Canvas code that matches THAT.
+
+**The agent's job:** take the data contract + expression intent below,
+then design a rendering that looks like a graphic designer made it for
+THIS specific brand. Two KPI tiles for different brands should look
+completely different — same data, different soul.
 
 ### Single Value Tile (KPI)
 
-**Draws:** large centered value, under-label, optional delta arrow,
-optional micro-sparkline.
+**Expresses:** the single most important number. Hero metric. At-a-glance status.
 
-**Layout rule: NEVER use percentage-of-height for label+value stacking.**
-Percentage positioning collapses at small panel heights (100-150px).
-Use additive positioning:
-```javascript
-var pad = 10;
-var labelFontSize = Math.max(8, Math.min(14, h * 0.11));
-var valueFontSize = Math.max(14, Math.min(48, h * 0.32));
-var trendFontSize = Math.max(8, Math.min(12, h * 0.10));
+**🔒 Technical rules:**
+- String passthrough for non-numeric values like `"1:21.584"`, `"+3.2s"`, `"DNS"` (B11)
+- Use additive Y positioning for label→value→trend stack, not percentage-of-height
+- All sizes scale from container: `Math.max(floor, h * ratio)` (B8)
 
-var labelY = pad + labelFontSize;
-var valueY = labelY + labelFontSize / 2 + 6 + valueFontSize / 2;
-var trendY = valueY + valueFontSize / 2 + 4 + trendFontSize / 2;
-```
+**🎨 Creative decisions YOU make:**
+- Value font weight and whether it's condensed, expanded, or standard
+- Whether the label sits above, below, or beside the value
+- Trend indicator style: arrow, colored dot, sparkline, percentage badge, or nothing
+- Background treatment: flat, subtle gradient, accent glow behind value, carbon texture
+- Whether there's a thin accent line, border, or divider element
+- How the unit is styled relative to the value (smaller? dimmer? superscript?)
+- Whether hero mode blows up the number to fill 80% of the panel or keeps it centered
 
-**Trend delta defaults to BELOW the value.** At typical KPI tile
-widths (200-400px), a large monospace value leaves no horizontal room
-for trend text at the same line. Stack vertically: label → value →
-trend+arrow. Position beside it only if the panel is wide enough
-(>500px) and the value text is short.
-
-**String value passthrough (B11):** `parseFloat()` truncates string
-values like `"1:21.584"` → `1`. Detect non-numeric strings:
-```javascript
-var rawStr = String(row[colIdx[field]]);
-var rawValue = parseFloat(rawStr);
-var isNumeric = !isNaN(rawValue) && String(rawValue) === rawStr.replace(/^[+\s]+/, '');
-var displayValue = isNumeric ? fmtNum(rawValue) : rawStr;
-```
+**Visual references beyond Splunk:** Bloomberg terminal tiles, Tesla dashboard readouts,
+F1 timing tower cells, Apple Health cards, Stripe dashboard KPIs.
 
 **Settings:** `field`, `label`, `unit`, `unitPosition`, `decimals`,
 `showDelta`, `deltaField`, `accentColor`, `theme`
@@ -312,66 +308,43 @@ row. Optional: `delta` field for trend arrow.
 
 ### Ring Gauge
 
-**Draws:** arc from startAngle to endAngle, colored by threshold
-bands. Center shows value text. Optional tick marks.
+**Expresses:** progress toward a target, fill level, health percentage.
 
-**Key render logic:**
+**🔒 Technical rules:**
+- Arc angles are radians: full circle = 0→2π, 270° sweep = 0.75π→2.25π
+- Brand-colored segments, NOT default green→yellow→red (B12)
+- All sizes relative to `Math.min(w, h)` (B8)
 
-> These are starting values — adjust per brand. A full-circle gauge
-> uses 0→2π, a half-circle uses π→2π, a 270° sweep uses 0.75π→2.25π.
-> Center Y (`cy`) and radius can be shifted to suit the panel aspect
-> ratio.
+**🎨 Creative decisions YOU make:**
+- Sweep angle: 180° (half), 270° (classic), 360° (full donut), or asymmetric
+- Track style: thin hairline, thick band, dashed, dotted, or invisible
+- Fill style: solid color, gradient along arc, segmented blocks, or neon glow
+- Center content: big number, label + number, icon, mini chart, or empty
+- Tick marks: none, every 10%, major+minor, or just endpoints
+- Cap style: round, butt, or arrow tip
+- Whether the arc has a drop shadow, outer glow, or inner bevel
+- Whether zones pulse, animate, or stay static
+- Needle vs fill: some gauges work better with a physical needle than a filled arc
 
-```javascript
-var cx = w / 2;
-var cy = h * 0.55;
-var radius = Math.min(w, h) * 0.38;
-var lineWidth = radius * 0.18;
-var startAngle = Math.PI * 0.75;
-var endAngle = Math.PI * 2.25;
-var valueAngle = startAngle + (endAngle - startAngle) * (pct / 100);
+**Visual references:** car speedometer, aircraft altimeter, Nest thermostat,
+Apple Watch activity rings, industrial pressure gauge, gaming health bar.
 
-// Background track
-ctx.beginPath();
-ctx.arc(cx, cy, radius, startAngle, endAngle);
-ctx.strokeStyle = t.edge;
-ctx.lineWidth = lineWidth;
-ctx.lineCap = 'round';
-ctx.stroke();
+**Settings:** `field`, `maxValue`, `unit`, `label`, `colorScheme`,
+`showTicks`, `showGlow`, `displayMode` (arc/donut/bar), `theme`
 
-// Value arc
-ctx.beginPath();
-ctx.arc(cx, cy, radius, startAngle, valueAngle);
-ctx.strokeStyle = arcColor;
-ctx.stroke();
-```
-
-**Settings:** `field`, `maxValue`, `unit`, `label`, `colorScheme`
-(5 presets), `showTicks`, `showGlow`, `displayMode` (arc/donut/bar),
-`theme`
-
-**Data contract:** configurable numeric field (default: `value`).
-Reads last row.
+**Data contract:** configurable numeric field (default: `value`). Reads last row.
 
 ### Status Chip / Badge
 
-**Draws:** rounded rectangle with fill color determined by severity
-field. Text label centered. Optional icon glyph.
+**Expresses:** categorical status at a glance — OK/warning/critical, active/inactive.
 
-**Key render logic:**
-```javascript
-var chipColor = theme.severityColor(t, severity);
-var pad = Math.max(8, Math.min(w, h) * 0.04);
-theme.roundRect(ctx, pad, pad, w - pad * 2, h - pad * 2, h / 2);
-ctx.fillStyle = chipColor;
-ctx.fill();
-
-ctx.font = labelFontSize + 'px ' + theme.FONTS.ui;
-ctx.fillStyle = t.invert;
-ctx.textAlign = 'center';
-ctx.textBaseline = 'middle';
-ctx.fillText(label, w / 2, h / 2);
-```
+**🎨 Creative decisions YOU make:**
+- Shape: pill (full radius), rounded rect, circle, diamond, hexagon
+- Fill: solid, gradient, semi-transparent with border, or outline-only
+- Text: centered label, icon + label, icon only, or abbreviated code
+- Size: fixed or proportional to label length
+- Animation: subtle pulse on critical, breathing glow, or static
+- Whether the chip has a shadow, border, or sits flush
 
 **Settings:** `field`, `labelField`, `theme`
 
@@ -380,67 +353,70 @@ and label field. Reads last row.
 
 ### Live Ticker
 
-**Draws:** horizontally scrolling entries with time-ago, separator
-dots, optional pulsing LIVE badge. Gradient fade on edges.
+**Expresses:** real-time event feed, breaking news feel, continuous activity stream.
 
-**Key render logic:**
-```javascript
-// Animate scroll position
-this._scrollX = (this._scrollX || 0) - scrollSpeed;
-if (this._scrollX < -totalWidth) this._scrollX = w;
+**🔒 Technical rules:**
+- Animation timers MUST be cleaned up in `destroy()` (C5)
+- Edge fade gradients prevent text from clipping at panel edges
 
-// Draw each entry
-for (var i = 0; i < entries.length; i++) {
-    var ex = this._scrollX + i * entryWidth;
-    if (ex < -entryWidth || ex > w + entryWidth) continue;
+**🎨 Creative decisions YOU make:**
+- Scroll direction: left-to-right, right-to-left, or vertical upward
+- Entry style: cards, pills, inline text with separators, or LED-board characters
+- Speed: configurable via formatter, adaptive to entry count
+- Edge treatment: gradient fade, hard clip, or parallax depth blur
+- LIVE badge: pulsing dot, blinking text, animated ring, or none
+- Time display: relative ("2m ago"), absolute, or countdown
+- Whether entries have category icons, severity colors, or priority markers
 
-    theme.roundRect(ctx, ex, y, entryW, entryH, 4);
-    ctx.fillStyle = theme.withAlpha(t.panel, 0.8);
-    ctx.fill();
+**Visual references:** stock ticker, CNN breaking news crawl, airport
+departure board, Twitch chat overlay, F1 live timing feed.
 
-    ctx.font = labelFontSize + 'px ' + theme.FONTS.ui;
-    ctx.fillStyle = t.text;
-    ctx.fillText(entries[i].text, ex + pad, y + entryH / 2);
-}
+**Settings:** `title`, `scrollSpeed`, `field1`–`field4`, `label1`–`label4`,
+`bgColor`, `textColor`, `accentColor`, `theme`
 
-// Edge fade gradients
-var fadeL = ctx.createLinearGradient(0, 0, 60, 0);
-fadeL.addColorStop(0, t.bg);
-fadeL.addColorStop(1, 'transparent');
-ctx.fillStyle = fadeL;
-ctx.fillRect(0, 0, 60, h);
-```
-
-**Settings:** `title`, `scrollSpeed` (slow/medium/fast),
-`field1`–`field4`, `label1`–`label4`, `bgColor`, `textColor`,
-`accentColor`, `theme`
-
-**Data contract:** requires `_time` + 1-4 configurable fields.
-Multi-row input. Reads all rows.
+**Data contract:** requires `_time` + 1-4 configurable fields. Multi-row.
 
 ### Leaderboard
 
-**Draws:** ranked list with position badges (gold/silver/bronze for
-1-3), player name, score with leading zeros. Optional CRT scanline
-overlay and neon glow.
+**Expresses:** ranked competition, top-N, performance standings, gamification.
 
-**Settings:** `title`, `maxRows`, `scoreDigits`, `rankField`,
-`nameField`, `scoreField`, `titleColor`, `showScanlines`, `showGlow`,
-`theme`
+**🎨 Creative decisions YOU make:**
+- Position badges: gold/silver/bronze medals, numbered circles, flag icons, or plain text
+- Row treatment: alternating opacity, hover highlight, selected glow
+- Score display: leading zeros (007), decimal precision, bar fill, or sparkline
+- Whether top 3 have special treatment (larger, glowing, different background)
+- Table chrome: gridlines, row separators, none, or just header underline
+- Visual effects: CRT scanlines, neon glow, holographic sheen, or clean flat
+- Whether there's a "you are here" marker for the user's own entry
 
-**Data contract:** requires rank, name, score fields (configurable).
-Multi-row input.
+**Visual references:** F1 timing tower, gaming leaderboards, Strava segments,
+GitHub contributor graphs, arcade high-score screens.
+
+**Settings:** `title`, `maxRows`, `scoreDigits`, `rankField`, `nameField`,
+`scoreField`, `titleColor`, `showScanlines`, `showGlow`, `theme`
+
+**Data contract:** requires rank, name, score fields (configurable). Multi-row.
 
 ### Process Flow / Pipeline
 
-**Draws:** connected nodes with labels, values, optional sparklines.
-Lines between nodes with optional arrows. Status-colored borders.
+**Expresses:** sequential workflow, pipeline stages, connected process steps.
 
-**Settings:** `labelField`, `valueField`, `statusField`,
-`sparklineField`, `palette`, `showArrows`, `nodeRadius`, `theme`
+**🎨 Creative decisions YOU make:**
+- Node shape: circles, rounded rects, hexagons, chevrons, or custom icons
+- Connection style: straight lines, curved bezier, arrows, animated dashes, or gradient flow
+- Layout: horizontal left-to-right, vertical top-to-bottom, or circular
+- Status encoding: fill color, border color, icon overlay, or pulsing animation
+- Whether nodes have embedded sparklines, progress bars, or mini values
+- Spacing: uniform, proportional to duration, or clustered by phase
+- Whether failed/blocked nodes have a distinct visual treatment (crossed out, red border, dimmed)
 
-**Data contract:** requires label + value fields, optional status
-and sparkline. Multi-row input.
+**Visual references:** CI/CD pipeline views (GitHub Actions, GitLab),
+JIRA workflow boards, subway maps, network topology diagrams.
+
+**Settings:** `labelField`, `valueField`, `statusField`, `sparklineField`,
+`palette`, `showArrows`, `nodeRadius`, `theme`
+
+**Data contract:** requires label + value fields, optional status and sparkline. Multi-row.
 
 ### Donut / Ring
 
