@@ -538,6 +538,50 @@ The car/product should remain visible between the side panels.
 This is a recommended pattern, not mandatory — SOC walls and status
 pages often work better without a hero image.
 
+### Dashboard layout archetypes — not just hero
+
+The hero image pattern (image → dimming overlay → floating panels) is
+the default. But using it on EVERY dashboard makes every pack look
+the same. Pick the layout that fits the brand and content:
+
+| Archetype | When to use | Structure |
+|---|---|---|
+| **Full-bleed hero** | Strong visual brand (motorsport, space, luxury) | Hero image full-width → dimming overlay → vignette → floating panels. 40-50% of canvas is image. |
+| **Strip banner** | Corporate/enterprise brand, data-heavy dashboard | Narrow 60-80px brand strip at top (logo + title + accent line). Rest is pure data panels on dark/light canvas. |
+| **Side hero** | Narrative dashboards, brand storytelling | 35-40% left column: brand image + title + description. 60-65% right: data panels stacked. Asymmetric split. |
+| **No hero** | Operational/NOC, data density is king | Brand identity through typography, color tokens, and viz chrome only. No image at all. Full canvas for data. |
+| **Split screen** | Before/after, comparison, dual-audience | Top 40% hero/image zone. Bottom 60% full-width data grid. Clear horizontal divider between zones. |
+
+**Default selection:**
+- Motorsport / space / luxury / entertainment → **full-bleed hero**
+- Enterprise IT / SOC / NOC / operational → **no hero** or **strip banner**
+- Healthcare / retail / corporate → **strip banner** or **side hero**
+- Storytelling / demo / showcase → **side hero** or **full-bleed hero**
+
+**Rule:** if the user doesn't specify, ASK which archetype fits. Don't
+default to full-bleed hero every time — that's an AI-lazy habit.
+
+**Strip banner recipe:**
+```
+structure order:
+  1. splunk.rectangle (full-width strip, y=0, h=70, brand accent fill)
+  2. splunk.image     (logo, left-aligned inside strip)
+  3. splunk.markdown  (title, right of logo inside strip)
+  4. splunk.rectangle (1px accent line at y=70)
+  5. splunk.rectangle (panel shadow cards below strip)
+  6. custom vizs      (data panels, y starts at ~90)
+```
+
+**Side hero recipe:**
+```
+structure order:
+  1. splunk.image     (left column, x=0, w=700, full height)
+  2. splunk.rectangle (dimming overlay on image)
+  3. splunk.markdown  (title + description overlaid on image)
+  4. splunk.rectangle (panel shadow cards in right column, x=720+)
+  5. custom vizs      (data panels in right column)
+```
+
 ### Semi-transparent grouping panels
 
 Floating panels with 85-92% opacity background create visual hierarchy

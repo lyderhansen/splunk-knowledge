@@ -558,6 +558,64 @@ value text (right-aligned), optional delta indicator, hover highlight.
 
 **Data contract:** label + value. Multi-row sorted by value.
 
+### Data Table (Canvas)
+
+**Draws:** sortable, paginated rows with configurable columns, header
+row with sort indicators, colored deltas, position badges. Unlike
+splunk.table, this is fully branded via Canvas 2D.
+
+**MUST-HAVE features (not optional):**
+
+**Sort:** Click column header → sort rows by that column (toggle asc/desc).
+Draw sort indicator (▲/▼) next to active column. Store `this._sortCol`
+and `this._sortDir`. Hit-test header row in `_onMouseDown`.
+```javascript
+// In initialize():
+this._sortCol = null;
+this._sortDir = 'asc';
+this.canvas.addEventListener('mousedown', function(e) { self._onMouseDown(e); });
+
+// In _onMouseDown: hit-test header cells
+_onMouseDown: function(e) {
+    var rect = this.canvas.getBoundingClientRect();
+    var mx = e.clientX - rect.left;
+    var my = e.clientY - rect.top;
+    if (my < this._headerH) {
+        var col = this._hitTestHeader(mx);
+        if (col !== null) {
+            if (this._sortCol === col) {
+                this._sortDir = this._sortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                this._sortCol = col;
+                this._sortDir = 'asc';
+            }
+            this._render(this._lastData, this._lastConfig);
+        }
+    }
+},
+```
+
+**Pagination:** Calculate visible rows from panel height. Draw page
+navigation at bottom: "Page 1 of N  ‹ ›". Store `this._currentPage`.
+```javascript
+var headerH = Math.round(h * 0.08);
+var footerH = 28;
+var rowH = Math.max(20, Math.round((h - headerH - footerH) / 12));
+var rowsPerPage = Math.floor((h - headerH - footerH) / rowH);
+var totalPages = Math.ceil(rows.length / rowsPerPage);
+var pageRows = rows.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+```
+
+**Fill panel width:** columns distribute proportionally across the full
+panel width. Last column gets remaining space. Never fixed-pixel widths.
+
+**Settings:** `columns` (CSV field names), `defaultSortColumn`,
+`defaultSortDirection`, `rowsPerPage` (auto or number), `showPosition`,
+`bestColor`, `improvedColor`, `slowerColor`, `theme`
+
+**Data contract:** multi-column, multi-row. Field names from formatter
+settings.
+
 ---
 
 **Viz variety rule:** a dashboard with 5 vizs of the same type (all
@@ -566,6 +624,16 @@ types per dashboard. The taxonomy above gives you options beyond the
 usual KPI/gauge/donut/table set.
 
 ## Formatter HTML template
+
+**CRITICAL: Splunk components ONLY — no raw HTML (F12)**
+
+Splunk's viz framework ignores raw HTML. NEVER use `<div>`, `<input>`,
+`<select>`, `<label>`, `<h3>`, or `<style>`. ONLY use:
+- `<form class="splunk-formatter-section">` as wrapper
+- `<splunk-control-group>` for each setting
+- `<splunk-text-input>`, `<splunk-radio-input>`, `<splunk-color-picker>` as controls
+
+No `<html>`, `<body>`, or `<head>` wrappers. No CSS. No JavaScript.
 
 ```html
 <form class="splunk-formatter-section" section-label="Data configurations">
@@ -906,6 +974,11 @@ fails.
    Source files use `require()`/`module.exports`; `build_flat.js` converts
    to `define()` wrapper.
 
+**Formatter (CRITICAL):**
+7. Formatter.html uses ONLY Splunk components (`<splunk-control-group>`,
+   `<splunk-text-input>`, etc.) — NEVER raw HTML (`<div>`, `<input>`,
+   `<select>`) (F12). No `<html>`/`<body>` wrappers. No CSS/JS.
+
 **Checklist for subagent to verify before reporting DONE:**
 - [ ] `getInitialDataParams` is a method (not a property)
 - [ ] No `this.$el` or jQuery anywhere
@@ -913,6 +986,9 @@ fails.
 - [ ] `theme.setupCanvas(this.el)` not `theme.setupCanvas(this._canvas)`
 - [ ] Source uses `require()`/`module.exports`, NOT `define()`
 - [ ] All code is ES5 (no const/let/arrow/template literals)
+- [ ] Formatter uses Splunk components only, no raw HTML (F12)
+- [ ] All sizes scale from container dimensions, no hardcoded pixels (B8)
+- [ ] Tables have sort + pagination
 
 ## Splunk API reference — things agents forget
 

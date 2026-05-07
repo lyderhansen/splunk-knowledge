@@ -320,6 +320,49 @@ define(["api/SplunkVisualizationBase"], function(SplunkVisualizationBase) {
 - Switch to flat AMD if you get persistent Script errors in the
   sandboxed iframe that F1-F9 don't explain
 
+### F12. Formatter HTML must use Splunk components, NEVER raw HTML
+
+Splunk's visualization framework only reads its own custom elements.
+Raw HTML (`<div>`, `<input>`, `<select>`, `<label>`, `<h3>`) is
+silently ignored — the Format panel shows NO settings.
+
+```html
+<!-- WRONG — Splunk ignores all of this -->
+<div class="section">
+    <h3>Data Fields</h3>
+    <div class="form-row">
+        <label>Label field</label>
+        <input type="text" name="myapp.myviz.labelField" />
+    </div>
+</div>
+
+<!-- ALSO WRONG — no wrapper tags allowed -->
+<html><body>
+<form class="splunk-formatter-section" ...>
+</form>
+</body></html>
+
+<!-- RIGHT — bare forms with Splunk components -->
+<form class="splunk-formatter-section" section-label="Data configurations">
+    <splunk-control-group label="Label field" help="SPL field for row labels">
+        <splunk-text-input name="myapp.myviz.labelField" default="label">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+```
+
+**Allowed components only:**
+- `<splunk-text-input>` — text fields
+- `<splunk-radio-input>` with `<option>` children — radio/dropdown/boolean
+- `<splunk-color-picker>` with `<splunk-color>` children — color swatches
+- `<splunk-range-input>` — slider (rare)
+
+**Forbidden elements:** `<div>`, `<input>`, `<select>`, `<textarea>`,
+`<label>`, `<h1>`-`<h6>`, `<span>`, `<style>`, `<script>`. No CSS, no
+JavaScript. No `<html>` or `<body>` wrappers.
+
+Every `<splunk-control-group>` MUST have `help="..."` attribute.
+
 ## BROKEN — renders but wrong
 
 ### B1. Canvas font rendering requires explicit wait
@@ -473,6 +516,43 @@ the color picker — then it jumps to red. Always keep them in sync.
 
 ### B8. Auto-scale by default, explicit override at non-zero
 
+NEVER hardcode pixel constants in `_render()`. Vizs must adapt to any
+panel size — from 200×150 (compact tile) to 800×600 (full panel).
+
+```javascript
+// WRONG — breaks at every size except the one you tested
+var ROW_H = 24;
+var LABEL_W = 100;
+var PAD = 12;
+var FONT_SIZE = 14;
+
+// RIGHT — scale from container dimensions
+var pad = Math.round(w * 0.03);
+var rowH = Math.max(16, Math.floor((h - headerH - footerH) / rowCount) - gap);
+var labelW = Math.round(w * 0.25);
+var fontSize = Math.max(8, Math.round(rowH * 0.45));
+```
+
+**Scaling formulas per viz type:**
+
+| Viz type | Element | Formula | Floor |
+|---|---|---|---|
+| KPI tile | Value font | `h * 0.35` (normal), `h * 0.45` (hero) | 18px / 28px |
+| KPI tile | Label font | `h * 0.08` | 7px |
+| KPI tile | Padding | `w * 0.06` | 8px |
+| Gauge | Radius | `Math.min(w, h) * 0.38` | 30px |
+| Gauge | Tick font | `radius * 0.06` | 8px |
+| Bar/timeline | Row height | `(availH - legendH) / rowCount - gap` | 16px |
+| Bar/timeline | Label width | Measure longest label + 16px | 40px |
+| Table | Column width | `panelWidth / colCount` (proportional) | 50px |
+| Table | Row height | `Math.max(20, (availH - headerH) / visibleRows)` | 20px |
+| Any | Font size | Scale from container, `Math.max(floor, calculated)` | 8px |
+
+**The pattern:** every size = `Math.max(floor, containerDimension * ratio)`.
+The floor prevents unreadable text. The ratio adapts to the panel.
+
+**For user-overridable sizes:** `0` = auto-scale (default), positive value
+= explicit override:
 ```javascript
 var userSize = parseInt(getOption(config, ns, 'iconSize', '0'), 10);
 var iconSize;
@@ -482,9 +562,6 @@ if (userSize > 0) {
     iconSize = Math.max(16, Math.min(200, Math.min(w, h) * 0.6));
 }
 ```
-
-`0` = auto-scale. Positive value = user override. Never hardcode
-pixel sizes — panels resize.
 
 ### B9. Dashboard Studio type format
 
@@ -510,6 +587,18 @@ Format: `{app_id}.{viz_name}`. Nothing else.
 | formatter.html | `{{VIZ_NAMESPACE}}.settingName` | `{{VIZ_NAMESPACE}}.accentColor` |
 
 Get any one wrong and the setting silently fails.
+
+**Common mistake — using savedsearches.conf format in formatter.html:**
+```html
+<!-- WRONG — long prefix, Splunk never reads this setting -->
+<splunk-text-input name="display.visualizations.custom.myapp.myviz.field" default="value">
+
+<!-- RIGHT — short format matches Dashboard Studio JSON -->
+<splunk-text-input name="myapp.myviz.field" default="value">
+```
+
+Dashboard Studio JSON and formatter.html both use the SHORT format
+(`{app}.{viz}.key`). Only savedsearches.conf uses the long prefix.
 
 ### B11. parseFloat truncates string values
 
@@ -1055,6 +1144,8 @@ Viz shows placeholder icon (bar chart in grey box)
 - [ ] Package: `COPYFILE_DISABLE=1`, excludes node_modules/src/.DS_Store
 - [ ] No jQuery (`this.$el`, `$.fn`) in viz source — use DOM APIs (F10)
 - [ ] `getInitialDataParams` is a METHOD, not a property on extend (F4)
+- [ ] Formatter uses ONLY Splunk components, NO raw HTML (F12)
+- [ ] Formatter `name=` uses short namespace `{app}.{viz}.key` (B10)
 
 ### TIER 2: SHOULD (quality — dashboard looks wrong without these)
 
