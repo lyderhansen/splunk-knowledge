@@ -160,6 +160,126 @@ extended type conversion/checking) are documented in `reference/eval.md`.
 **Right:** Keep `_time` as epoch for charts, only use strftime in tables via `| eval display_time=strftime(_time, "%H:%M")`
 **Why:** Converting `_time` to a string destroys the numeric axis. Splunk charts need epoch values for the x-axis. Only use strftime for display in table columns, never to replace `_time` in chart searches.
 
+### 24. TERM() for exact major-term matching — massive performance gain
+
+**Wrong:** `index=firewall src_ip=10.0.0.1` (Splunk breaks `10.0.0.1` into minor terms `10`, `0`, `1` — matches millions of false positives)
+**Right:** `index=firewall TERM(src_ip=10.0.0.1)` (matches the exact major term in the tsidx lexicon)
+**Why:** Without `TERM()`, Splunk's search bar text is broken into minor terms by the segmenter. Searching `average=0.9*` generates LISPY `[ AND 0 9* index::* ]` — matching any event containing `0` and a term starting with `9`. With `TERM(average=0.9*)` the LISPY becomes `[ AND average=0.9* index::* ]` — matching only events with that exact major term. Real-world improvement: 21 seconds → 0.7 seconds (99.99% false positive elimination).
+
+**When TERM() works:** the value you're searching for must be a single major term in the lexicon. Major breakers are: `[ ] < > ( ) { } | ! ; , ' " * \n \r \s \t & ? +` and URL-encoded equivalents. If your value contains a major breaker (like spaces), it's split into multiple major terms and `TERM()` won't match.
+
+**When TERM() doesn't work:** values with spaces or major breakers inside them (e.g., `TERM(user=John Smith)` fails because the space splits it). Use `TERM()` for `key=value` pairs, IPs, GUIDs, hostnames — anything without major breakers.
+
+```spl
+| search index=main TERM(src_ip=192.168.1.100) TERM(action=blocked)
+| stats count by src_ip, dest_ip
+```
+
+**Discover available terms with `walklex`:**
+```spl
+| walklex index=main type=term | search term="src_ip=*"
+```
+
+### 25. PREFIX() in tstats — indexed-field-free aggregation
+
+**Wrong:** `index=_internal host IN (idx*) group=thruput | stats sum(kb) by host _time` (raw search, 134 seconds)
+**Right:** `| tstats sum(PREFIX(kb=)) as kb where index=_internal host=idx* TERM(group=thruput) by host _time span=1767s` (PREFIX search, 3-30x faster)
+**Why:** `PREFIX()` (v8+) allows `tstats` to treat major terms as pseudo-indexed-fields. Instead of requiring a data model or indexed field extraction, `PREFIX(field=)` reads values directly from the tsidx lexicon. Works in WHERE, BY, and aggregation clauses.
+
+**Syntax:**
+```spl
+| tstats count where index=myindex TERM(status=error) by PREFIX(host=) _time span=1h
+| rename PREFIX(host=) as host
+```
+
+**Rules:**
+- `TERM(key=value)` in WHERE clause for filtering
+- `PREFIX(key=)` in BY clause for grouping (note: trailing `=`)
+- `sum(PREFIX(value=))` in aggregation for numeric extraction
+- Always `| rename PREFIX(key=) as key` after — output field name includes the prefix
+- Requires Splunk 8+ (PREFIX directive added in v8)
+
+**The killer combo — replaces 5 appended tstats with one:**
+```spl
+-- SLOW: one tstats per value
+| tstats prestats=t count where index=itsi_summary TERM(alert_severity=high) by _time span=1sec
+| fillnull "high" alert_severity
+| tstats prestats=t append=t count where index=itsi_summary TERM(alert_severity=low) by _time span=1sec
+| fillnull "low" alert_severity
+...
+
+-- FAST: single tstats with PREFIX
+| tstats count where index=itsi_summary TERM(alert_severity=*)
+    by PREFIX(alert_severity=) _time span=1sec
+| rename PREFIX(alert_severity=) as alert_severity
+```
+
+### 26. append/join/transaction are last resort — use stats-based alternatives
+
+**Wrong:** Reaching for `append`, `join`, or `transaction` as the first approach to combining or correlating data.
+**Right:** Use `stats`, `eventstats`, or `streamstats` first. These commands are distributed, streaming, and orders of magnitude faster.
+
+| Slow command | When acceptable | Fast alternative |
+|---|---|---|
+| `transaction` | Need `maxpause`, `startswith`/`endswith`, or access to grouped `_raw` | `stats min(_time) AS start, max(_time) AS end, values(action) AS actions, count by session_id \| eval duration=end-start` |
+| `join` | True SQL-style join on a small lookup-like dataset (<50K rows) | `stats` with shared by-fields, or `lookup`, or `eventstats` |
+| `append` | Combining results from genuinely different indexes/sourcetypes | `multisearch` (parallel), or single search with `stats ... by sourcetype` |
+| `appendcols` | Adding a single computed column from a different search | `eventstats` if same dataset, or `lookup` if external |
+
+**Why these are slow:**
+- `transaction` loads all events into memory — 10-100x slower than `stats` (trap #18)
+- `join` default max is 50K and runs a full subsearch (trap #6)
+- `append` runs subsearches sequentially — each has 60s timeout / 50K limit (trap #20)
+- `eventstats` adds computed fields inline without destroying original events
+- `streamstats` does running calculations in a single pass
+
+**Pattern: "find events where field X is above the group average"**
+```spl
+-- WRONG: join to get averages
+... | join type=left src [search ... | stats avg(bytes) as avg_bytes by src]
+    | where bytes > avg_bytes
+
+-- RIGHT: eventstats adds the average inline
+... | eventstats avg(bytes) as avg_bytes by src
+    | where bytes > avg_bytes
+```
+
+**Pattern: "running total / cumulative sum"**
+```spl
+-- WRONG: append with progressive stats
+-- RIGHT:
+... | sort 0 _time | streamstats sum(count) as cumulative_count
+```
+
+---
+
+## Search performance hierarchy
+
+Optimize SPL in this order — earlier stages eliminate more work:
+
+```
+1. Specify INDEX + TIME RANGE           ← narrows buckets to consider
+   index=firewall earliest=-1h
+
+2. Add host/source/sourcetype           ← bloom filter eliminates buckets
+   sourcetype=cisco:asa
+
+3. Use TERM() for exact major terms     ← tsidx eliminates slices (no decompression)
+   TERM(action=blocked)
+
+4. Use tstats + PREFIX() when possible  ← reads tsidx only, never touches raw events
+   | tstats count where ... by PREFIX(src=)
+
+5. Filter early with WHERE, not late    ← first line = most computational effort
+   index=fw TERM(action=blocked)        ← good: filters at indexer
+   index=fw | search action=blocked     ← bad: filters at search head after extraction
+```
+
+**Key metric: scanCount vs eventCount** (visible in Job Inspector).
+If scanCount >> eventCount, you're decompressing and parsing events
+only to throw them away. Add TERM() or tighten the first line of
+your search to eliminate earlier in the pipeline.
+
 ---
 
 ## Command index

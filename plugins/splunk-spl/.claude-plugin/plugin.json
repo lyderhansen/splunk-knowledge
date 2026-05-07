@@ -1,7 +1,7 @@
 {
   "name": "splunk-spl",
-  "description": "SPL (Search Processing Language) syntax reference for Splunk. Two-layer knowledge system: eagerly-loaded spl-gotchas skill with categorized command index + top 20 silent-fail traps, plus lazy-loaded per-command reference files for all ~140 SPL commands. Use when writing, reviewing, or debugging any SPL — dashboard data sources, ad-hoc searches, alerts, saved searches, FAKE_DATA generators.",
-  "version": "1.1.0",
+  "description": "SPL (Search Processing Language) syntax reference for Splunk. Two-layer knowledge system: eagerly-loaded spl-gotchas skill with categorized command index + 26 silent-fail traps (incl. TERM/PREFIX performance, append/join/transaction anti-patterns), search performance hierarchy, plus lazy-loaded per-command reference files for all ~140 SPL commands. Use when writing, reviewing, or debugging any SPL — dashboard data sources, ad-hoc searches, alerts, saved searches, FAKE_DATA generators.",
+  "version": "1.2.0",
   "author": {
     "name": "Lyder Hansen"
   },
