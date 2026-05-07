@@ -880,9 +880,13 @@ initialize: function() {
     this._tooltip = document.createElement('div');
     this._tooltip.style.cssText =
         'position:absolute;display:none;padding:6px 10px;' +
-        'background:rgba(0,0,0,0.85);color:#fff;font-size:12px;' +
         'border-radius:4px;pointer-events:none;white-space:nowrap;' +
-        'z-index:100;font-family:sans-serif;';
+        'z-index:100;';
+    // NO hardcoded font/color — set in _render() from theme tokens:
+    // this._tooltip.style.background = t.panelHi;
+    // this._tooltip.style.color = t.text;
+    // this._tooltip.style.fontFamily = theme.FONTS.data;
+    // this._tooltip.style.fontSize = '11px';
     this.el.style.position = 'relative';
     this.el.appendChild(this._tooltip);
 

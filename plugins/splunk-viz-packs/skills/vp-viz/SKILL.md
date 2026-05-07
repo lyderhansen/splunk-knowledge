@@ -82,6 +82,12 @@ RequireJS (see vp-ref-gotchas F6).
 literal. NEVER use prototypal constructor pattern — it silently
 fails to register methods (see vp-ref-gotchas F7).
 
+**CRITICAL:** NEVER hardcode font names in viz source code. All fonts
+come from `theme.FONTS.data` (numbers, KPIs) and `theme.FONTS.ui`
+(labels, headers). The font choice is a DESIGN decision driven by
+brand mood — not a coding default. Use `theme.FONTS.*` everywhere:
+`ctx.font`, tooltip styling, CSS strings.
+
 ```javascript
 var SplunkVisualizationBase = require('api/SplunkVisualizationBase');
 var theme = require('shared/theme');
@@ -113,14 +119,10 @@ module.exports = SplunkVisualizationBase.extend({
         this._tooltip.style.cssText =
             'position:absolute;display:none;padding:6px 10px;' +
             'border-radius:2px;pointer-events:none;white-space:nowrap;' +
-            'z-index:100;font-family:monospace;font-size:11px;';
-        // Colors set in _render() from theme tokens: t.panel, t.text, t.edgeStrong
+            'z-index:100;';
+        // NO hardcoded font-family or font-size here — set in _render()
+        // from theme tokens so the tooltip matches the pack's brand
         this.el.appendChild(this._tooltip);
-
-        // Tooltip styling is set dynamically from theme tokens in _render()
-        // this._tooltip.style.background = t.panelHi;
-        // this._tooltip.style.color = t.text;
-        // this._tooltip.style.border = '1px solid ' + t.edgeStrong;
 
         this._hoverIdx = -1;
         this._hitRegions = [];
@@ -200,9 +202,17 @@ module.exports = SplunkVisualizationBase.extend({
         ) / 50;
         this._gi = gi; // accessible from sub-methods (B14)
 
+        // Style tooltip from theme tokens (not hardcoded)
+        this._tooltip.style.background = t.panelHi;
+        this._tooltip.style.color = t.text;
+        this._tooltip.style.border = '1px solid ' + t.edgeStrong;
+        this._tooltip.style.fontFamily = theme.FONTS.data;
+        this._tooltip.style.fontSize = '11px';
+
         // ── DRAW HERE ───────────────────────────────────────
         // All coordinates use w, h (CSS pixels)
         // All colors from t (theme tokens)
+        // All fonts from theme.FONTS.data / theme.FONTS.ui
         // All settings via theme.getOption(config, ns, 'key', 'default')
         // All glow/accent effects multiplied by gi
     },
