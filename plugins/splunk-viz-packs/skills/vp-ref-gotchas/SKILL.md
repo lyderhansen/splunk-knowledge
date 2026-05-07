@@ -649,9 +649,10 @@ Missing → btool compliance warning.
 
 ## INTERACTIVE — must have for production
 
-### I1. Hover tooltip is mandatory on all vizs
+### I1. Hover tooltip is mandatory on data-displaying vizs
 
-Every viz that displays data MUST show a tooltip on hover. Canvas
+Every viz that displays DATA must show a tooltip on hover. Decorative
+vizs (background shapes, texture overlays) don't need tooltips. Canvas
 has no built-in tooltip — use a DOM element positioned at the cursor.
 
 ```javascript

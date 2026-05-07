@@ -289,10 +289,29 @@ surface constraints, priorities, and what makes this pack UNFORGETTABLE.
 - OKLCH over HSL — perceptually uniform steps look equal
 - Tint neutrals toward the brand hue (even 0.005 chroma creates
   subconscious cohesion)
-- 60-30-10 rule: 60% surface, 30% text/borders, 10% accent. Accents
-  work BECAUSE they're rare
+- 60-30-10 rule: 60% neutral surface, 30% brand primary, 10% accent.
+  Accents work BECAUSE they're rare. More than 3 saturated colors at full
+  brightness simultaneously = toy look. Gauge segments, chart fills, and
+  data badges count toward the 10%
 - If the palette feels too monochromatic, add strategic color to
   specific elements — don't spread it everywhere
+- No gradient wash rectangles on canvas: low-opacity colored overlays
+  create a muddy, washed-out look. Use a solid `layout.options.backgroundColor`
+  for the base, shadow rectangles behind panel groups for depth, and
+  faux glow on hero elements for accent
+
+**Light theme is not an inversion of dark.** It requires independent
+design — `s/dark/light/g` produces harsh, broken results:
+- Background: `#F0F2F5` (NOT pure white — too harsh)
+- Panel: `#FFFFFF` with subtle `rgba(0,0,0,0.06)` edge
+- Text: `#0B0E1A` primary, `rgba(11,14,26,0.60)` dim
+- Gauge unfilled: `rgba(0,0,0,0.06)` (NOT white-based)
+- Grid lines: `rgba(0,0,0,0.06)` (NOT white-based)
+- Hero dimming overlay: `#F0F2F5` at 35% (NOT black)
+- Accent colors may need lower chroma on white backgrounds
+
+The `getTheme('light')` function MUST return a complete independent
+palette, not derived values. Every viz must be tested in both themes.
 
 **Typography principles:**
 - Reject reflex fonts (Inter, DM Sans, Space Grotesk — they create
@@ -320,6 +339,11 @@ it needs more character. Amplify what makes it distinctive.
 unexpected polish that make the viz pack memorable. Functional is the
 floor, not the ceiling.
 
+**XML regeneration:** Dashboard Studio v2 dashboards are stored as JSON
+inside XML CDATA. After any change to the dashboard JSON, regenerate the
+XML in `default/data/ui/views/`. Stale XML means users install the app
+and see an old dashboard.
+
 ## Design Brief Output Format
 
 The brief is the contract between this skill and the execution skills.
@@ -341,6 +365,7 @@ VIZ INVENTORY (N vizs)
 1. {viz_name}
    Data contract: {field1} (required), {field2} (required), {field3} (optional)
    Settings: {setting1}={default}, {setting2}={default}, accentIntensity=50
+   Number format: raw scale ({e.g. value is literal dollars}), decimals={0|1|2}, unit="{$|%|ms}" position={before|after}
    Visual: {one-paragraph description of what it looks like}
 
 2. {viz_name}
@@ -453,8 +478,46 @@ form of design. It looks like PowerPoint 2010. Instead:
 - **No banner at all:** sometimes the brand identity comes from the
   viz chrome, hero image, and typography — not a colored stripe
 
-If the dashboard has a hero background image (L10), a banner is
-usually redundant.
+If the dashboard has a hero background image, a banner is usually redundant.
+
+### Consider a hero image as visual anchor
+
+A dashboard without a hero image is widgets on a dark background.
+A brand-relevant hero (car photo, product render, facility shot)
+transforms the whole dashboard.
+
+**Hero composition pattern:**
+1. `splunk.image` at z-layer 0, full canvas width, top 50-60% of height
+2. `splunk.rectangle` dimming overlay (30-40% opacity bg color) at z-layer 1
+3. `splunk.rectangle` vignette at bottom (85-95% opacity, 80-120px tall) to fade into data area
+4. Semi-transparent panels (85-92% opacity bg color) floated over the image for gauges/data
+5. Data elements ON TOP of the panels
+
+Dark theme: overlay `#0B0E1A` at 35%, panels at 88%.
+Light theme: overlay `#F0F2F5` at 35%, panels at 88%.
+
+The car/product should remain visible between the side panels.
+This is a recommended pattern, not mandatory — SOC walls and status
+pages often work better without a hero image.
+
+### Semi-transparent grouping panels
+
+Floating panels with 85-92% opacity background create visual hierarchy
+without heavy borders or drop shadows:
+- Group related elements (gauges + gear + ERS together)
+- Panel color matches canvas bg (just barely visible as a region)
+- Stroke at 3-4% white opacity for subtle edge definition
+- rx:4 for slight softness (not 0 = harsh, not 8 = bubbly)
+
+This is the middle ground between "everything flat on canvas" (no
+hierarchy) and "every panel in a card" (too much chrome).
+
+### Section labels should whisper, not shout
+
+Section headers ("TELEMETRY", "SECTOR TIMES", "TYRE STRATEGY") should
+be extraSmall fontSize at 30% text opacity. They organize without
+competing with data. Never use `## Heading` style markdown for section
+labels in themed dashboards — too heavy.
 
 ## Design scoring — quantitative quality gate
 
