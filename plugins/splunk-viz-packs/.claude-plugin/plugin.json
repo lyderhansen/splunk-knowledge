@@ -1,7 +1,7 @@
 {
   "name": "splunk-viz-packs",
   "description": "Build fully themed Splunk custom visualization apps — branded viz suites with shared design tokens, Canvas 2D rendering, webpack/flat-AMD bundling, and AppInspect-ready packaging. Takes brand context (palette, fonts, tone) and produces installable Splunk apps with multiple custom vizs sharing one design system. Output: tarball ready for Splunk Cloud or Enterprise. Includes error diagnosis flowchart, subagent dispatch rules, and 30+ gotchas (F1-F11, B1-B17, C1-C9). Pairs with splunk-dashboard-studio plugin for dashboard JSON that uses the custom vizs.",
-  "version": "3.5.0",
+  "version": "3.6.0",
   "author": {
     "name": "Lyder Hansen"
   },

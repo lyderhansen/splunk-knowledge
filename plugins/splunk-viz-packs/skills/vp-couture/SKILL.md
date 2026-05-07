@@ -601,6 +601,78 @@ be extraSmall fontSize at 30% text opacity. They organize without
 competing with data. Never use `## Heading` style markdown for section
 labels in themed dashboards — too heavy.
 
+## Mood-to-design lookup — don't pick colors, pick a mood
+
+Instead of asking "what colors should I use?", ask "what mood should
+this dashboard evoke?" The mood drives every downstream decision.
+
+### Step 1: Identify the mood from brand + domain
+
+| Mood | Feels like | Domain examples |
+|---|---|---|
+| **Precision** | Swiss watch, surgical, zero-tolerance | Motorsport telemetry, aerospace, fintech, medical devices |
+| **Power** | Authority, weight, immovable | Defense, heavy industry, enterprise security, data center ops |
+| **Speed** | Kinetic, urgent, live | Racing, CDN monitoring, trading floor, real-time alerts |
+| **Trust** | Calm, reliable, institutional | Banking, healthcare, government, compliance |
+| **Luxury** | Exclusive, restrained, heavy serif | Fashion, hospitality, premium retail, executive suite |
+| **Playful** | Energetic, colorful, personality | Marketing analytics, gaming, social media, education |
+| **Futuristic** | Neon, digital, sci-fi | SOC walls, space ops, AI/ML dashboards, cyber defense |
+| **Organic** | Warm, earthy, natural | Sustainability, agriculture, wellness, ESG reporting |
+| **Minimal** | Quiet, spacious, nothing extra | Developer tools, status pages, internal ops |
+
+### Step 2: Mood → color temperature + saturation
+
+| Mood | Temperature | Saturation | Accent strategy |
+|---|---|---|---|
+| Precision | Cool (blue-grey) | Low-medium | Single sharp accent (red or cyan) |
+| Power | Neutral-warm | Low | Dark dominance, minimal accent |
+| Speed | Warm (red-orange) | High | Multiple high-energy accents |
+| Trust | Cool (blue) | Low-medium | Blue primary, green secondary |
+| Luxury | Warm (gold-champagne) | Very low base, high accent | Gold/champagne on deep black |
+| Playful | Mixed warm+cool | High | 3-4 vibrant accents |
+| Futuristic | Cool (cyan-purple) | High on accent, low on base | Neon accents on near-black |
+| Organic | Warm (green-brown) | Low-medium | Earth tones, muted greens |
+| Minimal | Neutral | Very low | One accent or none |
+
+### Step 3: Mood → typography feel
+
+| Mood | Heading weight | Body style | Number style | Letter-spacing |
+|---|---|---|---|---|
+| Precision | 600-700, condensed | Clean sans, tight | Tabular mono | Tight (-0.5px) |
+| Power | 800-900, wide | Sturdy sans | Bold mono | Normal |
+| Speed | 700, italic or slanted | Compressed sans | Condensed mono | Tight |
+| Trust | 500-600, regular | Readable sans | Proportional | Normal |
+| Luxury | 300-400, serif or thin sans | Light serif | Elegant proportional | Wide (+2px) |
+| Playful | 700-800, rounded | Rounded sans | Rounded mono | Normal |
+| Futuristic | 200-300, geometric | Geometric sans | Geometric mono | Wide (+1-3px) |
+| Organic | 400-500, humanist | Humanist sans | Proportional | Normal |
+| Minimal | 400, system default | System sans | System mono | Normal |
+
+### Step 4: Mood → effect intensity
+
+| Mood | Glow | Shadow | Gradient | Texture | Animation |
+|---|---|---|---|---|---|
+| Precision | Subtle | Sharp, small | Linear, subtle | None | None |
+| Power | None | Heavy, large offset | None or very dark | Carbon/metal | None |
+| Speed | Medium | Motion blur | Diagonal, energetic | Noise | Yes — subtle motion |
+| Trust | None | Soft, diffused | Vertical, gentle | None | None |
+| Luxury | Warm gold glow | Subtle | Rich, jewel-toned | Grain (2%) | None |
+| Playful | Colorful glow | Bouncy, offset | Multi-color | Dots/confetti | Yes — bounce/pop |
+| Futuristic | Neon, strong | None or inner | Cyan→purple | Scanlines/grid | Yes — pulse/breathe |
+| Organic | Warm, amber | Soft | Earth gradient | Paper/linen | None |
+| Minimal | None | None or hairline | None | None | None |
+
+### How to use this table
+
+In the design brief, write: **"Mood: precision"** (or speed, luxury, etc.)
+Then cascade through Steps 2-4 to derive the full visual system. The
+agent doesn't need to ask about colors, fonts, or effects separately —
+the mood implies all of them.
+
+If the user provides specific brand colors that conflict with the mood
+mapping, the brand colors WIN — but the mood still guides typography,
+effects, and composition decisions.
+
 ## Design ambition — what separates good from great
 
 Technical rules (🔒) protect against broken vizs. They are
@@ -681,6 +753,117 @@ The creative latitude above applies to everything INSIDE `_render()`:
 what you draw, how you draw it, how it feels. The technical rules
 apply to everything AROUND `_render()`: how the viz loads, receives
 data, and integrates with Splunk.
+
+## Conditional design logic — context-dependent decisions
+
+Static rules produce static dashboards. These conditional rules let
+the design adapt to the actual content and context.
+
+### Layout conditions
+
+```
+if hero_image is provided:
+    → use full-bleed hero or side hero archetype
+    → panel opacity 85-92% (semi-transparent over image)
+    → no solid banner (redundant with hero)
+    → vignette gradient at image-to-data transition
+
+if NO hero_image:
+    → use strip banner or no-hero archetype
+    → panel opacity 95-100% (opaque, no image behind)
+    → brand identity through color + typography only
+
+if data_density > 6 panels:
+    → no-hero or strip banner (maximize data space)
+    → reduce panel padding (12px instead of 20px)
+    → consider tabs to split into focused views
+    → smaller font floor (8px labels acceptable)
+
+if data_density <= 3 panels:
+    → generous whitespace, hero image welcome
+    → large font sizes, dramatic typographic contrast
+    → each panel gets room to breathe
+```
+
+### Color conditions
+
+```
+if brand_color collides with status_semantic (red brand + red=danger):
+    → demote brand color to accent/border only
+    → use orange or purple for danger instead of red
+    → never put brand-red next to danger-red
+
+if dark_theme:
+    → bg: #0B-#12 range (near-black, never pure #000 except NOC wall)
+    → text: #E8-#F0 range (off-white, never pure #FFF)
+    → panels: 3-5% lighter than bg for depth layering
+    → glow effects: multiply intensity by 1.2 (they pop on dark)
+
+if light_theme:
+    → bg: #F5-#FA range (warm white)
+    → text: #1A-#2D range (near-black)
+    → panels: 2-4% darker than bg (subtle shadow instead of glow)
+    → glow effects: multiply intensity by 0.6 (they overwhelm on light)
+
+if NOC_wall or viewing_distance > 3m:
+    → minimum font size: 14px (nothing smaller)
+    → high contrast: text at 90%+ against bg
+    → bold status colors, no pastels
+    → no hover interactions (nobody has a mouse)
+```
+
+### Typography conditions
+
+```
+if brand_has_custom_font:
+    → embed via base64 in visualization.css (F2)
+    → use brand font for DISPLAY/hero only
+    → system mono for data (alignment matters more than brand)
+
+if brand_has_NO_custom_font:
+    → pick by mood: precision→condensed, luxury→light serif,
+      futuristic→geometric, organic→humanist
+    → see mood-to-design lookup table
+
+if panel_width < 300px:
+    → no letter-spacing (wastes horizontal space)
+    → condensed font variant if available
+    → truncate labels with ellipsis, full text in tooltip
+
+if panel_width > 600px:
+    → letter-spacing on uppercase labels (1-2px)
+    → can use expanded font variants
+    → full labels without truncation
+```
+
+### Effect conditions
+
+```
+if accentIntensity setting is provided:
+    → multiply ALL glow/shadow values by (accentIntensity / 50)
+    → 0 = no effects, 50 = default, 100 = maximum drama
+    → user controls the vibe, not the agent
+
+if viz_count_per_dashboard > 5:
+    → effects on hero viz only (the ONE dominant element)
+    → supporting vizs: clean, no glow, no animation
+    → too many glowing panels = Christmas tree
+
+if viz_count_per_dashboard <= 3:
+    → each viz can have its own effect treatment
+    → animation welcome (there's visual budget for it)
+    → richer detail possible per panel
+```
+
+### How to use conditional logic
+
+When making design decisions, walk through the relevant conditions.
+Multiple conditions can apply — they stack. If they conflict, the more
+specific condition wins (e.g., `panel_width < 300px` overrides the
+general `letter-spacing` recommendation from the mood table).
+
+Document which conditions were applied in the design brief so
+downstream skills (vp-create, vp-viz) know WHY a decision was made.
 
 ## Design scoring — quantitative quality gate
 

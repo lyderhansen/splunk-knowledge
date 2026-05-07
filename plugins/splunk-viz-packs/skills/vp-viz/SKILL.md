@@ -283,6 +283,11 @@ completely different — same data, different soul.
 
 **Expresses:** the single most important number. Hero metric. At-a-glance status.
 
+**When NOT to use:** Don't use for values that need comparison context
+(use bar/column), for time-series trends (use area/line), or when you
+have more than 1 value to show per panel (use table or multi-KPI layout).
+If the number alone doesn't tell the story, a KPI tile is hiding information.
+
 **🔒 Technical rules:**
 - String passthrough for non-numeric values like `"1:21.584"`, `"+3.2s"`, `"DNS"` (B11)
 - Use additive Y positioning for label→value→trend stack, not percentage-of-height
@@ -309,6 +314,11 @@ row. Optional: `delta` field for trend arrow.
 ### Ring Gauge
 
 **Expresses:** progress toward a target, fill level, health percentage.
+
+**When NOT to use:** Don't use for values without a known max (use KPI
+tile). Don't use for multi-category comparison (use bar). Don't use 5
+identical gauges in a row — that's AI-lazy. Mix gauge types or combine
+with other vizs for rhythm.
 
 **🔒 Technical rules:**
 - Arc angles are radians: full circle = 0→2π, 270° sweep = 0.75π→2.25π
@@ -338,6 +348,10 @@ Apple Watch activity rings, industrial pressure gauge, gaming health bar.
 
 **Expresses:** categorical status at a glance — OK/warning/critical, active/inactive.
 
+**When NOT to use:** Don't use for continuous values (use gauge). Don't
+use when there are more than 6-8 statuses — the colors become meaningless.
+If the status needs explanation, pair with a tooltip or legend.
+
 **🎨 Creative decisions YOU make:**
 - Shape: pill (full radius), rounded rect, circle, diamond, hexagon
 - Fill: solid, gradient, semi-transparent with border, or outline-only
@@ -354,6 +368,10 @@ and label field. Reads last row.
 ### Live Ticker
 
 **Expresses:** real-time event feed, breaking news feel, continuous activity stream.
+
+**When NOT to use:** Don't use for historical analysis (use table or
+timeline). Don't use when the user needs to click/interact with entries
+(scrolling defeats interaction). Don't use on print/PDF dashboards.
 
 **🔒 Technical rules:**
 - Animation timers MUST be cleaned up in `destroy()` (C5)
@@ -380,6 +398,10 @@ departure board, Twitch chat overlay, F1 live timing feed.
 
 **Expresses:** ranked competition, top-N, performance standings, gamification.
 
+**When NOT to use:** Don't use for unranked data (use table). Don't use
+for time-series (use chart). If there are only 2-3 entries, a KPI strip
+is more impactful than a short leaderboard.
+
 **🎨 Creative decisions YOU make:**
 - Position badges: gold/silver/bronze medals, numbered circles, flag icons, or plain text
 - Row treatment: alternating opacity, hover highlight, selected glow
@@ -400,6 +422,10 @@ GitHub contributor graphs, arcade high-score screens.
 ### Process Flow / Pipeline
 
 **Expresses:** sequential workflow, pipeline stages, connected process steps.
+
+**When NOT to use:** Don't use for non-sequential data (use heat grid
+or radar). Don't use for more than 8-10 steps — it becomes unreadable.
+If steps don't have a clear order, use a status matrix instead.
 
 **🎨 Creative decisions YOU make:**
 - Node shape: circles, rounded rects, hexagons, chevrons, or custom icons
@@ -423,6 +449,11 @@ JIRA workflow boards, subway maps, network topology diagrams.
 **Draws:** part-to-whole donut with right-side legend. Center label
 shows total. Segments colored from theme palette.
 
+**When NOT to use:** Don't use for more than 6 segments (use bar chart).
+Don't use for time-series (use area). Don't use for comparison across
+groups (use grouped bars). Don't default to donut when unsure — it's the
+most overused AI viz choice. Ask: "does part-of-whole actually matter here?"
+
 **Settings:** `categoryField`, `valueField`, `innerRadius`,
 `showLegend`, `showTotal`, `colors` (comma-separated), `theme`
 
@@ -436,6 +467,10 @@ Like a GitHub contribution graph or a security incident heatmap.
 
 **Key elements:** cell rectangles with lerpColor from low→high,
 row/column labels, hover tooltip per cell, optional cell value text.
+
+**When NOT to use:** Don't use for single-dimension data (use bar). Don't
+use when exact values matter more than patterns (use table). Works best
+with 5+ rows AND 5+ columns — below that, use individual KPI tiles.
 
 **Settings:** `rowField`, `colField`, `valueField`, `lowColor`,
 `highColor`, `showValues`, `cellRadius`, `theme`
@@ -451,6 +486,10 @@ way to show 4-8 metrics with trend in a small vertical space.
 **Key elements:** per-metric: label (whisper), value (body), tiny
 area fill below a polyline. All sparks same height, stacked vertically
 or in a row.
+
+**When NOT to use:** Don't use when the user needs to read exact values
+(use table with sparkline columns). Don't use for more than 8 metrics
+— it becomes a wall of squiggles. If trends don't matter, use KPI tiles.
 
 **Settings:** `metrics` (CSV field names), `labels` (CSV), `sparkHeight`,
 `showValue`, `colors`, `theme`
@@ -468,6 +507,11 @@ profiles (e.g., server health across 5 dimensions).
 filled polygon with semi-transparent fill, optional second polygon
 for comparison, center origin at 0.
 
+**When NOT to use:** Don't use for more than 8 axes (becomes unreadable).
+Don't use for time-series data. Don't use when one dimension dominates
+— the polygon collapses to a spike. Best for comparing profiles across
+3-7 balanced dimensions.
+
 **Settings:** `fields` (CSV of dimension fields), `labels` (CSV),
 `maxValue`, `fillOpacity`, `showGrid`, `showComparison`, `colors`, `theme`
 
@@ -483,6 +527,10 @@ More dramatic than ring gauge — feels like a real instrument.
 numbers, needle drawn as a triangle from center, center cap circle,
 value text below.
 
+**When NOT to use:** Don't use for values without physical-instrument
+metaphor (use ring gauge or KPI). Don't use 3+ needle gauges in a row
+— one dramatic gauge is impactful, three is a car dashboard cliché.
+
 **Settings:** `field`, `maxValue`, `zones` (CSV of zone boundaries),
 `zoneColors` (CSV), `label`, `unit`, `theme`
 
@@ -497,6 +545,11 @@ or host. Color = status (green/amber/red/grey). Compact way to show
 **Key elements:** grid of rounded squares with status color, label
 below each (truncated), hover tooltip with details, optional grouping
 headers.
+
+**When NOT to use:** Don't use for less than 10 entities (use status
+chips). Don't use when individual entity details matter (use table).
+Best for bird's-eye-view of 20-200 entities where pattern matters more
+than individual values.
 
 **Settings:** `nameField`, `statusField`, `columns`, `cellSize`,
 `showLabels`, `statusColors` (CSV), `theme`
@@ -514,6 +567,11 @@ totals are neutral.
 bars above the running total, negative bars below, total bar at end,
 value labels on each bar.
 
+**When NOT to use:** Don't use when there's no additive/subtractive
+relationship between values (use bar). Don't use for time-series (use
+area). Best for budget/P&L walkthroughs where you need to see how each
+category contributes to the total change.
+
 **Settings:** `categoryField`, `valueField`, `positiveColor`,
 `negativeColor`, `totalColor`, `showConnectors`, `showValues`, `theme`
 
@@ -529,6 +587,10 @@ splunk.bar when you want minimal chrome and brand-specific styling.
 **Key elements:** label (left-aligned), bar fill (proportional width),
 value text (right-aligned), optional delta indicator, hover highlight.
 
+**When NOT to use:** Don't use for time-series (use line/area). Don't use
+when exact ranking position matters (use leaderboard). Best for top-N with
+long category labels that would clip in a column chart.
+
 **Settings:** `labelField`, `valueField`, `maxBars`, `barColor`,
 `showValues`, `unit`, `theme`
 
@@ -541,6 +603,11 @@ row with sort indicators, colored deltas, position badges. Unlike
 splunk.table, this is fully branded via Canvas 2D.
 
 **MUST-HAVE features (not optional):**
+
+**When NOT to use:** Don't use when only 1-2 fields are needed (use KPI
+tile or leaderboard). Don't use for aggregated single-value data. Tables
+are for detail data — if you're showing `| stats count by src`, a bar
+chart tells the story faster.
 
 **Sort:** Click column header → sort rows by that column (toggle asc/desc).
 Draw sort indicator (▲/▼) next to active column. Store `this._sortCol`
