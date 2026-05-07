@@ -22,15 +22,40 @@ for colors only.
 rects with borders). Others want panels flush with the background
 (no chrome, no border). Define this in the design brief.
 
+## CRITICAL: File paths — WRONG vs RIGHT
+
+Viz files MUST be in `appserver/static/visualizations/`, NOT in
+`default/visualizations/`. The wrong path causes REQUIREJS_ERROR_MESSAGE
+for every viz with zero explanation in the console.
+
+```
+WRONG — viz won't load, REQUIREJS Script error:
+  {pack}/default/visualizations/{viz_name}/visualization.js
+
+RIGHT — Splunk finds and loads the viz:
+  {pack}/appserver/static/visualizations/{viz_name}/visualization.js
+```
+
+Complete correct path for each file:
+```
+{pack}/appserver/static/visualizations/{viz_name}/
+  src/visualization_source.js    ← source (excluded from tarball)
+  visualization.js               ← webpack output (AMD bundle)
+  formatter.html                 ← settings UI
+  visualization.css              ← styles + optional base64 fonts
+```
+
+The `shared/theme.js` lives at `{pack}/shared/theme.js` (dev only —
+webpack bundles it into each visualization.js via resolve alias).
+
 ## When to use
 
 After `vp-create` has scaffolded the app directory and `shared/theme.js`
-exists. This skill writes the four files that make one viz work:
+exists. This skill writes the files that make one viz work:
 
-1. `src/visualization_source.js` — Canvas 2D rendering
-2. `formatter.html` — Splunk settings UI
-3. `visualization.css` — container styles (+ base64 fonts if viz-specific)
-4. `harness.json` — test harness config with sample data
+1. `appserver/static/visualizations/{viz}/src/visualization_source.js`
+2. `appserver/static/visualizations/{viz}/formatter.html`
+3. `appserver/static/visualizations/{viz}/visualization.css`
 
 ## Prerequisites
 
@@ -844,3 +869,110 @@ eye TO the actor — it doesn't become the show.
 **Default stance:** be AMBITIOUS. A safe, generic viz that
 nobody notices is worse than a bold viz that makes one person
 say "wait, that's Splunk?" Ship something with a point of view.
+
+## Splunk API reference — things agents forget
+
+### SplunkVisualizationUtils helpers
+
+Available via `require('api/SplunkVisualizationUtils')`:
+
+```javascript
+var Utils = require('api/SplunkVisualizationUtils');
+
+Utils.escapeHtml(str)      // XSS prevention for DOM insertion
+Utils.makeSafeUrl(url)     // strip javascript: and unsafe schemes
+Utils.getCurrentTheme()    // returns 'dark' or 'light'
+Utils.normalizeBoolean(v)  // coerce string/int to boolean
+```
+
+Only import Utils if you use it — add to webpack externals:
+```javascript
+externals: ['api/SplunkVisualizationBase', 'api/SplunkVisualizationUtils']
+```
+
+### Lifecycle methods beyond the basics
+
+```javascript
+module.exports = SplunkVisualizationBase.extend({
+    initialize: function() { ... },         // one-time setup
+    setupView: function() { ... },          // called once before first updateView
+    getInitialDataParams: function() { ... },
+    formatData: function(data) { ... },
+    updateView: function(data, config) { ... },
+    onConfigChange: function(changes, prev) { ... }, // formatter setting changed
+    reflow: function() {                    // container resized
+        this.invalidateUpdateView();
+    },
+    destroy: function() { ... }             // cleanup timers, listeners
+});
+```
+
+### Invalidation methods (call, don't override)
+
+```javascript
+this.invalidateFormatData()   // re-run formatData next cycle
+this.invalidateUpdateView()   // re-run updateView next cycle
+this.invalidateReflow()       // re-run reflow next cycle
+```
+
+### Real-time search handling
+
+Real-time searches (`rt-1m` to `rt`) accumulate rows over time.
+`data.rows` is ordered oldest-first.
+
+```javascript
+// Single-value vizs: ALWAYS read last row (most recent)
+var row = data.rows[data.rows.length - 1];
+
+// Chart/table vizs: iterate all rows
+for (var i = 0; i < data.rows.length; i++) { ... }
+```
+
+Size `count` in getInitialDataParams:
+- Single-value / gauge: `count: 50` (small buffer, snappy updates)
+- Chart / table: `count: 10000` (needs history)
+
+### Cache in BOTH formatData AND updateView
+
+Splunk can pass `data = false` to updateView even when formatData
+returned cached data. Without both caches, the viz flashes blank:
+
+```javascript
+formatData: function(data) {
+    if (!data || !data.rows || data.rows.length === 0) {
+        if (this._lastGoodData) return this._lastGoodData;
+        return data;
+    }
+    // ... build result ...
+    this._lastGoodData = result;
+    return result;
+},
+
+updateView: function(data, config) {
+    if (!data) {
+        if (this._lastGoodData) data = this._lastGoodData;
+        else return;
+    }
+    // ... draw ...
+}
+```
+
+### Reload viz without restarting Splunk
+
+Navigate to `http://<splunk>:8000/en-US/_bump` and click "Bump
+version", then hard-refresh browser (Cmd+Shift+R). This clears
+Splunk's static file cache. Only conf file changes need a restart.
+
+### Font quoting in ctx.font strings
+
+```javascript
+// WRONG — nested quotes break
+ctx.font = '700 ' + size + 'px \'CustomFont\', sans-serif';
+
+// RIGHT — escaped double quotes inside single-quoted string
+ctx.font = '700 ' + size + 'px "CustomFont", sans-serif';
+
+// SAFEST — variable avoids all quoting issues
+var fontFamily = '"CustomFont", sans-serif';
+ctx.font = '700 ' + size + 'px ' + fontFamily;
+```

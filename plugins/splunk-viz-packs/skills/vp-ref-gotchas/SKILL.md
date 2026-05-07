@@ -210,6 +210,23 @@ Download the image during build, save to `appserver/static/images/`,
 and reference via the Splunk static path. This also eliminates
 load-time latency from external CDNs.
 
+### F9. Vizs MUST be in appserver/static/visualizations/, NOT default/visualizations/
+
+Splunk loads custom viz bundles from `appserver/static/visualizations/`.
+Putting them in `default/visualizations/` causes REQUIREJS_ERROR_MESSAGE
+on every viz with no useful error in the console.
+
+```
+WRONG — REQUIREJS Script error, viz won't load:
+  {app}/default/visualizations/{viz_name}/visualization.js
+
+RIGHT — Splunk finds and loads the viz:
+  {app}/appserver/static/visualizations/{viz_name}/visualization.js
+```
+
+This is the #1 cause of "all vizs show Script error" after install.
+`default/` is for conf files only. Viz JS/HTML/CSS go under `appserver/`.
+
 ## BROKEN — renders but wrong
 
 ### B1. Canvas font rendering requires explicit wait
@@ -840,6 +857,7 @@ JSON. Make it count.
 
 ### TIER 1: MUST (blocks shipping — viz won't work without these)
 
+- [ ] Vizs in `appserver/static/visualizations/`, NOT `default/visualizations/` (F9)
 - [ ] webpack target `['web', 'es5']` + all environment flags
 - [ ] Source is pure ES5 (no const/let/arrow/template)
 - [ ] Source uses `require()`/`module.exports`, NOT `define()` (F6)
