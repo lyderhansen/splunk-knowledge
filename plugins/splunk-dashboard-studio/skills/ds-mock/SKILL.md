@@ -1,6 +1,6 @@
 ---
 name: ds-mock
-description: Use this skill to generate inline synthetic data for a Splunk dashboard when real data is not yet available. Produces makeresults-based SPL queries (one per dashboard question) and writes them to data-sources.json under the workspace. Advances workspace state from scoped to data-ready. Requires an existing workspace created by ds-init.
+description: "[PIPELINE] Generate makeresults-based synthetic data for dashboards without real data. For viz packs, prefer CSV lookups (see vp-create) over makeresults — they produce more realistic, stable demo data."
 ---
 
 # ds-mock — Synthetic data generator

@@ -1,14 +1,14 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "splunk-knowledge",
-  "description": "Marketplace for Splunk knowledge plugins. Hosts splunk-dashboards (Dashboard Studio authoring) and splunk-spl (SPL syntax reference).",
+  "description": "Marketplace for Splunk plugins. Four plugins: splunk-dashboard-studio (Dashboard Studio v2 authoring, 60+ skills), splunk-viz-packs (themed Canvas 2D custom viz apps), splunk-spl (SPL syntax, 23 traps + 152 command refs), splunk-admin (conf files, REST API, CLI, troubleshooting).",
   "owner": {
     "name": "Lyder Hansen"
   },
   "plugins": [
     {
       "name": "splunk-dashboard-studio",
-      "description": "End-to-end toolkit for Splunk Dashboard Studio (v2). 60+ skills covering pipeline, visualizations, interactivity, design references, and SVG generation.",
+      "description": "Dashboard Studio v2 authoring toolkit. Design orchestrator (ds-couture), JSON builder (ds-create), 25 per-viz-type skills, 6 interactivity skills, 10 design reference skills, SVG generator, and validation pipeline. Canvas minimum 1920x1080. Required by splunk-viz-packs for dashboard JSON rules.",
       "source": "./plugins/splunk-dashboard-studio",
       "category": "productivity",
       "homepage": "https://github.com/lyderhansen/splunk-knowledge",
@@ -18,7 +18,7 @@
     },
     {
       "name": "splunk-spl",
-      "description": "SPL syntax reference with 21 silent-fail traps and 150 per-command reference files sourced from Splunk 10.2.",
+      "description": "SPL syntax reference. 23 silent-fail traps (eagerly loaded) + 152 per-command reference files (lazy loaded). Covers eval, stats, where, rex, tstats, lookups, subsearches. Required by both splunk-dashboard-studio and splunk-viz-packs for SPL in data sources.",
       "source": "./plugins/splunk-spl",
       "category": "productivity",
       "homepage": "https://github.com/lyderhansen/splunk-knowledge",
@@ -28,7 +28,7 @@
     },
     {
       "name": "splunk-viz-packs",
-      "description": "Build fully themed Splunk custom visualization apps with shared design tokens, Canvas 2D rendering, and AppInspect-ready packaging. 5 skills covering orchestration, scaffolding, per-viz Canvas source, and 20 hard rules from shipping real apps.",
+      "description": "Build themed Splunk custom viz apps — Canvas 2D rendering, shared design tokens, mood recipes, 14 viz blueprints, design scoring, anti-AI checklist, and AppInspect-ready packaging. Requires splunk-spl (SPL rules) and splunk-dashboard-studio (dashboard rules) for full functionality.",
       "source": "./plugins/splunk-viz-packs",
       "category": "productivity",
       "homepage": "https://github.com/lyderhansen/splunk-knowledge",
@@ -38,7 +38,7 @@
     },
     {
       "name": "splunk-admin",
-      "description": "Splunk administration reference with all ~52 configuration files and all REST API endpoints. Eagerly-loaded gotcha skills plus lazy per-file and per-endpoint reference sourced from Splunk Enterprise 10.2.",
+      "description": "Splunk administration reference — 52 conf files, REST API endpoints, CLI commands, and troubleshooting guides. For Splunk admins, not dashboard designers. Install separately from the dashboard/viz plugins.",
       "source": "./plugins/splunk-admin",
       "category": "productivity",
       "homepage": "https://github.com/lyderhansen/splunk-knowledge",

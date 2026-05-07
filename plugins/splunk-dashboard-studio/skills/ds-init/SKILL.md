@@ -1,6 +1,6 @@
 ---
 name: ds-init
-description: Use this skill to scope a new Splunk Dashboard Studio dashboard. Runs an interactive question flow, creates a workspace under ./.splunk-dashboard-studio/<project>/, and writes requirements.md. Also accepts --autopilot to run non-interactively with defaults, --quick for minimum scoping, and --resume to continue from an existing workspace. Entry point for the splunk-dashboard-studio plugin pipeline.
+description: "[PIPELINE] Scope a new dashboard project with interactive Q&A. Creates workspace under ./.splunk-dashboard-studio/<project>/ with requirements.md. For quick dashboard generation, skip this and go directly to ds-couture + ds-create."
 ---
 
 # ds-init — Splunk Dashboard scoping

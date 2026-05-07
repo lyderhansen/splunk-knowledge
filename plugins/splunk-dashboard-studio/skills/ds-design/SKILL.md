@@ -1,6 +1,6 @@
 ---
 name: ds-design
-description: Use this skill to wireframe a Splunk dashboard layout in a local browser-based editor. Launches a Python HTTP server on localhost, serves a Gridstack.js drag-and-drop grid, and saves panels (position, size, visualization type) to design/layout.json. Advances workspace state from data-ready to designed on save. Requires a workspace at data-ready stage (produced by ds-data-explore or ds-mock).
+description: "[PIPELINE] Browser-based wireframe editor using Gridstack.js. Launches localhost server for drag-and-drop panel layout. Requires ds-init workspace. For most dashboards, skip this and let ds-create handle layout directly from a design brief."
 ---
 
 # ds-design — Wireframe editor
