@@ -498,12 +498,18 @@ configuration and fail in PDF export. Always bundle in
 **Splunk restart required** after installing the app for new static
 files to be served.
 
-## Canvas size — minimum 1920 × 1080
+## Canvas size — ALWAYS 1920 × 1080 minimum
 
-Every bundled dashboard MUST use at minimum 1920 × 1080 px. No 1440,
-no 1280. Splunk dashboards are viewed on 1080p+ screens — analyst
-workstations, 27" monitors, SOC walls. Designing smaller wastes
-screen real estate and looks unprofessional.
+**THIS RULE IS REPEATEDLY IGNORED.** Agents keep generating 1440×900
+or 1440×1100 dashboards. CHECK THE WIDTH BEFORE COMMITTING.
+
+```
+WRONG: "width": 1440    ← looks cramped on every modern monitor
+WRONG: "width": 1280    ← wastes 30% of screen real estate
+WRONG: "width": 1600    ← awkward on both 1080p and 1440p
+
+RIGHT: "width": 1920    ← fits 100% of target screens
+```
 
 ```json
 "layout": {
@@ -511,6 +517,9 @@ screen real estate and looks unprofessional.
     "options": { "width": 1920, "height": 1080, "backgroundColor": "{{CANVAS_BG}}" }
 }
 ```
+
+Height can exceed 1080 for scrollable dashboards, but width is
+ALWAYS 1920. This matches `ds-create` hard default #0.
 
 `{{CANVAS_BG}}` comes from the design brief's dark or light palette `bg`
 token. Do not hardcode a color here — every pack has its own canvas background.
@@ -703,9 +712,21 @@ traps that affect viz pack SPL:
 
 For full command syntax, read `splunk-spl/reference/<command>.md`.
 
-When writing dashboard JSON that uses custom vizs alongside built-in
-Splunk vizs, load **`ds-ref-syntax`** from `splunk-dashboard-studio` for
-the Dashboard Studio JSON schema.
+When writing dashboard JSON (bundled in `default/data/ui/views/`),
+ALL rules from **`ds-create`** in the `splunk-dashboard-studio` plugin
+apply. The most critical hard defaults:
+
+- **#0**: Canvas minimum **1920 × 1080 px** — no 1440, no 1280
+- **#6**: `fontFamily` on markdown — only 7 allowed values
+- **#7**: `fontSize` on markdown — only 5 enum values
+- **#8**: Markdown panels sized to avoid scrollbars
+
+Also load **`ds-ref-syntax`** from `splunk-dashboard-studio` for the
+full Dashboard Studio JSON schema.
+
+**The bundled dashboard IS a Dashboard Studio dashboard.** Every rule
+that applies to ds-create output applies equally to viz pack dashboards.
+There is no special exemption for bundled dashboards.
 
 ## Quality checks after scaffolding
 

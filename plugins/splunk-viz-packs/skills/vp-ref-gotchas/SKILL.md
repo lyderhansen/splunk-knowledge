@@ -871,8 +871,10 @@ JSON. Make it count.
 - [ ] app.conf: 5 stanzas, `is_configured = 0`, `build` incremented
 - [ ] default.meta: global `[]` with `sc_admin`, `[lookups]` exported
 - [ ] No `[triggers]` stanza anywhere
+- [ ] Dashboard JSON: canvas width = **1920** (NOT 1440, NOT 1280)
 - [ ] Dashboard JSON: `"backgroundColor": "transparent"` on every custom viz panel
 - [ ] Dashboard JSON: type = `{app_id}.{viz_name}` (not `custom.X`)
+- [ ] Dashboard JSON: follows ALL `ds-create` hard defaults (fontFamily, fontSize, etc)
 - [ ] Bundle starts with `define([...], function(`
 - [ ] Package: `COPYFILE_DISABLE=1`, excludes node_modules/src/.DS_Store
 
