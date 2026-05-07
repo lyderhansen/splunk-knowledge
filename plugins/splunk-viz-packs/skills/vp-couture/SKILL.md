@@ -226,6 +226,15 @@ evaluative reasoning — use **Opus**. Step 7 is implementation —
 use **Sonnet** (faster, cheaper, equally reliable for code).
 When dispatching subagents for step 7, set `model: "sonnet"`.
 
+**Step 7 MUST-LOAD — cross-plugin rules:**
+Before building, the agent (or subagent) MUST load:
+- `vp-ref-gotchas` — viz code rules (ES5, outputMode, file paths)
+- `ds-create` from `splunk-dashboard-studio` — dashboard hard defaults
+  (canvas 1920×1080, fontFamily, fontSize, markdown sizing)
+- `spl-gotchas` from `splunk-spl` — SPL traps for data source queries
+
+Missing any of these produces broken output with no obvious error.
+
 **STOP gates:** Steps marked [BLOCKING] must produce an artifact
 before proceeding. Step 1 produces brand research notes. Steps 2-3
 produce the design brief. Step 6 produces a checklist with all

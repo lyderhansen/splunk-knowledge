@@ -1,6 +1,6 @@
 ---
 name: ds-ref-layout-grid
-description: Layout, spacing, and grid math for Splunk Dashboard Studio — 4pt and 8pt grid scales, F-pattern reading flow, hero KPI sizing rules, gutter math for absolute layouts, golden-ratio for hero zones, depth via layered splunk.rectangle, and canvas-zone presets per archetype (1440×960 exec, 1920×1080 SOC wall). Use when wireframing, when ds-design positions panels, or when ds-polish tightens alignment.
+description: Layout, spacing, and grid math for Splunk Dashboard Studio — 4pt and 8pt grid scales, F-pattern reading flow, hero KPI sizing rules, gutter math for absolute layouts, golden-ratio for hero zones, depth via layered splunk.rectangle, and canvas-zone presets per archetype (all 1920px minimum). Use when wireframing, when ds-design positions panels, or when ds-polish tightens alignment.
 ---
 
 # ds-ref-layout-grid — Layout, spacing, and grid math
@@ -209,30 +209,30 @@ content height from layered zones (header + KPI strip + chart row
 
 ## Recommended canvas zones (per archetype)
 
-### Exec summary (1440 × 960 px) — legacy / constrained context only
+### Exec summary (1920 × 1080 px)
 
-The classic four-zone layout for executive dashboards: input bar,
-hero KPI row, primary chart zone, secondary detail zone.
+Four-zone layout for executive dashboards: input bar, hero KPI row,
+primary chart zone, secondary detail zone.
 
 ```
-x=0                                               x=1440
-y=0   +-------------------------------------------------+
-      | Canvas margin (20 px)                           |
-y=20  | [Input bar: time + filters]           h=40      |
-y=80  | [KPI row — background rect]           h=160     |
-      |  KPI1 | KPI2 | KPI3 | KPI4                      |
-y=260 | [Primary chart zone]                  h=340     |
-      |  Main chart (w=860) | Table (w=520)             |
-y=620 | [Secondary / detail zone]             h=300     |
-      |  Alert history / secondary chart                |
-y=940 | [Footer / nav links]                  h=20      |
-y=960 +-------------------------------------------------+
+x=0                                                    x=1920
+y=0   +-----------------------------------------------------+
+      | Canvas margin (24 px)                               |
+y=24  | [Input bar: time + filters]              h=44       |
+y=88  | [KPI row — background rect]              h=180      |
+      |  KPI1 | KPI2 | KPI3 | KPI4 | KPI5                  |
+y=288 | [Primary chart zone]                     h=380      |
+      |  Main chart (w=1140) | Table (w=720)                |
+y=688 | [Secondary / detail zone]                h=340      |
+      |  Alert history / secondary chart                    |
+y=1048| [Footer / nav links]                     h=24       |
+y=1080+-----------------------------------------------------+
 ```
 
-- Panel minimum heights: singlevalue 120, chart 240, table 200 px.
-- Gutter: 20 px between every panel edge; 20 px from canvas edges.
-- KPI background card: `splunk.rectangle` at `y=80, h=160` BEHIND
-  KPIs (earlier in `structure` array).
+- Panel minimum heights: singlevalue 120, chart 280, table 240 px.
+- Gutter: 24 px between panels; 24 px from canvas edges.
+- KPI background card: `splunk.rectangle` BEHIND KPIs (earlier in
+  `structure` array).
 
 ### Operational NOC (1920 × 1080 px)
 

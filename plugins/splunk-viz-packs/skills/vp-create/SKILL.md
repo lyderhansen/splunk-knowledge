@@ -5,6 +5,10 @@ description: "Scaffolds and packages themed Splunk custom visualization apps (mu
 
 # vp-create — scaffold and package a viz pack
 
+> **Cross-plugin rules apply:** Dashboard JSON follows `ds-create`
+> hard defaults (from `splunk-dashboard-studio`). SPL follows
+> `spl-gotchas` traps (from `splunk-spl`). Load both before writing.
+
 ## Output directory
 
 All packs are created at:

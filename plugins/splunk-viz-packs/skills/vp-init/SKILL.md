@@ -76,12 +76,40 @@ vp-create — build + package tarball
 use `model: "sonnet"` for implementation tasks and `model: "opus"`
 for design/review tasks.
 
-## Prerequisites
+## Required plugins — ALL THREE needed
+
+Building a viz pack produces THREE types of artifacts. Each has its
+own plugin with rules that MUST be followed:
+
+| Artifact | Plugin | Key skills to load |
+|---|---|---|
+| Viz source code (JS) | `splunk-viz-packs` (this plugin) | `vp-ref-gotchas`, `vp-viz`, `vp-ref-patterns` |
+| Dashboard JSON | `splunk-dashboard-studio` | `ds-create` (hard defaults!), `ds-ref-syntax` |
+| SPL queries | `splunk-spl` | `spl-gotchas` (23 silent-fail traps) |
+
+**If you only load splunk-viz-packs, you WILL produce:**
+- Dashboards at 1440px (ds-create says 1920)
+- Invalid fontFamily in markdown panels
+- SPL with tostring("0.000") errors
+- Missing data source names
+
+**Cross-plugin dependency map:**
+
+```
+vp-couture (design)
+    ↓ loads
+vp-create (scaffold) ──→ ds-create (dashboard rules)
+    ↓                ──→ spl-gotchas (SPL rules)
+vp-viz (per-viz code)
+    ↓ references
+vp-ref-gotchas (viz rules)
+vp-ref-patterns (Canvas recipes)
+```
+
+## Optional Splunk app dependencies
 
 | Dependency | Required? | Why |
 |---|---|---|
-| `splunk-spl` plugin | Required | SPL in savedsearches.conf and dashboard data sources |
-| `splunk-dashboard-studio` plugin | Recommended | Dashboard JSON schema (ds-ref-syntax), viz type reference (ds-viz-*) |
 | `icon_library` Splunk app | Optional | Material Symbols icons in dashboards |
 | `infographic_shapes` Splunk app | Optional | Gradient shapes, progress bars, glow effects |
 

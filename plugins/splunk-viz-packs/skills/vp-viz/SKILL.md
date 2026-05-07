@@ -5,6 +5,10 @@ description: "Build a single custom Splunk visualization within a themed viz pac
 
 # vp-viz — build one visualization
 
+> **Cross-plugin rules apply:** Viz files go in `appserver/static/
+> visualizations/` (F9). Dashboard JSON follows `ds-create` hard
+> defaults. Load `vp-ref-gotchas` before writing ANY code.
+
 ## Critical: unique rendering per brand
 
 **Do NOT copy viz source code between brands and swap colors.** Each
