@@ -85,7 +85,7 @@ module.exports = SplunkVisualizationBase.extend({
             'position:absolute;display:none;padding:6px 10px;' +
             'background:rgba(6,9,16,0.92);color:#E2E8F0;font-size:11px;' +
             'border-radius:2px;pointer-events:none;white-space:nowrap;' +
-            'z-index:100;font-family:"JetBrains Mono",monospace;' +
+            'z-index:100;font-family:monospace;' +
             'border:1px solid rgba(0,136,204,0.35);';
         this.el.appendChild(this._tooltip);
 

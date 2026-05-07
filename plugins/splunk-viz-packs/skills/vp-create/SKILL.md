@@ -119,9 +119,12 @@ function getTheme(name) {
 }
 
 var FONTS = {
-    ui: '{{FONT_UI}}',
-    mono: '{{FONT_MONO}}'
+    data: '{{FONT_DATA}}',   // numbers, KPIs, gauges — monospaced for alignment
+    ui: '{{FONT_UI}}'        // labels, headers, descriptions — sans-serif
 };
+// Default (no custom fonts): data = system mono, ui = system sans
+// '"SF Mono", Menlo, Consolas, monospace' + '"Helvetica Neue", Helvetica, Arial, sans-serif'
+// Only embed custom fonts via base64 when the brand specifically requires them.
 
 function severityColor(t, sev) { /* maps crit/warn/ok -> t.danger/t.warn/t.success */ }
 function fmtNum(v, opts) { /* compact number format: 1.2k, 3.4M, 1.1B */ }

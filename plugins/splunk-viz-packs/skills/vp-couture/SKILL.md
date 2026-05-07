@@ -83,11 +83,31 @@ CSS. Two is the ceiling.
 
 | Slot | Purpose | Examples |
 |---|---|---|
-| **Display** | Big numbers, hero values | Geist, JetBrains Mono, Space Grotesk, DM Sans |
-| **Mono** | Codes, IDs, tickers | JetBrains Mono, Fira Code, IBM Plex Mono |
+| **Data** | Numbers, KPIs, gauges, axis labels | Tabular/monospaced for alignment. Many options beyond JetBrains Mono. |
+| **UI** | Labels, headers, section titles, descriptions | Sans-serif for readability. Match brand tone. |
 
-If the domain is data-heavy (SOC, NOC, infra), use mono for display
-too — one font total.
+**Font selection — DON'T default to JetBrains Mono every time.**
+
+JetBrains Mono is a developer tool font. It's fine for SOC/infra but
+wrong for luxury, editorial, or brand-forward dashboards. Choose fonts
+that match the brand's visual language:
+
+| Brand tone | Data font | UI font |
+|---|---|---|
+| Technical / engineering | JetBrains Mono, Fira Code, IBM Plex Mono | Inter, Helvetica |
+| Premium / luxury | Söhne Mono, Geist Mono, DM Mono | Söhne, Geist, Neue Haas |
+| Editorial / magazine | Iosevka, Input Mono | Tiempos, Canela, Playfair |
+| Playful / brand-forward | Space Mono, Overpass Mono | Space Grotesk, DM Sans, Outfit |
+| Clinical / healthcare | IBM Plex Mono | IBM Plex Sans, Atkinson Hyperlegible |
+| Default (no brand specified) | SF Mono, Menlo, Consolas (system) | Helvetica Neue, Arial (system) |
+
+**System fonts are free.** Using `"SF Mono", Menlo, Consolas, monospace`
+and `"Helvetica Neue", Helvetica, Arial, sans-serif` requires NO
+base64 embedding — 0KB overhead. Only embed custom fonts when the
+brand specifically requires them.
+
+If the domain is data-heavy (SOC, NOC, infra), use mono for both
+slots — one font total.
 
 ## Viz Type Inspiration
 
