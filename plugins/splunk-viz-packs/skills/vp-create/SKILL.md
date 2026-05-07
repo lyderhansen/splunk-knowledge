@@ -121,6 +121,10 @@ function getTheme(name) {
 var FONTS = {
     data: '{{FONT_DATA}}',   // numbers, KPIs, gauges — monospaced for alignment
     ui: '{{FONT_UI}}'        // labels, headers, descriptions — sans-serif
+    // Packs can add more slots as needed, e.g.:
+    //   display: '{{FONT_DISPLAY}}'  — hero headlines, oversized KPIs
+    //   accent:  '{{FONT_ACCENT}}'   — decorative or special-purpose elements
+    // Two slots is the standard; add only when the brief calls for it.
 };
 // Default (no custom fonts): data = system mono, ui = system sans
 // '"SF Mono", Menlo, Consolas, monospace' + '"Helvetica Neue", Helvetica, Arial, sans-serif'
@@ -322,6 +326,12 @@ display.visualizations.custom.{{PACK_ID}}.{{VIZ_NAME}}.{{setting2}} = <string>
 
 One block per viz documenting every formatter setting.
 
+**Formatter default values:** color picker defaults must use the pack's
+theme accent token, not a hardcoded hex. In formatter.html, write
+`value="{{ACCENT}}"` where `{{ACCENT}}` is replaced with the actual
+accent hex from the design brief during scaffolding. Never ship a
+formatter with generic defaults like `value="#1a91a8"`.
+
 ## webpack.config.js (_build/)
 
 ```javascript
@@ -498,9 +508,12 @@ screen real estate and looks unprofessional.
 ```json
 "layout": {
     "type": "absolute",
-    "options": { "width": 1920, "height": 1080, "backgroundColor": "#0B0E1A" }
+    "options": { "width": 1920, "height": 1080, "backgroundColor": "{{CANVAS_BG}}" }
 }
 ```
+
+`{{CANVAS_BG}}` comes from the design brief's dark or light palette `bg`
+token. Do not hardcode a color here — every pack has its own canvas background.
 
 ## Markdown panels in bundled dashboards
 
@@ -711,3 +724,4 @@ the Dashboard Studio JSON schema.
 - [ ] `transforms.conf` defines each lookup with `filename = <csv>`
 - [ ] Dashboard data sources use `| inputlookup` for demo data
 - [ ] SPL in savedsearches.conf checked against `spl-gotchas` traps
+- [ ] No hardcoded accent color defaults in formatter.html — use `{{ACCENT}}` or the pack's `theme.accent` token, not a literal hex like `#1a91a8` or `#0088CC`
