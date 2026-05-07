@@ -526,7 +526,7 @@ formatData: function(data) {
 },
 ```
 
-### B15. Every visual property must be configurable via formatter
+### B16. Every visual property should be configurable via formatter
 
 If the viz code uses a color, size, toggle, or position — there SHOULD
 be a corresponding setting for every visual property that the user might
@@ -882,7 +882,7 @@ JSON. Make it count.
 
 - [ ] Hover tooltip (DOM div + mousemove + hitTest)
 - [ ] Hover highlight (crosshair, row bg, segment glow)
-- [ ] Every `getOption()` has matching formatter control (B15)
+- [ ] Every `getOption()` has matching formatter control (B16)
 - [ ] No hardcoded hex in `_render()` — theme tokens or settings
 - [ ] KPI vizs: `decimals` setting (default -1 = auto)
 - [ ] KPI vizs: string passthrough for non-numeric values (B11)
