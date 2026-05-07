@@ -600,10 +600,49 @@ WRONG: "width": 1600    ← awkward on both 1080p and 1440p
 RIGHT: "width": 1920    ← fits 100% of target screens
 ```
 
+**CRITICAL: Layout schema requires tabs+layoutDefinitions wrapper.**
+Even for single-page dashboards with no tabs, Splunk's schema validator
+requires the `tabs` + `layoutDefinitions` wrapper. The flat format
+(`"layout": { "type": "absolute", ... }`) is rejected. Set
+`"showTabBar": false` to hide the tab bar on single-page dashboards.
+
 ```json
 "layout": {
-    "type": "absolute",
-    "options": { "width": 1920, "height": 1080, "backgroundColor": "{{CANVAS_BG}}" }
+    "globalInputs": [],
+    "tabs": {
+        "items": [
+            { "layoutId": "layout_main", "label": "Overview" }
+        ],
+        "options": { "barPosition": "top", "showTabBar": false }
+    },
+    "layoutDefinitions": {
+        "layout_main": {
+            "type": "absolute",
+            "options": { "width": 1920, "height": 1080 },
+            "structure": [...]
+        }
+    }
+}
+```
+
+**Canvas background:** `layout.options` only accepts `width` and `height`.
+For canvas background color, add a full-canvas `splunk.rectangle` as the
+FIRST item in `structure`:
+```json
+{
+    "item": "viz_canvas_bg",
+    "type": "block",
+    "position": { "x": 0, "y": 0, "w": 1920, "h": 1080 }
+}
+```
+with viz:
+```json
+"viz_canvas_bg": {
+    "type": "splunk.rectangle",
+    "options": {
+        "fillColor": "{{CANVAS_BG}}",
+        "strokeColor": "transparent"
+    }
 }
 ```
 
@@ -611,7 +650,9 @@ Height can exceed 1080 for scrollable dashboards, but width is
 ALWAYS 1920. This matches `ds-create` hard default #0.
 
 `{{CANVAS_BG}}` comes from the design brief's dark or light palette `bg`
-token. Do not hardcode a color here — every pack has its own canvas background.
+token. Use it as the `fillColor` on the `viz_canvas_bg` rectangle — do
+not hardcode a color, and do NOT set it via `layout.options.backgroundColor`
+(that property does not exist in the schema).
 
 ## Markdown panels in bundled dashboards
 
@@ -622,6 +663,18 @@ token. Do not hardcode a color here — every pack has its own canvas background
 `Arial`, `Helvetica`, `Times New Roman`, `Comic Sans MS`
 
 Custom fonts (Inter, Roboto, Georgia, system-ui) → schema error.
+
+**System font → Splunk equivalent mapping:**
+
+| You might write | Splunk equivalent |
+|---|---|
+| `monospace`, `Courier`, `Courier New` | `Splunk Platform Mono` |
+| `sans-serif`, `system-ui`, `Segoe UI` | `Splunk Platform Sans` |
+| `Inter`, `Roboto`, `DM Sans` | `Splunk Platform Sans` |
+| `serif`, `Georgia` | `Times New Roman` |
+
+NEVER use generic CSS font names (`monospace`, `sans-serif`) in
+markdown panel options. Splunk rejects them. Use the Splunk equivalent.
 
 **fontSize** — ONLY these enum values:
 `extraSmall`, `small`, `default`, `large`, `extraLarge`

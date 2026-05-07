@@ -50,7 +50,7 @@ The `title` becomes the dashboard's top-level title (shown in the Splunk UI). `d
   "visualizations": { "viz_p1": { "type": "splunk.singlevalue", "title": "...", "dataSources": { "primary": "ds_1" }, "options": {} } },
   "inputs": {},
   "defaults": {},
-  "layout": { "type": "absolute", "options": { "width": 1920, "height": 1080 }, "structure": [ { "item": "viz_p1", "type": "block", "position": { "x": 0, "y": 0, "w": 600, "h": 320 } } ] }
+  "layout": { "globalInputs": [], "tabs": { "items": [{ "layoutId": "layout_main", "label": "Overview" }], "options": { "barPosition": "top", "showTabBar": false } }, "layoutDefinitions": { "layout_main": { "type": "absolute", "options": { "width": 1920, "height": 1080 }, "structure": [ { "item": "viz_p1", "type": "block", "position": { "x": 0, "y": 0, "w": 600, "h": 320 } } ] } } }
 }
 ```
 
@@ -138,8 +138,22 @@ These defaults are non-negotiable unless the user explicitly overrides:
    1440, 1280, or any width below 1920. Every Splunk dashboard
    target (analyst workstation, 27" monitor, SOC wall) is 1080p+.
    ```json
-   "layout": { "type": "absolute", "options": { "width": 1920, "height": 1080 } }
+   "layout": {
+       "globalInputs": [],
+       "tabs": {
+           "items": [{ "layoutId": "layout_main", "label": "Overview" }],
+           "options": { "barPosition": "top", "showTabBar": false }
+       },
+       "layoutDefinitions": {
+           "layout_main": {
+               "type": "absolute",
+               "options": { "width": 1920, "height": 1080 },
+               "structure": [...]
+           }
+       }
+   }
    ```
+   Even single-page dashboards require the tabs+layoutDefinitions wrapper. Set `showTabBar: false` to hide the tab bar.
 
 1. **`xAxisTitleVisibility: "hide"`** on every `splunk.area`,
    `splunk.line`, `splunk.column` viz. The `_time` label adds zero

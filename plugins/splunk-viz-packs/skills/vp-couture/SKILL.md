@@ -305,9 +305,9 @@ surface constraints, priorities, and what makes this pack UNFORGETTABLE.
 - If the palette feels too monochromatic, add strategic color to
   specific elements — don't spread it everywhere
 - No gradient wash rectangles on canvas: low-opacity colored overlays
-  create a muddy, washed-out look. Use a solid `layout.options.backgroundColor`
-  for the base, shadow rectangles behind panel groups for depth, and
-  faux glow on hero elements for accent
+  create a muddy, washed-out look. Use a full-canvas `splunk.rectangle` as the
+  first structure element for the canvas background color, shadow rectangles
+  behind panel groups for depth, and faux glow on hero elements for accent
 
 **Light theme is not an inversion of dark.** It requires independent
 design — `s/dark/light/g` produces harsh, broken results:
