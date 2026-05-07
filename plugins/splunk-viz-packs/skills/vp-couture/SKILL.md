@@ -140,7 +140,9 @@ in Splunk before."
 
 ## Domain Templates
 
-Pre-built inventories. Use as starting points, not mandates.
+Example inventories for inspiration. The AI should analyze the actual
+data and domain before choosing viz types — don't copy these blindly.
+These are starting points, not mandates.
 
 ### F1 Racing
 | Viz | Purpose |
@@ -229,6 +231,10 @@ before proceeding. Step 1 produces brand research notes. Steps 2-3
 produce the design brief. Step 6 produces a checklist with all
 items checked. Step 8 produces a critique score. If ANY of these
 is missing, the build was rushed and the output will be generic.
+
+**Quick mode:** For rapid prototyping or demos, steps 1-3 can be
+condensed into a single design direction statement from the user.
+The full protocol is for production brand launches.
 
 ### Subagent enforcement
 
@@ -364,25 +370,27 @@ Estimated CSS size: {N}KB
 
 ## Quality Gate
 
-Before hand-off, every item must pass. Failure blocks hand-off.
+Before hand-off, run every check. Technical items are hard blockers.
+Design items are recommendations — flag them, but they do not stop
+hand-off on their own.
 
 | Check | Rule | Fail = |
 |---|---|---|
-| Brand research | Brand visual language studied, signature element identified | Blocked |
-| Full custom coverage | Every data panel uses a custom viz (L1) | Blocked |
-| Unique rendering | Each viz has brand-specific _render() code (L7) | Blocked |
-| Panel chrome defined | Brand-specific chrome, not generic drawPanel() (L8) | Blocked |
-| Depth treatment | Shadow/flush/stroke chosen per brand (L9) | Blocked |
+| Brand research | Brand visual language studied, signature element identified | Recommended |
+| Full custom coverage | Every data panel uses a custom viz | Recommended |
+| Unique rendering | Each viz has brand-specific _render() code | Recommended |
+| Panel chrome defined | Brand-specific chrome, not generic drawPanel() | Recommended |
+| Depth treatment | Shadow/flush/stroke chosen per brand | Recommended |
 | Font count | Max 2 custom fonts | Blocked |
 | Palette completeness | Dark AND light mode tokens defined | Blocked |
 | Data contracts | Every viz has required/optional fields listed | Blocked |
 | Settings defaults | Every viz has settings with sensible defaults | Blocked |
-| Number formats | Every KPI has decimals/unit/scale specified (L3) | Blocked |
+| Number formats | Every KPI has decimals/unit/scale specified | Blocked |
 | Hover tooltips | Every viz has mousemove tooltip + visual highlight | Blocked |
-| Branded header | Dashboard has logo/wordmark header element (L2) | Blocked |
-| App naming | App name = brand name (L4) | Blocked |
-| Viz count | 5-8 vizs total (not 3, not 15) | Warning |
-| Viz variety | Minimum 3 DISTINCT viz types — no all-gauges or all-donuts | Warning |
+| Branded header | Dashboard has logo/wordmark header element | Recommended |
+| App naming | App name = brand name | Blocked |
+| Viz count | 5-8 vizs total — fewer is fine if they're distinctive | Recommended |
+| Viz variety | Minimum 3 DISTINCT viz types — no all-gauges or all-donuts | Recommended |
 | Field configurability | No hardcoded field names — all via formatter | Blocked |
 | accentIntensity | Every viz has accentIntensity setting (0-100, default 50) | Blocked |
 | Transparent canvas | Vizs use clearRect(), never fillRect() with bg color | Blocked |
@@ -452,7 +460,9 @@ usually redundant.
 
 **Run this scoring BEFORE step 7 (build) and AFTER step 8 (critique).**
 
-Rate each dimension 1-10. Minimum average: 7. Any dimension below 5 = blocked.
+Rate each dimension 1-10. Score each dimension. Low scores are warnings,
+not blockers. A brutalist dashboard that scores 5 on emotional resonance
+but 10 on brand distinctiveness is a valid design choice.
 
 ### Dimension 1: Visual hierarchy (1-10)
 
@@ -529,8 +539,10 @@ Run after design critique. 3+ items present = BLOCKED.
 Symmetry is comfortable but forgettable. Asymmetry creates energy
 and directs attention.
 
-**Panel widths:** 60/40 or 70/30. NEVER 50/50 for side-by-side panels.
-The wider panel is the primary content. The narrower is supporting.
+**Panel widths:** 60/40 or 70/30 by default. Avoid 50/50 by default —
+asymmetry creates hierarchy. But 50/50 is valid when comparing two equal
+datasets or in status grids. The wider panel signals primary content;
+the narrower supports.
 
 **Vertical rhythm:** vary density through the dashboard:
 ```

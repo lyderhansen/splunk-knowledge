@@ -17,6 +17,20 @@ healthcare, retail)
 **Output:** tarball with 5-8 custom vizs, shared theme.js, dashboard
 with hero image, webpack build, AppInspect-ready packaging
 
+## Quick brief template
+
+For structured input, point the user to `templates/viz-pack-brief.md`.
+It covers brand, domain, metrics, viz preferences, and constraints.
+Or use the minimal version:
+
+```
+Build a viz pack for [BRAND].
+Theme: [dark/light].
+Data: [what the dashboard shows].
+Key metrics: [3-5 metrics with types].
+Style: [3 tone words].
+```
+
 ## Routing table
 
 | User says | Route to | Why |

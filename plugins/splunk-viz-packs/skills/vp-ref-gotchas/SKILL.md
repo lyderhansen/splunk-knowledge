@@ -511,9 +511,10 @@ formatData: function(data) {
 
 ### B15. Every visual property must be configurable via formatter
 
-If the viz code uses a color, size, toggle, or position — there MUST
-be a corresponding setting in `formatter.html` and a `getOption()`
-read in `_render()`. No hardcoded visual properties.
+If the viz code uses a color, size, toggle, or position — there SHOULD
+be a corresponding setting for every visual property that the user might
+want to customize. Not every internal rendering detail needs a formatter
+control — focus on colors, sizes, labels, and behavioral toggles.
 
 **Mandatory formatter settings for every viz:**
 
@@ -524,7 +525,7 @@ read in `_render()`. No hardcoded visual properties.
 | **Typography** | `label`, `labelPlacement` (top/bottom/left/none) | text / dropdown |
 | **Values** | `field`, `unit`, `unitPosition` (before/after), `decimals` | text / radio |
 | **Trends** | `showDelta`, `deltaField` | radio / text |
-| **Effects** | `showGlow` or `accentIntensity` (0-100 slider) | radio / text |
+| **Effects** | `showGlow` (recommended); `accentIntensity` (0-100) RECOMMENDED for vizs with glow/shadow — lets users dial effects up or down; not required for vizs without accent effects | radio / text |
 | **Layout** | `alignment` (left/center/right) | radio |
 
 **Domain-specific settings (add when applicable):**
@@ -724,6 +725,10 @@ Beyond the tooltip, hovering should visually highlight the element:
 Store hit regions during `_render` and re-use in `_hitTest`.
 
 ## COSMETIC — works but looks wrong
+
+> COSMETIC rules prevent visual bugs. For design quality guidelines
+> (color choices, typography, spacing), see `vp-couture` and
+> `vp-ref-patterns`.
 
 ### C1. Panel backgroundColor must be transparent
 

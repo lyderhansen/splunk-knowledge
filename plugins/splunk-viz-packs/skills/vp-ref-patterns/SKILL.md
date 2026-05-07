@@ -31,11 +31,12 @@ function roundRect(ctx, x, y, w, h, r) {
 }
 ```
 
-### Panel chrome (1px border, 6px radius)
+### Panel chrome (1px border, configurable radius)
 
 ```javascript
-function drawPanel(ctx, t, x, y, w, h) {
-    roundRect(ctx, x + 0.5, y + 0.5, w - 1, h - 1, 6);
+function drawPanel(ctx, t, x, y, w, h, r) {
+    if (r === undefined) r = 6;
+    roundRect(ctx, x + 0.5, y + 0.5, w - 1, h - 1, r);
     ctx.fillStyle = t.panel;
     ctx.fill();
     ctx.strokeStyle = t.edge;
@@ -43,6 +44,8 @@ function drawPanel(ctx, t, x, y, w, h) {
     ctx.stroke();
 }
 ```
+
+Default radius is 6px. Override per brand: 0 for sharp/technical, 2-4 for subtle, 8-12 for soft/friendly, h/2 for pill shapes. Don't use 6px for every brand.
 
 ### Pill / chip (radius = height / 2)
 
@@ -198,8 +201,7 @@ visual hierarchy that tells the eye where to look.
 | **Body** | `Math.min(w, h) * 0.14` | 14 | 24 | 60-80% | Supporting values, secondary |
 | **Whisper** | `Math.min(w, h) * 0.07` | 8 | 11 | 25-35% | Labels, headers, metadata |
 
-**The rule:** hero ÷ whisper ≥ 4:1. If your largest text is 24px and
-smallest is 14px, the ratio is 1.7:1 — flat, no hierarchy, AI-looking.
+**Guideline:** aim for hero ÷ whisper ≥ 4:1 for dramatic hierarchy. But some brands (brutalist, data-dense) intentionally flatten the hierarchy. The ratio is a diagnostic tool, not a gate.
 
 ```javascript
 var heroSize = Math.max(36, Math.min(72, Math.min(w, h) * 0.35));
@@ -540,13 +542,17 @@ initialize: function() {
     this._tooltip = document.createElement('div');
     this._tooltip.style.cssText =
         'position:absolute;display:none;padding:6px 12px;' +
-        'background:rgba(0,0,0,0.9);color:#E5EAF2;font-size:12px;' +
-        'border-radius:6px;pointer-events:none;white-space:nowrap;' +
-        'z-index:100;font-family:"Inter",sans-serif;' +
-        'border:1px solid rgba(255,255,255,0.12);' +
-        'box-shadow:0 4px 12px rgba(0,0,0,0.4);';
+        'pointer-events:none;white-space:nowrap;z-index:100;';
     this.el.style.position = 'relative';
     this.el.appendChild(this._tooltip);
+
+    // Apply theme-driven styles after theme is available (call in _render or updateView):
+    // this._tooltip.style.background = t.panelHi || t.panel;
+    // this._tooltip.style.color = t.text;
+    // this._tooltip.style.border = '1px solid ' + (t.edgeStrong || t.edge);
+    // this._tooltip.style.fontFamily = theme.FONTS.data;
+    // this._tooltip.style.fontSize = '11px';
+    // this._tooltip.style.borderRadius = '2px';
 
     this._hitRegions = [];
     var self = this;
@@ -734,42 +740,44 @@ destroy: function() {
 }
 ```
 
-## Category/franchise badge colors
+## Category badge colors
 
-Reusable pattern for assigning brand-specific colors to data categories:
+Badge colors should come from the design brief or be configurable
+via a formatter setting. Don't hardcode brand-specific colors.
 
+Pattern for dynamic badge colors:
 ```javascript
-var FRANCHISE_COLORS = {
-    'marvel': '#E23636',
-    'star wars': '#FFE81F',
-    'pixar': '#00B3E6',
-    'disney': '#0063E5',
-    'national geographic': '#FFCC00',
-    'hulu': '#1CE783',
-    'espn': '#FF4438',
-    'critical': '#D41F1F',
-    'warning': '#CBA700',
-    'ok': '#118832'
-};
+// Define in theme.js or as a formatter setting
+var BADGE_COLORS = theme.parseColors(
+    getOption(config, ns, 'badgeColors', ''),
+    [t.s1, t.s2, t.s3, t.s4, t.s5]  // fallback to theme series colors
+);
 
-function categoryColor(name, fallback) {
-    return FRANCHISE_COLORS[(name || '').toLowerCase()] || fallback || '#6B7280';
+function badgeColor(category, index) {
+    return BADGE_COLORS[index % BADGE_COLORS.length];
+}
+```
+
+For status-semantic badges (critical/warning/ok), use theme severity tokens:
+```javascript
+function statusColor(status) {
+    return theme.severityColor(t, status);
 }
 ```
 
 Draw as pill badge:
 ```javascript
-var badgeColor = categoryColor(cellVal);
+var bc = badgeColor(cellVal, cellIdx);
 var badgeW = ctx.measureText(cellVal).width + 20;
 var badgeH = rowH * 0.6;
 var badgeY = cellY - badgeH / 2;
 roundRect(ctx, cx - 4, badgeY, badgeW, badgeH, badgeH / 2);
-ctx.fillStyle = withAlpha(badgeColor, 0.2);
+ctx.fillStyle = withAlpha(bc, 0.2);
 ctx.fill();
-ctx.strokeStyle = withAlpha(badgeColor, 0.6);
+ctx.strokeStyle = withAlpha(bc, 0.6);
 ctx.lineWidth = 1;
 ctx.stroke();
-ctx.fillStyle = badgeColor;
+ctx.fillStyle = bc;
 ctx.fillText(cellVal, cx + 6, cellY);
 ```
 
@@ -1107,19 +1115,19 @@ if (this._animFrame) {
 
 These techniques are POWERFUL but DANGEROUS. Guidelines:
 
-| Technique | Density | When |
-|---|---|---|
-| Ambient light | 1 per dashboard | Always — costs nothing, adds depth |
-| Glass panel | 2-4 per dashboard | Branded dashboards with hero image |
-| Noise texture | 0-1 per dashboard | Technical/industrial brands only |
-| Carbon hatch | 0-1 per dashboard | F1/motorsport/engineering brands |
-| Vignette | 1 per viz | Hero gauges, featured charts |
-| Data glow | 1-2 per dashboard | ONLY on the most critical value |
-| Letter spacing | Headers only | Brand wordmarks, section titles |
-| Gradient mesh | 1 per dashboard | Background only, never competing with data |
-| Accent lines | 0-1 per viz | Technical/precision brands |
-| Inner shadow | On glass panels | Creates depth on glass panels |
-| Pulse ring | 0-1 per dashboard | ONLY for genuine alerts/thresholds |
+| Technique | Low density | Medium density | High density |
+|---|---|---|---|
+| Ambient light | Subtle, professional | Atmospheric, immersive | Dramatic, overwhelming (use with care) |
+| Glass panel | Subtle, professional | Atmospheric, immersive | Dramatic, overwhelming (use with care) |
+| Noise texture | Subtle, professional | Atmospheric, immersive | Dramatic, overwhelming (use with care) |
+| Carbon hatch | Subtle, professional | Atmospheric, immersive | Dramatic, overwhelming (use with care) |
+| Vignette | Subtle, professional | Atmospheric, immersive | Dramatic, overwhelming (use with care) |
+| Data glow | Subtle, professional | Atmospheric, immersive | Dramatic, overwhelming (use with care) |
+| Letter spacing | Subtle, professional | Atmospheric, immersive | Dramatic, overwhelming (use with care) |
+| Gradient mesh | Subtle, professional | Atmospheric, immersive | Dramatic, overwhelming (use with care) |
+| Accent lines | Subtle, professional | Atmospheric, immersive | Dramatic, overwhelming (use with care) |
+| Inner shadow | Subtle, professional | Atmospheric, immersive | Dramatic, overwhelming (use with care) |
+| Pulse ring | Subtle, professional | Atmospheric, immersive | Dramatic, overwhelming (use with care) |
 
 **One rule:** if the mood technique competes with the DATA for
 attention, you've used too much. The data is the story. The mood

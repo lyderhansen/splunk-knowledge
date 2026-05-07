@@ -79,15 +79,19 @@ module.exports = SplunkVisualizationBase.extend({
         this._lastConfig = null;
         this._lastGoodData = null;
 
-        // Tooltip (mandatory — see vp-ref-gotchas I1)
+        // Tooltip (mandatory for data vizs — see vp-ref-gotchas I1)
         this._tooltip = document.createElement('div');
         this._tooltip.style.cssText =
             'position:absolute;display:none;padding:6px 10px;' +
-            'background:rgba(6,9,16,0.92);color:#E2E8F0;font-size:11px;' +
             'border-radius:2px;pointer-events:none;white-space:nowrap;' +
-            'z-index:100;font-family:monospace;' +
-            'border:1px solid rgba(0,136,204,0.35);';
+            'z-index:100;font-family:monospace;font-size:11px;';
+        // Colors set in _render() from theme tokens: t.panel, t.text, t.edgeStrong
         this.el.appendChild(this._tooltip);
+
+        // Tooltip styling is set dynamically from theme tokens in _render()
+        // this._tooltip.style.background = t.panelHi;
+        // this._tooltip.style.color = t.text;
+        // this._tooltip.style.border = '1px solid ' + t.edgeStrong;
 
         this._hoverIdx = -1;
         this._hitRegions = [];
@@ -256,10 +260,11 @@ var valueY = labelY + labelFontSize / 2 + 6 + valueFontSize / 2;
 var trendY = valueY + valueFontSize / 2 + 4 + trendFontSize / 2;
 ```
 
-**Trend delta MUST be positioned BELOW the value, not beside it.**
-At typical KPI tile widths (200-400px), a large monospace value
-leaves no horizontal room for trend text at the same line. Stack
-vertically: label → value → trend+arrow.
+**Trend delta defaults to BELOW the value.** At typical KPI tile
+widths (200-400px), a large monospace value leaves no horizontal room
+for trend text at the same line. Stack vertically: label → value →
+trend+arrow. Position beside it only if the panel is wide enough
+(>500px) and the value text is short.
 
 **String value passthrough (B11):** `parseFloat()` truncates string
 values like `"1:21.584"` → `1`. Detect non-numeric strings:
@@ -282,6 +287,12 @@ row. Optional: `delta` field for trend arrow.
 bands. Center shows value text. Optional tick marks.
 
 **Key render logic:**
+
+> These are starting values — adjust per brand. A full-circle gauge
+> uses 0→2π, a half-circle uses π→2π, a 270° sweep uses 0.75π→2.25π.
+> Center Y (`cy`) and radius can be shifted to suit the panel aspect
+> ratio.
+
 ```javascript
 var cx = w / 2;
 var cy = h * 0.55;
@@ -554,9 +565,10 @@ usual KPI/gauge/donut/table set.
         </splunk-radio-input>
     </splunk-control-group>
     <splunk-control-group label="Accent color" help="Primary highlight color">
+        <!-- Replace swatches with colors from the pack's theme palette. -->
         <splunk-color-picker name="{{VIZ_NAMESPACE}}.accentColor"
-            type="custom" value="#1a91a8">
-            <splunk-color>#1a91a8</splunk-color>
+            type="custom" value="#0088CC">
+            <splunk-color>#0088CC</splunk-color>
             <splunk-color>#2bbfb8</splunk-color>
             <splunk-color>#ff6600</splunk-color>
             <splunk-color>#f73873</splunk-color>
@@ -681,9 +693,9 @@ SPL → formatData (data only) → updateView (data + config)
 7. **Build** — webpack, verify ES5, check bundle format
 8. **Test in Splunk** — install app, verify in Studio + ad-hoc search
 
-## Hover tooltip — mandatory on every viz
+## Hover tooltip — mandatory on every data-displaying viz
 
-See `vp-ref-gotchas` I1 and I2. Every viz MUST implement:
+See `vp-ref-gotchas` I1 and I2. Every viz that displays data MUST implement:
 
 1. **DOM tooltip element** — created in `initialize`, positioned on
    `mousemove`, hidden on `mouseleave`
