@@ -403,13 +403,98 @@ module.exports = {
 }
 ```
 
+## Alternative: flat AMD build (build_flat.js)
+
+If webpack bundles cause `REQUIREJS_ERROR_MESSAGE Script error` in
+Dashboard Studio v2's sandboxed iframe (see vp-ref-gotchas F11), use
+a flat AMD build instead. This is a fallback — try webpack first.
+
+### _build/build_flat.js
+
+```javascript
+var fs = require('fs');
+var path = require('path');
+
+var VIZ_ROOT = path.resolve(__dirname, '..', 'appserver', 'static', 'visualizations');
+var SHARED = path.resolve(__dirname, '..', 'shared');
+var themeRaw = fs.readFileSync(path.join(SHARED, 'theme.js'), 'utf8');
+
+// Strip require/module.exports from theme to make it inlineable
+var themeBody = themeRaw
+    .replace(/^var\s+\w+\s*=\s*require\(.+\);?\s*$/gm, '')
+    .replace(/^module\.exports\s*=\s*\{[\s\S]*?\};?\s*$/m, '');
+
+var vizDirs = fs.readdirSync(VIZ_ROOT).filter(function(n) {
+    var srcPath = path.join(VIZ_ROOT, n, 'src', 'visualization_source.js');
+    return fs.existsSync(srcPath);
+});
+
+vizDirs.forEach(function(vizName) {
+    var srcPath = path.join(VIZ_ROOT, vizName, 'src', 'visualization_source.js');
+    var outPath = path.join(VIZ_ROOT, vizName, 'visualization.js');
+    var src = fs.readFileSync(srcPath, 'utf8');
+
+    // Strip require lines
+    src = src.replace(/^var\s+\w+\s*=\s*require\(.+\);?\s*$/gm, '');
+
+    // Convert module.exports = X; to return X;
+    src = src.replace(/^module\.exports\s*=\s*/m, 'return ');
+
+    var output = [
+        'define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], ' +
+        'function(SplunkVisualizationBase, SplunkVisualizationUtils) {',
+        '',
+        '// ── Inlined theme.js ──',
+        'var theme = (function() {',
+        themeBody,
+        '    return { getTheme:getTheme, withAlpha:withAlpha, lerpColor:lerpColor,',
+        '        severityColor:severityColor, fmtNum:fmtNum, roundRect:roundRect,',
+        '        drawPanel:drawPanel, drawHGrid:drawHGrid, parseColors:parseColors,',
+        '        parseInts:parseInts, FONTS:FONTS, getNS:getNS, getOption:getOption,',
+        '        parseNum:parseNum, loadFonts:loadFonts, setupCanvas:setupCanvas };',
+        '})();',
+        '',
+        '// ── Viz source ──',
+        src,
+        '',
+        '});'
+    ].join('\n');
+
+    fs.writeFileSync(outPath, output);
+    console.log('  Built: ' + vizName + '/visualization.js');
+});
+
+console.log('Done — ' + vizDirs.length + ' vizs built (flat AMD).');
+```
+
+**Usage:**
+```bash
+cd examples/{{PACK_ID}}/_build
+node build_flat.js
+```
+
+**When to use:** only if webpack builds produce Script errors in
+Dashboard Studio v2 that can't be explained by F1-F9.
+
 ## Build process
+
+### Option A: webpack (default)
 
 ```bash
 cd examples/{{PACK_ID}}/_build
 npm install
 npm run build
 ```
+
+### Option B: flat AMD (fallback for DS v2 iframe issues)
+
+```bash
+cd examples/{{PACK_ID}}/_build
+node build_flat.js
+```
+
+Use Option B only if webpack bundles cause Script errors in Dashboard
+Studio v2 (see vp-ref-gotchas F11). Try Option A first.
 
 Verify every bundle after build:
 
@@ -750,3 +835,7 @@ There is no special exemption for bundled dashboards.
 - [ ] Dashboard data sources use `| inputlookup` for demo data
 - [ ] SPL in savedsearches.conf checked against `spl-gotchas` traps
 - [ ] No hardcoded accent color defaults in formatter.html — use `{{ACCENT}}` or the pack's `theme.accent` token, not a literal hex like `#1a91a8` or `#0088CC`
+- [ ] Every viz has `getInitialDataParams` as a METHOD (not a property on extend)
+- [ ] No jQuery (`this.$el`, `$.fn`) in any viz source
+- [ ] `theme.setupCanvas()` receives `this.el`, not `this._canvas`
+- [ ] `build` in app.conf incremented before packaging

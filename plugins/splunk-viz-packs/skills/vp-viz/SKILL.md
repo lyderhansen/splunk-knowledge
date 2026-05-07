@@ -874,6 +874,46 @@ eye TO the actor — it doesn't become the show.
 nobody notices is worse than a bold viz that makes one person
 say "wait, that's Splunk?" Ship something with a point of view.
 
+## Subagent dispatch rules — MUST include in every viz build prompt
+
+When dispatching subagents (one per viz), include ALL of these rules
+in the subagent prompt. Missing any one causes a build that silently
+fails.
+
+**File paths:**
+1. Runtime files go in `appserver/static/visualizations/{viz}/` — NEVER
+   in `default/visualizations/` (F9)
+
+**Data pipeline:**
+2. MUST include `getInitialDataParams` as a METHOD with
+   `ROW_MAJOR_OUTPUT_MODE` — never as a property on the extend object (F4)
+
+**DOM rules:**
+3. Use `this.el` (plain DOM element), NEVER `this.$el` (jQuery) — jQuery
+   is not available in Dashboard Studio v2 sandboxed iframes (F10)
+
+**Canvas setup:**
+4. Pass `this.el` (container div) to `theme.setupCanvas()`, NEVER
+   `this._canvas` — setupCanvas internally creates/finds the canvas (B17)
+
+**Render method:**
+5. The `reflow` method must call the SAME method used for rendering —
+   verify the actual name (`_render`, `_draw`, `updateView`) before
+   writing `reflow` (C6)
+
+**Build format:**
+6. If webpack builds cause Script errors, use flat AMD build instead (F11).
+   Source files use `require()`/`module.exports`; `build_flat.js` converts
+   to `define()` wrapper.
+
+**Checklist for subagent to verify before reporting DONE:**
+- [ ] `getInitialDataParams` is a method (not a property)
+- [ ] No `this.$el` or jQuery anywhere
+- [ ] `reflow` calls the correct render method
+- [ ] `theme.setupCanvas(this.el)` not `theme.setupCanvas(this._canvas)`
+- [ ] Source uses `require()`/`module.exports`, NOT `define()`
+- [ ] All code is ES5 (no const/let/arrow/template literals)
+
 ## Splunk API reference — things agents forget
 
 ### SplunkVisualizationUtils helpers

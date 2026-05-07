@@ -122,6 +122,30 @@ the constant, not a string. Valid modes:
 
 **NEVER use `'json'`, `'xml'`, or any arbitrary string.**
 
+**NEVER set `outputMode` as a property on the extend object literal:**
+```javascript
+// WRONG — property evaluated at extend() time, may not resolve
+SplunkVisualizationBase.extend({
+    outputMode: SplunkVisualizationBase.ROW_MAJOR_OUTPUT_MODE,  // BAD
+    // ...
+});
+
+// CORRECT — always inside getInitialDataParams method
+SplunkVisualizationBase.extend({
+    getInitialDataParams: function() {
+        return {
+            outputMode: SplunkVisualizationBase.ROW_MAJOR_OUTPUT_MODE,
+            count: 10000
+        };
+    },
+    // ...
+});
+```
+
+`getInitialDataParams` is REQUIRED, not optional. Without it, Splunk
+doesn't know how to deliver data to the viz — you get "Unknown output
+mode: undefined".
+
 ### F5. Only externalize what you import
 
 ```javascript
@@ -226,6 +250,75 @@ RIGHT — Splunk finds and loads the viz:
 
 This is the #1 cause of "all vizs show Script error" after install.
 `default/` is for conf files only. Viz JS/HTML/CSS go under `appserver/`.
+
+### F10. No jQuery — use standard DOM APIs only
+
+Dashboard Studio v2 custom vizs render inside a sandboxed iframe where
+jQuery is NOT available. `this.$el` is `undefined`. Any jQuery call
+crashes the viz at initialization.
+
+```javascript
+// WRONG — TypeError: Cannot read properties of undefined
+this.$el.addClass('my-viz');
+this.$el.find('.tooltip').remove();
+$('.container').on('click', handler);
+
+// CORRECT — standard DOM APIs
+this.el.className = (this.el.className || '') + ' my-viz';
+var tooltip = this.el.querySelector('.tooltip');
+if (tooltip) tooltip.parentNode.removeChild(tooltip);
+this.el.addEventListener('click', handler);
+```
+
+**Rule:** NEVER use `this.$el`, `$.fn`, `jQuery`, or any jQuery syntax.
+Use `document.createElement`, `querySelector`, `addEventListener`,
+`className`, `style.cssText`, etc.
+
+### F11. Webpack 5 IIFE may fail in Dashboard Studio v2 sandbox — flat AMD alternative
+
+Webpack 5 wraps modules in an IIFE inside the AMD factory. Splunk's
+RequireJS + iframe sandbox + cross-origin restrictions can cause this
+nested structure to fail silently as `REQUIREJS_ERROR_MESSAGE Script error`.
+
+**If webpack bundles cause Script error despite correct config (F1),**
+use flat AMD builds instead:
+
+```javascript
+// Flat AMD — no webpack needed
+define(["api/SplunkVisualizationBase"], function(SplunkVisualizationBase) {
+    // theme.js inlined as IIFE
+    var theme = (function() {
+        // ... theme.js contents ...
+        return { getTheme: getTheme, /* ... */ };
+    })();
+
+    return SplunkVisualizationBase.extend({
+        initialize: function() { /* ... */ },
+        getInitialDataParams: function() {
+            return {
+                outputMode: SplunkVisualizationBase.ROW_MAJOR_OUTPUT_MODE,
+                count: 10000
+            };
+        },
+        formatData: function(data) { /* ... */ },
+        updateView: function(data, config) { /* ... */ },
+        reflow: function() { /* ... */ },
+        destroy: function() { /* ... */ }
+    });
+});
+```
+
+**Build with `build_flat.js`** (see `vp-create` for the script):
+1. Reads `shared/theme.js`
+2. Strips `require()` and `module.exports` lines from viz source
+3. Converts `module.exports = X;` to `return X;`
+4. Wraps in `define(["api/SplunkVisualizationBase"], function(...) { ... });`
+5. Inlines theme.js as an IIFE
+
+**When to use flat vs webpack:**
+- Try webpack first (F1 config) — it works for most packs
+- Switch to flat AMD if you get persistent Script errors in the
+  sandboxed iframe that F1-F9 don't explain
 
 ## BROKEN — renders but wrong
 
@@ -565,6 +658,26 @@ in the source, there MUST be a matching `<splunk-control-group>` in
 except as a fallback default. Colors come from theme tokens OR
 formatter settings — never inline hex in render logic.
 
+### B17. setupCanvas must receive the container element, not the canvas
+
+`theme.setupCanvas(el)` internally calls `el.querySelector('canvas')`.
+Passing `this._canvas` (the canvas itself) causes it to search inside
+the canvas element, find nothing, create a NEW canvas appended to the
+canvas, and get 0×0 dimensions.
+
+```javascript
+// WRONG — canvas renders as 0×0
+var setup = theme.setupCanvas(this._canvas);
+
+// CORRECT — pass the container div
+var setup = theme.setupCanvas(this.el);
+this._canvas = setup.canvas;
+```
+
+**Corollary:** either let `setupCanvas` create the canvas in `updateView`,
+OR create it manually in `initialize` — not both. If you create it
+manually, don't call `setupCanvas` at all.
+
 ## REJECTED — fails AppInspect / Splunk Cloud vetting
 
 ### R1. app.conf must have 5 stanzas
@@ -835,6 +948,21 @@ reflow: function() {
 Faster and flicker-free. Cache `_lastData` and `_lastConfig` in
 `updateView`.
 
+**IMPORTANT:** verify the actual render method name before writing
+`reflow`. The method could be `_render`, `_draw`, `_update`, or
+inline in `updateView`. Calling `this._render()` when the method
+is named `_draw()` causes `TypeError: this._render is not a function`
+on every resize.
+
+```javascript
+// If rendering happens in updateView directly:
+reflow: function() {
+    if (this._lastData && this._lastConfig) {
+        this.updateView(this._lastData, this._lastConfig);
+    }
+}
+```
+
 ### C7. Viz app name must match the brand/project
 
 The app ID and viz stanza names create the Dashboard Studio type
@@ -852,6 +980,54 @@ my_viz.gauge                   ← bad: meaningless
 
 The app ID appears in every `"type":` reference in every dashboard
 JSON. Make it count.
+
+### C8. Increment `build` in app.conf for every release
+
+Splunk caches static assets keyed by a hash derived from `build` in
+`app.conf`. Same `build` number = cached old JS/CSS served despite
+new install. Different `build` = fresh load.
+
+Always increment before packaging. Also hard-refresh browser
+(Cmd+Shift+R / Ctrl+Shift+R) after installing.
+
+### C9. `rx` on splunk.rectangle must be a number, not a string
+
+Dashboard Studio schema validation rejects `"rx": "8"` (string).
+Use `"rx": 8` (number). Same applies to `ry`, `strokeWidth`, and
+other numeric options in dashboard JSON.
+
+## Error diagnosis flowchart
+
+When a custom viz shows a placeholder icon or blank panel, follow this
+tree to find the root cause:
+
+```
+Viz shows placeholder icon (bar chart in grey box)
+├── Console: "Script error for .../visualization.js"
+│   ├── File not found? → F9 (wrong directory)
+│   ├── Webpack IIFE? → F11 (use flat AMD)
+│   ├── jQuery used? → F10 (no $el in DS v2)
+│   └── Double AMD wrapper? → F6 (source uses define())
+├── Console: "Unknown output mode: undefined"
+│   ├── getInitialDataParams missing? → F4 (required method)
+│   └── outputMode as property? → F4 (must be in method)
+├── Console: "X is not a function"
+│   ├── _render? → C6 (wrong method name in reflow)
+│   ├── addClass? → F10 (jQuery)
+│   └── constructor? → F7 (must use extend object literal)
+├── No console errors but blank
+│   ├── setupCanvas wrong element? → B17
+│   ├── formatData returns null? → B15
+│   └── Canvas dimensions 0×0? → check el.getBoundingClientRect()
+└── Changes not taking effect → C8 (build number + hard refresh)
+```
+
+**Console noise to IGNORE** (Splunk framework, not your bugs):
+- `SecurityError: Failed to read 'cookie'` — sandboxed iframe
+- `Content Security Policy directive 'img-src'` — Splunk CSP
+- `502 Connection refused` on `orchestrator/v1/spl2/enabled`
+- `404 on tenantinfo` — on-prem, not Cloud
+- `web-client-content-script.js: MutationObserver` — browser extension
 
 ## Pre-commit checklist — tiered
 
@@ -877,6 +1053,8 @@ JSON. Make it count.
 - [ ] Dashboard JSON: follows ALL `ds-create` hard defaults (fontFamily, fontSize, etc)
 - [ ] Bundle starts with `define([...], function(`
 - [ ] Package: `COPYFILE_DISABLE=1`, excludes node_modules/src/.DS_Store
+- [ ] No jQuery (`this.$el`, `$.fn`) in viz source — use DOM APIs (F10)
+- [ ] `getInitialDataParams` is a METHOD, not a property on extend (F4)
 
 ### TIER 2: SHOULD (quality — dashboard looks wrong without these)
 
@@ -893,6 +1071,8 @@ JSON. Make it count.
 - [ ] Animations cleared in `destroy()`
 - [ ] Shadow state reset after every glow draw
 - [ ] Drilldown wrapped in try/catch
+- [ ] `setupCanvas()` receives `this.el` (container), not `this._canvas` (B17)
+- [ ] `reflow` calls the ACTUAL render method name (check source) (C6)
 
 ### TIER 3: POLISH (distinguishes good from great)
 
@@ -902,3 +1082,5 @@ JSON. Make it count.
 - [ ] Markdown panels sized to avoid scrollbars
 - [ ] `aria-label` on canvas with primary value for accessibility
 - [ ] Canvas `cursor: pointer` on hoverable elements
+- [ ] `build` in app.conf incremented for this release (C8)
+- [ ] `rx`/`ry` values are numbers, not strings (C9)
