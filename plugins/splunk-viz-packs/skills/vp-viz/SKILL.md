@@ -746,8 +746,9 @@ No `<html>`, `<body>`, or `<head>` wrappers. No CSS. No JavaScript.
 </form>
 
 <form class="splunk-formatter-section" section-label="Color and style">
-    <splunk-control-group label="Theme" help="Color scheme">
-        <splunk-radio-input name="{{VIZ_NAMESPACE}}.theme" value="dark">
+    <splunk-control-group label="Theme" help="Auto detects page theme. Override for Dashboard Studio.">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.theme" value="">
+            <option value="">Auto</option>
             <option value="dark">Dark</option>
             <option value="light">Light</option>
         </splunk-radio-input>

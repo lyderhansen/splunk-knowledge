@@ -794,6 +794,26 @@ as default, then detect with `getCurrentTheme()`. This ensures vizs
 work in BOTH Dashboard Studio (dark/light from config) AND ad-hoc
 search (theme from page context).
 
+**CRITICAL: Formatter default must also be empty (`value=""`), not
+`value="dark"`.** If the formatter defaults to `"dark"`, Splunk sends
+`"dark"` to the viz even in ad-hoc search — the `getCurrentTheme()`
+fallback never fires because config already has a value.
+
+```html
+<!-- WRONG — ad-hoc search always gets "dark", viz is invisible on white bg -->
+<splunk-radio-input name="{{VIZ_NAMESPACE}}.theme" value="dark">
+    <option value="dark">Dark</option>
+    <option value="light">Light</option>
+</splunk-radio-input>
+
+<!-- RIGHT — default is empty = auto-detect, user can override -->
+<splunk-radio-input name="{{VIZ_NAMESPACE}}.theme" value="">
+    <option value="">Auto</option>
+    <option value="dark">Dark</option>
+    <option value="light">Light</option>
+</splunk-radio-input>
+```
+
 ## REJECTED — fails AppInspect / Splunk Cloud vetting
 
 ### R1. app.conf must have 5 stanzas
