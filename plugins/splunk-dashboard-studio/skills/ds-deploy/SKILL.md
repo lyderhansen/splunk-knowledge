@@ -14,8 +14,26 @@ After `ds-validate` has confirmed the dashboard passes lint checks and state is 
 1. **`dashboard.xml`** (always) — the Dashboard Studio v2 XML envelope with the JSON definition embedded in a CDATA section. Can be pasted directly into Splunk's dashboard editor.
 2. **`<app_name>.tar.gz`** (with `--as-app`) — a Splunk TA tarball containing:
    - `default/app.conf` — app metadata
+   - `default/data/ui/nav/default.xml` — navigation bar
    - `default/data/ui/views/<view_name>.xml` — the dashboard view
    - `metadata/default.meta` — permissions
+
+### Navigation bar (default.xml)
+
+Every Splunk app needs a navigation bar. Without it, the app has no
+clickable entry point in the Splunk UI. Generate
+`default/data/ui/nav/default.xml`:
+
+```xml
+<nav search_view="search" color="{{ACCENT_HEX}}">
+  <view name="search" default="true" />
+  <view name="{{VIEW_NAME}}" />
+  <view name="reports" />
+  <view name="dashboards" />
+</nav>
+```
+
+The `name` attribute must match the XML filename (without `.xml`).
 
 Install the TA by dropping the tarball into `$SPLUNK_HOME/etc/apps/` (or using Splunk's UI install flow) and restarting Splunk.
 

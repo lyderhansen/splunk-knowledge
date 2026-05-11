@@ -25,6 +25,7 @@ examples/{pack_name}/
     visualizations.conf
     transforms.conf              (lookup definitions)
     savedsearches.conf
+    data/ui/nav/default.xml      (navigation bar)
     data/ui/views/               (bundled dashboards)
   lookups/
     demo_kpis.csv                (demo data for KPI vizs)
@@ -770,6 +771,121 @@ The browser uses `build` as a cache key. Same build number = cached.
 Different build number = fresh load.
 
 **Rule:** before packaging, ALWAYS check app.conf and increment `build`.
+
+## Navigation bar (default.xml)
+
+Every Splunk app MUST include a navigation bar so users can find the
+bundled dashboards and access standard Splunk views. Without it, the
+app has no clickable entry point.
+
+Create `default/data/ui/nav/default.xml`:
+
+```xml
+<nav search_view="search" color="{{ACCENT_HEX}}">
+  <view name="search" default="true" />
+  <view name="{{DASHBOARD_VIEW_NAME}}" />
+  <view name="reports" />
+  <view name="alerts" />
+  <view name="dashboards" />
+</nav>
+```
+
+| Placeholder | Value | Example |
+|---|---|---|
+| `{{ACCENT_HEX}}` | Brand accent color (6-char hex) | `#06C167` |
+| `{{DASHBOARD_VIEW_NAME}}` | Filename of bundled dashboard (without .xml) | `uber_operations` |
+
+For multiple dashboards, add one `<view>` per dashboard:
+```xml
+<nav search_view="search" color="#D5001C">
+  <view name="search" default="true" />
+  <collection label="Dashboards">
+    <view name="porsche_telemetry" />
+    <view name="porsche_strategy" />
+  </collection>
+  <view name="reports" />
+  <view name="dashboards" />
+</nav>
+```
+
+**Rule:** the `name` attribute must match the XML filename exactly
+(without `.xml` extension) in `default/data/ui/views/`.
+
+## Complete dashboard JSON example
+
+Agents repeatedly get the layout format wrong. Here is a COMPLETE,
+COPY-PASTE-READY example of a valid Dashboard Studio v2 JSON structure.
+Use this as the starting template for EVERY bundled dashboard:
+
+```json
+{
+    "dataSources": {
+        "ds_example": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup {{PACK_ID}}_demo_kpis.csv",
+                "queryParameters": { "earliest": "-24h", "latest": "now" }
+            },
+            "name": "Example Data"
+        }
+    },
+    "visualizations": {
+        "viz_canvas_bg": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#0B0C0E",
+                "strokeColor": "transparent"
+            }
+        },
+        "viz_kpi": {
+            "type": "{{PACK_ID}}.kpi_tile",
+            "dataSources": { "primary": "ds_example" },
+            "options": {
+                "backgroundColor": "transparent",
+                "{{PACK_ID}}.kpi_tile.field": "value",
+                "{{PACK_ID}}.kpi_tile.theme": "dark"
+            }
+        }
+    },
+    "inputs": {},
+    "layout": {
+        "globalInputs": [],
+        "tabs": {
+            "items": [
+                { "layoutId": "layout_main", "label": "Overview" }
+            ],
+            "options": { "barPosition": "top", "showTabBar": false }
+        },
+        "layoutDefinitions": {
+            "layout_main": {
+                "type": "absolute",
+                "options": { "width": 1920, "height": 1080 },
+                "structure": [
+                    { "item": "viz_canvas_bg", "type": "block", "position": { "x": 0, "y": 0, "w": 1920, "h": 1080 } },
+                    { "item": "viz_kpi", "type": "block", "position": { "x": 20, "y": 20, "w": 400, "h": 120 } }
+                ]
+            }
+        }
+    },
+    "title": "{{PACK_LABEL}}",
+    "description": "{{DESCRIPTION}}"
+}
+```
+
+**WRONG patterns that agents generate (all rejected by schema):**
+```
+WRONG: "layout": { "type": "absolute", "options": {...}, "structure": [...] }
+       → flat format, no tabs wrapper
+
+WRONG: "layout": { "type": "absolute", "layoutDefinitions": { "tabLayout": { "tabs": [...] } } }
+       → "type" at top level + nested tabLayout
+
+WRONG: "layout": { ..., "options": { "width": 1920, "display": "auto-scale" } }
+       → "display" is not a valid layout option
+
+RIGHT: "layout": { "globalInputs": [], "tabs": { "items": [...] }, "layoutDefinitions": { "layout_main": { "type": "absolute", ... } } }
+       → no "type" at top level, named layouts in layoutDefinitions
+```
 
 ## Drilldown from custom vizs
 
