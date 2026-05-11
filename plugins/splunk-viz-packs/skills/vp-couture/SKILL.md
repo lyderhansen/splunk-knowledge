@@ -232,6 +232,17 @@ Before building, the agent (or subagent) MUST load:
 - `ds-create` from `splunk-dashboard-studio` — dashboard hard defaults
   (canvas 1920×1080, fontFamily, fontSize, markdown sizing)
 - `spl-gotchas` from `splunk-spl` — SPL traps for data source queries
+- `ds-int-tabs` from `splunk-dashboard-studio` — REQUIRED when the
+  dashboard uses tabs. The tab schema is NOT an array on `layout.tabs`.
+  It requires `layout.tabs.items` + `layout.layoutDefinitions` with
+  named layout IDs, and the root `layout` must NOT have a `type`
+  property. Getting this wrong produces 4+ silent validation errors.
+
+**Conditional loads — triggered by brief content:**
+- If the design brief mentions "tabs", "multi-view", or "tab bar":
+  MUST also load `ds-int-tabs` before writing any layout JSON.
+- If the dashboard uses drilldowns between tabs: MUST also load
+  `ds-int-drilldowns` and `ds-int-tokens`.
 
 Missing any of these produces broken output with no obvious error.
 

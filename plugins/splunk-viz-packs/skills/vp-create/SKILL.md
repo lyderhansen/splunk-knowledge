@@ -944,6 +944,34 @@ WRONG: defining a viz in "visualizations" but not placing it in any structure ar
 array.** If a viz is not placed in the layout, DELETE it from
 `visualizations`. Orphaned vizs cause schema validation errors.
 
+**Global elements in tabbed dashboards:** There is NO shared structure
+area across tabs. Canvas background, banner, accent line, and title
+markdown MUST be repeated in EACH tab's `structure` array. If you
+define `viz_canvas_bg` once but only place it in tab 1's structure,
+tab 2 will have no background.
+
+## Ad-hoc search compatibility
+
+Custom vizs are used in TWO contexts: Dashboard Studio and ad-hoc
+search (Classic UI). The ad-hoc search environment differs:
+
+| Property | Dashboard Studio | Ad-hoc search |
+|---|---|---|
+| Theme | From dashboard JSON config | Page theme (usually light) |
+| Panel size | Fixed by `position` in structure | Resizable by user |
+| Formatter | Settings sidebar in editor | Format dropdown in viz tab |
+| Background | Controlled by `splunk.rectangle` | White panel bg (light theme) |
+
+**Formatter must work in both:** Every `<splunk-control-group>` must
+have sensible defaults that render correctly on BOTH dark and light
+backgrounds. The viz must auto-detect theme via `getCurrentTheme()`
+(see B18) so it doesn't render dark-on-dark or light-on-light.
+
+**Test in ad-hoc search BEFORE shipping:** Run a demo query, switch to
+Visualization tab, select the custom viz, verify it renders correctly
+on the white background. If text is invisible, the theme detection is
+broken.
+
 ## Drilldown from custom vizs
 
 Custom Canvas vizs can fire drilldown events that navigate to other
