@@ -233,13 +233,13 @@ dashboards that work immediately after install — no index needed.
 
 ```ini
 [{{PACK_ID}}_demo_kpis]
-filename = demo_kpis.csv
+filename = {{PACK_ID}}_demo_kpis.csv
 
 [{{PACK_ID}}_demo_timeseries]
-filename = demo_timeseries.csv
+filename = {{PACK_ID}}_demo_timeseries.csv
 
 [{{PACK_ID}}_demo_table]
-filename = demo_table.csv
+filename = {{PACK_ID}}_demo_table.csv
 ```
 
 ### CSV file conventions

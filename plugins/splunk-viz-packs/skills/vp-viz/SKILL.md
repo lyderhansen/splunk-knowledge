@@ -738,11 +738,11 @@ to the demo CSV column names. Color settings default to theme accent.
 </form>
 
 <form class="splunk-formatter-section" section-label="Data display">
-    <splunk-control-group label="Label" help="Text shown below the value">
-        <splunk-text-input name="{{VIZ_NAMESPACE}}.label" value="">
+    <splunk-control-group label="Label" help="Text shown below the value (free-text, can be empty)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.label" value="Label">
         </splunk-text-input>
     </splunk-control-group>
-    <splunk-control-group label="Unit" help="Unit suffix (%, ms, $)">
+    <splunk-control-group label="Unit" help="Unit suffix (%, ms, $) — leave empty for no unit">
         <splunk-text-input name="{{VIZ_NAMESPACE}}.unit" value="">
         </splunk-text-input>
     </splunk-control-group>

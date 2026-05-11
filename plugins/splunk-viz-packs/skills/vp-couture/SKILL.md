@@ -575,13 +575,22 @@ default to full-bleed hero every time — that's an AI-lazy habit.
 **Strip banner recipe:**
 ```
 structure order:
-  1. splunk.rectangle (full-width strip, y=0, h=70, brand accent fill)
+  1. splunk.rectangle (full-width strip, y=0, h=70, GRADIENT fill — 
+     NEVER solid single-color. Use 2-3 stop gradient from brand dark
+     to brand primary, or dark-to-slightly-lighter. A solid-color
+     banner is anti-pattern #6.)
   2. splunk.image     (logo, left-aligned inside strip)
   3. splunk.markdown  (title, right of logo inside strip)
-  4. splunk.rectangle (1px accent line at y=70)
+  4. splunk.rectangle (1px accent line at y=70, brand accent color)
   5. splunk.rectangle (panel shadow cards below strip)
   6. custom vizs      (data panels, y starts at ~90)
 ```
+
+**The banner rectangle MUST use a gradient fill**, not a solid color.
+In Dashboard Studio, use a `splunk.rectangle` with a subtle gradient
+(e.g., `fillColor` from `#1A0000` to `#2D0000` for Netflix, or
+`#000000` to `#0A1A0A` for Uber). If the brand accent is bold (red,
+green), tint the gradient toward it at 5-10% — don't fill solid.
 
 **Side hero recipe:**
 ```
