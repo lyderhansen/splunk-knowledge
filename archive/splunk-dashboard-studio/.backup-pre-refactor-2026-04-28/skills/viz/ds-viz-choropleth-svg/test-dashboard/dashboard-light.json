@@ -1,0 +1,464 @@
+{
+  "title": "ds-viz-choropleth-svg - option matrix (light)",
+  "description": "Test bench for splunk.choropleth.svg. Verifies all 5 documented options (svg, areaIds, areaValues, areaColors, backgroundColor). Panels 1-4 use a simple 5-rack floor plan to exercise each option in isolation. Panels 5-9 demonstrate richer SVGs (office floor plan, network topology, world continents, datacenter rack rows, pipeline process flow) so engineers see how to wire production-grade SVGs without changing any of the 5 options.",
+  "defaults": {
+    "dataSources": {
+      "global": {
+        "options": {
+          "queryParameters": {
+            "earliest": "-24h@h",
+            "latest": "now"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": false,
+        "showLastUpdated": false
+      }
+    }
+  },
+  "dataSources": {
+    "ds_racks": {
+      "type": "ds.search",
+      "name": "5-rack floor plan - rack id matches the SVG path id, load is 0-100",
+      "options": {
+        "query": "| makeresults count=5 | streamstats count as i | eval rack=case(i==1,\"RACK-A\",i==2,\"RACK-B\",i==3,\"RACK-C\",i==4,\"RACK-D\",i==5,\"RACK-E\"), load=case(i==1,12,i==2,47,i==3,68,i==4,85,i==5,95) | table rack load"
+      }
+    },
+    "ds_floor_rooms": {
+      "type": "ds.search",
+      "name": "office room occupancy - room id matches the SVG path id, occupancy is 0-100 percent",
+      "options": {
+        "query": "| makeresults count=7 | streamstats count as i | eval room=case(i==1,\"LOBBY\",i==2,\"MEETING-1\",i==3,\"MEETING-2\",i==4,\"OPEN-PLAN\",i==5,\"KITCHEN\",i==6,\"SERVER-RM\",i==7,\"OPS-DESK\"), occupancy=case(i==1,22,i==2,8,i==3,92,i==4,71,i==5,35,i==6,100,i==7,58) | table room occupancy"
+      }
+    },
+    "ds_topology": {
+      "type": "ds.search",
+      "name": "service topology - node id matches the SVG path id, errors per minute",
+      "options": {
+        "query": "| makeresults count=8 | streamstats count as i | eval node=case(i==1,\"EDGE-LB\",i==2,\"API-GW\",i==3,\"SVC-AUTH\",i==4,\"SVC-ORDERS\",i==5,\"SVC-PAYMENTS\",i==6,\"DB-PRIMARY\",i==7,\"CACHE\",i==8,\"QUEUE\"), errors=case(i==1,3,i==2,1,i==3,0,i==4,0,i==5,47,i==6,12,i==7,0,i==8,2) | table node errors"
+      }
+    },
+    "ds_continents": {
+      "type": "ds.search",
+      "name": "continent users - continent id matches the SVG path id (NA SA EU AF AS OC)",
+      "options": {
+        "query": "| makeresults count=6 | streamstats count as i | eval continent=case(i==1,\"NA\",i==2,\"SA\",i==3,\"EU\",i==4,\"AF\",i==5,\"AS\",i==6,\"OC\"), users=case(i==1,4200,i==2,1100,i==3,3800,i==4,420,i==5,5600,i==6,380) | table continent users"
+      }
+    },
+    "ds_dc_grid": {
+      "type": "ds.search",
+      "name": "datacenter rack grid 4x5 - rack id matches the SVG path id, watts per rack",
+      "options": {
+        "query": "| makeresults count=20 | streamstats count as i | eval rack=case(i==1,\"A1\",i==2,\"A2\",i==3,\"A3\",i==4,\"A4\",i==5,\"A5\",i==6,\"B1\",i==7,\"B2\",i==8,\"B3\",i==9,\"B4\",i==10,\"B5\",i==11,\"C1\",i==12,\"C2\",i==13,\"C3\",i==14,\"C4\",i==15,\"C5\",i==16,\"D1\",i==17,\"D2\",i==18,\"D3\",i==19,\"D4\",i==20,\"D5\"), watts=case(i==1,4200,i==2,3100,i==3,2800,i==4,5200,i==5,4700,i==6,1900,i==7,2400,i==8,3000,i==9,3500,i==10,4100,i==11,5800,i==12,5500,i==13,4900,i==14,4300,i==15,3700,i==16,2200,i==17,2700,i==18,3200,i==19,3900,i==20,4400) | table rack watts"
+      }
+    },
+    "ds_pipeline": {
+      "type": "ds.search",
+      "name": "pipeline stage lag - stage id matches the SVG path id, lag in ms",
+      "options": {
+        "query": "| makeresults count=6 | streamstats count as i | eval stage=case(i==1,\"INGEST\",i==2,\"PARSE\",i==3,\"ENRICH\",i==4,\"INDEX\",i==5,\"SEARCH\",i==6,\"DELIVER\"), lag_ms=case(i==1,12,i==2,28,i==3,145,i==4,41,i==5,89,i==6,18) | table stage lag_ms"
+      }
+    }
+  },
+  "visualizations": {
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# `splunk.choropleth.svg` - option matrix\n\nThe SVG choropleth fills regions of an arbitrary SVG image with colour driven by a metric. Use it for **floor plans**, **building schematics**, **device topology**, or any bespoke geometry that has no Leaflet basemap.\n\n**All options from the 10.4 PDF (5 total):**\n\n- `svg`* (required) - literal SVG markup string OR an `svg+xml` data URI. Web URLs are documented as **not supported** per the prerequisites, though the PDF's multiFormat() example uses one. Stick to literal / data-URI.\n- `areaIds` - DOS string binding the column whose values match `path id=` attributes in the SVG.\n- `areaValues` - DOS string binding the numeric column used for fill colour.\n- `areaColors` - DOS string for the fill colour mapping (typically `rangeValue` / `gradient` / `multiFormat`).\n- `backgroundColor` - panel background behind the SVG.\n\n**Data shape:** the search must return a string column matching path IDs and a numeric column for the metric.\n\n**Panels 1-4** use a tiny 5-rack SVG so each option (default palette, threshold rangeValue, gradient, backgroundColor) is exercised in isolation.\n\n**Panels 5-9** demonstrate richer SVGs with the same five options - see how the choropleth handles real-world geometry: an office floor plan with rooms of varying shapes, a network topology with rectangular service boxes, a stylised world-continents map, a dense datacenter rack grid (20 racks), and a horizontal pipeline process flow.",
+        "fontSize": "default",
+        "backgroundColor": "transparent",
+        "fontColor": "#3C444D"
+      }
+    },
+    "viz_default_colors": {
+      "type": "splunk.choropleth.svg",
+      "title": "1. Default colours (rangeValue palette)",
+      "description": "areaIds + areaValues only. Default areaColors uses the built-in rangeValue palette. Verifies the minimal contract.",
+      "dataSources": {
+        "primary": "ds_racks"
+      },
+      "options": {
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 600 300\"><rect x=\"0\" y=\"0\" width=\"600\" height=\"300\" fill=\"#EFE7D3\"/><text x=\"300\" y=\"24\" text-anchor=\"middle\" fill=\"#3C444D\" font-family=\"sans-serif\" font-size=\"14\">Datacenter Floor</text><path id=\"RACK-A\" d=\"M40,60 h100 v180 h-100 z\" fill=\"#7A6E50\"/><path id=\"RACK-B\" d=\"M160,60 h100 v180 h-100 z\" fill=\"#7A6E50\"/><path id=\"RACK-C\" d=\"M280,60 h100 v180 h-100 z\" fill=\"#7A6E50\"/><path id=\"RACK-D\" d=\"M400,60 h100 v180 h-100 z\" fill=\"#7A6E50\"/><path id=\"RACK-E\" d=\"M520,60 h60 v180 h-60 z\" fill=\"#7A6E50\"/><text x=\"90\" y=\"160\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"14\">A</text><text x=\"210\" y=\"160\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"14\">B</text><text x=\"330\" y=\"160\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"14\">C</text><text x=\"450\" y=\"160\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"14\">D</text><text x=\"550\" y=\"160\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"14\">E</text></svg>",
+        "areaIds": "> primary | seriesByName(\"rack\")",
+        "areaValues": "> primary | seriesByName(\"load\")"
+      }
+    },
+    "viz_range_colors": {
+      "type": "splunk.choropleth.svg",
+      "title": "2. Custom areaColors via rangeValue(thresholdConfig)",
+      "description": "Explicit threshold palette: green / yellow / red driven by load value.",
+      "dataSources": {
+        "primary": "ds_racks"
+      },
+      "options": {
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 600 300\"><rect x=\"0\" y=\"0\" width=\"600\" height=\"300\" fill=\"#EFE7D3\"/><path id=\"RACK-A\" d=\"M40,60 h100 v180 h-100 z\" fill=\"#7A6E50\"/><path id=\"RACK-B\" d=\"M160,60 h100 v180 h-100 z\" fill=\"#7A6E50\"/><path id=\"RACK-C\" d=\"M280,60 h100 v180 h-100 z\" fill=\"#7A6E50\"/><path id=\"RACK-D\" d=\"M400,60 h100 v180 h-100 z\" fill=\"#7A6E50\"/><path id=\"RACK-E\" d=\"M520,60 h60 v180 h-60 z\" fill=\"#7A6E50\"/></svg>",
+        "areaIds": "> primary | seriesByName(\"rack\")",
+        "areaValues": "> primary | seriesByName(\"load\")",
+        "areaColors": "> primary | seriesByName(\"load\") | rangeValue(thresholdConfig)"
+      },
+      "context": {
+        "thresholdConfig": [
+          {
+            "from": 80,
+            "value": "#C62368"
+          },
+          {
+            "from": 50,
+            "to": 80,
+            "value": "#B36B00"
+          },
+          {
+            "to": 50,
+            "value": "#0E7C70"
+          }
+        ]
+      }
+    },
+    "viz_gradient_colors": {
+      "type": "splunk.choropleth.svg",
+      "title": "3. areaColors via gradient(...)",
+      "description": "Smooth two-stop gradient between low and high. Useful for heatmap-style visualizations.",
+      "dataSources": {
+        "primary": "ds_racks"
+      },
+      "options": {
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 600 300\"><rect x=\"0\" y=\"0\" width=\"600\" height=\"300\" fill=\"#EFE7D3\"/><path id=\"RACK-A\" d=\"M40,60 h100 v180 h-100 z\" fill=\"#7A6E50\"/><path id=\"RACK-B\" d=\"M160,60 h100 v180 h-100 z\" fill=\"#7A6E50\"/><path id=\"RACK-C\" d=\"M280,60 h100 v180 h-100 z\" fill=\"#7A6E50\"/><path id=\"RACK-D\" d=\"M400,60 h100 v180 h-100 z\" fill=\"#7A6E50\"/><path id=\"RACK-E\" d=\"M520,60 h60 v180 h-60 z\" fill=\"#7A6E50\"/></svg>",
+        "areaIds": "> primary | seriesByName(\"rack\")",
+        "areaValues": "> primary | seriesByName(\"load\")",
+        "areaColors": "> primary | seriesByName(\"load\") | gradient(gradientConfig)"
+      },
+      "context": {
+        "gradientConfig": {
+          "colors": [
+            "#0E7C70",
+            "#B36B00",
+            "#C62368"
+          ]
+        }
+      }
+    },
+    "viz_background": {
+      "type": "splunk.choropleth.svg",
+      "title": "4. backgroundColor override",
+      "description": "Custom backgroundColor visible behind the SVG. The SVG itself has no opaque rect so the panel BG bleeds through.",
+      "dataSources": {
+        "primary": "ds_racks"
+      },
+      "options": {
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 600 300\"><path id=\"RACK-A\" d=\"M40,60 h100 v180 h-100 z\"/><path id=\"RACK-B\" d=\"M160,60 h100 v180 h-100 z\"/><path id=\"RACK-C\" d=\"M280,60 h100 v180 h-100 z\"/><path id=\"RACK-D\" d=\"M400,60 h100 v180 h-100 z\"/><path id=\"RACK-E\" d=\"M520,60 h60 v180 h-60 z\"/></svg>",
+        "areaIds": "> primary | seriesByName(\"rack\")",
+        "areaValues": "> primary | seriesByName(\"load\")",
+        "areaColors": "> primary | seriesByName(\"load\") | rangeValue(thresholdConfig)",
+        "backgroundColor": "#D8E0F2"
+      },
+      "context": {
+        "thresholdConfig": [
+          {
+            "from": 80,
+            "value": "#C62368"
+          },
+          {
+            "from": 50,
+            "to": 80,
+            "value": "#B36B00"
+          },
+          {
+            "to": 50,
+            "value": "#0E7C70"
+          }
+        ]
+      }
+    },
+    "viz_section_richer": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## Real-world SVG patterns\n\nThe panels below use larger, more representative SVGs so engineers can see exactly which kinds of bespoke geometry the choropleth viz can drive. Every panel still uses only the same five documented options - the magic is in the SVG markup, not the configuration.",
+        "fontSize": "default",
+        "backgroundColor": "transparent",
+        "fontColor": "#3C444D"
+      }
+    },
+    "viz_office_floor": {
+      "type": "splunk.choropleth.svg",
+      "title": "5. Office floor plan - room occupancy",
+      "description": "An office building schematic with seven rooms. Each room is a path with an id; areaValues is occupancy %. Threshold palette flags the kitchen on a coffee break (low) and the meeting room mid-standup (high).",
+      "dataSources": {
+        "primary": "ds_floor_rooms"
+      },
+      "options": {
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 800 400\"><rect x=\"0\" y=\"0\" width=\"800\" height=\"400\" fill=\"#F6F1E4\"/><rect x=\"20\" y=\"20\" width=\"760\" height=\"360\" fill=\"none\" stroke=\"#A89C7A\" stroke-width=\"3\"/><path id=\"LOBBY\" d=\"M20,20 h180 v160 h-180 z\" fill=\"#D8D2C0\" stroke=\"#A89C7A\" stroke-width=\"2\"/><path id=\"MEETING-1\" d=\"M200,20 h150 v100 h-150 z\" fill=\"#D8D2C0\" stroke=\"#A89C7A\" stroke-width=\"2\"/><path id=\"MEETING-2\" d=\"M350,20 h140 v100 h-140 z\" fill=\"#D8D2C0\" stroke=\"#A89C7A\" stroke-width=\"2\"/><path id=\"OPEN-PLAN\" d=\"M200,120 h290 v200 h-290 z\" fill=\"#D8D2C0\" stroke=\"#A89C7A\" stroke-width=\"2\"/><path id=\"KITCHEN\" d=\"M490,20 h150 v140 h-150 z\" fill=\"#D8D2C0\" stroke=\"#A89C7A\" stroke-width=\"2\"/><path id=\"SERVER-RM\" d=\"M640,20 h140 v160 h-140 z\" fill=\"#D8D2C0\" stroke=\"#A89C7A\" stroke-width=\"2\"/><path id=\"OPS-DESK\" d=\"M490,160 h290 v220 h-290 z\" fill=\"#D8D2C0\" stroke=\"#A89C7A\" stroke-width=\"2\"/><path id=\"CORRIDOR\" d=\"M20,180 h180 v200 h-180 z M200,320 h290 v60 h-290 z\" fill=\"#E8DEC4\" stroke=\"#A89C7A\" stroke-width=\"2\"/><text x=\"110\" y=\"105\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"13\">Lobby</text><text x=\"275\" y=\"75\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"12\">Meeting 1</text><text x=\"420\" y=\"75\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"12\">Meeting 2</text><text x=\"345\" y=\"225\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"13\">Open Plan</text><text x=\"565\" y=\"95\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"12\">Kitchen</text><text x=\"710\" y=\"105\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"12\">Server Rm</text><text x=\"635\" y=\"275\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"13\">Ops Desk</text><text x=\"110\" y=\"285\" text-anchor=\"middle\" fill=\"#7A6E50\" font-family=\"sans-serif\" font-size=\"11\" font-style=\"italic\">corridor</text></svg>",
+        "areaIds": "> primary | seriesByName(\"room\")",
+        "areaValues": "> primary | seriesByName(\"occupancy\")",
+        "areaColors": "> primary | seriesByName(\"occupancy\") | rangeValue(occupancyConfig)"
+      },
+      "context": {
+        "occupancyConfig": [
+          {
+            "from": 80,
+            "value": "#C62368"
+          },
+          {
+            "from": 50,
+            "to": 80,
+            "value": "#B36B00"
+          },
+          {
+            "from": 20,
+            "to": 50,
+            "value": "#0E7C70"
+          },
+          {
+            "to": 20,
+            "value": "#A89C7A"
+          }
+        ]
+      }
+    },
+    "viz_topology": {
+      "type": "splunk.choropleth.svg",
+      "title": "6. Network topology - service health",
+      "description": "Boxes represent services / infrastructure components, lines are dependencies. Each service box is a path; areaValues is errors per minute. SVC-PAYMENTS is on fire.",
+      "dataSources": {
+        "primary": "ds_topology"
+      },
+      "options": {
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 800 400\"><rect x=\"0\" y=\"0\" width=\"800\" height=\"400\" fill=\"#F6F1E4\"/><line x1=\"160\" y1=\"100\" x2=\"260\" y2=\"100\" stroke=\"#7B6B4A\" stroke-width=\"2\"/><line x1=\"380\" y1=\"100\" x2=\"460\" y2=\"60\" stroke=\"#7B6B4A\" stroke-width=\"2\"/><line x1=\"380\" y1=\"100\" x2=\"460\" y2=\"140\" stroke=\"#7B6B4A\" stroke-width=\"2\"/><line x1=\"380\" y1=\"100\" x2=\"460\" y2=\"220\" stroke=\"#7B6B4A\" stroke-width=\"2\"/><line x1=\"580\" y1=\"60\" x2=\"680\" y2=\"100\" stroke=\"#7B6B4A\" stroke-width=\"2\"/><line x1=\"580\" y1=\"140\" x2=\"680\" y2=\"100\" stroke=\"#7B6B4A\" stroke-width=\"2\"/><line x1=\"580\" y1=\"220\" x2=\"680\" y2=\"260\" stroke=\"#7B6B4A\" stroke-width=\"2\"/><line x1=\"580\" y1=\"220\" x2=\"680\" y2=\"320\" stroke=\"#7B6B4A\" stroke-width=\"2\"/><path id=\"EDGE-LB\" d=\"M40,70 h120 v60 h-120 z\" fill=\"#D8D2C0\" stroke=\"#7B6B4A\" stroke-width=\"2\"/><path id=\"API-GW\" d=\"M260,70 h120 v60 h-120 z\" fill=\"#D8D2C0\" stroke=\"#7B6B4A\" stroke-width=\"2\"/><path id=\"SVC-AUTH\" d=\"M460,30 h120 v60 h-120 z\" fill=\"#D8D2C0\" stroke=\"#7B6B4A\" stroke-width=\"2\"/><path id=\"SVC-ORDERS\" d=\"M460,110 h120 v60 h-120 z\" fill=\"#D8D2C0\" stroke=\"#7B6B4A\" stroke-width=\"2\"/><path id=\"SVC-PAYMENTS\" d=\"M460,190 h120 v60 h-120 z\" fill=\"#D8D2C0\" stroke=\"#7B6B4A\" stroke-width=\"2\"/><path id=\"DB-PRIMARY\" d=\"M680,70 h100 v60 h-100 z\" fill=\"#D8D2C0\" stroke=\"#7B6B4A\" stroke-width=\"2\"/><path id=\"CACHE\" d=\"M680,230 h100 v60 h-100 z\" fill=\"#D8D2C0\" stroke=\"#7B6B4A\" stroke-width=\"2\"/><path id=\"QUEUE\" d=\"M680,290 h100 v60 h-100 z\" fill=\"#D8D2C0\" stroke=\"#7B6B4A\" stroke-width=\"2\"/><text x=\"100\" y=\"105\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"12\">Edge LB</text><text x=\"320\" y=\"105\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"12\">API GW</text><text x=\"520\" y=\"65\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\">svc-auth</text><text x=\"520\" y=\"145\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\">svc-orders</text><text x=\"520\" y=\"225\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\">svc-payments</text><text x=\"730\" y=\"105\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\">db-primary</text><text x=\"730\" y=\"265\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\">cache</text><text x=\"730\" y=\"325\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\">queue</text></svg>",
+        "areaIds": "> primary | seriesByName(\"node\")",
+        "areaValues": "> primary | seriesByName(\"errors\")",
+        "areaColors": "> primary | seriesByName(\"errors\") | rangeValue(errorConfig)"
+      },
+      "context": {
+        "errorConfig": [
+          {
+            "from": 30,
+            "value": "#C62368"
+          },
+          {
+            "from": 5,
+            "to": 30,
+            "value": "#B36B00"
+          },
+          {
+            "from": 1,
+            "to": 5,
+            "value": "#B36B00"
+          },
+          {
+            "to": 1,
+            "value": "#0E7C70"
+          }
+        ]
+      }
+    },
+    "viz_world_continents": {
+      "type": "splunk.choropleth.svg",
+      "title": "7. World continents - simplified geometry",
+      "description": "Six continent silhouettes in equirectangular projection, traced from real coastline points (~25-50 vertices each) - recognisable but still stylised. NOT a real GIS-grade map - this is the pattern when you want continent-level shading without dragging in `geom geo_countries`. Use `splunk.map` with `geom geo_countries` if you need accurate country boundaries. The SVG embeds a graticule (lon/lat grid + equator) as non-`<path>` `<line>` decorations so they aren't picked up by the choropleth fill.",
+      "dataSources": {
+        "primary": "ds_continents"
+      },
+      "options": {
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 800 400\"><rect x=\"0\" y=\"0\" width=\"800\" height=\"400\" fill=\"#F6F1E4\"/><line x1=\"67\" y1=\"0\" x2=\"67\" y2=\"400\" stroke=\"#1A2A4A\" stroke-width=\"1\" stroke-dasharray=\"2,3\"/><line x1=\"133\" y1=\"0\" x2=\"133\" y2=\"400\" stroke=\"#1A2A4A\" stroke-width=\"1\" stroke-dasharray=\"2,3\"/><line x1=\"200\" y1=\"0\" x2=\"200\" y2=\"400\" stroke=\"#1A2A4A\" stroke-width=\"1\" stroke-dasharray=\"2,3\"/><line x1=\"267\" y1=\"0\" x2=\"267\" y2=\"400\" stroke=\"#1A2A4A\" stroke-width=\"1\" stroke-dasharray=\"2,3\"/><line x1=\"333\" y1=\"0\" x2=\"333\" y2=\"400\" stroke=\"#1A2A4A\" stroke-width=\"1\" stroke-dasharray=\"2,3\"/><line x1=\"400\" y1=\"0\" x2=\"400\" y2=\"400\" stroke=\"#1A2A4A\" stroke-width=\"1\" stroke-dasharray=\"2,3\"/><line x1=\"467\" y1=\"0\" x2=\"467\" y2=\"400\" stroke=\"#1A2A4A\" stroke-width=\"1\" stroke-dasharray=\"2,3\"/><line x1=\"533\" y1=\"0\" x2=\"533\" y2=\"400\" stroke=\"#1A2A4A\" stroke-width=\"1\" stroke-dasharray=\"2,3\"/><line x1=\"600\" y1=\"0\" x2=\"600\" y2=\"400\" stroke=\"#1A2A4A\" stroke-width=\"1\" stroke-dasharray=\"2,3\"/><line x1=\"667\" y1=\"0\" x2=\"667\" y2=\"400\" stroke=\"#1A2A4A\" stroke-width=\"1\" stroke-dasharray=\"2,3\"/><line x1=\"733\" y1=\"0\" x2=\"733\" y2=\"400\" stroke=\"#1A2A4A\" stroke-width=\"1\" stroke-dasharray=\"2,3\"/><line x1=\"0\" y1=\"67\" x2=\"800\" y2=\"67\" stroke=\"#1A2A4A\" stroke-width=\"1\" stroke-dasharray=\"2,3\"/><line x1=\"0\" y1=\"133\" x2=\"800\" y2=\"133\" stroke=\"#1A2A4A\" stroke-width=\"1\" stroke-dasharray=\"2,3\"/><line x1=\"0\" y1=\"267\" x2=\"800\" y2=\"267\" stroke=\"#1A2A4A\" stroke-width=\"1\" stroke-dasharray=\"2,3\"/><line x1=\"0\" y1=\"333\" x2=\"800\" y2=\"333\" stroke=\"#1A2A4A\" stroke-width=\"1\" stroke-dasharray=\"2,3\"/><line x1=\"0\" y1=\"200\" x2=\"800\" y2=\"200\" stroke=\"#2A3A6B\" stroke-width=\"1.2\"/><path id=\"NA\" d=\"M26.7,54.4 L28.9,48.9 L53.3,42.2 L71.1,43.3 L115.6,44.4 L144.4,36.7 L177.8,37.8 L211.1,31.1 L240.0,28.9 L255.6,37.8 L266.7,51.1 L277.8,66.7 L271.1,82.2 L275.6,87.8 L266.7,94.4 L253.3,100.0 L246.7,103.3 L242.2,107.8 L235.6,112.2 L231.1,115.6 L226.7,122.2 L222.2,128.9 L221.1,137.8 L221.1,144.4 L217.8,144.4 L215.6,140.0 L211.1,134.4 L202.2,133.3 L191.1,135.6 L184.4,142.2 L184.4,150.0 L188.9,157.8 L195.6,160.0 L204.4,164.4 L206.7,168.9 L204.4,160.0 L200.0,153.3 L188.9,151.1 L206.7,171.1 L214.4,178.9 L224.4,180.0 L226.7,182.2 L215.6,181.1 L211.1,175.6 L206.7,172.2 L195.6,164.4 L186.7,164.4 L177.8,162.2 L166.7,157.8 L160.0,148.9 L155.6,150.0 L146.7,137.8 L144.4,128.9 L140.0,127.8 L137.8,124.4 L131.1,120.0 L128.9,115.6 L126.7,111.1 L124.4,104.4 L124.4,95.6 L115.6,88.9 L111.1,80.0 L100.0,73.3 L88.9,68.9 L71.1,66.7 L62.2,65.6 L44.4,66.7 L33.3,62.2 Z\" fill=\"#D8D2C0\" stroke=\"#7B6B4A\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/><path id=\"SA\" d=\"M228.9,182.2 L240.0,173.3 L253.3,175.6 L271.1,182.2 L284.4,188.9 L288.9,200.0 L293.3,204.4 L302.2,206.7 L311.1,206.7 L322.2,217.8 L313.3,228.9 L313.3,237.8 L308.9,248.9 L297.8,251.1 L293.3,255.6 L280.0,276.7 L275.6,277.1 L271.1,284.4 L262.2,293.3 L255.6,300.0 L251.1,311.1 L247.8,321.1 L242.2,320.0 L235.6,311.1 L237.8,300.0 L240.0,288.9 L242.2,273.3 L242.2,255.6 L244.4,244.4 L226.7,217.8 L222.2,208.9 L221.1,202.2 L224.4,197.8 L228.9,191.1 L228.9,182.2 Z\" fill=\"#D8D2C0\" stroke=\"#7B6B4A\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/><path id=\"EU\" d=\"M378.9,117.8 L378.9,104.4 L395.6,102.2 L388.9,93.3 L402.2,86.7 L408.9,84.4 L417.8,80.0 L424.4,78.9 L422.2,73.3 L426.7,71.1 L440.0,68.9 L448.9,66.7 L455.6,55.6 L466.7,48.9 L488.9,51.1 L511.1,48.9 L533.3,51.1 L533.3,66.7 L533.3,77.8 L528.9,84.4 L511.1,88.9 L506.7,95.6 L488.9,100.0 L482.2,100.0 L471.1,97.8 L462.2,108.9 L455.6,111.1 L448.9,120.0 L444.4,113.3 L440.0,111.1 L435.6,115.6 L433.3,120.0 L426.7,111.1 L422.2,104.4 L417.8,102.2 L406.7,106.7 L397.8,117.8 L388.9,120.0 L380.0,117.8 Z\" fill=\"#D8D2C0\" stroke=\"#7B6B4A\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/><path id=\"AF\" d=\"M373.3,133.3 L380.0,126.7 L400.0,120.0 L422.2,117.8 L444.4,128.9 L457.8,131.1 L471.1,131.1 L473.3,137.8 L482.2,151.1 L484.4,162.2 L495.6,171.1 L513.3,174.4 L513.3,188.9 L500.0,200.0 L488.9,222.2 L488.9,233.3 L488.9,248.9 L477.8,255.6 L471.1,264.4 L455.6,275.6 L444.4,276.7 L435.6,264.4 L431.1,251.1 L426.7,233.3 L426.7,217.8 L420.0,204.4 L420.0,193.3 L417.8,186.7 L406.7,186.7 L395.6,188.9 L384.4,191.1 L371.1,182.2 L362.2,168.9 L362.2,153.3 L366.7,140.0 L373.3,133.3 Z\" fill=\"#D8D2C0\" stroke=\"#7B6B4A\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/><path id=\"AS\" d=\"M462.2,108.9 L471.1,106.7 L482.2,104.4 L488.9,104.4 L500.0,108.9 L504.4,113.3 L515.6,115.6 L522.2,111.1 L524.4,106.7 L520.0,100.0 L533.3,95.6 L544.4,93.3 L555.6,86.7 L566.7,80.0 L533.3,66.7 L533.3,51.1 L566.7,40.0 L611.1,37.8 L644.4,35.6 L688.9,37.8 L733.3,40.0 L766.7,44.4 L800.0,53.3 L777.8,66.7 L755.6,82.2 L737.8,95.6 L717.8,100.0 L713.3,108.9 L711.1,115.6 L706.7,122.2 L702.2,124.4 L691.1,131.1 L684.4,122.2 L680.0,126.7 L668.9,131.1 L666.7,137.8 L660.0,146.7 L655.6,148.9 L644.4,153.3 L640.0,160.0 L637.8,175.6 L633.3,180.0 L631.1,180.0 L628.9,188.9 L624.4,195.6 L622.2,186.7 L617.8,173.3 L613.3,164.4 L608.9,157.8 L602.2,153.3 L597.8,151.1 L593.3,153.3 L588.9,157.8 L582.2,162.2 L577.8,171.1 L573.3,181.1 L571.1,182.2 L564.4,171.1 L562.2,162.2 L555.6,153.3 L551.1,148.9 L548.9,146.7 L537.8,144.4 L528.9,144.4 L524.4,144.4 L520.0,143.3 L515.6,144.4 L511.1,140.0 L506.7,133.3 L495.6,122.2 L488.9,120.0 L482.2,120.0 L471.1,120.0 L462.2,108.9 Z\" fill=\"#D8D2C0\" stroke=\"#7B6B4A\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/><path id=\"OC\" d=\"M653.3,246.7 L655.6,271.1 L657.8,276.7 L671.1,273.3 L688.9,271.1 L706.7,277.8 L717.8,284.4 L726.7,284.4 L733.3,284.4 L735.6,275.6 L740.0,262.2 L740.0,255.6 L735.6,251.1 L731.1,246.7 L724.4,240.0 L720.0,231.1 L715.6,222.2 L708.9,235.6 L704.4,235.6 L704.4,226.7 L697.8,226.7 L688.9,226.7 L686.7,233.3 L677.8,233.3 L675.6,235.6 L671.1,240.0 L662.2,244.4 L653.3,246.7 Z\" fill=\"#D8D2C0\" stroke=\"#7B6B4A\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/><text x=\"178\" y=\"89\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\" font-weight=\"600\" pointer-events=\"none\">N. America</text><text x=\"267\" y=\"233\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\" font-weight=\"600\" pointer-events=\"none\">S. America</text><text x=\"449\" y=\"76\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\" font-weight=\"600\" pointer-events=\"none\">Europe</text><text x=\"449\" y=\"193\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\" font-weight=\"600\" pointer-events=\"none\">Africa</text><text x=\"611\" y=\"93\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\" font-weight=\"600\" pointer-events=\"none\">Asia</text><text x=\"698\" y=\"256\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\" font-weight=\"600\" pointer-events=\"none\">Oceania</text></svg>",
+        "areaIds": "> primary | seriesByName(\"continent\")",
+        "areaValues": "> primary | seriesByName(\"users\")",
+        "areaColors": "> primary | seriesByName(\"users\") | gradient(usersGradient)"
+      },
+      "context": {
+        "usersGradient": {
+          "colors": [
+            "#D8E0F2",
+            "#0E7C70",
+            "#B36B00"
+          ]
+        }
+      }
+    },
+    "viz_dc_grid": {
+      "type": "splunk.choropleth.svg",
+      "title": "8. Datacenter rack grid - 4 rows x 5 columns",
+      "description": "20 racks arranged as four rows (A-D) with cooling units between. Verifies the SVG choropleth scales to real-density floor plans without performance issues.",
+      "dataSources": {
+        "primary": "ds_dc_grid"
+      },
+      "options": {
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 800 400\"><rect x=\"0\" y=\"0\" width=\"800\" height=\"400\" fill=\"#F6F1E4\"/><rect x=\"40\" y=\"20\" width=\"720\" height=\"40\" fill=\"#E8DEC4\" stroke=\"#A89C7A\" stroke-width=\"1\"/><text x=\"400\" y=\"45\" text-anchor=\"middle\" fill=\"#5A7090\" font-family=\"sans-serif\" font-size=\"12\">cooling unit (north)</text><rect x=\"40\" y=\"340\" width=\"720\" height=\"40\" fill=\"#E8DEC4\" stroke=\"#A89C7A\" stroke-width=\"1\"/><text x=\"400\" y=\"365\" text-anchor=\"middle\" fill=\"#5A7090\" font-family=\"sans-serif\" font-size=\"12\">cooling unit (south)</text><path id=\"A1\" d=\"M50,80 h120 v50 h-120 z\" fill=\"#D8D2C0\" stroke=\"#A89C7A\" stroke-width=\"1\"/><path id=\"A2\" d=\"M180,80 h120 v50 h-120 z\" fill=\"#D8D2C0\" stroke=\"#A89C7A\" stroke-width=\"1\"/><path id=\"A3\" d=\"M310,80 h120 v50 h-120 z\" fill=\"#D8D2C0\" stroke=\"#A89C7A\" stroke-width=\"1\"/><path id=\"A4\" d=\"M440,80 h120 v50 h-120 z\" fill=\"#D8D2C0\" stroke=\"#A89C7A\" stroke-width=\"1\"/><path id=\"A5\" d=\"M570,80 h120 v50 h-120 z\" fill=\"#D8D2C0\" stroke=\"#A89C7A\" stroke-width=\"1\"/><path id=\"B1\" d=\"M50,140 h120 v50 h-120 z\" fill=\"#D8D2C0\" stroke=\"#A89C7A\" stroke-width=\"1\"/><path id=\"B2\" d=\"M180,140 h120 v50 h-120 z\" fill=\"#D8D2C0\" stroke=\"#A89C7A\" stroke-width=\"1\"/><path id=\"B3\" d=\"M310,140 h120 v50 h-120 z\" fill=\"#D8D2C0\" stroke=\"#A89C7A\" stroke-width=\"1\"/><path id=\"B4\" d=\"M440,140 h120 v50 h-120 z\" fill=\"#D8D2C0\" stroke=\"#A89C7A\" stroke-width=\"1\"/><path id=\"B5\" d=\"M570,140 h120 v50 h-120 z\" fill=\"#D8D2C0\" stroke=\"#A89C7A\" stroke-width=\"1\"/><path id=\"C1\" d=\"M50,210 h120 v50 h-120 z\" fill=\"#D8D2C0\" stroke=\"#A89C7A\" stroke-width=\"1\"/><path id=\"C2\" d=\"M180,210 h120 v50 h-120 z\" fill=\"#D8D2C0\" stroke=\"#A89C7A\" stroke-width=\"1\"/><path id=\"C3\" d=\"M310,210 h120 v50 h-120 z\" fill=\"#D8D2C0\" stroke=\"#A89C7A\" stroke-width=\"1\"/><path id=\"C4\" d=\"M440,210 h120 v50 h-120 z\" fill=\"#D8D2C0\" stroke=\"#A89C7A\" stroke-width=\"1\"/><path id=\"C5\" d=\"M570,210 h120 v50 h-120 z\" fill=\"#D8D2C0\" stroke=\"#A89C7A\" stroke-width=\"1\"/><path id=\"D1\" d=\"M50,270 h120 v50 h-120 z\" fill=\"#D8D2C0\" stroke=\"#A89C7A\" stroke-width=\"1\"/><path id=\"D2\" d=\"M180,270 h120 v50 h-120 z\" fill=\"#D8D2C0\" stroke=\"#A89C7A\" stroke-width=\"1\"/><path id=\"D3\" d=\"M310,270 h120 v50 h-120 z\" fill=\"#D8D2C0\" stroke=\"#A89C7A\" stroke-width=\"1\"/><path id=\"D4\" d=\"M440,270 h120 v50 h-120 z\" fill=\"#D8D2C0\" stroke=\"#A89C7A\" stroke-width=\"1\"/><path id=\"D5\" d=\"M570,270 h120 v50 h-120 z\" fill=\"#D8D2C0\" stroke=\"#A89C7A\" stroke-width=\"1\"/><text x=\"110\" y=\"110\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\">A1</text><text x=\"240\" y=\"110\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\">A2</text><text x=\"370\" y=\"110\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\">A3</text><text x=\"500\" y=\"110\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\">A4</text><text x=\"630\" y=\"110\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\">A5</text><text x=\"110\" y=\"170\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\">B1</text><text x=\"240\" y=\"170\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\">B2</text><text x=\"370\" y=\"170\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\">B3</text><text x=\"500\" y=\"170\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\">B4</text><text x=\"630\" y=\"170\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\">B5</text><text x=\"110\" y=\"240\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\">C1</text><text x=\"240\" y=\"240\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\">C2</text><text x=\"370\" y=\"240\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\">C3</text><text x=\"500\" y=\"240\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\">C4</text><text x=\"630\" y=\"240\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\">C5</text><text x=\"110\" y=\"300\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\">D1</text><text x=\"240\" y=\"300\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\">D2</text><text x=\"370\" y=\"300\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\">D3</text><text x=\"500\" y=\"300\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\">D4</text><text x=\"630\" y=\"300\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"11\">D5</text></svg>",
+        "areaIds": "> primary | seriesByName(\"rack\")",
+        "areaValues": "> primary | seriesByName(\"watts\")",
+        "areaColors": "> primary | seriesByName(\"watts\") | gradient(wattsGradient)"
+      },
+      "context": {
+        "wattsGradient": {
+          "colors": [
+            "#D8E0F2",
+            "#0E7C70",
+            "#B36B00",
+            "#C62368"
+          ]
+        }
+      }
+    },
+    "viz_pipeline": {
+      "type": "splunk.choropleth.svg",
+      "title": "9. Pipeline process flow - stage latency",
+      "description": "Six pipeline stages drawn as chevrons. Each chevron is a path; areaValues is per-stage lag in ms. Drilldown payload returns the stage name and value when clicked.",
+      "dataSources": {
+        "primary": "ds_pipeline"
+      },
+      "options": {
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 800 200\"><rect x=\"0\" y=\"0\" width=\"800\" height=\"200\" fill=\"#F6F1E4\"/><path id=\"INGEST\"  d=\"M30,60 L150,60 L170,100 L150,140 L30,140 L50,100 Z\"   fill=\"#D8D2C0\" stroke=\"#7B6B4A\" stroke-width=\"2\"/><path id=\"PARSE\"   d=\"M155,60 L275,60 L295,100 L275,140 L155,140 L175,100 Z\" fill=\"#D8D2C0\" stroke=\"#7B6B4A\" stroke-width=\"2\"/><path id=\"ENRICH\"  d=\"M280,60 L400,60 L420,100 L400,140 L280,140 L300,100 Z\" fill=\"#D8D2C0\" stroke=\"#7B6B4A\" stroke-width=\"2\"/><path id=\"INDEX\"   d=\"M405,60 L525,60 L545,100 L525,140 L405,140 L425,100 Z\" fill=\"#D8D2C0\" stroke=\"#7B6B4A\" stroke-width=\"2\"/><path id=\"SEARCH\"  d=\"M530,60 L650,60 L670,100 L650,140 L530,140 L550,100 Z\" fill=\"#D8D2C0\" stroke=\"#7B6B4A\" stroke-width=\"2\"/><path id=\"DELIVER\" d=\"M655,60 L770,60 L770,140 L655,140 L675,100 Z\"   fill=\"#D8D2C0\" stroke=\"#7B6B4A\" stroke-width=\"2\"/><text x=\"100\" y=\"105\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"12\">Ingest</text><text x=\"225\" y=\"105\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"12\">Parse</text><text x=\"350\" y=\"105\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"12\">Enrich</text><text x=\"475\" y=\"105\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"12\">Index</text><text x=\"600\" y=\"105\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"12\">Search</text><text x=\"715\" y=\"105\" text-anchor=\"middle\" fill=\"#1A1A1A\" font-family=\"sans-serif\" font-size=\"12\">Deliver</text></svg>",
+        "areaIds": "> primary | seriesByName(\"stage\")",
+        "areaValues": "> primary | seriesByName(\"lag_ms\")",
+        "areaColors": "> primary | seriesByName(\"lag_ms\") | rangeValue(lagConfig)"
+      },
+      "context": {
+        "lagConfig": [
+          {
+            "from": 100,
+            "value": "#C62368"
+          },
+          {
+            "from": 50,
+            "to": 100,
+            "value": "#B36B00"
+          },
+          {
+            "from": 20,
+            "to": 50,
+            "value": "#0E7C70"
+          },
+          {
+            "to": 20,
+            "value": "#0E7C70"
+          }
+        ]
+      }
+    }
+  },
+  "inputs": {},
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 2680,
+      "display": "auto-scale",
+      "backgroundColor": "#FAEAD8"
+    },
+    "structure": [
+      {
+        "item": "viz_title",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 20,
+          "w": 1400,
+          "h": 420
+        }
+      },
+      {
+        "item": "viz_default_colors",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 460,
+          "w": 690,
+          "h": 380
+        }
+      },
+      {
+        "item": "viz_range_colors",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 460,
+          "w": 690,
+          "h": 380
+        }
+      },
+      {
+        "item": "viz_gradient_colors",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 860,
+          "w": 690,
+          "h": 380
+        }
+      },
+      {
+        "item": "viz_background",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 860,
+          "w": 690,
+          "h": 380
+        }
+      },
+      {
+        "item": "viz_section_richer",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 1260,
+          "w": 1400,
+          "h": 100
+        }
+      },
+      {
+        "item": "viz_office_floor",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 1380,
+          "w": 690,
+          "h": 460
+        }
+      },
+      {
+        "item": "viz_topology",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 1380,
+          "w": 690,
+          "h": 460
+        }
+      },
+      {
+        "item": "viz_world_continents",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 1860,
+          "w": 690,
+          "h": 460
+        }
+      },
+      {
+        "item": "viz_dc_grid",
+        "type": "block",
+        "position": {
+          "x": 730,
+          "y": 1860,
+          "w": 690,
+          "h": 460
+        }
+      },
+      {
+        "item": "viz_pipeline",
+        "type": "block",
+        "position": {
+          "x": 20,
+          "y": 2340,
+          "w": 1400,
+          "h": 320
+        }
+      }
+    ],
+    "globalInputs": []
+  },
+  "theme": "light"
+}

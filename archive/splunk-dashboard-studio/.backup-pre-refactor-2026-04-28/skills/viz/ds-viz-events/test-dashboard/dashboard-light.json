@@ -1,0 +1,315 @@
+{
+  "title": "ds-viz-events - option matrix (light)",
+  "description": "Light-theme companion. Test bench for splunk.events. The 10.4 reference exposes 6 options: backgroundColor, eventActions, fieldActions, footerFields, highlightValuesByField, showFieldSummary. Pairs with a secondary `fieldsummary` data source via dataSources.fieldsummary when showFieldSummary is true.",
+  "defaults": {
+    "dataSources": {
+      "global": {
+        "options": {
+          "queryParameters": {
+            "earliest": "-24h@h",
+            "latest": "now"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": false,
+        "showLastUpdated": false
+      }
+    }
+  },
+  "dataSources": {
+    "ds_events": {
+      "type": "ds.search",
+      "name": "events - synthetic _raw payloads",
+      "options": {
+        "query": "| makeresults count=8 | streamstats count AS rn | eval host = case(rn%4==0,\"web-01\", rn%4==1,\"web-02\", rn%4==2,\"db-01\", 1==1,\"app-03\") | eval source = case(rn<=2,\"/var/log/access.log\", rn<=5,\"/var/log/app.log\", 1==1,\"/var/log/error.log\") | eval sourcetype = case(rn<=2,\"access_combined\", rn<=5,\"app_json\", 1==1,\"error_log\") | eval status = case(rn==1,200, rn==2,404, rn==3,500, rn==4,200, rn==5,201, rn==6,503, rn==7,500, 1==1,200) | eval _raw = \"\" . strftime(_time, \"%Y-%m-%d %H:%M:%S\") . \" host=\" . host . \" status=\" . tostring(status) . \" message=request_completed\" | table _time _raw host source sourcetype status"
+      }
+    },
+    "ds_fieldsummary": {
+      "type": "ds.chain",
+      "name": "field summary - chained off ds_events",
+      "options": {
+        "extend": "ds_events",
+        "query": "| fieldsummary maxvals=10"
+      }
+    },
+    "ds_events_small": {
+      "type": "ds.search",
+      "name": "events - 3 rows for compact panels",
+      "options": {
+        "query": "| makeresults count=3 | streamstats count AS rn | eval host = case(rn==1,\"web-01\", rn==2,\"web-02\", 1==1,\"db-01\") | eval _raw = \"\" . strftime(_time, \"%Y-%m-%d %H:%M:%S\") . \" host=\" . host . \" status=200\" | table _time _raw host"
+      }
+    }
+  },
+  "visualizations": {
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# `splunk.events` - option matrix (light)\n\nThe events viewer renders raw `_raw` log payloads with expandable per-event metadata. Use it instead of `splunk.table` when:\n\n- The user needs the **raw event text** (`_raw`) preserved with field decorations.\n- The dashboard supports **field actions** (drilldowns from individual field values) or **event actions** (from the whole row).\n- The data has highly variable fields per event - the events viewer adapts; tables don't.\n\n6 options total. Pairs with an optional secondary data source (`dataSources.fieldsummary`) for the field summary panel.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default"
+      }
+    },
+    "viz_default": {
+      "type": "splunk.events",
+      "title": "1. Default - showFieldSummary=true with fieldsummary data source",
+      "description": "The default events viewer. dataSources.primary holds the events; dataSources.fieldsummary holds a `| fieldsummary maxvals=10` chain off the primary. The left rail shows fields and value distributions.",
+      "dataSources": {
+        "primary": "ds_events",
+        "fieldsummary": "ds_fieldsummary"
+      }
+    },
+    "viz_no_summary": {
+      "type": "splunk.events",
+      "title": "2. showFieldSummary: false (no left rail)",
+      "description": "Strips the field summary rail. The viewer becomes a pure event list. Use this when you don't have the screen real estate for the rail or when the events have stable schemas where the rail adds no signal.",
+      "dataSources": {
+        "primary": "ds_events"
+      },
+      "options": {
+        "showFieldSummary": false
+      }
+    },
+    "viz_bg_color": {
+      "type": "splunk.events",
+      "title": "3. backgroundColor: panel tint",
+      "description": "Custom backgroundColor for the events panel. Different from the panel chrome - tints the events area itself.",
+      "dataSources": {
+        "primary": "ds_events"
+      },
+      "options": {
+        "backgroundColor": "#FAEAD8",
+        "showFieldSummary": false
+      }
+    },
+    "viz_footer": {
+      "type": "splunk.events",
+      "title": "4. footerFields: [\"host\", \"source\"]",
+      "description": "Pin specific fields into the per-event footer. The viewer normally requires expansion to read field values; footerFields surfaces the most important ones inline.",
+      "dataSources": {
+        "primary": "ds_events"
+      },
+      "options": {
+        "footerFields": [
+          "host",
+          "source"
+        ],
+        "showFieldSummary": false
+      }
+    },
+    "viz_highlight": {
+      "type": "splunk.events",
+      "title": "5. highlightValuesByField",
+      "description": "Highlight specific field-value pairs across all events. Useful for surfacing investigation pivots (the IP under review, the affected host).",
+      "dataSources": {
+        "primary": "ds_events"
+      },
+      "options": {
+        "highlightValuesByField": {
+          "host": "web-01",
+          "status": "500"
+        },
+        "showFieldSummary": false
+      }
+    },
+    "viz_compact": {
+      "type": "splunk.events",
+      "title": "6. Compact - 3 events, no summary, no footer",
+      "description": "A small events viewer for sidebar context. With only 3 events and no field summary, this fits in tight grid cells next to a primary chart.",
+      "dataSources": {
+        "primary": "ds_events_small"
+      },
+      "options": {
+        "showFieldSummary": false
+      }
+    },
+    "viz_event_actions": {
+      "type": "splunk.events",
+      "title": "7. eventActions - row-level click handler",
+      "description": "Define an action that fires when the user clicks an event row. The label appears in a row-level menu. Pair with primary.click drilldowns to drive deeper investigation.",
+      "dataSources": {
+        "primary": "ds_events"
+      },
+      "options": {
+        "eventActions": [
+          {
+            "eventType": "eventAction.investigate.click",
+            "label": "Investigate event"
+          }
+        ],
+        "showFieldSummary": false
+      }
+    },
+    "viz_field_actions": {
+      "type": "splunk.events",
+      "title": "8. fieldActions - per-field click handler",
+      "description": "Define actions that appear in field-level dropdowns. Use the `default` key for actions that should appear for ALL fields, or key by specific field name. Event types should end in `.click` if you wire event handlers.",
+      "dataSources": {
+        "primary": "ds_events"
+      },
+      "options": {
+        "fieldActions": {
+          "default": [
+            {
+              "eventType": "fieldAction.copyValue.click",
+              "label": "Copy value"
+            }
+          ],
+          "host": [
+            {
+              "eventType": "fieldAction.investigateHost.click",
+              "label": "Investigate host"
+            }
+          ]
+        },
+        "showFieldSummary": false
+      }
+    },
+    "viz_full": {
+      "type": "splunk.events",
+      "title": "9. Full kitchen-sink - all options stacked",
+      "description": "Field summary on, custom background, footer fields pinned, highlights active, and both event + field actions wired up. The viewer carries every documented capability simultaneously.",
+      "dataSources": {
+        "primary": "ds_events",
+        "fieldsummary": "ds_fieldsummary"
+      },
+      "options": {
+        "backgroundColor": "#FAEAD8",
+        "footerFields": [
+          "host",
+          "sourcetype"
+        ],
+        "highlightValuesByField": {
+          "status": "500"
+        },
+        "eventActions": [
+          {
+            "eventType": "eventAction.openInvestigation.click",
+            "label": "Open investigation"
+          }
+        ],
+        "fieldActions": {
+          "default": [
+            {
+              "eventType": "fieldAction.copyValue.click",
+              "label": "Copy"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 2280,
+      "display": "auto-scale"
+    },
+    "structure": [
+      {
+        "item": "viz_title",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 16,
+          "w": 1408,
+          "h": 140
+        }
+      },
+      {
+        "item": "viz_default",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 172,
+          "w": 696,
+          "h": 360
+        }
+      },
+      {
+        "item": "viz_no_summary",
+        "type": "block",
+        "position": {
+          "x": 728,
+          "y": 172,
+          "w": 696,
+          "h": 360
+        }
+      },
+      {
+        "item": "viz_bg_color",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 548,
+          "w": 696,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_footer",
+        "type": "block",
+        "position": {
+          "x": 728,
+          "y": 548,
+          "w": 696,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_highlight",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 884,
+          "w": 696,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_compact",
+        "type": "block",
+        "position": {
+          "x": 728,
+          "y": 884,
+          "w": 696,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_event_actions",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 1220,
+          "w": 696,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_field_actions",
+        "type": "block",
+        "position": {
+          "x": 728,
+          "y": 1220,
+          "w": 696,
+          "h": 320
+        }
+      },
+      {
+        "item": "viz_full",
+        "type": "block",
+        "position": {
+          "x": 16,
+          "y": 1556,
+          "w": 1408,
+          "h": 400
+        }
+      }
+    ],
+    "globalInputs": []
+  }
+}

@@ -59,6 +59,11 @@ L
 explicitly requests grid.** Grid layout is not supported by this skill
 family by default. Reasons:
 
+**Note:** `layout.type: "absolute"` lives inside a `layoutDefinitions`
+block, wrapped by `tabs`. Even single-page dashboards require this
+wrapper. See `ds-ref-syntax` for the full schema. Set `"showTabBar": false`
+to hide the tab bar on single-page dashboards.
+
 1. `splunk.rectangle` (depth cards, shadow layers, dividers) only
    renders in absolute layout — silently ignored in grid.
 2. `splunk.singlevalueicon` only renders in absolute layout.
@@ -78,12 +83,29 @@ but warn that shadow rectangles and singlevalueicon will not render.
 ```json
 {
   "layout": {
-    "type": "absolute",
-    "options": { "width": 1920, "height": <content-driven> },
-    "structure": [...]
+    "tabs": [
+      {
+        "id": "tab_main",
+        "label": "Main",
+        "layoutDefinitionId": "layoutDef_main"
+      }
+    ],
+    "showTabBar": false,
+    "layoutDefinitions": [
+      {
+        "id": "layoutDef_main",
+        "type": "absolute",
+        "options": { "width": 1920, "height": "<content-driven>" },
+        "structure": [...]
+      }
+    ]
   }
 }
 ```
+
+> **ABBREVIATED examples below** show only the `layoutDefinition` content
+> (the `type`, `options`, `structure` keys). In real dashboard JSON these
+> always live inside `layoutDefinitions[n]`, not directly under `layout`.
 
 ## MANDATORY: Shadow rectangles (depth layer)
 
@@ -193,11 +215,15 @@ content height from layered zones (header + KPI strip + chart row
 + table row + footer). Splunk scrolls vertically when needed.
 
 ```json
-"layout": {
+{
+  "id": "layoutDef_main",
   "type": "absolute",
-  "options": { "width": 1920, "height": 1080 }
+  "options": { "width": 1920, "height": 1080 },
+  "structure": [...]
 }
 ```
+*(This is the `layoutDefinitions[0]` entry — abbreviated; wrap inside the
+`tabs` + `layoutDefinitions` structure shown above.)*
 
 | Archetype | Width | Typical height |
 |---|---|---|

@@ -26,7 +26,7 @@ After `ds-data-explore` or `ds-mock` has produced `data-sources.json`. Workspace
 ## How to invoke
 
 ```bash
-PYTHONPATH=<repo-root>/plugins/splunk-dashboards/src \
+PYTHONPATH=<repo-root>/plugins/splunk-dashboard-studio/src \
 python3 -m splunk_dashboards.design launch <project-name>
 ```
 

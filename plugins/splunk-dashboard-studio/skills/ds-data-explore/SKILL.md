@@ -46,7 +46,7 @@ When `requirements.md` reports `Has data: yes` (or `partial` for the yes-portion
 Same CLI as `ds-mock`, but set `"source": "explore"` and use real `index=`-based SPL instead of `makeresults`:
 
 ```bash
-PYTHONPATH=<repo-root>/plugins/splunk-dashboards/src \
+PYTHONPATH=<repo-root>/plugins/splunk-dashboard-studio/src \
 python3 -m splunk_dashboards.data_sources write - <<'JSON'
 {
   "project": "<project-name>",
@@ -67,7 +67,7 @@ JSON
 The CLI:
 
 - Validates the workspace exists.
-- Writes `.splunk-dashboards/<project>/data-sources.json`.
+- Writes `.splunk-dashboard-studio/<project>/data-sources.json`.
 - Advances `state.json` from `current_stage=scoped` to `current_stage=data-ready`.
 
 ## Next step

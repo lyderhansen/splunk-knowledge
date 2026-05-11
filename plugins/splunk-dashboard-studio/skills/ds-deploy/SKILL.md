@@ -24,14 +24,14 @@ Install the TA by dropping the tarball into `$SPLUNK_HOME/etc/apps/` (or using S
 Plain XML (default):
 
 ```bash
-PYTHONPATH=<repo-root>/plugins/splunk-dashboards/src \
+PYTHONPATH=<repo-root>/plugins/splunk-dashboard-studio/src \
 python3 -m splunk_dashboards.deploy build <project-name> --label "My Dashboard"
 ```
 
 As Splunk TA:
 
 ```bash
-PYTHONPATH=<repo-root>/plugins/splunk-dashboards/src \
+PYTHONPATH=<repo-root>/plugins/splunk-dashboard-studio/src \
 python3 -m splunk_dashboards.deploy build <project-name> --label "My Dashboard" --as-app
 ```
 

@@ -11,7 +11,7 @@ When `requirements.md` reports `Has data: no` (or `partial` and the user wants m
 
 ## Prerequisites
 
-- Workspace exists at `./.splunk-dashboards/<project>/state.json`.
+- Workspace exists at `./.splunk-dashboard-studio/<project>/state.json`.
 - `current_stage` is `scoped`.
 - `requirements.md` lists 1–5 questions.
 
@@ -78,7 +78,7 @@ After generating events, aggregate — this produces realistic leaderboards:
 4. Assemble this JSON payload and write it via the CLI:
 
 ```bash
-PYTHONPATH=<repo-root>/plugins/splunk-dashboards/src \
+PYTHONPATH=<repo-root>/plugins/splunk-dashboard-studio/src \
 python3 -m splunk_dashboards.data_sources write - <<'JSON'
 {
   "project": "<project-name-from-state.json>",
@@ -99,7 +99,7 @@ JSON
 The CLI:
 
 - Validates that the workspace exists.
-- Writes `.splunk-dashboards/<project>/data-sources.json`.
+- Writes `.splunk-dashboard-studio/<project>/data-sources.json`.
 - Advances `state.json` from `current_stage=scoped` to `current_stage=data-ready` (appending `scoped` to `stages_completed`).
 
 ## Next step

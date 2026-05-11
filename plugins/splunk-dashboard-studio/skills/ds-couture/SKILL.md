@@ -260,8 +260,11 @@ Hand-off is **blocked** if Scope Check fails without waivers. Fix the gap or doc
 
 **Hard gates enforced at hand-off (unless user explicitly overrides):**
 
-1. `layout.type` MUST be `"absolute"`. Grid layout → automatic reject
-   unless user explicitly requested grid.
+1. Layout MUST use `tabs` + `layoutDefinitions` wrapper with
+   `"type": "absolute"` inside `layoutDefinitions`. Grid layout →
+   automatic reject. Even single-page dashboards need the wrapper
+   with `"showTabBar": false`. The flat format
+   (`"layout": { "type": "absolute" }`) is schema-rejected.
 2. Depth treatment MUST be explicitly chosen per archetype: shadow
    rectangles (executive/editorial), flush with bg (technical/racing),
    or border stroke (industrial/SOC). "Not considered" → reject.

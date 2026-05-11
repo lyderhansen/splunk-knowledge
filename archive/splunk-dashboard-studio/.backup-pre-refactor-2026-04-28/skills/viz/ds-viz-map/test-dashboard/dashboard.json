@@ -1,0 +1,423 @@
+{
+  "title": "ds-viz-map - option matrix (dark)",
+  "description": "Test bench for splunk.map. Verifies all top-level options (backgroundColor, center, zoom, scaleUnit, showScale, showBaseLayer, showZoomControls, baseLayerTileServer, baseLayerTileServerType) and per-layer options (type=marker|bubble|choropleth, latitude, longitude, bubbleSize, areaIds, areaValues, source, dataColors, dataValues, seriesColors, additionalTooltipFields, tooltipHeaderField, resultLimit, choroplethOpacity, choroplethStrokeColor, choroplethEmptyAreaColor). Test data is synthesized inline via makeresults so no external lookups are required for marker/bubble panels.",
+  "defaults": {
+    "dataSources": {
+      "global": { "options": { "queryParameters": { "earliest": "-24h@h", "latest": "now" } } }
+    },
+    "visualizations": {
+      "global": { "showProgressBar": false, "showLastUpdated": false }
+    }
+  },
+  "dataSources": {
+    "ds_marker_synth": {
+      "type": "ds.search",
+      "name": "synthesized lat lon value rows for marker panels",
+      "options": {
+        "query": "| makeresults count=12 | streamstats count as i | eval lat=case(i==1,40.71,i==2,34.05,i==3,51.51,i==4,48.86,i==5,35.68,i==6,55.75,i==7,-33.87,i==8,-23.55,i==9,1.35,i==10,28.61,i==11,52.52,i==12,59.91), lon=case(i==1,-74.01,i==2,-118.24,i==3,-0.13,i==4,2.35,i==5,139.69,i==6,37.62,i==7,151.21,i==8,-46.63,i==9,103.82,i==10,77.21,i==11,13.40,i==12,10.75), city=case(i==1,\"New York\",i==2,\"Los Angeles\",i==3,\"London\",i==4,\"Paris\",i==5,\"Tokyo\",i==6,\"Moscow\",i==7,\"Sydney\",i==8,\"São Paulo\",i==9,\"Singapore\",i==10,\"Delhi\",i==11,\"Berlin\",i==12,\"Oslo\"), bytes=case(i==1,3500,i==2,2400,i==3,1800,i==4,2900,i==5,950,i==6,1500,i==7,800,i==8,2200,i==9,3100,i==10,1100,i==11,2700,i==12,600) | table city lat lon bytes"
+      }
+    },
+    "ds_bubble_synth": {
+      "type": "ds.search",
+      "name": "synthesized lat lon for bubble panel - geostats produces latitude longitude geobin columns the bubble layer expects",
+      "options": {
+        "query": "| makeresults count=12 | streamstats count as i | eval lat=case(i==1,40.71,i==2,34.05,i==3,51.51,i==4,48.86,i==5,35.68,i==6,55.75,i==7,-33.87,i==8,-23.55,i==9,1.35,i==10,28.61,i==11,52.52,i==12,59.91), lon=case(i==1,-74.01,i==2,-118.24,i==3,-0.13,i==4,2.35,i==5,139.69,i==6,37.62,i==7,151.21,i==8,-46.63,i==9,103.82,i==10,77.21,i==11,13.40,i==12,10.75), method=case((i%3)==0,\"GET\",(i%3)==1,\"POST\",(i%3)==2,\"DELETE\"), count=case(i==1,4200,i==2,3100,i==3,2700,i==4,3800,i==5,1100,i==6,2200,i==7,950,i==8,3300,i==9,4000,i==10,1300,i==11,3500,i==12,800) | geostats latfield=lat longfield=lon count by method"
+      }
+    },
+    "ds_bubble_get_only": {
+      "type": "ds.search",
+      "name": "synthesized GET-only traffic for bubble Data Colors panel - mirrors the Splunk doc example",
+      "options": {
+        "query": "| makeresults count=12 | streamstats count as i | eval lat=case(i==1,40.71,i==2,34.05,i==3,51.51,i==4,48.86,i==5,35.68,i==6,55.75,i==7,-33.87,i==8,-23.55,i==9,1.35,i==10,28.61,i==11,52.52,i==12,59.91), lon=case(i==1,-74.01,i==2,-118.24,i==3,-0.13,i==4,2.35,i==5,139.69,i==6,37.62,i==7,151.21,i==8,-46.63,i==9,103.82,i==10,77.21,i==11,13.40,i==12,10.75), method=\"GET\", count=case(i==1,90,i==2,8,i==3,12,i==4,4,i==5,55,i==6,3,i==7,30,i==8,15,i==9,75,i==10,2,i==11,28,i==12,9) | geostats latfield=lat longfield=lon count by method"
+      }
+    },
+    "ds_choropleth_synth": {
+      "type": "ds.search",
+      "name": "synthesized country counts uses geom command - bundled with Splunk core - lookup matches on country full name not ISO-2",
+      "options": {
+        "query": "| makeresults count=8 | streamstats count as i | eval country=case(i==1,\"United States\",i==2,\"United Kingdom\",i==3,\"France\",i==4,\"Germany\",i==5,\"Japan\",i==6,\"Brazil\",i==7,\"Australia\",i==8,\"Norway\"), count=case(i==1,520,i==2,310,i==3,180,i==4,420,i==5,140,i==6,260,i==7,90,i==8,75) | geom geo_countries featureIdField=country | fields country count geom"
+      }
+    },
+    "ds_choropleth_geom_string": {
+      "type": "ds.search",
+      "name": "synthesized country counts geom column serialized as string - lookup matches on country full name not ISO-2",
+      "options": {
+        "query": "| makeresults count=6 | streamstats count as i | eval country=case(i==1,\"United States\",i==2,\"United Kingdom\",i==3,\"France\",i==4,\"Germany\",i==5,\"Brazil\",i==6,\"Norway\"), count=case(i==1,520,i==2,310,i==3,180,i==4,420,i==5,260,i==6,75) | geom geo_countries featureIdField=country | where isnotnull(geom) | eval geom=tostring(geom) | fields country count geom"
+      }
+    },
+    "ds_choropleth_world_full": {
+      "type": "ds.search",
+      "name": "synthesized world choropleth uses source=geo url no geom needed",
+      "options": {
+        "query": "| makeresults count=10 | streamstats count as i | eval country=case(i==1,\"US\",i==2,\"GB\",i==3,\"FR\",i==4,\"DE\",i==5,\"JP\",i==6,\"BR\",i==7,\"AU\",i==8,\"NO\",i==9,\"CA\",i==10,\"IN\"), count=case(i==1,820,i==2,460,i==3,380,i==4,540,i==5,290,i==6,310,i==7,180,i==8,160,i==9,420,i==10,650) | table country count"
+      }
+    },
+    "ds_choropleth_us_states": {
+      "type": "ds.search",
+      "name": "synthesized US state counts uses geo us source",
+      "options": {
+        "query": "| makeresults count=10 | streamstats count as i | eval state=case(i==1,\"CA\",i==2,\"TX\",i==3,\"NY\",i==4,\"FL\",i==5,\"WA\",i==6,\"IL\",i==7,\"PA\",i==8,\"OH\",i==9,\"GA\",i==10,\"VA\"), count=case(i==1,920,i==2,780,i==3,650,i==4,540,i==5,420,i==6,360,i==7,310,i==8,280,i==9,240,i==10,200) | table state count"
+      }
+    }
+  },
+  "visualizations": {
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# `splunk.map` - option matrix\n\nThe geographic map visualization. Renders interactive Leaflet-style maps with one or more **layers** (`marker`, `bubble`, `choropleth`) on top of a base tile server.\n\n**Top-level options (10.4 PDF + Splunk Cloud Maps doc):**\n\n- `backgroundColor`, `center` (`[lat, lon]`), `zoom`, `scaleUnit` (`metric`|`imperial`), `showScale`\n- `showBaseLayer`, `showZoomControls`, `showCoordinates`, `icon`\n- `baseLayerTileServer` (URL), `baseLayerTileServerType` (`vector`|`raster`)\n- `layers` (array of layer objects)\n\n**Per-layer options:**\n\n- `type` (`marker`|`bubble`|`choropleth`)\n- `latitude`, `longitude`, `bubbleSize`, `areaIds`, `areaValues`, `source`\n- `dataColors`, `dataValues`, `seriesColors`\n- `additionalTooltipFields`, `tooltipHeaderField`, `resultLimit`\n- Choropleth-only: `choroplethOpacity`, `choroplethStrokeColor`, `choroplethEmptyAreaColor`\n\n**Layer-vs-SPL pairing rules (Splunk doc, learned the hard way):**\n\n- `marker` → SPL must use `table` (or any source with `lat`/`lon` columns); set `latitude` and `longitude` explicitly on the layer.\n- `bubble` → SPL must use `geostats latfield=... longfield=... <metric> by <dim>`. The bubble layer reads `latitude`/`longitude`/`geobin` columns implicitly - **explicit `latitude`/`longitude` bindings are silently ignored** and the panel renders empty.\n- `choropleth` → SPL must end in `geom geo_countries featureIdField=...` OR set `source: \"geo://default/world\"|\"geo://default/us\"` on the layer (not both). Always include `tooltipHeaderField` to wire up hover surfaces.\n\n**bubbleSize gotcha:** the docs default `frameBySeriesTypes(\"number\")` is the working binding shape - `seriesByName(\"count\")` returns a single series and the layer renders points without sized bubbles. Use `frameWithoutSeriesNames('geobin','latitude','longitude') | frameBySeriesTypes('number')` against a `geostats` source instead.\n\n**Multi-layer caveat:** stacking `marker` + `bubble` in the same `layers[]` is unreliable in current Dashboard Studio builds - the second layer commonly silently disappears. The official Splunk doc examples never stack them either. Use **one layer type per panel** and compose richer maps by placing multiple panels in the dashboard layout.",
+        "fontSize": "default",
+        "backgroundColor": "transparent",
+        "fontColor": "#E8E8E8"
+      }
+    },
+    "viz_marker_default": {
+      "type": "splunk.map",
+      "title": "1. Marker layer - default (no center/zoom)",
+      "description": "Bare marker layer. center/zoom auto-fit from data. lat/lon bound by name.",
+      "dataSources": { "primary": "ds_marker_synth" },
+      "options": {
+        "layers": [
+          {
+            "type": "marker",
+            "latitude": "> primary | seriesByName(\"lat\")",
+            "longitude": "> primary | seriesByName(\"lon\")"
+          }
+        ]
+      }
+    },
+    "viz_marker_centered": {
+      "type": "splunk.map",
+      "title": "2. Marker layer - explicit center + zoom",
+      "description": "center=[20, 0] (mid-Atlantic), zoom=1.5. Explicit framing for repeatable views.",
+      "dataSources": { "primary": "ds_marker_synth" },
+      "options": {
+        "layers": [
+          {
+            "type": "marker",
+            "latitude": "> primary | seriesByName(\"lat\")",
+            "longitude": "> primary | seriesByName(\"lon\")",
+            "additionalTooltipFields": ["city", "bytes"]
+          }
+        ],
+        "center": [20, 0],
+        "zoom": 1.5
+      }
+    },
+    "viz_marker_colored": {
+      "type": "splunk.map",
+      "title": "3. Marker layer - dataColors via rangeValue(config)",
+      "description": "Marker fill driven by bytes value -> green / yellow / red. Demonstrates the canonical 'thresholded marker' recipe from the PDF.",
+      "dataSources": { "primary": "ds_marker_synth" },
+      "options": {
+        "layers": [
+          {
+            "type": "marker",
+            "latitude": "> primary | seriesByName(\"lat\")",
+            "longitude": "> primary | seriesByName(\"lon\")",
+            "dataColors": "> primary | seriesByName(\"bytes\") | rangeValue(thresholdConfig)",
+            "additionalTooltipFields": ["city", "bytes"]
+          }
+        ],
+        "center": [20, 10],
+        "zoom": 1.5
+      },
+      "context": {
+        "thresholdConfig": [
+          { "from": 3000,             "value": "#FF677B" },
+          { "from": 1500, "to": 3000, "value": "#FFD166" },
+          {              "to": 1500, "value": "#26A69A" }
+        ]
+      }
+    },
+    "viz_bubble": {
+      "type": "splunk.map",
+      "title": "4. Bubble layer - sized by `count` (geostats pattern)",
+      "description": "Bubble layers must be paired with the `geostats` SPL command - the layer expects the columns it produces (`latitude`, `longitude`, `geobin`) and picks them up implicitly. **Do NOT** set `latitude`/`longitude` on the layer for `type: bubble` - those bindings are silently ignored and the map renders empty. SPL pattern: `... | geostats latfield=lat longfield=lon count by method`. `bubbleSize` uses `frameWithoutSeriesNames('latitude','longitude','geobin')` to expose only the metric columns - `frameBySeriesTypes('number')` then encodes them as bubble size.",
+      "dataSources": { "primary": "ds_bubble_synth" },
+      "options": {
+        "layers": [
+          {
+            "type": "bubble",
+            "bubbleSize": "> primary | frameWithoutSeriesNames(\"geobin\", \"latitude\", \"longitude\") | frameBySeriesTypes(\"number\")",
+            "tooltipHeaderField": "> primary | seriesByName(\"geobin\")"
+          }
+        ],
+        "center": [20, 0],
+        "zoom": 1.3
+      }
+    },
+    "viz_choropleth": {
+      "type": "splunk.map",
+      "title": "5. Choropleth layer - country shading",
+      "description": "Choropleth via the bundled `geom geo_countries` lookup. SPL must end in `geom geo_countries featureIdField=country` and the result must include the `geom` column. **Critical**: `geo_countries` keys on the full English country name (`United States`, `United Kingdom`, `Brazil`), NOT on ISO-2 codes (`US`, `GB`, `BR`) - ISO-2 keys produce all-NULL `geom` and the panel renders empty. areaIds + areaValues bind the country name and the metric. `tooltipHeaderField` ensures the polygon hover surface is wired up - without it, some Dashboard Studio versions render the polygons but provide no tooltip target and the panel can appear empty.",
+      "dataSources": { "primary": "ds_choropleth_synth" },
+      "options": {
+        "layers": [
+          {
+            "type": "choropleth",
+            "areaIds": "> primary | seriesByName(\"country\")",
+            "areaValues": "> primary | seriesByName(\"count\")",
+            "tooltipHeaderField": "> primary | seriesByName(\"country\")"
+          }
+        ],
+        "center": [20, 0],
+        "zoom": 1.3
+      }
+    },
+    "viz_imperial": {
+      "type": "splunk.map",
+      "title": "6. scaleUnit=imperial, showScale=true",
+      "description": "Bottom-left scale bar shows miles instead of metres.",
+      "dataSources": { "primary": "ds_marker_synth" },
+      "options": {
+        "layers": [
+          {
+            "type": "marker",
+            "latitude": "> primary | seriesByName(\"lat\")",
+            "longitude": "> primary | seriesByName(\"lon\")"
+          }
+        ],
+        "center": [40, -100],
+        "zoom": 3,
+        "scaleUnit": "imperial",
+        "showScale": true
+      }
+    },
+    "viz_no_scale": {
+      "type": "splunk.map",
+      "title": "7. showScale=false",
+      "description": "Hides the scale bar entirely - used for compact KPI maps where the scale would clutter the panel.",
+      "dataSources": { "primary": "ds_marker_synth" },
+      "options": {
+        "layers": [
+          {
+            "type": "marker",
+            "latitude": "> primary | seriesByName(\"lat\")",
+            "longitude": "> primary | seriesByName(\"lon\")"
+          }
+        ],
+        "center": [20, 0],
+        "zoom": 1.3,
+        "showScale": false
+      }
+    },
+    "viz_result_limit": {
+      "type": "splunk.map",
+      "title": "8. resultLimit=5",
+      "description": "Per-layer cap on rendered points. With 12 cities in the data source, only 5 markers should appear.",
+      "dataSources": { "primary": "ds_marker_synth" },
+      "options": {
+        "layers": [
+          {
+            "type": "marker",
+            "latitude": "> primary | seriesByName(\"lat\")",
+            "longitude": "> primary | seriesByName(\"lon\")",
+            "resultLimit": 5
+          }
+        ],
+        "center": [20, 0],
+        "zoom": 1.3
+      }
+    },
+    "viz_bubble_data_colors": {
+      "type": "splunk.map",
+      "title": "9. Bubble Type Map - Data Colors (canonical splunk-ui example)",
+      "description": "Verbatim adaptation of the **Bubble Map - dynamic coloring** sample from the Splunk Dashboard Studio Maps doc. Bubbles are sized implicitly by the `count` column from `geostats`, then **coloured** via `dataColors: \"> dataValues | rangeValue(dataColorsEditorConfig)\"`. The `dataValues` token is a frame the bubble layer auto-exposes - paired with `rangeValue(<context-key>)` it gives traffic-light bucketing without extra `seriesByName(...)` plumbing. NB: marker + bubble in the same `layers[]` is unreliable in current builds (the second layer often disappears); use one layer type per panel and stack panels in the layout instead. The `dataColorsEditorConfig` thresholds live in `context` on the viz - same pattern as the marker `dataColors` panel above.",
+      "dataSources": { "primary": "ds_bubble_get_only" },
+      "options": {
+        "layers": [
+          {
+            "type": "bubble",
+            "dataColors": "> dataValues | rangeValue(dataColorsEditorConfig)"
+          }
+        ],
+        "center": [28.5, -9.0],
+        "zoom": 1.45,
+        "scaleUnit": "imperial"
+      },
+      "context": {
+        "dataColorsEditorConfig": [
+          { "to": 5,             "value": "#D41F1F" },
+          { "from": 5, "to": 10, "value": "#D97A0D" },
+          { "from": 10, "to": 20, "value": "#9D9F0D" },
+          { "from": 20,           "value": "#118832" }
+        ]
+      }
+    },
+    "viz_background_color": {
+      "type": "splunk.map",
+      "title": "10. backgroundColor",
+      "description": "Custom panel background colour visible behind the tile gaps. Subtle but useful for theming.",
+      "dataSources": { "primary": "ds_marker_synth" },
+      "options": {
+        "layers": [
+          {
+            "type": "marker",
+            "latitude": "> primary | seriesByName(\"lat\")",
+            "longitude": "> primary | seriesByName(\"lon\")"
+          }
+        ],
+        "center": [20, 0],
+        "zoom": 1.3,
+        "backgroundColor": "#1A2440"
+      }
+    },
+    "viz_choro_opacity_tooltip": {
+      "type": "splunk.map",
+      "title": "11. Choropleth - opacity 0.5 + tooltip header `country`",
+      "description": "Choropleth layer with `choroplethOpacity: 0.5` and `tooltipHeaderField` bound to the country column. `additionalTooltipFields` adds the metric below the header. Lower opacity makes the underlying basemap visible through the polygons - useful when geography matters as much as the metric.",
+      "dataSources": { "primary": "ds_choropleth_synth" },
+      "options": {
+        "layers": [
+          {
+            "type": "choropleth",
+            "areaIds": "> primary | seriesByName(\"country\")",
+            "areaValues": "> primary | seriesByName(\"count\")",
+            "choroplethOpacity": 0.5,
+            "tooltipHeaderField": "> primary | seriesByName(\"country\")",
+            "additionalTooltipFields": ["count"]
+          }
+        ],
+        "center": [20, 0],
+        "zoom": 1.3
+      }
+    },
+    "viz_choro_result_limit": {
+      "type": "splunk.map",
+      "title": "12. Choropleth - resultLimit=1",
+      "description": "Per-layer `resultLimit: 1` caps the choropleth to a single shaded country (the first row from the SPL output). Useful for `top 1` country highlight or single-region drilldown panels.",
+      "dataSources": { "primary": "ds_choropleth_synth" },
+      "options": {
+        "layers": [
+          {
+            "type": "choropleth",
+            "areaIds": "> primary | seriesByName(\"country\")",
+            "areaValues": "> primary | seriesByName(\"count\")",
+            "resultLimit": 1,
+            "tooltipHeaderField": "> primary | seriesByName(\"country\")",
+            "additionalTooltipFields": ["count"]
+          }
+        ],
+        "center": [20, 0],
+        "zoom": 1.3
+      }
+    },
+    "viz_choro_geom_string": {
+      "type": "splunk.map",
+      "title": "13. Choropleth - geom data formatted as string",
+      "description": "Some pipelines emit the `geom` column as a serialized JSON string instead of an object. SPL pattern: `| geom geo_countries featureIdField=country | where isnotnull(geom) | eval geom=tostring(geom)`. The map runtime parses the string back to GeoJSON. **Gotcha 1 (NULL string)**: `tostring()` on a NULL `geom` row produces the literal string `\"Null\"`, which the viz then tries to JSON.parse - giving `Unexpected token 'N', \"Null\" is not valid JSON`. **Gotcha 2 (lookup keys)**: `geo_countries` matches on the full English country name (`United States`, `United Kingdom`, `Brazil`, ...), NOT on ISO-2 codes (`US`, `GB`, `BR`). ISO-2 keys silently produce NULL rows for every country - which then triggers Gotcha 1. Always filter `where isnotnull(geom)` *before* `tostring()`.",
+      "dataSources": { "primary": "ds_choropleth_geom_string" },
+      "options": {
+        "layers": [
+          {
+            "type": "choropleth",
+            "areaIds": "> primary | seriesByName(\"country\")",
+            "areaValues": "> primary | seriesByName(\"count\")",
+            "tooltipHeaderField": "> primary | seriesByName(\"country\")",
+            "additionalTooltipFields": ["count"]
+          }
+        ],
+        "center": [20, 0],
+        "zoom": 1.3
+      }
+    },
+    "viz_choro_world_styled": {
+      "type": "splunk.map",
+      "title": "14. Choropleth - World, no chrome, black stroke, grey empty",
+      "description": "World choropleth driven by `source: \"geo://default/world\"` (built-in geo source - no `geom` command needed in the SPL). All chrome disabled: `showBaseLayer: false`, `showZoomControls: false`, `showScale: false`. `choroplethStrokeColor: #000000`, `choroplethEmptyAreaColor: #888888`, `choroplethOpacity: 1.0`. `zoom: 0.5` + explicit `center` for a full-world embed-style frame.",
+      "dataSources": { "primary": "ds_choropleth_world_full" },
+      "options": {
+        "layers": [
+          {
+            "type": "choropleth",
+            "source": "geo://default/world",
+            "areaIds": "> primary | seriesByName(\"country\")",
+            "areaValues": "> primary | seriesByName(\"count\")",
+            "choroplethOpacity": 1.0,
+            "choroplethStrokeColor": "#000000",
+            "choroplethEmptyAreaColor": "#888888",
+            "tooltipHeaderField": "> primary | seriesByName(\"country\")",
+            "additionalTooltipFields": ["count"]
+          }
+        ],
+        "center": [20, 0],
+        "zoom": 0.5,
+        "showBaseLayer": false,
+        "showZoomControls": false,
+        "showScale": false
+      }
+    },
+    "viz_choro_us_styled": {
+      "type": "splunk.map",
+      "title": "15. Choropleth - US, grey BG, RangeValue palette",
+      "description": "US-states choropleth driven by `source: \"geo://default/us\"`. Grey panel background, grey strokes, white empty states, `choroplethOpacity: 1.0`. `dataColors` uses `rangeValue` over the count column for explicit traffic-light bucketing instead of the default gradient. `zoom: 3` + center over the contiguous US.",
+      "dataSources": { "primary": "ds_choropleth_us_states" },
+      "options": {
+        "layers": [
+          {
+            "type": "choropleth",
+            "source": "geo://default/us",
+            "areaIds": "> primary | seriesByName(\"state\")",
+            "areaValues": "> primary | seriesByName(\"count\")",
+            "dataColors": "> primary | seriesByName(\"count\") | rangeValue(usThresholdConfig)",
+            "choroplethOpacity": 1.0,
+            "choroplethStrokeColor": "#888888",
+            "choroplethEmptyAreaColor": "#FFFFFF",
+            "tooltipHeaderField": "> primary | seriesByName(\"state\")",
+            "additionalTooltipFields": ["count"]
+          }
+        ],
+        "center": [38, -97],
+        "zoom": 3,
+        "backgroundColor": "#888888",
+        "showBaseLayer": false,
+        "showZoomControls": false,
+        "showScale": false
+      },
+      "context": {
+        "usThresholdConfig": [
+          { "from": 700,           "value": "#C2185B" },
+          { "from": 400, "to": 700, "value": "#E89A2C" },
+          {              "to": 400, "value": "#0E7C70" }
+        ]
+      }
+    }
+  },
+  "inputs": {},
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 4640,
+      "display": "auto-scale",
+      "backgroundColor": "#0F1729"
+    },
+    "structure": [
+      { "item": "viz_title",                "type": "block", "position": { "x": 20,  "y": 20,   "w": 1400, "h": 420 } },
+
+      { "item": "viz_marker_default",       "type": "block", "position": { "x": 20,  "y": 460,  "w": 690,  "h": 380 } },
+      { "item": "viz_marker_centered",      "type": "block", "position": { "x": 730, "y": 460,  "w": 690,  "h": 380 } },
+
+      { "item": "viz_marker_colored",       "type": "block", "position": { "x": 20,  "y": 860,  "w": 690,  "h": 380 } },
+      { "item": "viz_bubble",               "type": "block", "position": { "x": 730, "y": 860,  "w": 690,  "h": 380 } },
+
+      { "item": "viz_choropleth",           "type": "block", "position": { "x": 20,  "y": 1260, "w": 690,  "h": 380 } },
+      { "item": "viz_imperial",             "type": "block", "position": { "x": 730, "y": 1260, "w": 690,  "h": 380 } },
+
+      { "item": "viz_no_scale",             "type": "block", "position": { "x": 20,  "y": 1660, "w": 690,  "h": 380 } },
+      { "item": "viz_result_limit",         "type": "block", "position": { "x": 730, "y": 1660, "w": 690,  "h": 380 } },
+
+      { "item": "viz_bubble_data_colors",   "type": "block", "position": { "x": 20,  "y": 2060, "w": 690,  "h": 380 } },
+      { "item": "viz_background_color",     "type": "block", "position": { "x": 730, "y": 2060, "w": 690,  "h": 380 } },
+
+      { "item": "viz_choro_opacity_tooltip","type": "block", "position": { "x": 20,  "y": 2460, "w": 690,  "h": 380 } },
+      { "item": "viz_choro_result_limit",   "type": "block", "position": { "x": 730, "y": 2460, "w": 690,  "h": 380 } },
+
+      { "item": "viz_choro_geom_string",    "type": "block", "position": { "x": 20,  "y": 2860, "w": 690,  "h": 380 } },
+      { "item": "viz_choro_world_styled",   "type": "block", "position": { "x": 730, "y": 2860, "w": 690,  "h": 380 } },
+
+      { "item": "viz_choro_us_styled",      "type": "block", "position": { "x": 20,  "y": 3260, "w": 1400, "h": 480 } }
+    ],
+    "globalInputs": []
+  }
+}

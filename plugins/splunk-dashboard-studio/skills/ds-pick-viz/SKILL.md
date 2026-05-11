@@ -27,7 +27,7 @@ For deeper rationale (archetype context, color/typography, antipatterns as philo
 1. Map the user's intent to one row in the decision table below.
 2. State the recommended viz in one line.
 3. State the *why-not* reason for the closest alternative, in one line.
-4. Tell the agent: `Read plugins/splunk-dashboards/skills/ds-viz-<type>/SKILL.md` for full option detail.
+4. Tell the agent: `Read plugins/splunk-dashboard-studio/skills/ds-viz-<type>/SKILL.md` for full option detail.
 
 If two rows could fit, prefer the one with the **lower data-cardinality requirement** (e.g., `column` before `bar` when label length is unknown; `singlevalue` before `markergauge` when no threshold is given).
 
@@ -82,7 +82,7 @@ When invoked, reply in this exact shape (one paragraph, no preamble):
 Recommend: <viz-type>
 Why: <one sentence>
 Why not <closest alt>: <one sentence>
-Next: Read plugins/splunk-dashboards/skills/ds-viz-<type>/SKILL.md for options and a working JSON example.
+Next: Read plugins/splunk-dashboard-studio/skills/ds-viz-<type>/SKILL.md for options and a working JSON example.
 ```
 
 If the intent is ambiguous, ask **one** clarifying question instead of guessing. Examples:

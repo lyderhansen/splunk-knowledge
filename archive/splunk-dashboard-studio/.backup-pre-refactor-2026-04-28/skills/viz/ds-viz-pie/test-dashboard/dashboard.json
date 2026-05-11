@@ -1,0 +1,321 @@
+{
+  "title": "ds-viz-pie - option matrix",
+  "description": "Test bench for splunk.pie. Each panel exercises one option group: labelDisplay (values / valuesAndPercentage / off), donut hole, collapseThreshold / collapseLabel, named colors, sorted vs unsorted slices, single-color emphasis, and the chrome-stripped KPI tile pattern. SPL is makeresults-based so this dashboard runs in any Splunk instance with no setup.",
+  "defaults": {
+    "dataSources": {
+      "global": {
+        "options": {
+          "queryParameters": {
+            "earliest": "-24h@h",
+            "latest": "now"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": false,
+        "showLastUpdated": false
+      }
+    }
+  },
+  "dataSources": {
+
+    "ds_basic": {
+      "type": "ds.search",
+      "name": "basic - 5 slices",
+      "options": {
+        "query": "| makeresults count=5 | streamstats count as i | eval region = case(i=1,\"US-East\", i=2,\"US-West\", i=3,\"EU-West\", i=4,\"APAC\", i=5,\"LATAM\"), revenue = case(i=1,420000, i=2,310000, i=3,265000, i=4,180000, i=5,95000) | sort - revenue | table region revenue"
+      }
+    },
+
+    "ds_three": {
+      "type": "ds.search",
+      "name": "three slices - browser share",
+      "options": {
+        "query": "| makeresults count=3 | streamstats count as i | eval browser = case(i=1,\"Chrome\", i=2,\"Safari\", i=3,\"Edge\"), share = case(i=1,62, i=2,24, i=3,14) | sort - share | table browser share"
+      }
+    },
+
+    "ds_long_tail": {
+      "type": "ds.search",
+      "name": "long tail - 12 slices for collapseThreshold",
+      "options": {
+        "query": "| makeresults count=12 | streamstats count as i | eval country = case(i=1,\"United States\", i=2,\"United Kingdom\", i=3,\"Germany\", i=4,\"France\", i=5,\"Japan\", i=6,\"Canada\", i=7,\"Australia\", i=8,\"Brazil\", i=9,\"Spain\", i=10,\"Italy\", i=11,\"Norway\", i=12,\"Denmark\"), revenue = case(i=1,1200000, i=2,420000, i=3,330000, i=4,210000, i=5,180000, i=6,90000, i=7,42000, i=8,18000, i=9,12000, i=10,9000, i=11,5000, i=12,3000) | sort - revenue | table country revenue"
+      }
+    },
+
+    "ds_named": {
+      "type": "ds.search",
+      "name": "named - traffic-light slices",
+      "options": {
+        "query": "| makeresults count=4 | streamstats count as i | eval status = case(i=1,\"healthy\", i=2,\"degraded\", i=3,\"unhealthy\", i=4,\"unknown\"), hosts = case(i=1,840, i=2,46, i=3,12, i=4,6) | sort - hosts | table status hosts"
+      }
+    },
+
+    "ds_two": {
+      "type": "ds.search",
+      "name": "two slices - allow block",
+      "options": {
+        "query": "| makeresults count=2 | streamstats count as i | eval action = case(i=1,\"allowed\", i=2,\"blocked\"), count = case(i=1,9420, i=2,580) | sort - count | table action count"
+      }
+    },
+
+    "ds_trellis_region_status": {
+      "type": "ds.search",
+      "name": "trellis - status mix per region",
+      "options": {
+        "query": "| makeresults count=15 | streamstats count as i | eval region = case(i<=5,\"US-East\", i<=10,\"EU-West\", 1==1,\"APAC\"), status = case(i%3==0,\"healthy\", i%3==1,\"degraded\", 1==1,\"unhealthy\"), hosts = case(i%3==0,80+i*4, i%3==1,18-i, 1==1,4+i) | table region status hosts"
+      }
+    },
+
+    "ds_trellis_browser_by_country": {
+      "type": "ds.search",
+      "name": "trellis - browser share split by country",
+      "options": {
+        "query": "| makeresults count=20 | streamstats count as i | eval country = case(i<=5,\"US\", i<=10,\"UK\", i<=15,\"DE\", 1==1,\"JP\"), browser = case(i%5==1,\"Chrome\", i%5==2,\"Safari\", i%5==3,\"Edge\", i%5==4,\"Firefox\", 1==1,\"Other\"), share = case(browser==\"Chrome\",60-i, browser==\"Safari\",18+i%4, browser==\"Edge\",10+i%3, browser==\"Firefox\",6+i%2, 1==1,4+i%2) | table country browser share"
+      }
+    }
+
+  },
+
+  "visualizations": {
+
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# `splunk.pie` - option matrix\n\nA single-purpose chart for **part-of-whole** with a small number of slices. The 10.4 reference has only nine documented options: `label`, `labelField`, `labelDisplay`, `value`, `valueField`, `seriesColors`, `seriesColorsByField`, `collapseLabel`, `collapseThreshold`, `showDonutHole`, plus `backgroundColor` and `resultLimit`. Pie has **no axis, no legend position, no annotations, no overlays, no stacking** - if you reach for one of those, you are in the wrong viz family.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default"
+      }
+    },
+
+    "viz_basic": {
+      "type": "splunk.pie",
+      "title": "1. Minimal - default labelDisplay (values)",
+      "description": "Default labelDisplay shows the value next to each slice label. Five regions, sorted descending in SPL. Slice colours come from the default Splunk palette.",
+      "dataSources": { "primary": "ds_basic" },
+      "options": {}
+    },
+
+    "viz_label_pct": {
+      "type": "splunk.pie",
+      "title": "2. labelDisplay - valuesAndPercentage",
+      "description": "labelDisplay=valuesAndPercentage adds the %-of-total. Use when both raw and proportional values matter. The most informative default for executive dashboards.",
+      "dataSources": { "primary": "ds_basic" },
+      "options": {
+        "labelDisplay": "valuesAndPercentage"
+      }
+    },
+
+    "viz_label_off": {
+      "type": "splunk.pie",
+      "title": "3. labelDisplay - off (legend-only)",
+      "description": "labelDisplay=off hides labels on the slices themselves. Reader has to map colour-to-meaning via the legend (always rendered automatically). Useful for tightly-cropped panels where labels would clip.",
+      "dataSources": { "primary": "ds_basic" },
+      "options": {
+        "labelDisplay": "off"
+      }
+    },
+
+    "viz_donut": {
+      "type": "splunk.pie",
+      "title": "4. Donut - showDonutHole + values+pct",
+      "description": "showDonutHole=true cuts a centre hole. Easier to read because slice arcs (not slice areas) carry the message. Default shape for KPI-style breakdown panels.",
+      "dataSources": { "primary": "ds_three" },
+      "options": {
+        "showDonutHole": true,
+        "labelDisplay": "valuesAndPercentage"
+      }
+    },
+
+    "viz_named_colors": {
+      "type": "splunk.pie",
+      "title": "5. seriesColorsByField - traffic-light semantics",
+      "description": "seriesColorsByField pins colour to slice label. Survives SPL field reorder. Use for any chart where colour means something (healthy=green, degraded=amber, unhealthy=red).",
+      "dataSources": { "primary": "ds_named" },
+      "options": {
+        "labelDisplay": "valuesAndPercentage",
+        "seriesColorsByField": {
+          "healthy":   "#33FF99",
+          "degraded":  "#FFB627",
+          "unhealthy": "#FF2D95",
+          "unknown":   "#7AA2FF"
+        }
+      }
+    },
+
+    "viz_collapse": {
+      "type": "splunk.pie",
+      "title": "6. collapseThreshold + collapseLabel",
+      "description": "Long-tail dataset (12 countries). collapseThreshold=0.02 buckets every slice <2% into a single 'Other' slice (collapseLabel). Cuts visual noise without losing the total. Default threshold is 0.01 (1%).",
+      "dataSources": { "primary": "ds_long_tail" },
+      "options": {
+        "collapseThreshold": 0.02,
+        "collapseLabel": "Other",
+        "labelDisplay": "valuesAndPercentage"
+      }
+    },
+
+    "viz_donut_collapse": {
+      "type": "splunk.pie",
+      "title": "7. Donut + collapseThreshold (executive look)",
+      "description": "Combination that works for almost any executive overview: donut shape, long tail collapsed at 5%, percentage labels. Reduces 12 slices to ~5 readable arcs.",
+      "dataSources": { "primary": "ds_long_tail" },
+      "options": {
+        "showDonutHole": true,
+        "collapseThreshold": 0.05,
+        "collapseLabel": "Other",
+        "labelDisplay": "valuesAndPercentage"
+      }
+    },
+
+    "viz_two_slice": {
+      "type": "splunk.pie",
+      "title": "8. Two slices (donut) - allow / block",
+      "description": "Two-slice donut is the simplest possible breakdown. Use only when there are exactly two categories and the headline number is the percentage of one of them. seriesColorsByField for clear allow/block colours.",
+      "dataSources": { "primary": "ds_two" },
+      "options": {
+        "showDonutHole": true,
+        "labelDisplay": "valuesAndPercentage",
+        "seriesColorsByField": {
+          "allowed": "#33FF99",
+          "blocked": "#FF2D95"
+        }
+      }
+    },
+
+    "viz_emphasis": {
+      "type": "splunk.pie",
+      "title": "9. Single-color emphasis",
+      "description": "All slices share a single hue, varying lightness. Removes the rainbow effect when the takeaway is the SHAPE (one dominant slice + tail), not category identity.",
+      "dataSources": { "primary": "ds_basic" },
+      "options": {
+        "labelDisplay": "valuesAndPercentage",
+        "seriesColors": [
+          "#00D9FF",
+          "#33B3D8",
+          "#5A8DB7",
+          "#7A6E97",
+          "#8C5079"
+        ]
+      }
+    },
+
+    "viz_donut_chrome": {
+      "type": "splunk.pie",
+      "title": "10. Chrome-stripped donut - KPI tile",
+      "description": "labelDisplay=off + transparent backgroundColor turns the donut into a pure shape for embedding inside a KPI card. Pair with a singlevalue overlay sitting on top of the hole for the classic dashboard pattern.",
+      "dataSources": { "primary": "ds_three" },
+      "options": {
+        "showDonutHole": true,
+        "labelDisplay": "off",
+        "backgroundColor": "transparent"
+      }
+    },
+
+    "viz_threshold_aggressive": {
+      "type": "splunk.pie",
+      "title": "11. collapseThreshold=0.10 - hard collapse",
+      "description": "Threshold of 10%. Anything under 10% goes into Other. Only the top three countries survive as their own slices. Use when the top-N is the message.",
+      "dataSources": { "primary": "ds_long_tail" },
+      "options": {
+        "collapseThreshold": 0.1,
+        "collapseLabel": "Rest of world",
+        "labelDisplay": "valuesAndPercentage"
+      }
+    },
+
+    "viz_basic_pie_no_pct": {
+      "type": "splunk.pie",
+      "title": "12. Five slices, default values only",
+      "description": "Same data as panel 1 but without percentages. Use when the underlying counts are more meaningful than the proportions (revenue numbers vs. share-of-revenue).",
+      "dataSources": { "primary": "ds_basic" },
+      "options": {
+        "labelDisplay": "values"
+      }
+    },
+
+    "viz_trellis_intro": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## Trellis layout\n\n`splunk.pie` participates in the dashboard-wide **trellis layout** — one chart per category in a small-multiples grid. Set `splitByLayout: \"trellis\"` and `trellisSplitBy: \"<field>\"` and the panel splits into one pie per unique value of that field. Useful when the story is **how the part-of-whole shape varies across cohorts** (regions, products, time windows). All seven `trellis*` options are below.",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default"
+      }
+    },
+
+    "viz_trellis_status_by_region": {
+      "type": "splunk.pie",
+      "title": "13. Trellis - status mix split by region",
+      "description": "splitByLayout=trellis with trellisSplitBy=region renders one donut per region. seriesColorsByField pins traffic-light semantics so the same status keeps the same color across panels - the eye reads variation instantly. trellisColumns=3 fits all three regions on one row. trellisRowHeight=240 gives donuts breathing room.",
+      "dataSources": { "primary": "ds_trellis_region_status" },
+      "options": {
+        "splitByLayout": "trellis",
+        "trellisSplitBy": "region",
+        "trellisColumns": 3,
+        "trellisRowHeight": 240,
+        "trellisSharedScale": true,
+        "showDonutHole": true,
+        "labelDisplay": "valuesAndPercentage",
+        "seriesColorsByField": {
+          "healthy":   "#33FF99",
+          "degraded":  "#FFB627",
+          "unhealthy": "#FF2D95"
+        }
+      }
+    },
+
+    "viz_trellis_browser_by_country": {
+      "type": "splunk.pie",
+      "title": "14. Trellis - browser share split by country",
+      "description": "Four countries x five browsers. trellisMinColumnWidth=240 lets the grid auto-flow on resize; trellisColumns is omitted so the layout responds to panel width. trellisSharedScale=false would let each pie scale independently, but for proportional charts shared scale is rarely useful (each pie is already normalized to 100%).",
+      "dataSources": { "primary": "ds_trellis_browser_by_country" },
+      "options": {
+        "splitByLayout": "trellis",
+        "trellisSplitBy": "country",
+        "trellisMinColumnWidth": 240,
+        "trellisRowHeight": 220,
+        "trellisPageCount": 12,
+        "labelDisplay": "valuesAndPercentage",
+        "seriesColorsByField": {
+          "Chrome":  "#7AA2FF",
+          "Safari":  "#33FF99",
+          "Edge":    "#FFB627",
+          "Firefox": "#FF6B35",
+          "Other":   "#7B56DB"
+        }
+      }
+    }
+
+  },
+
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 3060,
+      "display": "auto-scale"
+    },
+    "structure": [
+      { "item": "viz_title",                    "type": "block", "position": { "x": 16,  "y": 16,   "w": 1408, "h": 64 } },
+      { "item": "viz_basic",                    "type": "block", "position": { "x": 16,  "y": 96,   "w": 696,  "h": 320 } },
+      { "item": "viz_label_pct",                "type": "block", "position": { "x": 728, "y": 96,   "w": 696,  "h": 320 } },
+      { "item": "viz_label_off",                "type": "block", "position": { "x": 16,  "y": 432,  "w": 696,  "h": 320 } },
+      { "item": "viz_donut",                    "type": "block", "position": { "x": 728, "y": 432,  "w": 696,  "h": 320 } },
+      { "item": "viz_named_colors",             "type": "block", "position": { "x": 16,  "y": 768,  "w": 696,  "h": 320 } },
+      { "item": "viz_collapse",                 "type": "block", "position": { "x": 728, "y": 768,  "w": 696,  "h": 320 } },
+      { "item": "viz_donut_collapse",           "type": "block", "position": { "x": 16,  "y": 1104, "w": 696,  "h": 320 } },
+      { "item": "viz_two_slice",                "type": "block", "position": { "x": 728, "y": 1104, "w": 696,  "h": 320 } },
+      { "item": "viz_emphasis",                 "type": "block", "position": { "x": 16,  "y": 1440, "w": 696,  "h": 320 } },
+      { "item": "viz_donut_chrome",             "type": "block", "position": { "x": 728, "y": 1440, "w": 696,  "h": 320 } },
+      { "item": "viz_threshold_aggressive",     "type": "block", "position": { "x": 16,  "y": 1776, "w": 696,  "h": 320 } },
+      { "item": "viz_basic_pie_no_pct",         "type": "block", "position": { "x": 728, "y": 1776, "w": 696,  "h": 320 } },
+
+      { "item": "viz_trellis_intro",            "type": "block", "position": { "x": 16,  "y": 2120, "w": 1408, "h": 120 } },
+      { "item": "viz_trellis_status_by_region", "type": "block", "position": { "x": 16,  "y": 2256, "w": 1408, "h": 380 } },
+      { "item": "viz_trellis_browser_by_country","type": "block","position": { "x": 16,  "y": 2652, "w": 1408, "h": 380 } }
+    ],
+    "globalInputs": []
+  }
+}

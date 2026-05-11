@@ -15,7 +15,7 @@ description: Use this skill to modify an existing Splunk Dashboard Studio dashbo
 
 ### Workspace mode
 
-If the dashboard is inside an existing workspace (`.splunk-dashboards/<project>/dashboard.json`), apply edits in place. The workspace state stays where it is — `ds-update` is not a pipeline stage. After editing, advise the user to re-run `ds-validate` and `ds-deploy`.
+If the dashboard is inside an existing workspace (`.splunk-dashboard-studio/<project>/dashboard.json`), apply edits in place. The workspace state stays where it is — `ds-update` is not a pipeline stage. After editing, advise the user to re-run `ds-validate` and `ds-deploy`.
 
 ### Standalone mode
 

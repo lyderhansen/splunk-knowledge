@@ -1,0 +1,364 @@
+{
+  "title": "ds-interactivity - core option matrix",
+  "description": "Combined test bench for the 5 interactivity skills that share an absolute layout: ds-tokens, ds-inputs, ds-defaults, ds-drilldowns, ds-visibility. Each section tests one skill. Tabs have their own dashboard because tabbed layout cannot coexist with absolute layout. SPL is makeresults-based so this runs anywhere.",
+  "theme": "dark",
+  "defaults": {
+    "dataSources": {
+      "ds.search": {
+        "options": {
+          "queryParameters": {
+            "earliest": "$global_time.earliest$",
+            "latest": "$global_time.latest$"
+          }
+        }
+      }
+    },
+    "tokens": {
+      "default": {
+        "selected_host":   { "value": "" },
+        "selected_action": { "value": "" }
+      }
+    }
+  },
+  "inputs": {
+    "input_global_time": {
+      "type": "input.timerange",
+      "title": "Time range",
+      "options": {
+        "token": "global_time",
+        "defaultValue": "-24h@h,now"
+      }
+    },
+    "input_index": {
+      "type": "input.dropdown",
+      "title": "Index",
+      "options": {
+        "token": "selected_index",
+        "items": [
+          {"label": "All", "value": "*"},
+          {"label": "auth", "value": "auth"},
+          {"label": "web", "value": "web"},
+          {"label": "fw", "value": "fw"}
+        ],
+        "defaultValue": "*"
+      }
+    },
+    "input_status": {
+      "type": "input.multiselect",
+      "title": "Status",
+      "options": {
+        "token": "status",
+        "defaultValue": ["200", "201"],
+        "items": [
+          {"label": "200 OK", "value": "200"},
+          {"label": "201 Created", "value": "201"},
+          {"label": "404 Not Found", "value": "404"},
+          {"label": "500 Error", "value": "500"}
+        ]
+      }
+    },
+    "input_search_text": {
+      "type": "input.text",
+      "title": "Search filter",
+      "options": {
+        "token": "search_text",
+        "defaultValue": "*"
+      }
+    },
+    "input_host_dynamic": {
+      "type": "input.dropdown",
+      "title": "Host (dynamic)",
+      "dataSources": {
+        "primary": "ds_hosts"
+      },
+      "options": {
+        "token": "host_filter",
+        "defaultValue": "*",
+        "items": "> primary | frame(label, value) | prepend(formattedStatics) | objects()"
+      },
+      "context": {
+        "formattedConfig": {"number": {"prefix": ""}},
+        "formattedStatics": "> statics | formatByType(formattedConfig)",
+        "statics": [["All"], ["*"]],
+        "label": "> primary | seriesByName(\"label\") | renameSeries(\"label\") | formatByType(formattedConfig)",
+        "value": "> primary | seriesByName(\"label\") | renameSeries(\"value\") | formatByType(formattedConfig)"
+      }
+    }
+  },
+  "dataSources": {
+    "ds_hosts": {
+      "type": "ds.test",
+      "options": {
+        "data": {
+          "fields": [{"name": "label"}, {"name": "value"}],
+          "columns": [
+            ["web-01", "web-02", "web-03"],
+            ["web-01", "web-02", "web-03"]
+          ]
+        }
+      }
+    },
+    "ds_table_rows": {
+      "type": "ds.search",
+      "options": {
+        "query": "| makeresults count=5 | streamstats count AS row | eval host=case(row=1,\"web-01\",row=2,\"web-02\",row=3,\"db-01\",row=4,\"app-01\",row=5,\"cache-01\"), action=case(row%2=0,\"allow\",1=1,\"deny\"), bytes=row*1024 | table host action bytes"
+      }
+    },
+    "ds_selected_detail": {
+      "type": "ds.search",
+      "options": {
+        "query": "| makeresults | eval host=\"$selected_host$\", note=\"clicked from upstream table\" | table host note"
+      }
+    },
+    "ds_count_kpi": {
+      "type": "ds.search",
+      "options": {
+        "query": "| makeresults | eval count=42 | table count"
+      }
+    }
+  },
+  "visualizations": {
+    "viz_section_intro": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# `ds-interactivity` core matrix\n\nOne dashboard, five interactivity skills. Each section is owned by one SKILL.md.\n\n- §1 **ds-tokens** — token output panel\n- §2 **ds-inputs** — input flavours (timerange, dropdown, multiselect, text, dynamic dropdown)\n- §3 **ds-defaults** — global time wiring\n- §4 **ds-drilldowns** — setToken / linkToDashboard / linkToSearch / customUrl\n- §5 **ds-visibility** — show / hide based on token state",
+        "fontSize": "small"
+      }
+    },
+    "viz_section1_header": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## §1 ds-tokens\n\nThe panel below shows every token resolved end-to-end. Change any input above and watch the string update.",
+        "fontSize": "small"
+      }
+    },
+    "viz_token_echo": {
+      "type": "splunk.markdown",
+      "title": "Token echo",
+      "description": "Markdown panel that interpolates every dashboard token directly. No SPL involved — the markdown engine substitutes `$tok$` references at render time. Token values are wrapped in inline-code spans so wildcards and special chars (e.g. `*`, `_`) don't get reinterpreted as markdown formatting. Multi-word free-text tokens (`search_text`) and multiselect tokens (`status`) both pass through `|s` to get quoted values, so the rendered SPL is parser-clean even when the user types spaces or selects multiple options.",
+      "options": {
+        "markdown": "**Resolved SPL fragment** (every multi-word token uses `|s` so the output is parser-clean):\n\n```spl\n| eval msg=\"index=$selected_index$ status IN ($status|s$) filter=$search_text|s$ host=$host_filter|s$ time=$global_time.earliest$..$global_time.latest$\"\n```\n\n**Individual tokens** — both raw and `|s`-quoted form shown side by side:\n\n- `$selected_index$` → `$selected_index$`\n- `$status$` → `$status$` &nbsp;&nbsp; with `|s`: `$status|s$`\n- `$search_text$` → `$search_text$` &nbsp;&nbsp; with `|s`: `$search_text|s$`\n- `$host_filter$` → `$host_filter$` &nbsp;&nbsp; with `|s`: `$host_filter|s$`\n- `$global_time.earliest$` → `$global_time.earliest$`\n- `$global_time.latest$` → `$global_time.latest$`\n- `$selected_host$` (from §4 click) → `$selected_host$`\n- `$selected_action$` (from §4 click) → `$selected_action$`",
+        "fontSize": "small"
+      }
+    },
+    "viz_section2_header": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## §2 ds-inputs\n\n5 input flavours wired above:\n- `input.timerange` — `global_time` (with `.earliest` / `.latest` accessors)\n- `input.dropdown` — `selected_index`\n- `input.multiselect` — `status` (array, comma-joined in token expansion)\n- `input.text` — `search_text`\n- `input.dropdown` w/ DOS items — `host_filter` (populated from `ds_hosts`)",
+        "fontSize": "small"
+      }
+    },
+    "viz_inputs_proof": {
+      "type": "splunk.markdown",
+      "title": "Inputs → tokens (live)",
+      "description": "Bullet-list view of which input writes which token, plus the current value. Live-updates as the user changes any input. **Not a markdown table on purpose** — Dashboard Studio's markdown renderer does not support GFM pipe-tables (they render as raw `|`-separated text). Use bullet lists with bold field labels instead. See `ds-viz-markdown` skill for the full set of supported markdown features.",
+      "options": {
+        "markdown": "**From inputs:**\n\n- **Time range** — `input.timerange` writes `global_time`; current: earliest=`$global_time.earliest$`, latest=`$global_time.latest$`\n- **Index** — `input.dropdown` writes `selected_index`; current: `$selected_index$`\n- **Status** — `input.multiselect` writes `status`; current: `$status$` (with `|s` filter: `$status|s$`)\n- **Search filter** — `input.text` writes `search_text`; current: `$search_text$` (with `|s`: `$search_text|s$`)\n- **Host (dynamic)** — `input.dropdown` w/ DOS items writes `host_filter`; current: `$host_filter$` (with `|s`: `$host_filter|s$`)\n\n**From drilldowns (§4 row click → `setToken`):**\n\n- `selected_host` → `$selected_host$`\n- `selected_action` → `$selected_action$`",
+        "fontSize": "small"
+      }
+    },
+    "viz_section3_header": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## §3 ds-defaults\n\nThe `defaults.dataSources.\"ds.search\".options.queryParameters` block wires `$global_time.earliest$` / `$global_time.latest$` into every search above. None of the `ds.search` entries set their own `queryParameters` — the default flows through.",
+        "fontSize": "small"
+      }
+    },
+    "viz_kpi_default_time": {
+      "type": "splunk.singlevalue",
+      "title": "KPI driven by defaults",
+      "description": "This `ds.search` declares no queryParameters. The dashboard-level defaults block wires global_time into it.",
+      "dataSources": {"primary": "ds_count_kpi"},
+      "options": {
+        "majorValue": "> primary | seriesByName(\"count\") | lastPoint()",
+        "underLabel": "events (default time wired)"
+      }
+    },
+    "viz_section4_header": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## §4 ds-drilldowns\n\nClick a row in the table below to fire the demo drilldown.\n\n- **setToken** — captures `row.host.value` into `$selected_host$` and `row.action.value` into `$selected_action$`. §5 reacts to `$selected_host$`.\n- **linkToSearch** — opens the Splunk Search UI prefilled with `index=main host=<row>` and forwards the dashboard's current time range.\n- **linkToDashboard** — re-navigates to this same dashboard (`ds_interactivity_core_dark`), forwarding `selected_host` + the time range. **Token forwarding requires the array-of-objects shape** `tokens: [{token, value}]` — the string-keyed map shape is silently rejected by the editor.\n- **customUrl** — opens an external investigation URL with URL-encoded row values via the `|u` token filter.",
+        "fontSize": "small"
+      }
+    },
+    "viz_drilldown_table": {
+      "type": "splunk.table",
+      "title": "Drilldown source",
+      "description": "Click any row to fire all four drilldown actions. setToken populates $selected_host$ for §5.",
+      "dataSources": {"primary": "ds_table_rows"},
+      "options": {
+        "drilldown": "all",
+        "showInternalFields": false
+      },
+      "eventHandlers": [
+        {
+          "type": "drilldown.setToken",
+          "options": {
+            "tokens": [
+              {"token": "selected_host", "key": "row.host.value"},
+              {"token": "selected_action", "key": "row.action.value"}
+            ]
+          }
+        }
+      ]
+    },
+    "viz_drilldown_table_url": {
+      "type": "splunk.table",
+      "title": "Drilldown — customUrl",
+      "description": "Click a row to open an external URL with URL-encoded row values via |u filter.",
+      "dataSources": {"primary": "ds_table_rows"},
+      "options": {
+        "drilldown": "all",
+        "showInternalFields": false
+      },
+      "eventHandlers": [
+        {
+          "type": "drilldown.customUrl",
+          "options": {
+            "url": "https://example.com/investigate?host=$row.host.value|u$&action=$row.action.value|u$",
+            "newTab": true
+          }
+        }
+      ]
+    },
+    "viz_drilldown_table_search": {
+      "type": "splunk.table",
+      "title": "Drilldown — linkToSearch",
+      "description": "Opens Splunk Search with a prefilled query and the dashboard's current time range.",
+      "dataSources": {"primary": "ds_table_rows"},
+      "options": {
+        "drilldown": "all",
+        "showInternalFields": false
+      },
+      "eventHandlers": [
+        {
+          "type": "drilldown.linkToSearch",
+          "options": {
+            "query": "index=main host=$row.host.value$ | stats count by sourcetype",
+            "earliest": "$global_time.earliest$",
+            "latest": "$global_time.latest$",
+            "newTab": true
+          }
+        }
+      ]
+    },
+    "viz_drilldown_table_dash": {
+      "type": "splunk.table",
+      "title": "Drilldown — linkToDashboard",
+      "description": "Navigates to ds_interactivity_core_dark in the same app, forwarding row.host.value as the `selected_host` token and the current global time range. Uses the array-of-objects `tokens: [{token, value}]` shape (the documented schema). The string-keyed `tokens: { name: value }` shape is rejected by the editor with no error.",
+      "dataSources": {"primary": "ds_table_rows"},
+      "options": {
+        "drilldown": "all",
+        "showInternalFields": false
+      },
+      "eventHandlers": [
+        {
+          "type": "drilldown.linkToDashboard",
+          "options": {
+            "app": "splunk-knowledge-testing",
+            "dashboard": "ds_interactivity_core_dark",
+            "newTab": true,
+            "tokens": [
+              {"token": "selected_host", "value": "row.host.value"},
+              {"token": "global_time.earliest", "value": "global_time.earliest"},
+              {"token": "global_time.latest", "value": "global_time.latest"}
+            ]
+          }
+        }
+      ]
+    },
+    "viz_section5_header": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## §5 ds-visibility\n\nThree panels below toggle on different token states of `$selected_host$`. Click rows in §4 to flip them on and off.\n\n- **panel A** — visible when `$selected_host$` is set (after any row click in §4). Condition: `$selected_host$ != \"\"`.\n- **panel B** — visible only when `$selected_host$` equals `web-01`. Condition: `$selected_host$ = \"web-01\"`.\n- **panel C** — visible when `$selected_host$` is unset (initial state). Condition: `$selected_host$ = \"\"`.\n\n**How the wiring works:** every panel's `containerOptions.visibility.showConditions` references one or more *condition IDs*. The conditions themselves are declared at the dashboard root under `expressions.conditions.<id>.value`.\n\n**Two hard rules from QA debugging:**\n\n1. **`visibility` lives under `containerOptions`, NOT at panel root.** Setting `visibility` directly on the viz is rejected with `must NOT have additional properties`. Every example in the official Splunk doc puts it at `containerOptions.visibility`. Same for inputs (`inputs.<id>.containerOptions.visibility`).\n2. **Condition expressions use bare tokens + quoted literals.** Write `$selected_host$ = \"web-01\"`, NOT `\"$selected_host$\" = \"web-01\"` (wrapping the token in quotes breaks the SPL parser when the value contains a dash). The `isSet($tok$)` / `not isSet($tok$)` form shown in newer Splunk docs is JSONata-only and is rejected by Splunk Enterprise 10.2.x's SPL-flavoured condition evaluator with `S0201 Syntax error: \"isSet\"`. Plain `$tok$ != \"\"` / `$tok$ = \"\"` works on every version we tested.\n\nBoolean operators are lowercase: `and`, `or`, `not`. Single equals (`=` / `!=`), not `==`.",
+        "fontSize": "small"
+      }
+    },
+    "viz_visibility_a_set": {
+      "type": "splunk.table",
+      "title": "A — visible when $selected_host$ is set",
+      "description": "Visible only when `$selected_host$` is non-empty. Uses containerOptions.visibility.showConditions referencing condition_host_set declared in expressions.conditions.",
+      "dataSources": {"primary": "ds_selected_detail"},
+      "options": {"showInternalFields": false},
+      "containerOptions": {
+        "visibility": {
+          "showConditions": ["condition_host_set"]
+        }
+      }
+    },
+    "viz_visibility_b_match": {
+      "type": "splunk.singlevalue",
+      "title": "B — visible only when host == web-01",
+      "description": "Visible only when `$selected_host$` equals 'web-01'. Click that row in §4 to reveal it.",
+      "dataSources": {"primary": "ds_selected_detail"},
+      "options": {
+        "majorValue": "> primary | seriesByName(\"host\") | lastPoint()",
+        "underLabel": "matched web-01"
+      },
+      "containerOptions": {
+        "visibility": {
+          "showConditions": ["condition_host_is_web01"]
+        }
+      }
+    },
+    "viz_visibility_c_unset": {
+      "type": "splunk.markdown",
+      "title": "C — visible when no host selected",
+      "description": "Visible only in the initial state (no host selected). Click a row in §4 to hide.",
+      "options": {
+        "markdown": "## C — initial state\n\n_(no host selected — click a row in §4 to hide this and reveal A and B)_",
+        "fontSize": "default"
+      },
+      "containerOptions": {
+        "visibility": {
+          "showConditions": ["condition_host_unset"]
+        }
+      }
+    }
+  },
+  "expressions": {
+    "conditions": {
+      "condition_host_set": {
+        "name": "host is set",
+        "value": "$selected_host$ != \"\""
+      },
+      "condition_host_is_web01": {
+        "name": "host is web-01",
+        "value": "$selected_host$ = \"web-01\""
+      },
+      "condition_host_unset": {
+        "name": "host is unset",
+        "value": "$selected_host$ = \"\""
+      }
+    }
+  },
+  "layout": {
+    "type": "absolute",
+    "options": {"width": 1440, "height": 2700, "backgroundColor": "#0F1729"},
+    "globalInputs": [
+      "input_global_time",
+      "input_index",
+      "input_status",
+      "input_search_text",
+      "input_host_dynamic"
+    ],
+    "structure": [
+      {"item": "viz_section_intro",        "type": "block", "position": {"x": 0,   "y": 0,    "w": 1440, "h": 180}},
+      {"item": "viz_section1_header",      "type": "block", "position": {"x": 0,   "y": 200,  "w": 1440, "h": 100}},
+      {"item": "viz_token_echo",           "type": "block", "position": {"x": 0,   "y": 320,  "w": 1440, "h": 140}},
+      {"item": "viz_section2_header",      "type": "block", "position": {"x": 0,   "y": 480,  "w": 1440, "h": 180}},
+      {"item": "viz_inputs_proof",         "type": "block", "position": {"x": 0,   "y": 680,  "w": 1440, "h": 160}},
+      {"item": "viz_section3_header",      "type": "block", "position": {"x": 0,   "y": 860,  "w": 1440, "h": 140}},
+      {"item": "viz_kpi_default_time",     "type": "block", "position": {"x": 0,   "y": 1020, "w": 720,  "h": 200}},
+      {"item": "viz_section4_header",      "type": "block", "position": {"x": 0,   "y": 1240, "w": 1440, "h": 200}},
+      {"item": "viz_drilldown_table",      "type": "block", "position": {"x": 0,   "y": 1460, "w": 720,  "h": 220}},
+      {"item": "viz_drilldown_table_url",  "type": "block", "position": {"x": 720, "y": 1460, "w": 720,  "h": 220}},
+      {"item": "viz_drilldown_table_search","type": "block","position": {"x": 0,   "y": 1700, "w": 720,  "h": 220}},
+      {"item": "viz_drilldown_table_dash", "type": "block", "position": {"x": 720, "y": 1700, "w": 720,  "h": 220}},
+      {"item": "viz_section5_header",      "type": "block", "position": {"x": 0,   "y": 1940, "w": 1440, "h": 460}},
+      {"item": "viz_visibility_a_set",     "type": "block", "position": {"x": 20,  "y": 2420, "w": 460,  "h": 240}},
+      {"item": "viz_visibility_b_match",   "type": "block", "position": {"x": 490, "y": 2420, "w": 460,  "h": 240}},
+      {"item": "viz_visibility_c_unset",   "type": "block", "position": {"x": 960, "y": 2420, "w": 460,  "h": 240}}
+    ]
+  }
+}

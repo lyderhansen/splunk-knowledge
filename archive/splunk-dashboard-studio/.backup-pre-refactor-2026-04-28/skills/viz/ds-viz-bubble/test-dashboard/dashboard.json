@@ -1,0 +1,269 @@
+{
+  "title": "ds-viz-bubble - option matrix (dark)",
+  "description": "Test bench for splunk.bubble. Verifies all options from the 10.4 PDF: x/y/size/category DOS bindings, bubbleSizeMin/Max/Method (area|diameter), seriesColors, seriesColorsByField, axis surface (Min/Max, Scale linear|log, Abbreviation, Title/Label/Line/Tick visibility, gridlines), legend, backgroundColor, resultLimit. Pairs with the canonical splunkd_access example from the PDF.",
+  "defaults": {
+    "dataSources": {
+      "global": {
+        "options": {
+          "queryParameters": {
+            "earliest": "-24h@h",
+            "latest": "now"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": false,
+        "showLastUpdated": false
+      }
+    }
+  },
+  "dataSources": {
+    "ds_three_dim": {
+      "type": "ds.search",
+      "name": "three-dim simple - x y size",
+      "options": {
+        "query": "| makeresults count=20 | streamstats count AS rn | eval x_val = round(10 + random()%90) | eval y_val = round(20 + random()%180) | eval size_val = round(100 + random()%900) | table x_val y_val size_val"
+      }
+    },
+    "ds_four_dim": {
+      "type": "ds.search",
+      "name": "four-dim with category - latency vs throughput size requests color service",
+      "options": {
+        "query": "| makeresults count=40 | streamstats count AS rn | eval service = case(rn%4==0,\"api\", rn%4==1,\"db\", rn%4==2,\"cache\", 1==1,\"queue\") | eval throughput = case(service==\"api\",100+random()%400, service==\"db\",50+random()%200, service==\"cache\",500+random()%1500, 1==1,200+random()%600) | eval latency = case(service==\"api\",20+random()%80, service==\"db\",100+random()%300, service==\"cache\",5+random()%20, 1==1,40+random()%120) | eval requests = round(1000 + random()%9000) | table throughput latency requests service"
+      }
+    },
+    "ds_canonical_pdf": {
+      "type": "ds.search",
+      "name": "canonical PDF example - status x date_hour x count x total_bytes",
+      "options": {
+        "query": "| makeresults count=72 | streamstats count AS rn | eval date_hour = (rn-1)%24 | eval status = case(rn%4==0,\"200\", rn%4==1,\"301\", rn%4==2,\"404\", 1==1,\"500\") | eval count = case(status==\"200\",100+random()%400, status==\"301\",10+random()%30, status==\"404\",5+random()%50, 1==1,1+random()%10) | eval total_bytes = count * (500 + random()%2000) | stats sum(count) AS count sum(total_bytes) AS total_bytes by status, date_hour | table date_hour count total_bytes status"
+      }
+    },
+    "ds_log_scale": {
+      "type": "ds.search",
+      "name": "wide-range bubble data - candidates for log scale",
+      "options": {
+        "query": "| makeresults count=30 | streamstats count AS rn | eval x_val = rn | eval y_val = pow(2, rn%10) + random()%50 | eval size_val = round(50 + random()%450) | table x_val y_val size_val"
+      }
+    }
+  },
+  "visualizations": {
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# `splunk.bubble` - option matrix\n\nBubble = scatter + a third numeric dimension encoded as marker size. Optional fourth dimension via `category` colors.\n\nVerified options from the **10.4 PDF**:\n- DOS bindings: `x`, `y`, `size`, `category`\n- Field labels: `xField`, `yField`, `sizeField`, `categoryField`\n- Sizing: `bubbleSizeMin` (10), `bubbleSizeMax` (50), `bubbleSizeMethod` (`area` | `diameter`)\n- `resultLimit` (50000), `backgroundColor`\n- Color: `seriesColors`, `seriesColorsByField`\n- Full axis surface (Min/Max, Scale linear|log, Abbreviation, Title/Label/Line/Tick visibility, MajorTickInterval, ExtendedRange, WithZero, MinorGridLines)\n- Legend: `legendDisplay`, `legendTruncation`",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "default"
+      }
+    },
+    "viz_default": {
+      "type": "splunk.bubble",
+      "title": "1. Default - x, y, size from columns 0/1/2",
+      "description": "No options. Bound by series order. Single color since no category.",
+      "dataSources": { "primary": "ds_three_dim" }
+    },
+    "viz_explicit_named": {
+      "type": "splunk.bubble",
+      "title": "2. Explicit bindings by name",
+      "description": "x/y/size pinned via seriesByName. Adds axis titles.",
+      "dataSources": { "primary": "ds_three_dim" },
+      "options": {
+        "x": "> primary | seriesByName('x_val')",
+        "y": "> primary | seriesByName('y_val')",
+        "size": "> primary | seriesByName('size_val')",
+        "xAxisTitleText": "x dimension",
+        "yAxisTitleText": "y dimension"
+      }
+    },
+    "viz_with_category": {
+      "type": "splunk.bubble",
+      "title": "3. Four-dim with category",
+      "description": "x=throughput, y=latency, size=requests, category=service. Each service gets its own color.",
+      "dataSources": { "primary": "ds_four_dim" },
+      "options": {
+        "x": "> primary | seriesByName('throughput')",
+        "y": "> primary | seriesByName('latency')",
+        "size": "> primary | seriesByName('requests')",
+        "category": "> primary | seriesByName('service')",
+        "xAxisTitleText": "throughput (req/s)",
+        "yAxisTitleText": "latency (ms)"
+      }
+    },
+    "viz_size_max_big": {
+      "type": "splunk.bubble",
+      "title": "4. bubbleSizeMax 100",
+      "description": "Default cap is 50. Bigger cap = more visual weight on largest values.",
+      "dataSources": { "primary": "ds_four_dim" },
+      "options": {
+        "x": "> primary | seriesByName('throughput')",
+        "y": "> primary | seriesByName('latency')",
+        "size": "> primary | seriesByName('requests')",
+        "category": "> primary | seriesByName('service')",
+        "bubbleSizeMax": 100
+      }
+    },
+    "viz_size_min_min": {
+      "type": "splunk.bubble",
+      "title": "5. bubbleSizeMin 4 - tight range",
+      "description": "bubbleSizeMin=4, bubbleSizeMax=20. Compresses size variance.",
+      "dataSources": { "primary": "ds_four_dim" },
+      "options": {
+        "x": "> primary | seriesByName('throughput')",
+        "y": "> primary | seriesByName('latency')",
+        "size": "> primary | seriesByName('requests')",
+        "category": "> primary | seriesByName('service')",
+        "bubbleSizeMin": 4,
+        "bubbleSizeMax": 20
+      }
+    },
+    "viz_size_method_diameter": {
+      "type": "splunk.bubble",
+      "title": "6. bubbleSizeMethod=diameter",
+      "description": "Default is 'area' (preserves visual proportion). 'diameter' makes large values look even larger.",
+      "dataSources": { "primary": "ds_four_dim" },
+      "options": {
+        "x": "> primary | seriesByName('throughput')",
+        "y": "> primary | seriesByName('latency')",
+        "size": "> primary | seriesByName('requests')",
+        "category": "> primary | seriesByName('service')",
+        "bubbleSizeMethod": "diameter",
+        "bubbleSizeMax": 60
+      }
+    },
+    "viz_custom_palette": {
+      "type": "splunk.bubble",
+      "title": "7. Custom seriesColors",
+      "description": "Brand palette overrides default. Maps in alphabetical category order.",
+      "dataSources": { "primary": "ds_four_dim" },
+      "options": {
+        "x": "> primary | seriesByName('throughput')",
+        "y": "> primary | seriesByName('latency')",
+        "size": "> primary | seriesByName('requests')",
+        "category": "> primary | seriesByName('service')",
+        "seriesColors": ["#33FF99", "#FFB627", "#FF2D95", "#7AA2FF"]
+      }
+    },
+    "viz_colors_by_field": {
+      "type": "splunk.bubble",
+      "title": "8. seriesColorsByField",
+      "description": "Lock specific colors to category values regardless of order.",
+      "dataSources": { "primary": "ds_four_dim" },
+      "options": {
+        "x": "> primary | seriesByName('throughput')",
+        "y": "> primary | seriesByName('latency')",
+        "size": "> primary | seriesByName('requests')",
+        "category": "> primary | seriesByName('service')",
+        "seriesColorsByField": {
+          "api": "#7AA2FF",
+          "db": "#FF2D95",
+          "cache": "#33FF99",
+          "queue": "#FFB627"
+        }
+      }
+    },
+    "viz_log_y": {
+      "type": "splunk.bubble",
+      "title": "9. Log scale on y",
+      "description": "yAxisScale=log. y_val spans several orders of magnitude.",
+      "dataSources": { "primary": "ds_log_scale" },
+      "options": {
+        "x": "> primary | seriesByName('x_val')",
+        "y": "> primary | seriesByName('y_val')",
+        "size": "> primary | seriesByName('size_val')",
+        "yAxisScale": "log",
+        "yAxisTitleText": "value (log)",
+        "xAxisTitleText": "n"
+      }
+    },
+    "viz_axes_clean": {
+      "type": "splunk.bubble",
+      "title": "10. Stripped editorial style",
+      "description": "Titles + axis lines + grids off. Pure point cloud.",
+      "dataSources": { "primary": "ds_four_dim" },
+      "options": {
+        "x": "> primary | seriesByName('throughput')",
+        "y": "> primary | seriesByName('latency')",
+        "size": "> primary | seriesByName('requests')",
+        "category": "> primary | seriesByName('service')",
+        "xAxisTitleVisibility": "hide",
+        "yAxisTitleVisibility": "hide",
+        "xAxisLineVisibility": "hide",
+        "yAxisLineVisibility": "hide",
+        "showYMajorGridLines": false,
+        "legendDisplay": "off",
+        "seriesColors": ["#33FF99", "#FFB627", "#FF2D95", "#7AA2FF"]
+      }
+    },
+    "viz_legend_bottom": {
+      "type": "splunk.bubble",
+      "title": "11. Legend bottom + truncation",
+      "description": "legendDisplay=bottom, legendTruncation=ellipsisMiddle.",
+      "dataSources": { "primary": "ds_four_dim" },
+      "options": {
+        "x": "> primary | seriesByName('throughput')",
+        "y": "> primary | seriesByName('latency')",
+        "size": "> primary | seriesByName('requests')",
+        "category": "> primary | seriesByName('service')",
+        "legendDisplay": "bottom",
+        "legendTruncation": "ellipsisMiddle"
+      }
+    },
+    "viz_canonical_pdf": {
+      "type": "splunk.bubble",
+      "title": "12. Canonical PDF example - status x date_hour",
+      "description": "Reproduces the splunkd_access example: x=date_hour, y=count, size=total_bytes, category=status.",
+      "dataSources": { "primary": "ds_canonical_pdf" },
+      "options": {
+        "x": "> primary | seriesByName('date_hour')",
+        "y": "> primary | seriesByName('count')",
+        "size": "> primary | seriesByName('total_bytes')",
+        "category": "> primary | seriesByName('status')",
+        "xAxisTitleText": "Hour",
+        "yAxisTitleText": "Count"
+      }
+    },
+    "viz_tinted": {
+      "type": "splunk.bubble",
+      "title": "13. backgroundColor tint",
+      "description": "Custom panel background paired with brand palette.",
+      "dataSources": { "primary": "ds_four_dim" },
+      "options": {
+        "x": "> primary | seriesByName('throughput')",
+        "y": "> primary | seriesByName('latency')",
+        "size": "> primary | seriesByName('requests')",
+        "category": "> primary | seriesByName('service')",
+        "backgroundColor": "#151B3A",
+        "seriesColors": ["#33FF99", "#FFB627", "#7AA2FF", "#FF2D95"]
+      }
+    }
+  },
+  "inputs": {},
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 2360,
+      "display": "auto-scale",
+      "backgroundColor": "#0F1729"
+    },
+    "structure": [
+      { "item": "viz_title", "type": "block", "position": { "x": 20, "y": 20, "w": 1400, "h": 220 } },
+      { "item": "viz_default", "type": "block", "position": { "x": 20, "y": 260, "w": 460, "h": 280 } },
+      { "item": "viz_explicit_named", "type": "block", "position": { "x": 490, "y": 260, "w": 460, "h": 280 } },
+      { "item": "viz_with_category", "type": "block", "position": { "x": 960, "y": 260, "w": 460, "h": 280 } },
+      { "item": "viz_size_max_big", "type": "block", "position": { "x": 20, "y": 560, "w": 460, "h": 280 } },
+      { "item": "viz_size_min_min", "type": "block", "position": { "x": 490, "y": 560, "w": 460, "h": 280 } },
+      { "item": "viz_size_method_diameter", "type": "block", "position": { "x": 960, "y": 560, "w": 460, "h": 280 } },
+      { "item": "viz_custom_palette", "type": "block", "position": { "x": 20, "y": 860, "w": 460, "h": 280 } },
+      { "item": "viz_colors_by_field", "type": "block", "position": { "x": 490, "y": 860, "w": 460, "h": 280 } },
+      { "item": "viz_log_y", "type": "block", "position": { "x": 960, "y": 860, "w": 460, "h": 280 } },
+      { "item": "viz_axes_clean", "type": "block", "position": { "x": 20, "y": 1160, "w": 460, "h": 280 } },
+      { "item": "viz_legend_bottom", "type": "block", "position": { "x": 490, "y": 1160, "w": 460, "h": 280 } },
+      { "item": "viz_canonical_pdf", "type": "block", "position": { "x": 960, "y": 1160, "w": 460, "h": 280 } },
+      { "item": "viz_tinted", "type": "block", "position": { "x": 20, "y": 1460, "w": 1400, "h": 320 } }
+    ],
+    "globalInputs": []
+  }
+}
