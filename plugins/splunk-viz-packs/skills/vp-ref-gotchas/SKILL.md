@@ -507,12 +507,34 @@ ctx.shadowOffsetX = 0;
 ctx.shadowOffsetY = 0;
 ```
 
-### B7. JS defaults must match formatter HTML defaults
+### B7. JS defaults must match formatter HTML defaults — NEVER empty
 
 Splunk does NOT send formatter defaults on first load. If your JS
 default for `accentColor` is `#06B6D4` but the formatter says
 `value="#FF0000"`, the viz renders with cyan until the user touches
 the color picker — then it jumps to red. Always keep them in sync.
+
+**CRITICAL: Field name settings MUST have non-empty defaults.**
+In ad-hoc search, the formatter shows ALL settings to the user. If
+field settings have `value=""`, the viz has no idea which SPL columns
+to read — it renders blank or broken. The defaults must match the
+expected field names from the demo data CSV.
+
+```html
+<!-- WRONG — viz renders blank in ad-hoc search, fields show empty -->
+<splunk-text-input name="{{VIZ_NAMESPACE}}.trackField" value="">
+<splunk-text-input name="{{VIZ_NAMESPACE}}.artistField" value="">
+
+<!-- RIGHT — defaults match demo CSV columns, viz works immediately -->
+<splunk-text-input name="{{VIZ_NAMESPACE}}.trackField" value="track_name">
+<splunk-text-input name="{{VIZ_NAMESPACE}}.artistField" value="artist">
+```
+
+**Rule:** EVERY formatter setting must have a `value="..."` that
+matches the JS `getOption()` fallback. Field name settings must
+default to the demo CSV column names. Color settings must default to
+the theme accent. Toggle settings must default to their JS fallback.
+No empty `value=""` on ANY setting except free-text labels.
 
 ### B8. Auto-scale by default, explicit override at non-zero
 

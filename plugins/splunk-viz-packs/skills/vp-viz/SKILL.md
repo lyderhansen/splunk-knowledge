@@ -726,6 +726,11 @@ Splunk's viz framework ignores raw HTML. NEVER use `<div>`, `<input>`,
 
 No `<html>`, `<body>`, or `<head>` wrappers. No CSS. No JavaScript.
 
+**CRITICAL: Every `value="..."` MUST be non-empty and match the JS
+`getOption()` default (B7).** In ad-hoc search, empty `value=""` means
+the viz gets no field names and renders blank. Field settings default
+to the demo CSV column names. Color settings default to theme accent.
+
 ```html
 <form class="splunk-formatter-section" section-label="Data configurations">
     <splunk-control-group label="Value field" help="SPL field for the primary value">
