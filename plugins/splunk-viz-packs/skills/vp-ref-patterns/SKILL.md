@@ -133,6 +133,47 @@ for (var i = 0; i < segments; i++) {
 Never use generic green→yellow→red — it looks like a gaming HUD, not
 a branded instrument. Derive colors from the brand palette.
 
+### Tinted neutrals — never use pure grey
+
+Pure grey (#808080, #333333, etc.) looks dead on screen. Always add a
+tiny amount of chroma toward the brand hue. This is the OKLCH "tinted
+neutral" technique used by every high-end design system.
+
+**ES5 implementation:**
+```javascript
+function tintNeutral(grey, brandHex, amount) {
+    // amount: 0.03-0.08 (3-8% tint toward brand)
+    var r1 = parseInt(grey.slice(1, 3), 16);
+    var g1 = parseInt(grey.slice(3, 5), 16);
+    var b1 = parseInt(grey.slice(5, 7), 16);
+    var r2 = parseInt(brandHex.slice(1, 3), 16);
+    var g2 = parseInt(brandHex.slice(3, 5), 16);
+    var b2 = parseInt(brandHex.slice(5, 7), 16);
+    var r = Math.round(r1 + (r2 - r1) * amount);
+    var g = Math.round(g1 + (g2 - g1) * amount);
+    var b = Math.round(b1 + (b2 - b1) * amount);
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
+// Usage in theme.js:
+// var bg = tintNeutral('#0B0C0E', brandAccent, 0.05);
+// var panel = tintNeutral('#141519', brandAccent, 0.04);
+// var edge = tintNeutral('#2A2B30', brandAccent, 0.03);
+```
+
+**Why it matters:** A dashboard with `bg: #0B0C0E` and `panel: #141519`
+(pure greys) looks generic. The same dashboard with `bg: #0B0D12`
+and `panel: #141721` (tinted 5% toward navy) looks crafted. The eye
+can't name the difference, but it FEELS more intentional.
+
+**Tint amounts by surface:**
+| Surface | Amount | Why |
+|---|---|---|
+| Canvas background | 0.05-0.08 | Strongest tint, sets the atmosphere |
+| Panel/card background | 0.03-0.05 | Slightly less than canvas |
+| Borders/edges | 0.02-0.03 | Subtle, just enough warmth |
+| Text (dim) | 0.01-0.02 | Barely visible, keeps harmony |
+
 ## Text utilities
 
 ### Fit text to width
@@ -484,6 +525,67 @@ if (this._animTimer) {
 | `glow_pulse` | Modulate `shadowBlur` multiplier |
 | `breathe` | `var s = 1 + 0.03 * Math.sin(this._animPhase); ctx.scale(s, s)` around center |
 | `spin` | Add `this._animPhase * 2` to rotation angle |
+
+### Motion timing constants — animation discipline
+
+Canvas animations must follow consistent timing to feel professional.
+Random durations and easings make the dashboard feel janky.
+
+**Duration tiers:**
+| Tier | Duration | When to use | Example |
+|---|---|---|---|
+| Instant | 50-100ms | Hover highlight, cursor change | Cell highlight on mouseover |
+| Micro | 150-200ms | Value update, color transition | KPI number change |
+| State | 250-350ms | Panel reveal, gauge fill | Gauge arc animation on load |
+| Entrance | 400-600ms | First render, page transition | All vizs fade in on load |
+
+**Easing functions (ES5):**
+```javascript
+function easeOutQuart(t) { return 1 - Math.pow(1 - t, 4); }
+function easeOutExpo(t) { return t === 1 ? 1 : 1 - Math.pow(2, -10 * t); }
+function easeInOutCubic(t) {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+```
+
+**Usage pattern:**
+```javascript
+// Animate gauge from 0 to target value over 350ms
+var startTime = null;
+var targetPct = 0.73;
+
+function animateGauge(timestamp) {
+    if (!startTime) startTime = timestamp;
+    var elapsed = timestamp - startTime;
+    var progress = Math.min(elapsed / 350, 1);
+    var eased = easeOutQuart(progress);
+    var currentPct = targetPct * eased;
+
+    ctx.clearRect(0, 0, w, h);
+    drawGaugeArc(ctx, currentPct);
+
+    if (progress < 1) {
+        requestAnimationFrame(animateGauge);
+    }
+}
+requestAnimationFrame(animateGauge);
+```
+
+**Rules:**
+- Exit animations = 75% of entrance duration (feels snappier)
+- Never animate more than 2 elements simultaneously (Christmas tree effect)
+- `requestAnimationFrame` over `setInterval` for smooth 60fps
+- Clean up in `destroy()` — cancel pending frames with a flag:
+  `this._animating = false;` in destroy, check in animation loop
+- Respect `prefers-reduced-motion`: skip entrance animations,
+  keep functional transitions (hover highlight still works)
+
+**What NOT to animate:**
+- Don't animate on every data update — only on first render or
+  significant value changes (>10% delta)
+- Don't use bounce or elastic easing — feels dated and cheap
+- Don't animate text content (numbers counting up) unless it's
+  the HERO metric — it's distracting on supporting vizs
 
 ## Canvas effects stacking order
 

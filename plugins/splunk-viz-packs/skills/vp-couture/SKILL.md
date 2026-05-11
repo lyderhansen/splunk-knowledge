@@ -865,6 +865,44 @@ general `letter-spacing` recommendation from the mood table).
 Document which conditions were applied in the design brief so
 downstream skills (vp-create, vp-viz) know WHY a decision was made.
 
+## Cognitive load gate — before hand-off
+
+Run these 4 checks before finalizing the design brief. If any fails,
+redesign the affected zone before handing off to vp-create.
+
+### Check 1: Five-second story
+Can the user answer the dashboard's PRIMARY question within 5 seconds
+of looking at it? If not, the visual hierarchy is broken.
+
+**Fix:** Make the hero element 2-3x larger. Reduce competing elements.
+Use color to draw the eye to the answer.
+
+### Check 2: Grouping
+Is related data visually grouped? Panels that answer the same question
+should share a shadow card or sit in the same zone. Unrelated panels
+should have clear separation (whitespace or divider).
+
+**Fix:** Group related panels behind a shared `splunk.rectangle`.
+Add section label markdowns. Increase gap between unrelated zones.
+
+### Check 3: Working memory
+Does the user need to REMEMBER a value from one panel to interpret
+another? If yes, those panels must be adjacent or the value must be
+repeated.
+
+**Fix:** Place compared panels side-by-side. Or add a reference line /
+annotation that carries the context visually.
+
+### Check 4: Decision density
+How many distinct decisions can the user make from this dashboard?
+More than 4 primary actions = too dense for a single view.
+
+**Fix:** Split into tabs (one primary decision per tab). Or demote
+secondary information to a drill-down layer.
+
+**Gate rule:** All 4 checks must PASS before hand-off. If any fails,
+note the fix in the design brief so vp-create addresses it.
+
 ## Design scoring — quantitative quality gate
 
 **Run this scoring BEFORE step 7 (build) and AFTER step 8 (critique).**
