@@ -570,6 +570,56 @@ static/
   appIconAlt_2x.png           (72x72 alternate HiDPI)
 ```
 
+## App icon and viz preview images — MUST generate
+
+**App icon (`static/appIcon.png`):** MUST be generated for every pack.
+Without it, the app shows a generic placeholder in Splunk's app manager.
+Generate a simple brand-colored SVG and convert to PNG:
+
+```
+Size: 36x36 (1x) and 72x72 (2x)
+Content: brand accent color background + white initial/symbol
+Format: PNG with transparency
+```
+
+Use a simple Canvas script or SVG→PNG to generate. The icon should be
+recognizable at 36px — a letter, symbol, or simple glyph. Not a
+detailed logo.
+
+**Per-viz preview (`appserver/static/visualizations/{viz}/preview.png`):**
+MUST be generated for every viz. This is the thumbnail shown in
+Splunk's visualization picker when the user selects a custom viz type.
+Without it, the viz shows a generic bar chart placeholder.
+
+```
+Size: 200x100 (recommended), minimum 120x60
+Content: simplified representation of what the viz draws
+Format: PNG
+```
+
+**How to generate preview.png:**
+1. After the viz is built and working, render it in a browser at 200x100
+2. Screenshot the Canvas output
+3. Or: generate a simplified SVG that represents the viz shape and
+   convert to PNG
+
+**Simplified approach (works without browser):** Create a small HTML
+file that loads the viz with sample data at 200x100, open in browser,
+screenshot. Or generate an SVG representation:
+
+| Viz type | Preview content |
+|---|---|
+| KPI tile | Large number "42.7" with small label |
+| Gauge | Arc with needle at 70% |
+| Heatmap | 4x6 grid of colored cells |
+| Table | 3 rows with column headers |
+| Bar chart | 4 horizontal bars of different lengths |
+| Feed/ticker | 3 stacked entry rows |
+
+The preview doesn't need to be pixel-perfect — it needs to be
+recognizable enough that the user can identify the viz type in the
+picker.
+
 Reference images in dashboard JSON:
 ```json
 "viz_logo": {
@@ -1002,7 +1052,8 @@ There is no special exemption for bundled dashboards.
 - [ ] No `[triggers]` stanza anywhere
 - [ ] theme.js exports ES5 module (var, function, no const/let/arrow)
 - [ ] webpack targets `['web', 'es5']` with all environment flags
-- [ ] All viz dirs contain: formatter.html, visualization.css
+- [ ] All viz dirs contain: formatter.html, visualization.css, preview.png
+- [ ] `static/appIcon.png` (36x36) and `static/appIcon_2x.png` (72x72) generated
 - [ ] savedsearches.conf.spec documents every custom setting
 - [ ] Bundle starts with `define([` after build
 - [ ] Tarball excludes: node_modules, _build, src, .DS_Store, ._*, .git*, *.tar.gz
