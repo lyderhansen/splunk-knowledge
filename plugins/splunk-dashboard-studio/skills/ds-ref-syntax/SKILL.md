@@ -272,14 +272,33 @@ guide in `ds-int-visibility`.
 
 ```json
 "layout": {
-  "type": "absolute",
-  "options": { "width": 1920, "height": 1080 },
-  "structure": [
-    { "item": "viz_p1", "type": "block",
-      "position": { "x": 0, "y": 0, "w": 600, "h": 320 } }
-  ]
+  "globalInputs": [],
+  "tabs": {
+    "items": [
+      { "layoutId": "layout_main", "label": "Main" }
+    ],
+    "options": { "barPosition": "top", "showTabBar": false }
+  },
+  "layoutDefinitions": {
+    "layout_main": {
+      "type": "absolute",
+      "options": { "width": 1920, "height": 1080 },
+      "structure": [
+        { "item": "viz_p1", "type": "block",
+          "position": { "x": 0, "y": 0, "w": 600, "h": 320 } }
+      ]
+    }
+  }
 }
 ```
+
+**CRITICAL:** The `tabs` + `layoutDefinitions` wrapper is mandatory for
+ALL dashboards — even single-page layouts with no visible tabs. Set
+`"showTabBar": false` to hide the tab bar. The flat format
+(`"layout": { "type": "absolute", ... }`) is rejected by the current
+schema validator. `layout.options` only accepts `width` and `height` —
+for canvas background color, use a full-canvas `splunk.rectangle` as
+the first item in `structure`.
 
 ### Grid (row-oriented)
 
@@ -296,10 +315,14 @@ guide in `ds-int-visibility`.
 }
 ```
 
-### Tabbed
+### Tabbed (multi-page)
 
-Use `tabs` + `layoutDefinitions`. Omit `layout.type` at root. See
-`ds-int-tabs`.
+The same `tabs` + `layoutDefinitions` structure as absolute above, but
+with multiple layout entries and `"showTabBar": true`. See `ds-int-tabs`
+for full patterns.
+
+**Note:** `tabs` + `layoutDefinitions` is the ONLY valid layout format.
+Both single-page (absolute, grid) and multi-page dashboards use it.
 
 ### Line connections (absolute only)
 

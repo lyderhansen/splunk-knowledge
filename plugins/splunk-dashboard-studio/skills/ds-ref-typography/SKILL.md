@@ -97,6 +97,27 @@ descriptive paragraphs inside markdown panels). For chart text you
 inherit Splunk default; pick a body font that lives near it tonally so
 the markdown doesn't read as a foreign object on the canvas.
 
+**⚠️ fontFamily strict enum — only 7 values accepted:**
+
+`splunk.markdown` validates `fontFamily` against a strict allowlist:
+`Splunk Platform Sans`, `Splunk Data Sans`, `Splunk Platform Mono`,
+`Arial`, `Helvetica`, `Times New Roman`, `Comic Sans MS`.
+
+Custom fonts (`JetBrains Mono`, `Inter`, `Spectral`, `Druk`, `Söhne`,
+`Georgia`, `system-ui`) are **rejected with schema error**. The pairing
+recipes below describe the TONE and FEEL to aim for — use the closest
+Splunk-allowed equivalent:
+
+| Recipe says | Use in fontFamily | Why |
+|---|---|---|
+| JetBrains Mono, Fira Code | `Splunk Platform Mono` | Monospaced, technical feel |
+| Inter, Söhne, system-ui | `Splunk Platform Sans` | Clean sans-serif |
+| Spectral, Georgia, serif | `Times New Roman` | Editorial/serif feel |
+| Druk, Impact, condensed | `Arial` or `Helvetica` | Bold display (closest match) |
+
+The recipes below are TONAL REFERENCES for what the dashboard should
+feel like — not literal font names to put in the JSON.
+
 ### Editorial — Spectral display + Inter body
 
 - Use for: exec / report dashboards, quarterly review prints.

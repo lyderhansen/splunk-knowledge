@@ -25,6 +25,31 @@ via `linkToDashboard`.
 
 ## Required shape
 
+**CRITICAL:** This `tabs` + `layoutDefinitions` wrapper is mandatory
+for ALL Dashboard Studio dashboards — not just tabbed ones. Single-page
+dashboards use the same format with one tab entry and `"showTabBar": false`.
+The flat format (`"layout": { "type": "absolute", ... }`) is rejected
+by the current schema validator.
+
+**Single-page (no visible tabs):**
+```json
+"layout": {
+  "globalInputs": [],
+  "tabs": {
+    "items": [{ "layoutId": "layout_main", "label": "Overview" }],
+    "options": { "barPosition": "top", "showTabBar": false }
+  },
+  "layoutDefinitions": {
+    "layout_main": {
+      "type": "absolute",
+      "options": { "width": 1920, "height": 1080 },
+      "structure": [...]
+    }
+  }
+}
+```
+
+**Multi-page (visible tabs):**
 ```json
 "layout": {
   "globalInputs": ["input_global_time"],
