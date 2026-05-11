@@ -174,6 +174,11 @@ module.exports = SplunkVisualizationBase.extend({
         });
     },
 
+    // CRITICAL: Theme detection for ad-hoc search compatibility
+    // In Dashboard Studio, theme comes from config (set by formatter).
+    // In ad-hoc search (Classic UI), config has NO theme setting —
+    // the viz must detect Splunk's page theme via getCurrentTheme().
+    // Without this, dark-themed vizs render invisible on light backgrounds.
     _render: function(data, config) {
         var el = this.el;
         var w = el.offsetWidth;
@@ -193,9 +198,12 @@ module.exports = SplunkVisualizationBase.extend({
         ctx.clearRect(0, 0, w, h);  // NEVER fillRect with t.bg (B13)
 
         var ns = theme.getNS(this);
-        var t = theme.getTheme(
-            theme.getOption(config, ns, 'theme', 'dark')
-        );
+        var themeName = theme.getOption(config, ns, 'theme', '');
+        if (!themeName) {
+            try { themeName = SplunkVisualizationUtils.getCurrentTheme(); } catch(e) {}
+        }
+        if (!themeName) themeName = 'dark';
+        var t = theme.getTheme(themeName);
         var accentColor = theme.getOption(config, ns, 'accentColor', '#0088CC');
         var gi = theme.parseNum(
             theme.getOption(config, ns, 'accentIntensity', '50'), 50
@@ -1062,6 +1070,11 @@ fails.
    `<splunk-text-input>`, etc.) — NEVER raw HTML (`<div>`, `<input>`,
    `<select>`) (F12). No `<html>`/`<body>` wrappers. No CSS/JS.
 
+**Theme detection:**
+8. Theme MUST auto-detect via `getCurrentTheme()` fallback — never
+   hardcode `'dark'` as default. Vizs must work in both Dashboard
+   Studio AND ad-hoc search light theme (B18)
+
 **Checklist for subagent to verify before reporting DONE:**
 - [ ] `getInitialDataParams` is a method (not a property)
 - [ ] No `this.$el` or jQuery anywhere
@@ -1072,6 +1085,7 @@ fails.
 - [ ] Formatter uses Splunk components only, no raw HTML (F12)
 - [ ] All sizes scale from container dimensions, no hardcoded pixels (B8)
 - [ ] Tables have sort + pagination
+- [ ] Theme defaults to '' (empty), falls back to getCurrentTheme() (B18)
 
 ## Splunk API reference — things agents forget
 

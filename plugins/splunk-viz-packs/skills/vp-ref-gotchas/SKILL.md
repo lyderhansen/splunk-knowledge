@@ -767,6 +767,33 @@ this._canvas = setup.canvas;
 OR create it manually in `initialize` — not both. If you create it
 manually, don't call `setupCanvas` at all.
 
+### B18. Theme must auto-detect in ad-hoc search — never hardcode 'dark'
+
+In Dashboard Studio, the `theme` setting comes from the formatter config.
+In ad-hoc search (Classic UI), NO config is passed — `getOption(config,
+ns, 'theme', 'dark')` always returns `'dark'`, making the viz invisible
+on the white ad-hoc search background.
+
+```javascript
+// WRONG — invisible in ad-hoc search (light bg + dark text colors)
+var t = theme.getTheme(
+    theme.getOption(config, ns, 'theme', 'dark')
+);
+
+// RIGHT — detect page theme, fall back to dark only if detection fails
+var themeName = theme.getOption(config, ns, 'theme', '');
+if (!themeName) {
+    try { themeName = SplunkVisualizationUtils.getCurrentTheme(); } catch(e) {}
+}
+if (!themeName) themeName = 'dark';
+var t = theme.getTheme(themeName);
+```
+
+**Rule:** NEVER hardcode `'dark'` as the default theme. Use empty string
+as default, then detect with `getCurrentTheme()`. This ensures vizs
+work in BOTH Dashboard Studio (dark/light from config) AND ad-hoc
+search (theme from page context).
+
 ## REJECTED — fails AppInspect / Splunk Cloud vetting
 
 ### R1. app.conf must have 5 stanzas
@@ -1150,6 +1177,7 @@ Viz shows placeholder icon (bar chart in grey box)
 - [ ] `getInitialDataParams` is a METHOD, not a property on extend (F4)
 - [ ] Formatter uses ONLY Splunk components, NO raw HTML (F12)
 - [ ] Formatter `name=` uses short namespace `{app}.{viz}.key` (B10)
+- [ ] Theme auto-detects in ad-hoc search via `getCurrentTheme()` fallback (B18)
 
 ### TIER 2: SHOULD (quality — dashboard looks wrong without these)
 

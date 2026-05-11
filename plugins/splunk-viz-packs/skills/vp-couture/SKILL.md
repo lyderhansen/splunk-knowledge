@@ -903,6 +903,64 @@ secondary information to a drill-down layer.
 **Gate rule:** All 4 checks must PASS before hand-off. If any fails,
 note the fix in the design brief so vp-create addresses it.
 
+## Dashboard richness rules
+
+### Every tab MUST have 3+ visual elements
+
+A tab with a single table or single chart is a wasted tab. If the data
+doesn't justify 3+ elements, merge it into another tab.
+
+| Tab content | Verdict |
+|---|---|
+| 1 table alone | TOO SPARSE — add KPI strip, trend chart, or distribution viz |
+| 2 charts | BORDERLINE — consider adding a KPI summary or section labels |
+| 3+ diverse elements | GOOD — visual variety creates rhythm |
+
+### Icons as standard, not optional
+
+Every KPI section SHOULD have icons for categorical identity. Without
+icons, KPI tiles are just numbers — the user must READ labels to know
+what each tile shows. With icons, the eye identifies the metric before
+reading.
+
+Options for icons in viz packs:
+- **icon_library app** — 2500+ Material Symbols, if installed
+- **Custom SVG in Canvas** — draw simple glyphs (circle, arrow, gauge icon)
+  directly in the viz `_render()` using Canvas path commands
+- **Unicode glyphs** — `ctx.fillText('▲', x, y)` for trend arrows,
+  `●` for status dots, `★` for ratings
+
+### Drilldowns are SHOULD, not optional
+
+Every data-displaying viz SHOULD have drilldown wired. Drilldowns are
+what make dashboards INTERACTIVE instead of static reports.
+
+Minimum drilldown pattern:
+- KPI tiles → set token with metric name
+- Tables → set token with clicked row value
+- Charts → set token with clicked segment/bar/point
+- Tokens flow between tabs to filter detail views
+
+### Full canvas width utilization
+
+Every row of panels should span the FULL canvas width (1920px). Gaps
+> 100px at the right edge are layout bugs, not whitespace.
+
+```
+WRONG: [panel 600px][panel 600px]         ← 720px empty on right
+RIGHT: [panel 600px][panel 600px][panel 680px] ← fills 1880px + 20px pad each side
+```
+
+### Suggest additional vizs beyond the prompt
+
+If the user asks for 5 vizs but the data supports 7-8, SUGGEST the
+extras. The agent should say: "I built the 5 you requested. Based on
+the data, I'd also recommend: [trend sparkline], [zone comparison bar].
+Want me to add them?"
+
+The goal is a dashboard that looks COMPLETE, not one that has exactly
+N vizs because that's what was asked.
+
 ## Design scoring — quantitative quality gate
 
 **Run this scoring BEFORE step 7 (build) and AFTER step 8 (critique).**
