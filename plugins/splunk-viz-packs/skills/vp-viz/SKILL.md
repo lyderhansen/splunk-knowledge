@@ -198,12 +198,10 @@ module.exports = SplunkVisualizationBase.extend({
         ctx.clearRect(0, 0, w, h);  // NEVER fillRect with t.bg (B13)
 
         var ns = theme.getNS(this);
-        var themeName = theme.getOption(config, ns, 'theme', '');
-        if (!themeName) {
-            try { themeName = SplunkVisualizationUtils.getCurrentTheme(); } catch(e) {}
-        }
-        if (!themeName) themeName = 'dark';
-        var t = theme.getTheme(themeName);
+        // Auto-detect theme — no formatter setting needed (B18)
+        var isDark = true;
+        try { isDark = SplunkVisualizationUtils.getCurrentTheme() !== 'light'; } catch(e) {}
+        var t = theme.getTheme(isDark ? 'dark' : 'light');
         var accentColor = theme.getOption(config, ns, 'accentColor', '#0088CC');
         var gi = theme.parseNum(
             theme.getOption(config, ns, 'accentIntensity', '50'), 50
@@ -751,13 +749,9 @@ to the demo CSV column names. Color settings default to theme accent.
 </form>
 
 <form class="splunk-formatter-section" section-label="Color and style">
-    <splunk-control-group label="Theme" help="Auto detects page theme. Override for Dashboard Studio.">
-        <splunk-radio-input name="{{VIZ_NAMESPACE}}.theme" value="">
-            <option value="">Auto</option>
-            <option value="dark">Dark</option>
-            <option value="light">Light</option>
-        </splunk-radio-input>
-    </splunk-control-group>
+    <!-- Theme is auto-detected via getCurrentTheme() (B18).
+         No theme radio needed — viz adapts to Dashboard Studio
+         and ad-hoc search automatically. -->
     <splunk-control-group label="Accent color" help="Primary highlight color">
         <!-- Replace swatches with colors from the pack's theme palette. -->
         <splunk-color-picker name="{{VIZ_NAMESPACE}}.accentColor"
@@ -806,7 +800,7 @@ setting. The complete minimum settings list:
 
 <!-- SECTION 3: Color and style -->
 <form class="splunk-formatter-section" section-label="Color and style">
-    <!-- theme: dark / light -->
+    <!-- theme: auto-detected via getCurrentTheme() — no formatter radio (B18) -->
     <!-- accentColor: primary highlight (color picker) -->
     <!-- colors: CSV hex for multi-series (text input) -->
     <!-- accentIntensity: glow/effect strength 0-100 -->

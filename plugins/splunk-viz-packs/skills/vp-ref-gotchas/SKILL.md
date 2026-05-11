@@ -789,52 +789,56 @@ this._canvas = setup.canvas;
 OR create it manually in `initialize` — not both. If you create it
 manually, don't call `setupCanvas` at all.
 
-### B18. Theme must auto-detect in ad-hoc search — never hardcode 'dark'
+### B18. Theme MUST auto-detect — no theme radio in formatter
 
-In Dashboard Studio, the `theme` setting comes from the formatter config.
-In ad-hoc search (Classic UI), NO config is passed — `getOption(config,
-ns, 'theme', 'dark')` always returns `'dark'`, making the viz invisible
-on the white ad-hoc search background.
+Custom vizs render in TWO contexts: Dashboard Studio (dark or light
+canvas) and ad-hoc search (page theme, usually light). A `theme`
+radio in the formatter with `value="dark"` breaks ad-hoc search because
+Splunk sends "dark" as the default — the viz renders dark text on a
+white background, invisible.
+
+**The correct pattern (from production vizs line_trend_chart, infographic_shapes):**
+
+Do NOT add a theme radio to the formatter. Instead, auto-detect:
 
 ```javascript
-// WRONG — invisible in ad-hoc search (light bg + dark text colors)
-var t = theme.getTheme(
-    theme.getOption(config, ns, 'theme', 'dark')
-);
+// In _render() — detect page theme, no formatter setting needed (B18)
+var isDark = true;
+try {
+    isDark = SplunkVisualizationUtils.getCurrentTheme() !== 'light';
+} catch (e) {}
 
-// RIGHT — detect page theme, fall back to dark only if detection fails
-var themeName = theme.getOption(config, ns, 'theme', '');
-if (!themeName) {
-    try { themeName = SplunkVisualizationUtils.getCurrentTheme(); } catch(e) {}
-}
-if (!themeName) themeName = 'dark';
-var t = theme.getTheme(themeName);
+// Use isDark to pick colors
+var textColor = isDark ? t.text : t.textDark;
+var gridColor = isDark ? t.grid : t.gridLight;
+var panelBg   = isDark ? t.panel : t.panelLight;
 ```
 
-**Rule:** NEVER hardcode `'dark'` as the default theme. Use empty string
-as default, then detect with `getCurrentTheme()`. This ensures vizs
-work in BOTH Dashboard Studio (dark/light from config) AND ad-hoc
-search (theme from page context).
+**Why no theme radio?**
+- In Dashboard Studio: the dashboard sets the theme at canvas level.
+  The viz should respect that, not override it.
+- In ad-hoc search: the page theme determines dark/light. The viz
+  should match automatically.
+- A theme radio ALWAYS has a default value. That default ALWAYS
+  conflicts with one context.
 
-**CRITICAL: Formatter default must also be empty (`value=""`), not
-`value="dark"`.** If the formatter defaults to `"dark"`, Splunk sends
-`"dark"` to the viz even in ad-hoc search — the `getCurrentTheme()`
-fallback never fires because config already has a value.
-
-```html
-<!-- WRONG — ad-hoc search always gets "dark", viz is invisible on white bg -->
-<splunk-radio-input name="{{VIZ_NAMESPACE}}.theme" value="dark">
-    <option value="dark">Dark</option>
-    <option value="light">Light</option>
-</splunk-radio-input>
-
-<!-- RIGHT — default is empty = auto-detect, user can override -->
-<splunk-radio-input name="{{VIZ_NAMESPACE}}.theme" value="">
-    <option value="">Auto</option>
-    <option value="dark">Dark</option>
-    <option value="light">Light</option>
-</splunk-radio-input>
+**theme.js must define BOTH dark and light tokens:**
+```javascript
+var DARK = { text: '#E8E8E8', panel: '#141519', grid: 'rgba(255,255,255,0.08)' };
+var LIGHT = { text: '#1A1A2E', panel: '#FFFFFF', grid: 'rgba(0,0,0,0.08)' };
 ```
+
+**In _render(), select theme based on auto-detection:**
+```javascript
+var isDark = true;
+try { isDark = SplunkVisualizationUtils.getCurrentTheme() !== 'light'; } catch(e) {}
+var t = isDark ? theme.DARK : theme.LIGHT;
+```
+
+**Alternative pattern (infographic_shapes):** Make ALL colors
+user-configurable via formatter. No theme detection needed — the user
+picks colors that work on their background. Best for decorative vizs
+where every color is a design choice.
 
 ## REJECTED — fails AppInspect / Splunk Cloud vetting
 

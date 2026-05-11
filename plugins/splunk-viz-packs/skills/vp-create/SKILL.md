@@ -244,6 +244,26 @@ filename = demo_table.csv
 
 ### CSV file conventions
 
+**CRITICAL: `inputlookup` uses the FILENAME, not the transforms.conf
+stanza name.** The filename in `lookups/` must EXACTLY match what the
+SPL query references.
+
+```
+transforms.conf:
+  [mypack_demo_kpis]
+  filename = mypack_demo_kpis.csv    ← THIS filename
+
+lookups/:
+  mypack_demo_kpis.csv               ← MUST match
+
+SPL:
+  | inputlookup mypack_demo_kpis.csv ← uses filename, not stanza
+```
+
+**Convention:** prefix ALL lookup filenames with `{{PACK_ID}}_` to avoid
+collisions with other apps. Use the SAME prefixed name in transforms.conf
+`filename=` AND in SPL `| inputlookup`.
+
 Place CSV files in `lookups/` at the app root. Use descriptive
 column names that match the viz's expected field names.
 
@@ -619,6 +639,25 @@ screenshot. Or generate an SVG representation:
 The preview doesn't need to be pixel-perfect — it needs to be
 recognizable enough that the user can identify the viz type in the
 picker.
+
+**Do NOT generate solid-color placeholder PNGs.** A black or grey box
+is worse than no preview — the user sees what looks like a broken image.
+
+If you cannot render the actual viz, generate a SIMPLE SVG that
+represents the viz type and convert to PNG. A recognizable silhouette
+(bar shapes, arc, grid dots) is better than a solid rectangle.
+
+**Minimal SVG approach (always works, no browser needed):**
+```python
+# Generate a simple SVG preview for a gauge viz
+svg = '''<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 200 100">
+  <rect width="200" height="100" fill="#1a1a2e"/>
+  <path d="M40,80 A60,60 0 0,1 160,80" fill="none" stroke="#E50914" stroke-width="8" stroke-linecap="round"/>
+  <text x="100" y="70" text-anchor="middle" fill="#fff" font-size="20" font-family="sans-serif">73%</text>
+</svg>'''
+# Convert: cairosvg.svg2png(bytestring=svg.encode(), write_to='preview.png')
+# Or save as SVG and use: convert preview.svg preview.png (ImageMagick)
+```
 
 Reference images in dashboard JSON:
 ```json
