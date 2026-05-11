@@ -885,7 +885,14 @@ WRONG: "layout": { ..., "options": { "width": 1920, "display": "auto-scale" } }
 
 RIGHT: "layout": { "globalInputs": [], "tabs": { "items": [...] }, "layoutDefinitions": { "layout_main": { "type": "absolute", ... } } }
        → no "type" at top level, named layouts in layoutDefinitions
+
+WRONG: defining a viz in "visualizations" but not placing it in any structure array
+       → "Visualization X is not present in any Layout" error
 ```
+
+**Every viz in `visualizations` MUST appear in at least one `structure`
+array.** If a viz is not placed in the layout, DELETE it from
+`visualizations`. Orphaned vizs cause schema validation errors.
 
 ## Drilldown from custom vizs
 
@@ -1008,3 +1015,7 @@ There is no special exemption for bundled dashboards.
 - [ ] No jQuery (`this.$el`, `$.fn`) in any viz source
 - [ ] `theme.setupCanvas()` receives `this.el`, not `this._canvas`
 - [ ] `build` in app.conf incremented before packaging
+- [ ] `default/data/ui/nav/default.xml` exists with dashboard view references
+- [ ] Dashboard JSON uses `tabs` + `layoutDefinitions` wrapper (no flat layout)
+- [ ] Every viz in `visualizations` is placed in at least one `structure` array (no orphans)
+- [ ] No `"display"` or `"backgroundColor"` in `layout.options` (only `width` + `height`)
