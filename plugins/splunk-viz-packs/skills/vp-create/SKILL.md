@@ -205,6 +205,11 @@ One `[visualizations/name]` stanza per viz in the pack.
 
 Character limits: label max 30, description max 80, search_fragment max 80.
 
+**CRITICAL: Every stanza MUST include `allow_user_selection = true` and
+`disabled = 0`.** Without these, the viz appears in the picker but
+formatter settings are READ-ONLY in ad-hoc search — the user can see
+settings but changes have no effect.
+
 ```ini
 [{{VIZ_1}}]
 label = {{LABEL_30}}
