@@ -521,11 +521,20 @@ URLs — they fail on domain allow lists). Include the logo file in
 
 A flat, single-color rectangle as the header is the laziest form of
 design. It looks like PowerPoint 2010. Instead:
-- **Gradient:** 2-3 color gradient along the banner (brand primary → darker shade)
-- **Gradient + texture:** subtle noise or pattern on top of gradient
+- **Gradient banner via infographic_shapes:** use `infographic_shapes`
+  with `fillType: "gradient"` for a real gradient strip. `splunk.rectangle`
+  only supports solid `fillColor` — it CANNOT do gradients.
 - **Image banner:** hero image cropped to banner height with text overlay
+  via `splunk.image` + `splunk.markdown` layered on top
+- **Subtle two-tone:** two adjacent `splunk.rectangle` panels (dark left,
+  slightly lighter right) for a faux gradient without infographic_shapes
 - **No banner at all:** sometimes the brand identity comes from the
   viz chrome, hero image, and typography — not a colored stripe
+
+**NOTE:** `splunk.rectangle` only has `fillColor` (solid). For gradient,
+glow, shadow, or texture on a banner, use `infographic_shapes` (requires
+the infographic_shapes Splunk app) or `splunk.image` with a pre-rendered
+gradient PNG/SVG.
 
 If the dashboard has a hero background image, a banner is usually redundant.
 
@@ -572,13 +581,11 @@ the same. Pick the layout that fits the brand and content:
 **Rule:** if the user doesn't specify, ASK which archetype fits. Don't
 default to full-bleed hero every time — that's an AI-lazy habit.
 
-**Strip banner recipe:**
+**Strip banner recipe (with infographic_shapes app):**
 ```
 structure order:
-  1. splunk.rectangle (full-width strip, y=0, h=70, GRADIENT fill — 
-     NEVER solid single-color. Use 2-3 stop gradient from brand dark
-     to brand primary, or dark-to-slightly-lighter. A solid-color
-     banner is anti-pattern #6.)
+  1. infographic_shapes.infographic_shapes (full-width strip, y=0, h=70,
+     fillType=gradient, brand dark → brand primary. NEVER solid single-color.)
   2. splunk.image     (logo, left-aligned inside strip)
   3. splunk.markdown  (title, right of logo inside strip)
   4. splunk.rectangle (1px accent line at y=70, brand accent color)
@@ -586,11 +593,20 @@ structure order:
   6. custom vizs      (data panels, y starts at ~90)
 ```
 
-**The banner rectangle MUST use a gradient fill**, not a solid color.
-In Dashboard Studio, use a `splunk.rectangle` with a subtle gradient
-(e.g., `fillColor` from `#1A0000` to `#2D0000` for Netflix, or
-`#000000` to `#0A1A0A` for Uber). If the brand accent is bold (red,
-green), tint the gradient toward it at 5-10% — don't fill solid.
+**Strip banner recipe (without infographic_shapes — fallback):**
+```
+structure order:
+  1. splunk.image     (full-width strip, y=0, h=70 — pre-rendered
+     gradient PNG/SVG in appserver/static/images/banner_gradient.png)
+  2. splunk.markdown  (title overlaid on banner image)
+  3. splunk.rectangle (1px accent line at y=70)
+  4. splunk.rectangle (panel shadow cards below strip)
+  5. custom vizs      (data panels, y starts at ~90)
+```
+
+**NEVER use a solid-color `splunk.rectangle` as a banner.** Use either
+`infographic_shapes` (gradient fill) or `splunk.image` (pre-rendered
+gradient). `splunk.rectangle` only supports solid `fillColor`.
 
 **Side hero recipe:**
 ```

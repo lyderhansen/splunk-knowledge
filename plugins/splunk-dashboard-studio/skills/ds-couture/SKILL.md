@@ -498,10 +498,14 @@ design value. **Never use a solid-color banner.**
 
 | Instead of | Use |
 |---|---|
-| Solid red banner | Gradient: brand primary → 30% darker shade, horizontal |
-| Solid blue banner | Gradient + subtle noise texture overlay |
+| Solid-color `splunk.rectangle` | `infographic_shapes` with `fillType: "gradient"` (requires app) |
+| Solid-color banner | `splunk.image` with pre-rendered gradient PNG/SVG |
 | Solid dark banner | Hero image cropped to banner height with text overlay |
 | Any solid banner | No banner — let typography + viz chrome carry the brand |
+
+**NOTE:** `splunk.rectangle` only supports solid `fillColor` — it
+CANNOT render gradients. For gradient banners, use `infographic_shapes`
+(gradient + glow + shadow) or `splunk.image` with a pre-made asset.
 
 If the dashboard already has a hero background image (§4), a banner
 is redundant.
