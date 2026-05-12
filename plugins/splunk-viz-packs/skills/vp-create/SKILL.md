@@ -614,14 +614,48 @@ Without it, the viz shows a generic bar chart placeholder.
 ```
 Size: 200x100 (recommended), minimum 120x60
 Content: simplified representation of what the viz draws
-Format: PNG
+Format: MUST be actual PNG binary — NOT an SVG renamed to .png
 ```
 
+**CRITICAL: The file MUST be a real PNG.** Splunk checks the binary
+format. An SVG file renamed to `preview.png` renders as a black box
+in the visualization picker. You MUST convert SVG to PNG.
+
 **How to generate preview.png:**
-1. After the viz is built and working, render it in a browser at 200x100
-2. Screenshot the Canvas output
-3. Or: generate a simplified SVG that represents the viz shape and
-   convert to PNG
+
+**Option A (Python — always works):**
+```python
+# pip install cairosvg (or Pillow for simple shapes)
+import cairosvg
+svg = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">...</svg>'
+cairosvg.svg2png(bytestring=svg.encode('utf-8'), write_to='preview.png')
+```
+
+**Option B (ImageMagick CLI):**
+```bash
+convert preview.svg -resize 200x100 preview.png
+# or with rsvg-convert:
+rsvg-convert preview.svg -w 200 -h 100 -o preview.png
+```
+
+**Option C (Pillow for simple shapes — no SVG needed):**
+```python
+from PIL import Image, ImageDraw
+img = Image.new('RGBA', (200, 100), (20, 20, 30, 255))
+draw = ImageDraw.Draw(img)
+# Draw simplified viz shape
+draw.rounded_rectangle([10, 10, 190, 90], radius=4, fill=(255, 128, 0))
+img.save('preview.png')
+```
+
+If NONE of these tools are available, generate a 1x1 transparent PNG
+as absolute minimum (better than SVG-as-PNG black box):
+```python
+import base64, os
+# 1x1 transparent PNG
+b = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==')
+open('preview.png', 'wb').write(b)
+```
 
 **Simplified approach (works without browser):** Create a small HTML
 file that loads the viz with sample data at 200x100, open in browser,

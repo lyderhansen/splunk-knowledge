@@ -509,6 +509,20 @@ ctx.shadowOffsetY = 0;
 
 ### B7. JS defaults must match formatter HTML defaults — NEVER empty
 
+**Use `value=`, NEVER `default=`.** Splunk formatter components use the
+`value` attribute for the initial/default value. `default` is NOT the
+correct attribute — settings will appear empty in the Format panel.
+
+```html
+<!-- WRONG — settings appear empty, nothing happens when user opens Format -->
+<splunk-text-input name="myapp.myviz.field" default="driver">
+<splunk-radio-input name="myapp.myviz.theme" default="dark">
+
+<!-- RIGHT — settings show their values immediately -->
+<splunk-text-input name="myapp.myviz.field" value="driver">
+<splunk-radio-input name="myapp.myviz.theme" value="dark">
+```
+
 Splunk does NOT send formatter defaults on first load. If your JS
 default for `accentColor` is `#06B6D4` but the formatter says
 `value="#FF0000"`, the viz renders with cyan until the user touches
