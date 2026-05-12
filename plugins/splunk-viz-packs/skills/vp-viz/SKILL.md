@@ -728,6 +728,11 @@ No `<html>`, `<body>`, or `<head>` wrappers. No CSS. No JavaScript.
 components use `value` for the initial setting. `default` is wrong —
 settings appear empty in the Format panel and nothing happens.
 
+**CRITICAL: `name=` attribute MUST use `{{VIZ_NAMESPACE}}.settingKey`.
+NEVER hardcode the namespace (e.g., `myapp.myviz.settingKey`).
+Hardcoded names silently break — settings show in Format panel but
+changes don't save and don't reach the viz.**
+
 **CRITICAL: Every `value="..."` MUST be non-empty and match the JS
 `getOption()` default (B7).** In ad-hoc search, empty `value=""` means
 the viz gets no field names and renders blank. Field settings default
@@ -1081,6 +1086,10 @@ fails.
    hardcode `'dark'` as default. Vizs must work in both Dashboard
    Studio AND ad-hoc search light theme (B18)
 
+**Formatter namespace:**
+9. ALL formatter `name=` attributes MUST use `{{VIZ_NAMESPACE}}.key` —
+   NEVER hardcode the app.viz namespace. Hardcoded names silently fail (B10)
+
 **Checklist for subagent to verify before reporting DONE:**
 - [ ] `getInitialDataParams` is a method (not a property)
 - [ ] No `this.$el` or jQuery anywhere
@@ -1089,6 +1098,7 @@ fails.
 - [ ] Source uses `require()`/`module.exports`, NOT `define()`
 - [ ] All code is ES5 (no const/let/arrow/template literals)
 - [ ] Formatter uses Splunk components only, no raw HTML (F12)
+- [ ] All formatter name= attributes use {{VIZ_NAMESPACE}}, not hardcoded names
 - [ ] All sizes scale from container dimensions, no hardcoded pixels (B8)
 - [ ] Tables have sort + pagination
 - [ ] Theme defaults to '' (empty), falls back to getCurrentTheme() (B18)

@@ -648,6 +648,26 @@ Get any one wrong and the setting silently fails.
 Dashboard Studio JSON and formatter.html both use the SHORT format
 (`{app}.{viz}.key`). Only savedsearches.conf uses the long prefix.
 
+**CRITICAL: formatter.html MUST use `{{VIZ_NAMESPACE}}`, NEVER hardcoded names.**
+
+```html
+<!-- WRONG — settings silently fail, don't save, don't reach updateView -->
+<splunk-text-input name="myapp.myviz.field" value="driver">
+
+<!-- RIGHT — Splunk resolves the namespace at runtime -->
+<splunk-text-input name="{{VIZ_NAMESPACE}}.field" value="driver">
+```
+
+`{{VIZ_NAMESPACE}}` is a Splunk template variable replaced at runtime.
+Hardcoded names bypass Splunk's internal registration — settings appear
+in the Format panel but changes are never saved to the dashboard XML
+and never delivered to `updateView()` config. This was confirmed across
+8 test builds: switching from hardcoded to `{{VIZ_NAMESPACE}}` fixed
+the issue immediately.
+
+**This applies to ALL formatter components:** `splunk-text-input`,
+`splunk-radio-input`, `splunk-color-picker`, `splunk-select`.
+
 ### B11. parseFloat truncates string values
 
 `parseFloat("1:21.584")` returns `1`. `parseFloat("+4.271s")` returns
@@ -1249,6 +1269,7 @@ Viz shows placeholder icon (bar chart in grey box)
 - [ ] `getInitialDataParams` is a METHOD, not a property on extend (F4)
 - [ ] Formatter uses ONLY Splunk components, NO raw HTML (F12)
 - [ ] Formatter `name=` uses short namespace `{app}.{viz}.key` (B10)
+- [ ] Formatter `name=` uses `{{VIZ_NAMESPACE}}.key`, NEVER hardcoded namespace (B10)
 - [ ] Theme auto-detects in ad-hoc search via `getCurrentTheme()` fallback (B18)
 
 ### TIER 2: SHOULD (quality — dashboard looks wrong without these)

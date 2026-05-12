@@ -356,6 +356,12 @@ display.visualizations.custom.{{PACK_ID}}.{{VIZ_NAME}}.{{setting2}} = <string>
 
 One block per viz documenting every formatter setting.
 
+**NOTE:** The spec file uses the LONG format
+(`display.visualizations.custom.{app}.{viz}.setting`) but formatter.html
+uses `{{VIZ_NAMESPACE}}.setting`. These are different formats for different
+purposes — the spec registers settings with Splunk, the formatter uses
+the template variable for runtime resolution. Both are required.
+
 **Formatter default values:** color picker defaults must use the pack's
 theme accent token, not a hardcoded hex. In formatter.html, write
 `value="{{ACCENT}}"` where `{{ACCENT}}` is replaced with the actual
