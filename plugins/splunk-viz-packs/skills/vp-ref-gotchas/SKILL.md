@@ -495,6 +495,18 @@ Dashboard Studio merges formatter sections by matching `section-label`
 - No wrapper `<div>` around forms — bare `<form>` elements only
 - No nested `<form>` inside `<form>`
 - Every `<splunk-control-group>` MUST have `help="..."` attribute
+- `<splunk-color-picker>` MUST have `type="custom"` — without it,
+  Splunk ignores the `value=` attribute and uses its own default
+  palette. Color changes won't take effect in ad-hoc search.
+
+```html
+<!-- WRONG — color picker ignores value, uses Splunk default blue -->
+<splunk-color-picker name="..." value="#FF8000">
+
+<!-- RIGHT — type="custom" enables value= and custom swatches -->
+<splunk-color-picker name="..." type="custom" value="#FF8000">
+    <splunk-color>#FF8000</splunk-color>
+```
 
 ### B6. Canvas shadow state leaks
 

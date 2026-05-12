@@ -757,7 +757,9 @@ to the demo CSV column names. Color settings default to theme accent.
          No theme radio needed — viz adapts to Dashboard Studio
          and ad-hoc search automatically. -->
     <splunk-control-group label="Accent color" help="Primary highlight color">
-        <!-- Replace swatches with colors from the pack's theme palette. -->
+        <!-- CRITICAL: type="custom" is REQUIRED on color-picker.
+             Without it, Splunk ignores value= and uses its own default palette.
+             Settings won't take effect in ad-hoc search. -->
         <splunk-color-picker name="{{VIZ_NAMESPACE}}.accentColor"
             type="custom" value="#0088CC">
             <splunk-color>#0088CC</splunk-color>
