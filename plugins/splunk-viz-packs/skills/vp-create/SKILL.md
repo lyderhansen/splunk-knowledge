@@ -1037,8 +1037,21 @@ search (Classic UI). The ad-hoc search environment differs:
 |---|---|---|
 | Theme | From dashboard JSON config | Page theme (usually light) |
 | Panel size | Fixed by `position` in structure | Resizable by user |
-| Formatter | Settings sidebar in editor | Format dropdown in viz tab |
+| Formatter | Settings sidebar — changes update viz LIVE | Format dropdown — changes do NOT update viz live |
+| Config delivery | All settings in `config` object | Only `drilldown` in `config` — no formatter values |
 | Background | Controlled by `splunk.rectangle` | White panel bg (light theme) |
+
+**Splunk platform limitation:** In ad-hoc search, formatter setting
+changes do NOT update the viz in real-time. The `config` object passed
+to `updateView()` contains only `{"display.visualizations.custom.drilldown":"all"}`
+— no formatter values. Settings only take effect after saving the search
+to `savedsearches.conf`. This is true for ALL custom vizs (confirmed
+with infographic_shapes).
+
+**This means JS defaults are CRITICAL.** The `getOption()` fallback
+values are the ONLY thing that controls how the viz renders in ad-hoc
+search. They must match the expected demo data field names and brand
+colors. There is no way for the user to override them in real-time.
 
 **Formatter must work in both:** Every `<splunk-control-group>` must
 have sensible defaults that render correctly on BOTH dark and light
