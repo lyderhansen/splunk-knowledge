@@ -70,6 +70,23 @@ Layout: `{ "x": 20, "y": 20, "w": 240, "h": 60 }`.
 | `src` | string | — | URL of the image. Required. |
 | `preserveAspectRatio` | boolean | `false` | `false` stretches; `true` letterboxes. |
 
+**`preserveAspectRatio` schema constraint:** accepts ONLY:
+- **boolean:** `true` or `false`
+- **DOS string:** matching `^>.*` (e.g. `"> primary | lastPoint()"`)
+- **NOT** SVG-style strings like `"none"`, `"xMinYMin"`, `"xMidYMid meet"`
+
+```json
+// WRONG — schema error: must be boolean or match ^>.*
+"preserveAspectRatio": "none"
+"preserveAspectRatio": "xMidYMid meet"
+
+// CORRECT
+"preserveAspectRatio": true
+"preserveAspectRatio": false
+```
+
+When omitted, the image scales to fill the panel (same as `false`).
+
 That's the entire option surface. Sizing, positioning, layering all
 come from `layout.structure`.
 

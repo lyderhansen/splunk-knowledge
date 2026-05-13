@@ -829,6 +829,33 @@ Add sections only when the viz genuinely needs them. A simple KPI
 tile needs sections 1-3. A gauge adds section 4. Don't create
 empty sections.
 
+**Minimum formatter control counts:**
+
+| Viz complexity | Min controls | Example |
+|---|---|---|
+| Simple (KPI tile, status chip) | 10 | 3 fields + 4 display + 3 color |
+| Medium (gauge, bar chart) | 12 | 3 fields + 5 display + 4 color |
+| Complex (table, timeline, flow) | 14 | 5 fields + 5 display + 4 color |
+
+**Mandatory field configurability:** Every field name used in
+`updateView()` or `formatData()` MUST have a corresponding
+formatter text-input. NEVER hardcode field names like `"value"` or
+`"_time"` — the user's SPL may produce different column names.
+
+```html
+<!-- WRONG — only works with SPL that outputs "value" -->
+<!-- (no formatter control, hardcoded in JS) -->
+
+<!-- CORRECT — user can map any SPL field -->
+<splunk-control-group label="Value field" help="SPL field for the metric value">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.valueField" value="value">
+    </splunk-text-input>
+</splunk-control-group>
+```
+
+If a subagent produces fewer than 10 controls, it has almost
+certainly hardcoded values that should be configurable.
+
 ## visualization.css template
 
 ```css

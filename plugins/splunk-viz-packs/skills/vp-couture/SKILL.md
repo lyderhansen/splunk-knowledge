@@ -279,6 +279,34 @@ When delegating to `vp-viz` subagents, the prompt MUST include:
 
 Without these in the prompt, subagents default to generic patterns.
 
+### Subagent pre-flight checklist — MANDATORY
+
+**Add this block at the TOP of every vp-viz subagent prompt.** Subagents
+receive 100+ lines of rules but skim technical details. This checklist
+forces verification of the 15 most common failures BEFORE any code is
+written. Test21 (Patagonia) proved that without this checklist, every
+subagent produced the same class of bugs.
+
+```
+BEFORE WRITING ANY CODE, VERIFY EVERY ITEM:
+□ setupCanvas(this.el), NOT setupCanvas(wrapper_div) — B17
+□ Do NOT set width/height on this.el — Splunk manages sizing — B17
+□ Do NOT use getBoundingClientRect — use clientWidth/clientHeight — B17
+□ Canvas style: position:absolute;top:0;left:0; — B17
+□ Every <form> has class="splunk-formatter-section" section-label="..." — B5
+□ Font sizes: Math.max(floor, h * ratio) — floor only, NO upper cap — B8
+□ Gauge/arc: cy - radius >= padding (coupled constraint) — B8
+□ Every getOption() has a matching formatter control — B16
+□ Minimum 10 formatter controls per viz (fields + display + colors)
+□ All field names from config, never hardcoded in formatData — B4/B16
+□ themeMode default is 'auto', detectTheme() called when auto — B20
+□ No new Date(string) — use regex for ISO parsing — B19
+□ Every row[idx] null-guarded before String() conversion — B21
+□ Shadow state reset after every glow draw — B6
+□ No dead code paths that execute before being overwritten
+□ preview.png exists in viz directory (250×150 or 500×300) — R8
+```
+
 ### Step 1: Brand research
 
 Before designing anything, research the brand's existing visual

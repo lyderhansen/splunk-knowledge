@@ -599,6 +599,45 @@ var fontSize = Math.max(8, Math.round(rowH * 0.45));
 **The pattern:** every size = `Math.max(floor, containerDimension * ratio)`.
 The floor prevents unreadable text. The ratio adapts to the panel.
 
+**Font scaling MUST use floor only, NEVER an upper cap:**
+
+```javascript
+// WRONG — caps at 36px, doesn't scale to large panels
+var fontSize = Math.max(12, Math.min(36, h * 0.28));
+
+// CORRECT — floor prevents unreadable, no cap allows growth
+var fontSize = Math.max(14, h * 0.30);
+```
+
+Upper caps were historically added to prevent overflow, but the correct
+fix is to use a smaller ratio, not a pixel cap. Caps break responsive
+scaling — a 700px-tall panel renders tiny text identical to a 130px panel.
+
+**Exception:** if a viz has multiple text elements that must coexist
+(value + label + sparkline), use proportional ratios that sum to < 1.0
+of the available height. No element gets a pixel cap.
+
+**Gauge / arc viz layout constraint:**
+
+Radius and center Y are COUPLED — never calculate them independently.
+
+```javascript
+var pad    = Math.max(12, Math.min(w, h) * 0.06);
+var maxR_w = (w - pad * 2) / 2;
+var maxR_h = (h - pad) * 0.55;
+var radius = Math.min(maxR_w, maxR_h);
+var cx     = w / 2;
+var cy     = pad + radius + arcThick / 2;
+
+// INVARIANT: cy - radius >= pad (arc never overflows top)
+```
+
+**WRONG** — independent calculations that overflow:
+```javascript
+var radius = Math.min(w * 0.42, h * 0.70);  // at w=904,h=318: r=223
+var cy = h * 0.62;                            // cy=197, top = 197-223 = -26px!
+```
+
 **For user-overridable sizes:** `0` = auto-scale (default), positive value
 = explicit override:
 ```javascript
@@ -815,21 +854,45 @@ in the source, there MUST be a matching `<splunk-control-group>` in
 except as a fallback default. Colors come from theme tokens OR
 formatter settings — never inline hex in render logic.
 
-### B17. setupCanvas must receive the container element, not the canvas
+### B17. setupCanvas MUST use this.el with clientWidth/clientHeight
 
-`theme.setupCanvas(el)` internally calls `el.querySelector('canvas')`.
-Passing `this._canvas` (the canvas itself) causes it to search inside
-the canvas element, find nothing, create a NEW canvas appended to the
-canvas, and get 0×0 dimensions.
+NEVER create wrapper divs. NEVER set width/height on `this.el`.
+NEVER use `getBoundingClientRect()` for canvas sizing.
 
 ```javascript
-// WRONG — canvas renders as 0×0
-var setup = theme.setupCanvas(this._canvas);
+// WRONG — all of these produce wrong dimensions:
 
-// CORRECT — pass the container div
-var setup = theme.setupCanvas(this.el);
-this._canvas = setup.canvas;
+// 1. Wrapper div has no computed height yet
+var wrap = document.createElement('div');
+this.el.appendChild(wrap);
+theme.setupCanvas(wrap);              // h = 0 or tiny
+
+// 2. Breaks Splunk framework-managed sizing
+this.el.style.width = '100%';
+this.el.style.height = '100%';
+
+// 3. Returns unreliable fractional/transitional values during layout
+var rect = this.el.getBoundingClientRect();
+
+// CORRECT — use this.el directly with clientWidth/clientHeight:
+this.el.style.position = 'relative';
+this.el.style.overflow = 'hidden';
+// DO NOT set width/height — Splunk manages these
+
+var w = this.el.clientWidth || this.el.offsetWidth
+        || window.innerWidth || 300;
+var h = this.el.clientHeight || this.el.offsetHeight
+        || window.innerHeight || 200;
+if (w < 10) w = window.innerWidth || 300;
+if (h < 10) h = window.innerHeight || 200;
 ```
+
+`window.innerWidth`/`innerHeight` are the iframe viewport dimensions
+— they always match the panel size in Dashboard Studio and serve
+as a reliable fallback when `clientWidth` returns 0 during layout.
+
+Canvas element style must be `position:absolute;top:0;left:0;` to
+fill the container without affecting its measured dimensions.
 
 **Corollary:** either let `setupCanvas` create the canvas in `updateView`,
 OR create it manually in `initialize` — not both. If you create it
@@ -885,6 +948,106 @@ var t = isDark ? theme.DARK : theme.LIGHT;
 user-configurable via formatter. No theme detection needed — the user
 picks colors that work on their background. Best for decorative vizs
 where every color is a design choice.
+
+### B19. new Date() MUST NOT be used for string parsing in viz code
+
+The custom viz iframe has `src="about:srcdoc"` and origin `null`.
+The `Date` constructor silently fails for ISO 8601 strings in this
+context, returning `Invalid Date` or epoch 0.
+
+```javascript
+// WRONG — returns Invalid Date in Splunk iframe
+var d = new Date("2026-05-13T08:42:00");
+var label = d.toLocaleDateString(); // "Invalid Date"
+
+// CORRECT — regex parse for ISO timestamps
+var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun',
+              'Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function parseTimestamp(s) {
+    if (s == null || s === '') return '';
+    var m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/);
+    if (m) {
+        var mon = MONTHS[parseInt(m[2], 10) - 1];
+        return mon + ' ' + parseInt(m[3], 10) + ' ' + m[4] + ':' + m[5];
+    }
+    return String(s);
+}
+```
+
+For epoch values, `parseFloat(s) + new Date(n * 1000)` works because
+epoch is numeric, not string-parsed.
+
+### B20. Vizs MUST auto-detect Splunk dark/light theme via DOM fallback
+
+B18 uses `SplunkVisualizationUtils.getCurrentTheme()` which works in
+most contexts. But some iframe configurations don't load Utils, or
+the method throws. The formatter MUST default to `'auto'` (NEVER
+`'dark'` or `'light'`), and `'auto'` MUST use this DOM detection:
+
+```javascript
+function detectTheme() {
+    // Try SplunkVisualizationUtils first (B18)
+    try {
+        if (typeof SplunkVisualizationUtils !== 'undefined' &&
+            SplunkVisualizationUtils.getCurrentTheme) {
+            var st = SplunkVisualizationUtils.getCurrentTheme();
+            if (st === 'light' || st === 'dark') return st;
+        }
+    } catch (e) {}
+
+    // DOM fallback
+    var body = document.body;
+    if (body) {
+        var dt = body.getAttribute('data-theme');
+        if (dt === 'light' || dt === 'dark') return dt;
+        if (body.classList.contains('light')) return 'light';
+        if (body.classList.contains('dark')) return 'dark';
+    }
+
+    // Computed background luminance fallback
+    try {
+        var bg = window.getComputedStyle(document.body).backgroundColor;
+        var m = bg.match(/\d+/g);
+        if (m && m.length >= 3) {
+            return (parseInt(m[0]) + parseInt(m[1]) + parseInt(m[2])) / 3 < 128
+                   ? 'dark' : 'light';
+        }
+    } catch (e) {}
+
+    return 'dark';
+}
+```
+
+Every viz formatter MUST offer: `auto | dark | light` (default: `auto`).
+When `'auto'`, call `detectTheme()`. When `'dark'` or `'light'`, use
+the explicit value.
+
+### B21. Always null-guard field values before String() conversion
+
+Splunk delivers empty CSV fields and missing SPL fields as `null`.
+`String(null)` === `"null"` and `String(undefined)` === `"undefined"`.
+Both render as visible text on canvas.
+
+```javascript
+// WRONG — shows "284.5Knull" when unit field is empty
+var unit = String(row[unitIdx]);
+
+// WRONG — shows "undefined" when field is missing
+var label = String(row[labelIdx]);
+
+// CORRECT — null/undefined/empty become empty string
+function safeStr(val) {
+    return (val != null && val !== '') ? String(val) : '';
+}
+
+var unit = safeStr(row[unitIdx]);
+var label = safeStr(row[labelIdx]);
+```
+
+Apply this pattern to EVERY field read from row data, not just
+unit fields. Label, category, region, and any optional field can
+be `null`. Use a `safeStr()` helper to avoid repeating the check.
 
 ## REJECTED — fails AppInspect / Splunk Cloud vetting
 
@@ -984,6 +1147,26 @@ Missing → btool compliance warning.
 `visualizations.conf` is a Splunk-defined conf file. Adding
 `[triggers] reload.visualizations = simple` causes
 `check_for_trigger_stanza` failure on Cloud.
+
+### R8. Every viz MUST include a preview.png
+
+Each visualization directory must contain a `preview.png` at
+250×150px (or 500×300px @2x). This thumbnail is shown in the
+Splunk viz picker when users select a visualization type in
+ad-hoc search.
+
+```
+appserver/static/visualizations/{viz_name}/preview.png
+```
+
+Without `preview.png`, users see a generic bar-chart placeholder
+and cannot distinguish between custom vizs. Generate during build:
+- Render the viz to a canvas with sample data and export as PNG
+- Or create a static mockup/screenshot at the correct dimensions
+
+**MUST be a real PNG file.** An SVG renamed to `.png` renders as
+a black box in the picker. Use `cairosvg`, ImageMagick (`convert`),
+or Pillow to convert SVG → PNG if needed.
 
 ## INTERACTIVE — must have for production
 
@@ -1228,9 +1411,18 @@ Viz shows placeholder icon (bar chart in grey box)
 │   ├── addClass? → F10 (jQuery)
 │   └── constructor? → F7 (must use extend object literal)
 ├── No console errors but blank
-│   ├── setupCanvas wrong element? → B17
+│   ├── setupCanvas with wrapper div or getBoundingClientRect? → B17
+│   ├── this.el has width/height set? → B17 (remove, let Splunk manage)
 │   ├── formatData returns null? → B15
-│   └── Canvas dimensions 0×0? → check el.getBoundingClientRect()
+│   └── Canvas dimensions 0×0? → B17 (use clientWidth fallback chain)
+├── Values show "null" or "undefined"
+│   └── String(null) without guard? → B21
+├── Timestamps show "Jan 1" or "Invalid Date"
+│   └── new Date(string) in iframe? → B19 (use regex parse)
+├── Wrong theme (dark on light or vice versa)
+│   └── themeMode hardcoded 'dark'? → B20 (must default to 'auto')
+├── Gauge/arc overflows panel
+│   └── radius and cy calculated independently? → B8 (coupled constraint)
 └── Changes not taking effect → C8 (build number + hard refresh)
 ```
 
@@ -1271,6 +1463,10 @@ Viz shows placeholder icon (bar chart in grey box)
 - [ ] Formatter `name=` uses short namespace `{app}.{viz}.key` (B10)
 - [ ] Formatter `name=` uses `{{VIZ_NAMESPACE}}.key`, NEVER hardcoded namespace (B10)
 - [ ] Theme auto-detects in ad-hoc search via `getCurrentTheme()` fallback (B18)
+- [ ] No `new Date(string)` — use regex parse for ISO timestamps (B19)
+- [ ] Theme formatter default is `'auto'`, with DOM `detectTheme()` fallback (B20)
+- [ ] All row field reads null-guarded before `String()` conversion (B21)
+- [ ] Every viz directory has `preview.png` (250×150 or 500×300) (R8)
 
 ### TIER 2: SHOULD (quality — dashboard looks wrong without these)
 
@@ -1287,7 +1483,10 @@ Viz shows placeholder icon (bar chart in grey box)
 - [ ] Animations cleared in `destroy()`
 - [ ] Shadow state reset after every glow draw
 - [ ] Drilldown wrapped in try/catch
-- [ ] `setupCanvas()` receives `this.el` (container), not `this._canvas` (B17)
+- [ ] `setupCanvas()` receives `this.el`, no wrapper div, no getBoundingClientRect (B17)
+- [ ] No `width/height` set on `this.el` — Splunk manages sizing (B17)
+- [ ] Font scaling uses floor only, no upper pixel cap (B8)
+- [ ] Gauge arc: `cy - radius >= pad` (coupled constraint) (B8)
 - [ ] `reflow` calls the ACTUAL render method name (check source) (C6)
 
 ### TIER 3: POLISH (distinguishes good from great)

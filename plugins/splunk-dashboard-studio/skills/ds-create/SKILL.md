@@ -196,6 +196,26 @@ These defaults are non-negotiable unless the user explicitly overrides:
    Always oversize the panel, then tighten. A clipped markdown with
    a scrollbar is worse than 20px extra whitespace.
 
+   **In absolute-positioned panels, use the `fontSize` option — NOT
+   heading markup (`#`, `##`).** Heading markup adds its own line-height
+   and padding that cannot be controlled. A `# TITLE` (H1) in a 72px
+   strip renders at ~32px + line-height + margin = overflow. Instead:
+
+   ```json
+   {
+     "type": "splunk.markdown",
+     "options": {
+       "markdown": "PATAGONIA OUTDOOR OPERATIONS",
+       "fontSize": "extraLarge",
+       "fontColor": "#FFFFFF"
+     }
+   }
+   ```
+
+   Use `fontSize: "extraLarge"` for hero text, `"large"` for section
+   headers, `"default"` for descriptions. Never combine heading markup
+   with tight panel heights.
+
 9. **`icon_library` panels** MUST set `"backgroundColor": "transparent"`
    on the viz level (outside the namespace options). This is the viz-level
    `backgroundColor`, not `icon_library.icon_library.bgColor`. Without it,

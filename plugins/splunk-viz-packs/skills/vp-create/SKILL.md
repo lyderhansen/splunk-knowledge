@@ -452,9 +452,13 @@ var SHARED = path.resolve(__dirname, '..', 'shared');
 var themeRaw = fs.readFileSync(path.join(SHARED, 'theme.js'), 'utf8');
 
 // Strip require/module.exports from theme to make it inlineable
+// NOTE: The module.exports regex must NOT use the m flag.
+// With m, $ matches end-of-line, stripping only the first line
+// and leaving a stray } that breaks the IIFE. Without m, $
+// matches end-of-string, stripping the entire block.
 var themeBody = themeRaw
     .replace(/^var\s+\w+\s*=\s*require\(.+\);?\s*$/gm, '')
-    .replace(/^module\.exports\s*=\s*\{[\s\S]*?\};?\s*$/m, '');
+    .replace(/module\.exports\s*=\s*\{[\s\S]*$/, '');
 
 var vizDirs = fs.readdirSync(VIZ_ROOT).filter(function(n) {
     var srcPath = path.join(VIZ_ROOT, n, 'src', 'visualization_source.js');
@@ -540,15 +544,56 @@ done
 # Each MUST NOT contain: => or const or let
 ```
 
-## Packaging
+## Post-build validation — MANDATORY
+
+After EVERY build (webpack or flat AMD), run ALL of these checks on
+each `visualization.js`. If ANY check fails, do NOT package. Fix and
+rebuild.
 
 ```bash
-cd examples/
-find {{PACK_ID}} -name '._*' -delete
-find {{PACK_ID}} -name '.DS_Store' -delete
-rm -f {{PACK_ID}}.tar.gz
+for viz in ../appserver/static/visualizations/*/visualization.js; do
+  echo "=== Validating $viz ==="
+  FAIL=0
 
-COPYFILE_DISABLE=1 tar czf {{PACK_ID}}.tar.gz \
+  # 1. Syntax check
+  node --check "$viz" || FAIL=1
+
+  # 2. AMD wrapper start
+  head -1 "$viz" | grep -q 'define(\[' || { echo "FAIL: missing AMD define"; FAIL=1; }
+
+  # 3. AMD wrapper end
+  tail -1 "$viz" | grep -q '});' || { echo "FAIL: missing AMD close"; FAIL=1; }
+
+  # 4. ES5 compliance (no const, let, arrow functions)
+  ES6=$(grep -cE '\bconst \b|\blet \b| => ' "$viz" || true)
+  [ "$ES6" -gt 0 ] && { echo "FAIL: ES6 syntax found ($ES6 occurrences)"; FAIL=1; }
+
+  # 5. Theme detection present
+  grep -q 'detectTheme\|getCurrentTheme' "$viz" || { echo "FAIL: no theme detection"; FAIL=1; }
+
+  # 6. Null guard present
+  grep -q '!= null\|safeStr' "$viz" || { echo "FAIL: no null guards"; FAIL=1; }
+
+  [ "$FAIL" -eq 0 ] && echo "OK" || echo "BLOCKED — fix before packaging"
+done
+```
+
+## Packaging
+
+**ALWAYS use absolute paths for tar packaging.** Build steps may change
+cwd — never assume cwd after build. ALWAYS verify after packaging.
+
+```bash
+APP_DIR="/absolute/path/to/{{PACK_ID}}"
+PARENT_DIR="$(dirname "$APP_DIR")"
+cd "$PARENT_DIR"
+
+```bash
+find "{{PACK_ID}}" -name '._*' -delete
+find "{{PACK_ID}}" -name '.DS_Store' -delete
+rm -f "{{PACK_ID}}.tar.gz"
+
+COPYFILE_DISABLE=1 tar czf "{{PACK_ID}}.tar.gz" \
   --exclude='._*' \
   --exclude='.DS_Store' \
   --exclude='.git*' \
@@ -556,7 +601,18 @@ COPYFILE_DISABLE=1 tar czf {{PACK_ID}}.tar.gz \
   --exclude='_build' \
   --exclude='*.tar.gz' \
   --exclude='src' \
-  {{PACK_ID}}
+  --exclude='*/shared' \
+  --exclude='build_flat.js' \
+  "{{PACK_ID}}"
+
+# MANDATORY verification — catches empty archives and nested tarballs
+echo "--- Verify archive ---"
+tar tzf "{{PACK_ID}}.tar.gz" | head -1
+# Must be: {{PACK_ID}}/
+tar tzf "{{PACK_ID}}.tar.gz" | grep '\.tar\.gz' && echo "ERROR: nested archive!" && exit 1
+SIZE=$(wc -c < "{{PACK_ID}}.tar.gz")
+[ "$SIZE" -lt 1000 ] && echo "ERROR: archive too small ($SIZE bytes)" && exit 1
+echo "OK — $SIZE bytes"
 ```
 
 ## Completion output — MANDATORY
@@ -1176,7 +1232,12 @@ There is no special exemption for bundled dashboards.
 - [ ] No hardcoded accent color defaults in formatter.html — use `{{ACCENT}}` or the pack's `theme.accent` token, not a literal hex like `#1a91a8` or `#0088CC`
 - [ ] Every viz has `getInitialDataParams` as a METHOD (not a property on extend)
 - [ ] No jQuery (`this.$el`, `$.fn`) in any viz source
-- [ ] `theme.setupCanvas()` receives `this.el`, not `this._canvas`
+- [ ] `setupCanvas()` uses `this.el` — no wrapper div, no getBoundingClientRect, no width/height on el (B17)
+- [ ] No `new Date(string)` — use regex for ISO timestamp parsing (B19)
+- [ ] Theme formatter default is `'auto'` with `detectTheme()` fallback (B20)
+- [ ] All row field reads null-guarded before `String()` (B21)
+- [ ] Post-build validation passed (syntax, AMD, ES5, theme, null guards)
+- [ ] `preview.png` is real PNG binary, not renamed SVG (R8)
 - [ ] `build` in app.conf incremented before packaging
 - [ ] `default/data/ui/nav/default.xml` exists with dashboard view references
 - [ ] Dashboard JSON uses `tabs` + `layoutDefinitions` wrapper (no flat layout)
