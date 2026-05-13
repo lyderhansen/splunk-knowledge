@@ -896,6 +896,201 @@ NEVER hardcode field names like `"value"` or `"_time"`.
 If a subagent produces fewer than 10 controls, it has almost
 certainly hardcoded values that should be configurable.
 
+## visualization_source.js — complete template
+
+**This is the most important file.** Copy this entire template and
+fill in the `{FILL}` markers. Every pattern here (clientWidth, safeStr,
+detectTheme, null guards, no getBoundingClientRect) is load-bearing.
+
+```javascript
+var SplunkVisualizationBase = require('api/SplunkVisualizationBase');
+var SplunkVisualizationUtils = require('api/SplunkVisualizationUtils');
+var theme = require('shared/theme');
+
+// ── Null-safe helpers (B21) ─────────────────────────────
+function safeStr(val) {
+    return (val != null && val !== '') ? String(val) : '';
+}
+
+function safeNum(val, fallback) {
+    if (val == null || val === '') return fallback;
+    var n = parseFloat(val);
+    return isNaN(n) ? fallback : n;
+}
+
+// ── Theme auto-detection (B20) ──────────────────────────
+function detectTheme() {
+    try {
+        if (typeof SplunkVisualizationUtils !== 'undefined' &&
+            SplunkVisualizationUtils.getCurrentTheme) {
+            var st = SplunkVisualizationUtils.getCurrentTheme();
+            if (st === 'light' || st === 'dark') return st;
+        }
+    } catch (e) {}
+    var body = document.body;
+    if (body) {
+        var dt = body.getAttribute('data-theme');
+        if (dt === 'light' || dt === 'dark') return dt;
+        if (body.classList.contains('dark')) return 'dark';
+        if (body.classList.contains('light')) return 'light';
+    }
+    try {
+        var bg = window.getComputedStyle(document.body).backgroundColor;
+        var m = bg.match(/\d+/g);
+        if (m && m.length >= 3) {
+            return (parseInt(m[0]) + parseInt(m[1]) + parseInt(m[2])) / 3 < 128
+                   ? 'dark' : 'light';
+        }
+    } catch (e) {}
+    return 'dark';
+}
+
+// ── Viz ─────────────────────────────────────────────────
+module.exports = SplunkVisualizationBase.extend({
+
+    initialize: function() {
+        SplunkVisualizationBase.prototype.initialize.apply(this, arguments);
+        this.el.classList.add('{FILL: app-name}-viz');
+
+        // Canvas — position absolute so it doesn't affect el sizing (B17)
+        this._canvas = document.createElement('canvas');
+        this._canvas.style.cssText = 'position:absolute;top:0;left:0;';
+        this.el.style.position = 'relative';
+        this.el.style.overflow = 'hidden';
+        // DO NOT set width/height on this.el — Splunk manages these (B17)
+        this.el.appendChild(this._canvas);
+
+        // Tooltip (I1)
+        this._tooltip = document.createElement('div');
+        this._tooltip.style.cssText =
+            'position:absolute;display:none;padding:6px 10px;' +
+            'border-radius:4px;pointer-events:none;white-space:nowrap;z-index:100;';
+        this.el.appendChild(this._tooltip);
+
+        this._lastGoodData = null;
+
+        var self = this;
+        this._canvas.addEventListener('mousemove', function(e) {
+            self._onMouseMove(e);
+        });
+        this._canvas.addEventListener('mouseleave', function() {
+            self._tooltip.style.display = 'none';
+        });
+    },
+
+    getInitialDataParams: function() {
+        return {
+            outputMode: SplunkVisualizationBase.ROW_MAJOR_OUTPUT_MODE,
+            count: 10000
+        };
+    },
+
+    formatData: function(data) {
+        // Keep lightweight — no config reads here (B4)
+        if (!data || !data.rows || data.rows.length === 0) {
+            if (this._lastGoodData) return this._lastGoodData;
+            return null;
+        }
+
+        var fields = data.fields;
+        var colIdx = {};
+        for (var i = 0; i < fields.length; i++) {
+            colIdx[fields[i].name] = i;
+        }
+
+        var result = {
+            colIdx: colIdx,
+            rows: data.rows
+        };
+        this._lastGoodData = result;
+        return result;
+    },
+
+    updateView: function(data, config) {
+        if (!data) {
+            if (this._lastGoodData) data = this._lastGoodData;
+            else return;
+        }
+
+        // ── Read settings (B3/B7 — defaults MUST match formatter value=) ──
+        var ns = this.getPropertyNamespaceInfo().propertyNamespace;
+        function opt(key, fallback) {
+            var v = config[ns + key];
+            return (v != null && v !== '') ? v : fallback;
+        }
+
+        var valueField = opt('{FILL: settingName}', '{FILL: default}');
+        // {FILL: add more settings}
+
+        // ── Theme (B20) ──
+        var themeMode = opt('themeMode', 'auto');
+        var isDark = themeMode === 'auto' ? detectTheme() === 'dark'
+                   : themeMode === 'dark';
+        var t = theme.getTheme(isDark ? 'dark' : 'light');
+
+        // ── Canvas sizing (B17 — clientWidth, NEVER getBoundingClientRect) ──
+        var w = this.el.clientWidth || this.el.offsetWidth || window.innerWidth || 300;
+        var h = this.el.clientHeight || this.el.offsetHeight || window.innerHeight || 200;
+        if (w < 10) w = window.innerWidth || 300;
+        if (h < 10) h = window.innerHeight || 200;
+
+        var dpr = window.devicePixelRatio || 1;
+        this._canvas.width = w * dpr;
+        this._canvas.height = h * dpr;
+        this._canvas.style.width = w + 'px';
+        this._canvas.style.height = h + 'px';
+        var ctx = this._canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.scale(dpr, dpr);
+
+        // ── Clear (B13 — clearRect, never fillRect) ──
+        ctx.clearRect(0, 0, w, h);
+
+        // ── Style tooltip for current theme ──
+        this._tooltip.style.background = t.panelHi || t.panel;
+        this._tooltip.style.color = t.text;
+        this._tooltip.style.fontFamily = theme.FONTS.ui;
+        this._tooltip.style.fontSize = '11px';
+
+        // ── Read data (B21 — null-guard everything) ──
+        var colIdx = data.colIdx;
+        var rows = data.rows;
+        // var val = safeNum(rows[0][colIdx[valueField]], 0);
+        // var label = safeStr(rows[0][colIdx[labelField]]);
+
+        // ── Font scaling (B8 — floor only, NO upper cap) ──
+        // var fontSize = Math.max(14, h * 0.30);
+
+        // {FILL: all Canvas 2D drawing code here}
+    },
+
+    _onMouseMove: function(e) {
+        // {FILL: hit-test logic + tooltip positioning}
+    },
+
+    reflow: function() {
+        this.invalidateUpdateView();
+    },
+
+    destroy: function() {
+        SplunkVisualizationBase.prototype.destroy.apply(this, arguments);
+    }
+});
+```
+
+**What this template bakes in:**
+- `safeStr()` / `safeNum()` — B21 null guards
+- `detectTheme()` — B20 DOM fallback + B18 getCurrentTheme
+- `clientWidth`/`clientHeight` — B17, no getBoundingClientRect
+- `position:absolute` canvas — B17, doesn't affect el sizing
+- `clearRect` — B13, transparent background
+- `ROW_MAJOR_OUTPUT_MODE` — F4
+- `require()`/`module.exports` — F6, webpack adds AMD wrapper
+- `extend({...})` object literal — F7
+- Tooltip scaffold — I1
+- No config in formatData — B4
+- `opt()` helper with fallback — B3/B7
+
 ## visualization.css template
 
 ```css

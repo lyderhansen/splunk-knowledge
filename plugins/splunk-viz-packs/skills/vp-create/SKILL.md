@@ -11,9 +11,12 @@ description: "Scaffolds and packages themed Splunk custom visualization apps (mu
 
 ## Output directory
 
-All packs are created at:
+Create the pack in the current working directory (or a user-specified
+path). Do NOT hardcode any absolute paths — the plugin must work on
+any machine.
+
 ```
-/Users/joehanse/Library/CloudStorage/OneDrive-Cisco/Documents/03_Funny_Projects/splunk-custom-visualizations/examples/{pack_name}/
+./{pack_name}/
 ```
 
 ## Directory structure
