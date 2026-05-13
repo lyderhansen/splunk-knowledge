@@ -284,8 +284,8 @@ Without these in the prompt, subagents default to generic patterns.
 **Add this block at the TOP of every vp-viz subagent prompt.** Subagents
 receive 100+ lines of rules but skim technical details. This checklist
 forces verification of the 15 most common failures BEFORE any code is
-written. Test21 (Patagonia) proved that without this checklist, every
-subagent produced the same class of bugs.
+written. Test21+22 proved that without this, every subagent produced
+the same class of bugs.
 
 ```
 BEFORE WRITING ANY CODE, VERIFY EVERY ITEM:
@@ -306,6 +306,117 @@ BEFORE WRITING ANY CODE, VERIFY EVERY ITEM:
 □ No dead code paths that execute before being overwritten
 □ preview.png exists in viz directory (250×150 or 500×300) — R8
 ```
+
+### Subagent COPY-PASTE code blocks — MANDATORY
+
+**Why this exists:** Test22 (Nike) showed that subagents ignore prose
+rules ("use `{{VIZ_NAMESPACE}}`") but reliably copy code templates.
+100% of 7 vizs failed B10/B7/B5 despite rules existing in gotchas.
+
+**Include these EXACT code blocks in every vp-viz subagent prompt.**
+Tell the agent: "Copy these patterns exactly. Do NOT write formatter
+HTML from memory."
+
+**BLOCK 1 — Formatter control patterns (copy these exactly):**
+
+```html
+<!-- TEXT INPUT — for field names, labels, units -->
+<splunk-control-group label="LABEL" help="HELP TEXT">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.settingName" value="defaultValue">
+    </splunk-text-input>
+</splunk-control-group>
+
+<!-- RADIO TOGGLE — for show/hide, on/off -->
+<splunk-control-group label="LABEL" help="HELP TEXT">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.settingName" value="true">
+        <option value="true">Show</option>
+        <option value="false">Hide</option>
+    </splunk-radio-input>
+</splunk-control-group>
+
+<!-- COLOR PICKER — MUST have type="custom" -->
+<splunk-control-group label="LABEL" help="HELP TEXT">
+    <splunk-color-picker name="{{VIZ_NAMESPACE}}.settingName" type="custom" value="#hex">
+        <splunk-color>#hex1</splunk-color>
+        <splunk-color>#hex2</splunk-color>
+    </splunk-color-picker>
+</splunk-control-group>
+
+<!-- THEME — MUST default to "auto" -->
+<splunk-control-group label="Theme" help="Auto detects dashboard theme">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto">
+        <option value="auto">Auto</option>
+        <option value="dark">Dark</option>
+        <option value="light">Light</option>
+    </splunk-radio-input>
+</splunk-control-group>
+
+<!-- SECTION WRAPPER — every <form> MUST have class + section-label -->
+<form class="splunk-formatter-section" section-label="Section Name">
+    <!-- controls here -->
+</form>
+```
+
+**BLOCK 2 — JS patterns the viz MUST include:**
+
+```javascript
+// Theme auto-detection (B20) — put in updateView or _render
+function detectTheme() {
+    try {
+        if (typeof SplunkVisualizationUtils !== 'undefined' &&
+            SplunkVisualizationUtils.getCurrentTheme) {
+            var st = SplunkVisualizationUtils.getCurrentTheme();
+            if (st === 'light' || st === 'dark') return st;
+        }
+    } catch (e) {}
+    var body = document.body;
+    if (body) {
+        var dt = body.getAttribute('data-theme');
+        if (dt === 'light' || dt === 'dark') return dt;
+        if (body.classList.contains('dark')) return 'dark';
+    }
+    try {
+        var bg = window.getComputedStyle(document.body).backgroundColor;
+        var m = bg.match(/\d+/g);
+        if (m && m.length >= 3) {
+            return (parseInt(m[0])+parseInt(m[1])+parseInt(m[2]))/3 < 128
+                   ? 'dark' : 'light';
+        }
+    } catch (e) {}
+    return 'dark';
+}
+
+// Null-safe string helper (B21)
+function safeStr(val) {
+    return (val != null && val !== '') ? String(val) : '';
+}
+
+// Canvas sizing (B17) — use clientWidth, NEVER getBoundingClientRect
+var w = this.el.clientWidth || this.el.offsetWidth || window.innerWidth || 300;
+var h = this.el.clientHeight || this.el.offsetHeight || window.innerHeight || 200;
+if (w < 10) w = window.innerWidth || 300;
+if (h < 10) h = window.innerHeight || 200;
+```
+
+**BLOCK 3 — WRONG patterns to reject (if you see these, fix immediately):**
+
+```
+WRONG: name="myapp.myviz.field"     → use name="{{VIZ_NAMESPACE}}.field"
+WRONG: default="value"               → use value="value"
+WRONG: <splunk-color-picker value=   → add type="custom"
+WRONG: <form>                        → add class="splunk-formatter-section" section-label="..."
+WRONG: value="dark" on themeMode     → use value="auto"
+WRONG: getBoundingClientRect()       → use clientWidth/clientHeight
+WRONG: new Date("2026-05-13...")     → use regex parse
+WRONG: String(row[idx])              → use safeStr(row[idx])
+WRONG: var wrap = createElement('div') → use this.el directly
+```
+
+### Post-build validation — MANDATORY
+
+After building ALL vizs, run `validate_viz.sh` from vp-create.
+If the validator reports ANY failure, fix and rebuild before packaging.
+Do NOT skip validation. Do NOT package with failures.
 
 ### Step 1: Brand research
 

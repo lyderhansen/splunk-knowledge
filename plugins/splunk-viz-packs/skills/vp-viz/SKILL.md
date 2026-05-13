@@ -783,51 +783,103 @@ to the demo CSV column names. Color settings default to theme accent.
 - JS defaults MUST match `value="..."` attributes (B7)
 - Color picker swatches should come from the pack's theme palette
 
-**Every visual property must be configurable (B15).** If `_render()`
-uses a color, size, toggle, or position, it MUST have a formatter
-setting. The complete minimum settings list:
+## Formatter copy-paste templates — USE THESE EXACTLY
+
+**DO NOT write formatter HTML from memory.** Copy the exact pattern
+below and fill in only the parts marked `{FILL}`. Every attribute,
+every quote, every `{{VIZ_NAMESPACE}}` is load-bearing.
+
+### Text input (field names, labels, units)
 
 ```html
-<!-- SECTION 1: Data configurations -->
-<form class="splunk-formatter-section" section-label="Data configurations">
-    <!-- field: which SPL field to read -->
-    <!-- deltaField: trend delta field (if applicable) -->
-    <!-- categoryField / valueField: for composition vizs -->
-    <!-- maxRows: for table/list vizs -->
-</form>
+<splunk-control-group label="{FILL: Label}" help="{FILL: help text}">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.{FILL: settingName}" value="{FILL: default}">
+    </splunk-text-input>
+</splunk-control-group>
+```
 
-<!-- SECTION 2: Data display -->
-<form class="splunk-formatter-section" section-label="Data display">
-    <!-- label: text label -->
-    <!-- labelPlacement: top / bottom / left / none -->
-    <!-- unit: suffix or prefix -->
-    <!-- unitPosition: before / after -->
-    <!-- decimals: fixed decimal places (-1 = auto) -->
-    <!-- showDelta: show trend arrow (true/false) -->
-    <!-- showLegend / showReadout: for composition vizs -->
-    <!-- showPosition: for ranked tables -->
-    <!-- alignment: left / center / right -->
-</form>
+### Radio toggle (show/hide, on/off)
 
-<!-- SECTION 3: Color and style -->
-<form class="splunk-formatter-section" section-label="Color and style">
-    <!-- theme: auto-detected via getCurrentTheme() — no formatter radio (B18) -->
-    <!-- accentColor: primary highlight (color picker) -->
-    <!-- colors: CSV hex for multi-series (text input) -->
-    <!-- accentIntensity: glow/effect strength 0-100 -->
-</form>
+```html
+<splunk-control-group label="{FILL: Label}" help="{FILL: help text}">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.{FILL: settingName}" value="{FILL: default}">
+        <option value="true">{FILL: On label}</option>
+        <option value="false">{FILL: Off label}</option>
+    </splunk-radio-input>
+</splunk-control-group>
+```
 
-<!-- SECTION 4: Gauge settings (only for gauge vizs) -->
-<form class="splunk-formatter-section" section-label="Gauge settings">
-    <!-- maxValue: scale maximum -->
-    <!-- redZoneStart: threshold for danger zone -->
-    <!-- segments: number of arc segments -->
+### Dropdown (multi-option)
+
+```html
+<splunk-control-group label="{FILL: Label}" help="{FILL: help text}">
+    <splunk-select name="{{VIZ_NAMESPACE}}.{FILL: settingName}" value="{FILL: default}">
+        <option value="{FILL}">{FILL: label}</option>
+        <option value="{FILL}">{FILL: label}</option>
+    </splunk-select>
+</splunk-control-group>
+```
+
+### Color picker (MUST have type="custom")
+
+```html
+<splunk-control-group label="{FILL: Label}" help="{FILL: help text}">
+    <splunk-color-picker name="{{VIZ_NAMESPACE}}.{FILL: settingName}" type="custom" value="{FILL: #hex}">
+        <splunk-color>{FILL: #hex1}</splunk-color>
+        <splunk-color>{FILL: #hex2}</splunk-color>
+        <splunk-color>{FILL: #hex3}</splunk-color>
+        <splunk-color>{FILL: #hex4}</splunk-color>
+        <splunk-color>{FILL: #hex5}</splunk-color>
+    </splunk-color-picker>
+</splunk-control-group>
+```
+
+### Theme selector (MUST default to auto)
+
+```html
+<splunk-control-group label="Theme" help="Auto detects Dashboard Studio theme. Override for testing.">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto">
+        <option value="auto">Auto</option>
+        <option value="dark">Dark</option>
+        <option value="light">Light</option>
+    </splunk-radio-input>
+</splunk-control-group>
+```
+
+### Section wrapper (MUST have class + section-label)
+
+```html
+<form class="splunk-formatter-section" section-label="{FILL: Section Name}">
+    <!-- controls go here -->
 </form>
 ```
 
-Add sections only when the viz genuinely needs them. A simple KPI
-tile needs sections 1-3. A gauge adds section 4. Don't create
-empty sections.
+### WRONG patterns — if you see these, the formatter is broken
+
+```html
+<!-- WRONG: hardcoded namespace (settings silently fail) -->
+name="myapp.myviz.field"
+
+<!-- WRONG: default= instead of value= (settings appear empty) -->
+<splunk-text-input name="{{VIZ_NAMESPACE}}.field" default="value">
+
+<!-- WRONG: color picker without type="custom" (ignores value=) -->
+<splunk-color-picker name="{{VIZ_NAMESPACE}}.color" value="#ff0000">
+
+<!-- WRONG: bare <form> without class and section-label (invisible) -->
+<form>
+
+<!-- WRONG: theme defaults to "dark" (breaks light mode) -->
+<splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="dark">
+```
+
+## Formatter section structure
+
+Every viz gets sections 1-3. Add section 4 only for gauges.
+
+**Section 1: Data configurations** — field name mappings (text inputs)
+**Section 2: Data display** — labels, units, toggles, alignment
+**Section 3: Color and style** — theme, accent color, series colors, intensity
 
 **Minimum formatter control counts:**
 
@@ -838,20 +890,8 @@ empty sections.
 | Complex (table, timeline, flow) | 14 | 5 fields + 5 display + 4 color |
 
 **Mandatory field configurability:** Every field name used in
-`updateView()` or `formatData()` MUST have a corresponding
-formatter text-input. NEVER hardcode field names like `"value"` or
-`"_time"` — the user's SPL may produce different column names.
-
-```html
-<!-- WRONG — only works with SPL that outputs "value" -->
-<!-- (no formatter control, hardcoded in JS) -->
-
-<!-- CORRECT — user can map any SPL field -->
-<splunk-control-group label="Value field" help="SPL field for the metric value">
-    <splunk-text-input name="{{VIZ_NAMESPACE}}.valueField" value="value">
-    </splunk-text-input>
-</splunk-control-group>
-```
+`updateView()` MUST have a corresponding formatter text-input.
+NEVER hardcode field names like `"value"` or `"_time"`.
 
 If a subagent produces fewer than 10 controls, it has almost
 certainly hardcoded values that should be configurable.
