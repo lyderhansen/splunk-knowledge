@@ -224,10 +224,17 @@ reduce DESIGN DEPTH. Three unique vizs beat six generic ones.
 **Model selection:** Steps 1-6 and 8 require judgment, taste, and
 evaluative reasoning — use **Opus**. Step 7 is implementation —
 use **Sonnet** (faster, cheaper, equally reliable for code).
-When dispatching subagents for step 7, set `model: "sonnet"`.
+
+**CRITICAL: Step 7 MUST be INLINE — do NOT dispatch subagents for
+writing viz code.** Test22a+22b proved that subagents lose code-level
+rules (formatter syntax, JS patterns, theme detection, null guards) —
+100% of vizs failed critical rules when subagents wrote the code.
+The agent that loaded the skills MUST be the same agent that writes
+the formatter.html and visualization_source.js. Subagents are OK for
+non-code tasks (CSV generation, image download) but NOT for viz code.
 
 **Step 7 MUST-LOAD — cross-plugin rules:**
-Before building, the agent (or subagent) MUST load:
+Before building, the agent MUST load:
 - `vp-ref-gotchas` — viz code rules (ES5, outputMode, file paths)
 - `ds-create` from `splunk-dashboard-studio` — dashboard hard defaults
   (canvas 1920×1080, fontFamily, fontSize, markdown sizing)
@@ -256,36 +263,26 @@ is missing, the build was rushed and the output will be generic.
 condensed into a single design direction statement from the user.
 The full protocol is for production brand launches.
 
-### Subagent enforcement
+### Inline code enforcement
 
-When delegating to `vp-viz` subagents, the prompt MUST include:
-1. The full design brief (not just "use HBO Max colors")
-2. The brand-specific panel chrome description (not "use drawPanel()")
-3. The anti-pattern list (copy from the Anti-patterns section below)
-4. Explicit instruction: "Do NOT use theme.drawPanel() — use the
-   brand-specific chrome described in the brief"
-5. Explicit instruction: "outputMode MUST be
-   SplunkVisualizationBase.ROW_MAJOR_OUTPUT_MODE, NEVER 'json'"
-6. Explicit instruction: "Use require()/module.exports, NEVER
-   define() — webpack adds the AMD wrapper (see gotchas F6)"
-7. Explicit instruction: "Use SplunkVisualizationBase.extend({...})
-   object literal, NEVER prototypal constructor pattern (see F7)"
-8. Explicit instruction: "Canvas background must use clearRect(),
-   NEVER fillRect() with theme colors (see B13)"
-9. Explicit instruction: "Include accentIntensity setting (0-100,
-   default 50) — multiply all glow/shadow/accent opacities by gi"
-10. Explicit instruction: "Download hero/brand images to
-    appserver/static/images/ — NEVER use external URLs (see F8)"
+**Step 7 is written INLINE** — the same agent that loaded vp-couture,
+vp-ref-gotchas, and vp-viz writes all viz code. No subagent dispatch.
 
-Without these in the prompt, subagents default to generic patterns.
+When writing EACH viz, verify these rules apply to your code:
+1. Use the design brief for palette, fonts, and chrome — not generic defaults
+2. Use brand-specific panel chrome — NOT `theme.drawPanel()`
+3. `outputMode` = `SplunkVisualizationBase.ROW_MAJOR_OUTPUT_MODE`
+4. Use `require()`/`module.exports`, NEVER `define()`
+5. Use `SplunkVisualizationBase.extend({...})` object literal
+6. Canvas background uses `clearRect()`, NEVER `fillRect()`
+7. Include `accentIntensity` setting (0-100, default 50)
+8. Download hero/brand images to `appserver/static/images/`
 
-### Subagent pre-flight checklist — MANDATORY
+### Pre-code checklist — MANDATORY
 
-**Add this block at the TOP of every vp-viz subagent prompt.** Subagents
-receive 100+ lines of rules but skim technical details. This checklist
-forces verification of the 15 most common failures BEFORE any code is
-written. Test21+22 proved that without this, every subagent produced
-the same class of bugs.
+**Check EVERY item below BEFORE writing each viz.** This checklist
+covers the 16 most common failures from test21+22. Read it before
+each `visualization_source.js` and `formatter.html` you write.
 
 ```
 BEFORE WRITING ANY CODE, VERIFY EVERY ITEM:
@@ -307,15 +304,11 @@ BEFORE WRITING ANY CODE, VERIFY EVERY ITEM:
 □ preview.png exists in viz directory (250×150 or 500×300) — R8
 ```
 
-### Subagent COPY-PASTE code blocks — MANDATORY
+### COPY-PASTE code blocks — reference while writing
 
-**Why this exists:** Test22 (Nike) showed that subagents ignore prose
-rules ("use `{{VIZ_NAMESPACE}}`") but reliably copy code templates.
-100% of 7 vizs failed B10/B7/B5 despite rules existing in gotchas.
-
-**Include these EXACT code blocks in every vp-viz subagent prompt.**
-Tell the agent: "Copy these patterns exactly. Do NOT write formatter
-HTML from memory."
+**Why this exists:** Test22 (Nike) showed that even with rules loaded,
+code-level syntax gets wrong when written from memory. These are the
+exact patterns to copy when writing formatter.html and viz JS.
 
 **BLOCK 1 — Formatter control patterns (copy these exactly):**
 
