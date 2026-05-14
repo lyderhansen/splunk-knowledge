@@ -1,6 +1,5 @@
 #!/bin/bash
 # validate_viz.sh — post-build validator for Splunk custom viz apps
-# Canonical source: vp-viz/scripts/validate_viz.sh (edit there first, copy here)
 # Usage: bash validate_viz.sh /path/to/app_dir
 # Exit code: 0 = all pass, 1 = failures found
 
@@ -20,7 +19,7 @@ for f in "$APP_DIR"/appserver/static/visualizations/*/formatter.html; do
   echo "--- formatter: $VIZ ---"
 
   # VIZ_NAMESPACE required, no hardcoded namespace
-  HARDCODED=$(grep -cE 'name="[a-z_]+\.[a-z_]+\.' "$f" 2>/dev/null || true)
+  HARDCODED=$(grep -cE 'name="[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+\.' "$f" 2>/dev/null || true)
   TEMPLATE=$(grep -c '{{VIZ_NAMESPACE}}' "$f" 2>/dev/null || true)
   [ "$HARDCODED" -gt 0 ] && { echo "  FAIL B10: $HARDCODED hardcoded namespace(s)"; FAIL=1; }
   [ "$TEMPLATE" -eq 0 ] && { echo "  FAIL B10: no {{VIZ_NAMESPACE}} found"; FAIL=1; }

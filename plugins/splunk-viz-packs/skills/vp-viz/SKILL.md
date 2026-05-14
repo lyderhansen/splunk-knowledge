@@ -8,6 +8,8 @@ allowed-tools: Read Bash(node *) Bash(head *) Bash(grep *) Bash(chmod *)
 
 # vp-viz — build one Splunk custom visualization
 
+> **Prerequisite:** If building a multi-viz pack, load vp-couture first for the design brief. For debugging failed vizs, load vp-ref-gotchas instead.
+
 ## STOP — read this first (failed in every test)
 
 **Dashboard Studio viz type is `{app_id}.{viz_name}` — nothing else.**
