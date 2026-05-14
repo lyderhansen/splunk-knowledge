@@ -124,6 +124,32 @@ RIGHT — namespaced keys + bare type:
 "options": { "{{PACK_ID}}.{{VIZ_NAME}}.scoreField": "score" }
 ```
 
+**Dashboard options = ONLY overrides.** The formatter `value=` attribute
+is the single source of truth for defaults. The JS `opt()` fallback
+matches those defaults. Dashboard JSON should NEVER repeat them.
+
+```json
+WRONG — duplicates every formatter default (cluttered, fragile):
+"options": {
+    "myapp.myviz.field": "value",
+    "myapp.myviz.themeMode": "auto",
+    "myapp.myviz.accentIntensity": "50",
+    "myapp.myviz.showTarget": "true"
+}
+
+RIGHT — only settings that differ from formatter defaults:
+"options": {
+    "myapp.myviz.accentColor": "#FF6600"
+}
+
+RIGHT — all defaults, nothing to override:
+"options": {}
+```
+
+If a setting matches the formatter `value=` default, omit it from
+dashboard JSON. This keeps the JSON clean and ensures the formatter
+is the single source of truth.
+
 Dashboard data sources MUST have a `"name"` field:
 ```json
 WRONG: { "type": "ds.search", "options": { "query": "..." } }

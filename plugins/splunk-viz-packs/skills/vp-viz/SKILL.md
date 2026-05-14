@@ -177,6 +177,16 @@ function safeNum(val, fallback) {
     return isNaN(n) ? fallback : n;
 }
 
+function hexFromSplunk(val, fallback) {
+    if (val == null || val === '') return fallback;
+    var s = String(val).trim();
+    if (s.charAt(0) === '#') return s;
+    if (s.indexOf('0x') === 0) return '#' + s.slice(2);
+    var n = parseInt(s, 10);
+    if (!isNaN(n) && n >= 0) return '#' + ('000000' + n.toString(16)).slice(-6);
+    return fallback;
+}
+
 function detectTheme() {
     try {
         if (typeof SplunkVisualizationUtils !== 'undefined' &&
@@ -371,6 +381,9 @@ RIGHT — namespaced options (settings delivered to updateView):
 10. **No jQuery** — this.$el doesn't exist in Dashboard Studio v2
 11. **Dashboard type = `{app_id}.{viz_name}`** — NEVER `custom.{app_id}.{viz_name}` or `splunk.custom.*`. The format is EXACTLY `app_id.viz_name`, nothing else.
 12. **Tarball = ONE top-level directory** — `tar tzf app.tar.gz | head -1` must show `app_name/`. Package from the PARENT directory with the app dir as the only argument.
+13. **Color picker values can be integers** — Splunk returns `6511615` not `"#635BFF"`. Use `hexFromSplunk(val, fallback)` on ALL color picker reads.
+14. **Dashboard options = only overrides** — never duplicate formatter defaults in dashboard JSON `"options"`. If a value matches the formatter `value=`, omit it.
+15. **preview.png in every viz** — 250x150 real PNG. Without it, Splunk viz picker shows a generic placeholder. Generate via Pillow after build.
 
 ## Build and validate
 
