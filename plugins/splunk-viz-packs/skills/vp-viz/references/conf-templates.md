@@ -95,6 +95,35 @@ display.visualizations.custom.type = {{PACK_ID}}.{{VIZ_NAME}}
 display.visualizations.custom.{{PACK_ID}}.{{VIZ_NAME}}.{{SETTING}} = {{DEFAULT}}
 ```
 
+## Dashboard Studio JSON — viz options
+
+When embedding a custom viz in a Dashboard Studio v2 dashboard JSON, ALL option keys MUST be namespaced:
+
+```json
+{
+    "type": "{{PACK_ID}}.{{VIZ_NAME}}",
+    "dataSources": { "primary": "ds_demo" },
+    "options": {
+        "{{PACK_ID}}.{{VIZ_NAME}}.scoreField": "score",
+        "{{PACK_ID}}.{{VIZ_NAME}}.labelField": "label",
+        "{{PACK_ID}}.{{VIZ_NAME}}.accentColor": "#0077B6",
+        "{{PACK_ID}}.{{VIZ_NAME}}.themeMode": "auto"
+    }
+}
+```
+
+```
+WRONG — bare keys (never reach the viz):
+"options": { "scoreField": "score" }
+
+WRONG — custom.* prefix on type:
+"type": "custom.{{PACK_ID}}.{{VIZ_NAME}}"
+
+RIGHT — namespaced keys + bare type:
+"type": "{{PACK_ID}}.{{VIZ_NAME}}",
+"options": { "{{PACK_ID}}.{{VIZ_NAME}}.scoreField": "score" }
+```
+
 ## README/savedsearches.conf.spec
 
 Document every custom setting:

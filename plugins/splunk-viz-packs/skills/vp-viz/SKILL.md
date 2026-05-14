@@ -43,6 +43,7 @@ allowed-tools: Read Bash(node *) Bash(head *) Bash(grep *) Bash(chmod *)
 □ JS: ROW_MAJOR_OUTPUT_MODE in getInitialDataParams
 □ JS: pure ES5 — no const/let/arrow/template literals
 □ Dashboard JSON type: {app_id}.{viz_name} — NEVER custom.* or splunk.custom.*
+□ Dashboard JSON options: {app_id}.{viz_name}.key — NEVER bare key names
 □ Tarball: ONE top-level directory only — package from parent dir
 ```
 
@@ -308,6 +309,28 @@ Prefix ALL filenames with pack ID. The `inputlookup` command uses the FILENAME, 
 ```css
 .{FILL: app-name}-viz {
     background: transparent;
+}
+```
+
+## Three namespace formats — get ANY wrong and settings silently fail
+
+| Context | Format | Example |
+|---|---|---|
+| **formatter.html** | `{{VIZ_NAMESPACE}}.key` | `name="{{VIZ_NAMESPACE}}.scoreField"` |
+| **Dashboard JSON options** | `{app_id}.{viz_name}.key` | `"myapp.myviz.scoreField": "score"` |
+| **savedsearches.conf** | `display.visualizations.custom.{app_id}.{viz_name}.key` | `display.visualizations.custom.myapp.myviz.scoreField = score` |
+
+```json
+WRONG — bare option names (settings never reach the viz):
+"options": {
+    "scoreField": "score",
+    "accentColor": "#0077B6"
+}
+
+RIGHT — namespaced options (settings delivered to updateView):
+"options": {
+    "myapp.myviz.scoreField": "score",
+    "myapp.myviz.accentColor": "#0077B6"
 }
 ```
 

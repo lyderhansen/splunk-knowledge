@@ -131,6 +131,21 @@ for xml in "$APP_DIR"/default/data/ui/views/*.xml; do
   [ "$CUSTOM_PREFIX" -gt 0 ] && { echo "  FAIL B9: $XMLNAME has 'custom.' prefix in viz type — use '{app}.{viz}' format"; TOTAL_FAIL=1; }
 done
 
+# B10: Dashboard JSON options must be namespaced
+# Check if any dashboard has bare option keys for custom vizs
+APP_NAME=$(basename "$APP_DIR")
+for xml in "$APP_DIR"/default/data/ui/views/*.xml; do
+  [ -f "$xml" ] || continue
+  XMLNAME=$(basename "$xml")
+  # Look for options that have simple keys (no dots) next to a custom viz type
+  # Heuristic: if the file contains our app name as a type but options without dots
+  if grep -q "\"$APP_NAME\." "$xml" 2>/dev/null; then
+    # Extract options blocks and check for bare keys
+    BARE_KEYS=$(grep -oE '"[a-zA-Z]+": "' "$xml" 2>/dev/null | grep -cvE '"type"|"primary"|"ds_' || true)
+    [ "$BARE_KEYS" -gt 3 ] && echo "  WARN B10: $XMLNAME may have bare option keys (need {app}.{viz}.key namespace)"
+  fi
+done
+
 echo ""
 echo "============================================"
 if [ "$TOTAL_FAIL" -eq 0 ]; then
