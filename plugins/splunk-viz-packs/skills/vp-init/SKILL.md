@@ -1,130 +1,76 @@
 ---
 name: vp-init
-description: "Entry point for the splunk-viz-packs plugin. Routes the user to the right skill based on intent: vp-couture for design-first themed viz suites, vp-create for scaffolding, vp-viz for single viz builds, vp-ref-gotchas for rules lookup. Use when the user says 'build custom vizs', 'themed viz pack', 'custom Splunk visualization', or invokes splunk-viz-packs without a specific skill."
+description: "Starts a Splunk custom visualization pack build. Gathers app name, brand context, data source, and viz count, then routes to the right workflow."
+when_to_use: "Use when starting a new viz pack from scratch. Triggers on 'new viz pack', 'start viz project', 'build splunk vizs', 'custom visualization app', 'themed viz suite'."
+disable-model-invocation: true
+arguments: [app-name, brand]
+argument-hint: "[app-name] [brand-description]"
 ---
 
-# vp-init — Entry point for custom viz packs
+# vp-init — start a viz pack build
 
-## What this plugin does
+## Quick start
 
-Builds **themed Splunk custom visualization apps** — branded Canvas 2D
-vizs sharing one design token system, packaged as installable Splunk
-apps (.tar.gz).
+If arguments provided: `/vp-init my_pack "Nike - bold, kinetic"`
 
-**Input:** brand context (palette, fonts, tone) + domain (F1, SOC,
-healthcare, retail)
+Otherwise, ask these 4 questions:
 
-**Output:** tarball with 5-8 custom vizs, shared theme.js, dashboard
-with hero image, webpack build, AppInspect-ready packaging
+### 1. App name
+Lowercase with underscores. Used as Splunk app ID and directory name.
+Example: `nike_training_club`, `hospital_ops_viz`
 
-## Quick brief template
+### 2. Brand / domain
+Short description. Drives palette, fonts, and viz selection.
+Example: "Nike Training Club — bold, kinetic, volt on black"
 
-For structured input, point the user to `templates/viz-pack-brief.md`.
-It covers brand, domain, metrics, viz preferences, and constraints.
-Or use the minimal version:
+### 3. Data source
+
+**Demo CSV (recommended, default):**
+- Fastest path — viz works immediately after install
+- Production SPL can be added later
+- No Splunk access required during development
+
+**Production data:**
+- Requires Splunk MCP for data discovery
+- Load `spl-gotchas` from splunk-spl before writing queries
+- Recommended only if you already know your data schema
+
+### 4. Viz count
+- **1 viz:** skip vp-couture, load vp-viz directly
+- **2-8 vizs:** load vp-couture for design brief first
+- Recommended: 3-5 for a balanced suite
+
+## Routing
 
 ```
-Build a viz pack for [BRAND].
-Theme: [dark/light].
-Data: [what the dashboard shows].
-Key metrics: [3-5 metrics with types].
-Style: [3 tone words].
+Single viz (count = 1):
+  → vp-viz (code) → vp-create (package)
+
+Multi-viz pack (count > 1):
+  → vp-couture (design) → vp-viz (code per viz) → vp-create (package)
+
+Production data (any count):
+  → Add: spl-gotchas before savedsearches.conf
+
+Dashboard included:
+  → Add: ds-create from splunk-dashboard-studio
 ```
 
-## Routing table
+Write all viz code INLINE (same context). Do NOT dispatch subagents for code generation.
 
-| User says | Route to | Why |
+## Cross-plugin dependencies
+
+Building a viz pack produces 3 artifact types. Each has its own plugin:
+
+| Artifact | Plugin | Key skill |
 |---|---|---|
-| "Build a themed viz pack for [brand]" | `vp-couture` | Design-first: brand research → palette → viz inventory → build |
-| "Make my dashboard look like [brand]" | `vp-couture` | Same — needs design context before code |
-| "Which vizs should I build for [domain]?" | `vp-couture` | Planning question → design orchestrator |
-| "Scaffold a viz app called X" | `vp-create` | Structure only, no design |
-| "Build a single [kpi/gauge/chart] viz" | `vp-viz` | One viz, no suite planning |
-| "What are the rules for custom vizs?" | `vp-ref-gotchas` | Reference lookup |
-| "How do I draw X on Canvas?" | `vp-ref-patterns` | Recipe lookup |
-
-## Quick start — recommended flow
-
-```
-vp-init (you are here)
-   ↓
-vp-couture — design brief (brand, palette, viz inventory)
-   ↓
-vp-create — scaffold app directory + theme.js + webpack
-   ↓
-vp-viz — write each visualization_source.js
-   ↓
-vp-create — build + package tarball
-```
-
-**Always load `vp-ref-gotchas` before writing ANY viz code.**
-
-## Model selection
-
-| Task | Model | Why |
-|---|---|---|
-| Brand research, design decisions, palette selection | **Opus** | Judgment, creativity, taste |
-| Design brief, viz inventory planning | **Opus** | Strategic decisions |
-| Design critique, quality gate review | **Opus** | Evaluative reasoning |
-| Writing visualization_source.js | **Sonnet** | Fast, reliable code generation |
-| Writing formatter.html, CSS, conf files | **Sonnet** | Mechanical, well-specified |
-| Webpack build, packaging, file operations | **Sonnet** | Execution, not judgment |
-| Dashboard JSON layout | **Sonnet** | Structured output |
-| CSV lookup data generation | **Sonnet** | Data creation |
-
-**Default:** Opus plans, Sonnet builds. When dispatching subagents,
-use `model: "sonnet"` for implementation tasks and `model: "opus"`
-for design/review tasks.
-
-## Required plugins — ALL THREE needed
-
-Building a viz pack produces THREE types of artifacts. Each has its
-own plugin with rules that MUST be followed:
-
-| Artifact | Plugin | Key skills to load |
-|---|---|---|
-| Viz source code (JS) | `splunk-viz-packs` (this plugin) | `vp-ref-gotchas`, `vp-viz`, `vp-ref-patterns` |
-| Dashboard JSON | `splunk-dashboard-studio` | `ds-create` (hard defaults!), `ds-ref-syntax` |
-| SPL queries | `splunk-spl` | `spl-gotchas` (23 silent-fail traps) |
-
-**If you only load splunk-viz-packs, you WILL produce:**
-- Dashboards at 1440px (ds-create says 1920)
-- Invalid fontFamily in markdown panels
-- SPL with tostring("0.000") errors
-- Missing data source names
-
-**Cross-plugin dependency map:**
-
-```
-vp-couture (design)
-    ↓ loads
-vp-create (scaffold) ──→ ds-create (dashboard rules)
-    ↓                ──→ spl-gotchas (SPL rules)
-vp-viz (per-viz code)
-    ↓ references
-vp-ref-gotchas (viz rules)
-vp-ref-patterns (Canvas recipes)
-```
+| Viz source (JS/HTML) | splunk-viz-packs | vp-viz |
+| Dashboard JSON | splunk-dashboard-studio | ds-create |
+| SPL queries | splunk-spl | spl-gotchas |
 
 ## Optional Splunk app dependencies
 
-| Dependency | Required? | Why |
-|---|---|---|
-| `icon_library` Splunk app | Optional | Material Symbols icons in dashboards |
-| `infographic_shapes` Splunk app | Optional | Gradient shapes, progress bars, glow effects |
-
-## What this skill does NOT do
-
-This is a router. It does not write code, generate designs, or
-produce artifacts. It identifies intent and hands off to the
-right skill.
-
-| Task | Skill |
+| App | When needed |
 |---|---|
-| Design a themed viz suite | `vp-couture` |
-| Scaffold app structure | `vp-create` |
-| Write a single viz | `vp-viz` |
-| Canvas rendering recipes | `vp-ref-patterns` |
-| Hard rules and gotchas | `vp-ref-gotchas` |
-| Dashboard JSON | `ds-create` (from `splunk-dashboard-studio`) |
-| SPL queries | `spl-gotchas` (from `splunk-spl`) |
+| `icon_library` | Material Symbols icons in dashboards |
+| `infographic_shapes` | Gradient shapes, glow effects |
