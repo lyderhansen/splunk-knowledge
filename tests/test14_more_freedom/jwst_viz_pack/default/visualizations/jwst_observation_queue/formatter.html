@@ -1,0 +1,53 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+  <splunk-control-group label="Target field" help="Field containing the celestial object name">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.targetField" value="target_name"></splunk-text-input>
+  </splunk-control-group>
+  <splunk-control-group label="Priority field" help="Field containing the numeric priority (1–5)">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.priorityField" value="priority"></splunk-text-input>
+  </splunk-control-group>
+  <splunk-control-group label="Duration field" help="Field containing the estimated observation duration in hours">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.durationField" value="estimated_hours"></splunk-text-input>
+  </splunk-control-group>
+  <splunk-control-group label="Instrument field" help="Field containing the assigned instrument name">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.instrumentField" value="instrument"></splunk-text-input>
+  </splunk-control-group>
+  <splunk-control-group label="Status field" help="Field containing the observation status (queued / in_progress / completed)">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.statusField" value="status"></splunk-text-input>
+  </splunk-control-group>
+  <splunk-control-group label="Max items" help="Maximum number of observation slots to display (1–20)">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.maxItems" value="5"></splunk-text-input>
+  </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+  <splunk-control-group label="Show instrument badge" help="Display the instrument abbreviation badge on each card">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.showInstrument" value="true">
+      <option value="true">Yes</option>
+      <option value="false">No</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+  <splunk-control-group label="High priority color" help="Diamond and bar color for priority 1–2 (gold by default)">
+    <splunk-color-input name="{{VIZ_NAMESPACE}}.priorityHighColor" value="#D4A537"></splunk-color-input>
+  </splunk-control-group>
+  <splunk-control-group label="Medium priority color" help="Diamond and bar color for priority 3 (cyan by default)">
+    <splunk-color-input name="{{VIZ_NAMESPACE}}.priorityMedColor" value="#00B4D8"></splunk-color-input>
+  </splunk-control-group>
+  <splunk-control-group label="Low priority color" help="Diamond and bar color for priority 4–5 (dim white by default)">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.priorityLowColor" value="rgba(232,236,241,0.30)"></splunk-text-input>
+  </splunk-control-group>
+  <splunk-control-group label="In-progress color" help="Glowing border and scan line color for the active observation (magenta by default)">
+    <splunk-color-input name="{{VIZ_NAMESPACE}}.inProgressColor" value="#E040A0"></splunk-color-input>
+  </splunk-control-group>
+  <splunk-control-group label="Accent intensity" help="Glow and accent effect strength (0 = off, 100 = full)">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.accentIntensity" value="50"></splunk-text-input>
+  </splunk-control-group>
+  <splunk-control-group label="Theme" help="Color theme for the visualization">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.theme" value="dark">
+      <option value="dark">Dark</option>
+      <option value="light">Light</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+</form>

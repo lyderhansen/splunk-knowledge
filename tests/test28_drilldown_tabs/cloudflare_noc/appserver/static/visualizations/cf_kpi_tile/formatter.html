@@ -1,0 +1,60 @@
+<form class="splunk-formatter-section" section-label="Data Configuration">
+    <splunk-control-group label="Value Field" help="Field containing the primary metric value">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.valueField" value="value">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Delta Field" help="Field for trend delta (change from previous period)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.deltaField" value="delta">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Data Display">
+    <splunk-control-group label="Label" help="Display label above the value">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.label" value="">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Unit" help="Unit suffix (e.g. ms, %, req/s)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.unit" value="">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Unit Position" help="Where to place the unit relative to the value">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.unitPosition" value="after">
+            <option value="before">Before</option>
+            <option value="after">After</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Decimals" help="Fixed decimal places (-1 for auto)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.decimals" value="-1">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show Delta" help="Display trend delta indicator">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showDelta" value="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Color and Style">
+    <splunk-control-group label="Theme" help="Auto detects dashboard theme">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto">
+            <option value="auto">Auto</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Accent Color" help="Primary accent color for the value">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.accentColor" type="custom" value="#F6821F">
+            <splunk-color>#F6821F</splunk-color>
+            <splunk-color>#FBAD41</splunk-color>
+            <splunk-color>#34D399</splunk-color>
+            <splunk-color>#EF4444</splunk-color>
+            <splunk-color>#6ECBF5</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Show Glow" help="Glow effect on the hero value">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showGlow" value="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>

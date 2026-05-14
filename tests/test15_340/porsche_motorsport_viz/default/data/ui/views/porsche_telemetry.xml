@@ -1,0 +1,450 @@
+<dashboard version="2" theme="dark">
+  <label>Porsche Motorsport Telemetry</label>
+  <description>963 LMDh race telemetry — Le Mans 2025</description>
+  <definition>
+    <![CDATA[
+{
+  "dataSources": {
+    "ds_kpis": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup demo_kpis.csv",
+        "queryParameters": {
+          "earliest": "-24h@h",
+          "latest": "now"
+        }
+      },
+      "name": "KPI Data"
+    },
+    "ds_kpi_position": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup demo_kpis.csv | where label=\"POSITION\"",
+        "queryParameters": {
+          "earliest": "-24h@h",
+          "latest": "now"
+        }
+      },
+      "name": "KPI Position"
+    },
+    "ds_kpi_laptime": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup demo_kpis.csv | where label=\"LAP TIME\"",
+        "queryParameters": {
+          "earliest": "-24h@h",
+          "latest": "now"
+        }
+      },
+      "name": "KPI Lap Time"
+    },
+    "ds_kpi_gap": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup demo_kpis.csv | where label=\"GAP TO LEADER\"",
+        "queryParameters": {
+          "earliest": "-24h@h",
+          "latest": "now"
+        }
+      },
+      "name": "KPI Gap"
+    },
+    "ds_kpi_laps": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup demo_kpis.csv | where label=\"LAPS COMPLETED\"",
+        "queryParameters": {
+          "earliest": "-24h@h",
+          "latest": "now"
+        }
+      },
+      "name": "KPI Laps"
+    },
+    "ds_gauge": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup demo_gauge.csv",
+        "queryParameters": {
+          "earliest": "-24h@h",
+          "latest": "now"
+        }
+      },
+      "name": "Gauge Data"
+    },
+    "ds_tires": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup demo_tires.csv",
+        "queryParameters": {
+          "earliest": "-24h@h",
+          "latest": "now"
+        }
+      },
+      "name": "Tire Strategy"
+    },
+    "ds_energy": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup demo_energy.csv",
+        "queryParameters": {
+          "earliest": "-24h@h",
+          "latest": "now"
+        }
+      },
+      "name": "Energy Deployment"
+    },
+    "ds_sectors": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup demo_sectors.csv | sort 0 position",
+        "queryParameters": {
+          "earliest": "-24h@h",
+          "latest": "now"
+        }
+      },
+      "name": "Sector Times"
+    }
+  },
+  "visualizations": {
+    "viz_hero_image": {
+      "type": "splunk.image",
+      "options": {
+        "preserveAspectRatio": true,
+        "src": "/static/app/porsche_motorsport_viz/images/hero_963.jpg"
+      }
+    },
+    "viz_hero_overlay": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "rgba(0, 0, 0, 0.40)"
+      }
+    },
+    "viz_hero_vignette": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#000000",
+        "fillOpacity": 0.92
+      }
+    },
+    "viz_title_text": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "### PORSCHE MOTORSPORT",
+        "fontColor": "rgba(255, 255, 255, 0.85)",
+        "fontSize": "extraSmall"
+      }
+    },
+    "viz_subtitle_text": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "963 LMDh &mdash; 24 Heures du Mans",
+        "fontColor": "rgba(255, 255, 255, 0.40)",
+        "fontSize": "extraSmall"
+      }
+    },
+    "viz_gauge_panel": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "rgba(0, 0, 0, 0.85)",
+        "strokeColor": "rgba(255, 255, 255, 0.06)",
+        "strokeWidth": 1,
+        "rx": 2,
+        "ry": 2
+      }
+    },
+    "viz_kpi_panel": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "rgba(0, 0, 0, 0.85)",
+        "strokeColor": "rgba(255, 255, 255, 0.06)",
+        "strokeWidth": 1,
+        "rx": 2,
+        "ry": 2
+      }
+    },
+    "viz_needle_gauge": {
+      "type": "porsche_motorsport_viz.needle_gauge",
+      "dataSources": {
+        "primary": "ds_gauge"
+      },
+      "options": {
+        "display.visualizations.custom.porsche_motorsport_viz.needle_gauge.valueField": "value",
+        "display.visualizations.custom.porsche_motorsport_viz.needle_gauge.minField": "min",
+        "display.visualizations.custom.porsche_motorsport_viz.needle_gauge.maxField": "max",
+        "display.visualizations.custom.porsche_motorsport_viz.needle_gauge.redZoneStartField": "redZoneStart",
+        "display.visualizations.custom.porsche_motorsport_viz.needle_gauge.labelField": "label",
+        "display.visualizations.custom.porsche_motorsport_viz.needle_gauge.unitField": "unit",
+        "display.visualizations.custom.porsche_motorsport_viz.needle_gauge.theme": "dark",
+        "display.visualizations.custom.porsche_motorsport_viz.needle_gauge.accentIntensity": "70"
+      }
+    },
+    "viz_kpi_position": {
+      "type": "porsche_motorsport_viz.kpi_tile",
+      "dataSources": {
+        "primary": "ds_kpi_position"
+      },
+      "options": {
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.valueField": "value",
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.labelField": "label",
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.deltaField": "delta",
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.deltaDirectionField": "deltaDirection",
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.unitField": "unit",
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.heroMode": "true",
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.theme": "dark"
+      }
+    },
+    "viz_kpi_laptime": {
+      "type": "porsche_motorsport_viz.kpi_tile",
+      "dataSources": {
+        "primary": "ds_kpi_laptime"
+      },
+      "options": {
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.valueField": "value",
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.labelField": "label",
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.deltaField": "delta",
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.deltaDirectionField": "deltaDirection",
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.unitField": "unit",
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.heroMode": "false",
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.theme": "dark"
+      }
+    },
+    "viz_kpi_gap": {
+      "type": "porsche_motorsport_viz.kpi_tile",
+      "dataSources": {
+        "primary": "ds_kpi_gap"
+      },
+      "options": {
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.valueField": "value",
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.labelField": "label",
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.deltaField": "delta",
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.deltaDirectionField": "deltaDirection",
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.unitField": "unit",
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.heroMode": "false",
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.theme": "dark"
+      }
+    },
+    "viz_kpi_laps": {
+      "type": "porsche_motorsport_viz.kpi_tile",
+      "dataSources": {
+        "primary": "ds_kpi_laps"
+      },
+      "options": {
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.valueField": "value",
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.labelField": "label",
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.deltaField": "delta",
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.deltaDirectionField": "deltaDirection",
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.unitField": "unit",
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.heroMode": "false",
+        "display.visualizations.custom.porsche_motorsport_viz.kpi_tile.theme": "dark"
+      }
+    },
+    "viz_strategy_label": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "RACE STRATEGY",
+        "fontColor": "rgba(255, 255, 255, 0.25)",
+        "fontSize": "extraSmall"
+      }
+    },
+    "viz_strategy_panel": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "rgba(0, 0, 0, 0.85)",
+        "strokeColor": "rgba(255, 255, 255, 0.06)",
+        "strokeWidth": 1,
+        "rx": 2,
+        "ry": 2
+      }
+    },
+    "viz_energy_panel": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "rgba(0, 0, 0, 0.85)",
+        "strokeColor": "rgba(255, 255, 255, 0.06)",
+        "strokeWidth": 1,
+        "rx": 2,
+        "ry": 2
+      }
+    },
+    "viz_tire_timeline": {
+      "type": "porsche_motorsport_viz.tire_timeline",
+      "dataSources": {
+        "primary": "ds_tires"
+      },
+      "options": {
+        "display.visualizations.custom.porsche_motorsport_viz.tire_timeline.driverField": "driver",
+        "display.visualizations.custom.porsche_motorsport_viz.tire_timeline.stintField": "stint",
+        "display.visualizations.custom.porsche_motorsport_viz.tire_timeline.compoundField": "compound",
+        "display.visualizations.custom.porsche_motorsport_viz.tire_timeline.startLapField": "startLap",
+        "display.visualizations.custom.porsche_motorsport_viz.tire_timeline.endLapField": "endLap",
+        "display.visualizations.custom.porsche_motorsport_viz.tire_timeline.totalLapsField": "totalLaps",
+        "display.visualizations.custom.porsche_motorsport_viz.tire_timeline.theme": "dark"
+      }
+    },
+    "viz_energy_bar": {
+      "type": "porsche_motorsport_viz.energy_bar",
+      "dataSources": {
+        "primary": "ds_energy"
+      },
+      "options": {
+        "display.visualizations.custom.porsche_motorsport_viz.energy_bar.labelField": "label",
+        "display.visualizations.custom.porsche_motorsport_viz.energy_bar.attackField": "attack",
+        "display.visualizations.custom.porsche_motorsport_viz.energy_bar.defendField": "defend",
+        "display.visualizations.custom.porsche_motorsport_viz.energy_bar.neutralField": "neutral",
+        "display.visualizations.custom.porsche_motorsport_viz.energy_bar.theme": "dark"
+      }
+    },
+    "viz_sector_label": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "SECTOR ANALYSIS",
+        "fontColor": "rgba(255, 255, 255, 0.25)",
+        "fontSize": "extraSmall"
+      }
+    },
+    "viz_sector_panel": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "rgba(0, 0, 0, 0.85)",
+        "strokeColor": "rgba(255, 255, 255, 0.06)",
+        "strokeWidth": 1,
+        "rx": 2,
+        "ry": 2
+      }
+    },
+    "viz_sector_table": {
+      "type": "porsche_motorsport_viz.sector_table",
+      "dataSources": {
+        "primary": "ds_sectors"
+      },
+      "options": {
+        "display.visualizations.custom.porsche_motorsport_viz.sector_table.driverField": "driver",
+        "display.visualizations.custom.porsche_motorsport_viz.sector_table.s1Field": "s1",
+        "display.visualizations.custom.porsche_motorsport_viz.sector_table.s2Field": "s2",
+        "display.visualizations.custom.porsche_motorsport_viz.sector_table.s3Field": "s3",
+        "display.visualizations.custom.porsche_motorsport_viz.sector_table.totalField": "total",
+        "display.visualizations.custom.porsche_motorsport_viz.sector_table.s1DeltaField": "s1_delta",
+        "display.visualizations.custom.porsche_motorsport_viz.sector_table.s2DeltaField": "s2_delta",
+        "display.visualizations.custom.porsche_motorsport_viz.sector_table.s3DeltaField": "s3_delta",
+        "display.visualizations.custom.porsche_motorsport_viz.sector_table.totalDeltaField": "total_delta",
+        "display.visualizations.custom.porsche_motorsport_viz.sector_table.positionField": "position",
+        "display.visualizations.custom.porsche_motorsport_viz.sector_table.theme": "dark"
+      }
+    }
+  },
+  "inputs": {},
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1920,
+      "height": 1080,
+      "backgroundColor": "#000000",
+      "display": "auto-scale"
+    },
+    "structure": [
+      {
+        "item": "viz_hero_image",
+        "type": "block",
+        "position": { "x": 0, "y": 0, "w": 1920, "h": 480 }
+      },
+      {
+        "item": "viz_hero_overlay",
+        "type": "block",
+        "position": { "x": 0, "y": 0, "w": 1920, "h": 480 }
+      },
+      {
+        "item": "viz_hero_vignette",
+        "type": "block",
+        "position": { "x": 0, "y": 380, "w": 1920, "h": 100 }
+      },
+      {
+        "item": "viz_title_text",
+        "type": "block",
+        "position": { "x": 40, "y": 24, "w": 400, "h": 28 }
+      },
+      {
+        "item": "viz_subtitle_text",
+        "type": "block",
+        "position": { "x": 40, "y": 50, "w": 400, "h": 24 }
+      },
+      {
+        "item": "viz_gauge_panel",
+        "type": "block",
+        "position": { "x": 40, "y": 90, "w": 380, "h": 380 }
+      },
+      {
+        "item": "viz_needle_gauge",
+        "type": "block",
+        "position": { "x": 48, "y": 98, "w": 364, "h": 364 }
+      },
+      {
+        "item": "viz_kpi_panel",
+        "type": "block",
+        "position": { "x": 460, "y": 90, "w": 920, "h": 380 }
+      },
+      {
+        "item": "viz_kpi_position",
+        "type": "block",
+        "position": { "x": 476, "y": 106, "w": 200, "h": 160 }
+      },
+      {
+        "item": "viz_kpi_laptime",
+        "type": "block",
+        "position": { "x": 700, "y": 106, "w": 200, "h": 160 }
+      },
+      {
+        "item": "viz_kpi_gap",
+        "type": "block",
+        "position": { "x": 924, "y": 106, "w": 200, "h": 160 }
+      },
+      {
+        "item": "viz_kpi_laps",
+        "type": "block",
+        "position": { "x": 1148, "y": 106, "w": 200, "h": 160 }
+      },
+      {
+        "item": "viz_strategy_label",
+        "type": "block",
+        "position": { "x": 40, "y": 496, "w": 200, "h": 20 }
+      },
+      {
+        "item": "viz_strategy_panel",
+        "type": "block",
+        "position": { "x": 40, "y": 520, "w": 1100, "h": 280 }
+      },
+      {
+        "item": "viz_tire_timeline",
+        "type": "block",
+        "position": { "x": 48, "y": 528, "w": 1084, "h": 264 }
+      },
+      {
+        "item": "viz_energy_panel",
+        "type": "block",
+        "position": { "x": 1164, "y": 520, "w": 716, "h": 280 }
+      },
+      {
+        "item": "viz_energy_bar",
+        "type": "block",
+        "position": { "x": 1172, "y": 528, "w": 700, "h": 264 }
+      },
+      {
+        "item": "viz_sector_label",
+        "type": "block",
+        "position": { "x": 40, "y": 816, "w": 200, "h": 20 }
+      },
+      {
+        "item": "viz_sector_panel",
+        "type": "block",
+        "position": { "x": 40, "y": 840, "w": 1840, "h": 220 }
+      },
+      {
+        "item": "viz_sector_table",
+        "type": "block",
+        "position": { "x": 48, "y": 848, "w": 1824, "h": 204 }
+      }
+    ]
+  }
+}
+    ]]>
+  </definition>
+</dashboard>

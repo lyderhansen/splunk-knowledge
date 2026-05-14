@@ -1,0 +1,72 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+    <splunk-control-group label="Value Field" help="Field containing the threat score (0-100)">
+        <splunk-text-input name="nordshield_viz_pack.threat_beacon.valueField" default="threat_score"></splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Label Field" help="Field containing the zone label (leave blank to auto-compute from score)">
+        <splunk-text-input name="nordshield_viz_pack.threat_beacon.labelField" default="zone"></splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Data display">
+    <splunk-control-group label="Low Threshold" help="Scores at or below this value are MINIMAL zone">
+        <splunk-text-input name="nordshield_viz_pack.threat_beacon.thresholdLow" default="25"></splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Medium Threshold" help="Scores at or below this value are LOW zone (above Low Threshold)">
+        <splunk-text-input name="nordshield_viz_pack.threat_beacon.thresholdMed" default="50"></splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="High Threshold" help="Scores at or below this value are ELEVATED zone (above Medium Threshold). Above is CRITICAL.">
+        <splunk-text-input name="nordshield_viz_pack.threat_beacon.thresholdHigh" default="75"></splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show Bar" help="Show the horizontal severity zone bar below the score">
+        <splunk-radio-input name="nordshield_viz_pack.threat_beacon.showBar" default="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show Label" help="Show the zone name label below the severity bar">
+        <splunk-radio-input name="nordshield_viz_pack.threat_beacon.showLabel" default="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Color and style">
+    <splunk-control-group label="Minimal Color" help="Bar segment color for MINIMAL zone (score 0 to Low Threshold)">
+        <splunk-color-picker name="nordshield_viz_pack.threat_beacon.colorMinimal" default="#475569">
+            <splunk-color token="#475569" label="Slate"></splunk-color>
+            <splunk-color token="#334155" label="Slate Dark"></splunk-color>
+            <splunk-color token="#1E293B" label="Slate Darker"></splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Low Color" help="Bar segment color for LOW zone">
+        <splunk-color-picker name="nordshield_viz_pack.threat_beacon.colorLow" default="#38BDF8">
+            <splunk-color token="#38BDF8" label="Ice Blue"></splunk-color>
+            <splunk-color token="#0EA5E9" label="Sky Blue"></splunk-color>
+            <splunk-color token="#00E5CC" label="Aurora Teal"></splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Elevated Color" help="Bar segment color for ELEVATED zone">
+        <splunk-color-picker name="nordshield_viz_pack.threat_beacon.colorElevated" default="#D946EF">
+            <splunk-color token="#D946EF" label="Aurora Magenta"></splunk-color>
+            <splunk-color token="#A855F7" label="Violet"></splunk-color>
+            <splunk-color token="#8B5CF6" label="Purple"></splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Critical Color" help="Bar segment color and glow color for CRITICAL zone">
+        <splunk-color-picker name="nordshield_viz_pack.threat_beacon.colorCritical" default="#FFB020">
+            <splunk-color token="#FFB020" label="Solar Amber"></splunk-color>
+            <splunk-color token="#F97316" label="Orange"></splunk-color>
+            <splunk-color token="#EF4444" label="Red"></splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Effects">
+    <splunk-control-group label="Pulse on Critical" help="Animate an amber glow on the score number when in CRITICAL zone">
+        <splunk-radio-input name="nordshield_viz_pack.threat_beacon.pulseOnCritical" default="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Accent Intensity" help="Glow effect strength: 0 = off, 50 = default, 100 = maximum">
+        <splunk-text-input name="nordshield_viz_pack.threat_beacon.accentIntensity" default="50"></splunk-text-input>
+    </splunk-control-group>
+</form>

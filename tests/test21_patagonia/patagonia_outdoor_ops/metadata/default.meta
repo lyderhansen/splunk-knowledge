@@ -1,0 +1,24 @@
+[]
+access = read : [ * ], write : [ admin, sc_admin ]
+export = system
+
+[visualizations/patagonia_kpi]
+export = system
+
+[visualizations/sustainability_gauge]
+export = system
+
+[visualizations/regional_bars]
+export = system
+
+[visualizations/trend_area]
+export = system
+
+[visualizations/inventory_bars]
+export = system
+
+[visualizations/alert_feed]
+export = system
+
+[lookups]
+export = system

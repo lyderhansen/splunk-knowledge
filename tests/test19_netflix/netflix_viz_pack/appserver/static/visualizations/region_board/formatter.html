@@ -1,0 +1,45 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+    <splunk-control-group label="Region field" help="SPL field for region name">
+        <splunk-text-input name="netflix_viz_pack.region_board.regionField" value="region">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Subscribers field" help="SPL field for subscriber count">
+        <splunk-text-input name="netflix_viz_pack.region_board.subscribersField" value="subscribers">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Revenue field" help="SPL field for revenue">
+        <splunk-text-input name="netflix_viz_pack.region_board.revenueField" value="revenue">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Growth field" help="SPL field for growth percentage">
+        <splunk-text-input name="netflix_viz_pack.region_board.growthField" value="growth">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Top title field" help="SPL field for the top performing title">
+        <splunk-text-input name="netflix_viz_pack.region_board.topTitleField" value="top_title">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+    <splunk-control-group label="Theme" help="Color scheme for the visualization">
+        <splunk-radio-input name="netflix_viz_pack.region_board.theme" value="dark" default="">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Accent color" help="Card accent stripe color">
+        <splunk-color-picker name="netflix_viz_pack.region_board.accentColor"
+            type="custom" value="#E50914">
+            <splunk-color>#E50914</splunk-color>
+            <splunk-color>#B20710</splunk-color>
+            <splunk-color>#46D369</splunk-color>
+            <splunk-color>#F0B429</splunk-color>
+            <splunk-color>#F5F5F1</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Accent intensity" help="Hover glow effect strength (0-100)">
+        <splunk-text-input name="netflix_viz_pack.region_board.accentIntensity" value="50">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>

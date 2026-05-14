@@ -1,0 +1,65 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+    <splunk-control-group label="Value field" help="SPL field containing the main KPI number (e.g. total_streams)">
+        <splunk-text-input name="spotify_viz_pack.stream_kpi.valueField" default="value">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Label field" help="SPL field containing the KPI label shown at top in whisper text">
+        <splunk-text-input name="spotify_viz_pack.stream_kpi.labelField" default="label">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Delta field" help="SPL field containing the trend delta (e.g. +15.3%, -2.3%). Leave blank to hide delta.">
+        <splunk-text-input name="spotify_viz_pack.stream_kpi.deltaField" default="delta">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Sparkline field" help="SPL field containing comma-separated values for the mini trend line (e.g. 100,120,115,140,160)">
+        <splunk-text-input name="spotify_viz_pack.stream_kpi.sparklineField" default="sparkline">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+    <splunk-control-group label="Show delta" help="Toggle the trend delta badge below the main number">
+        <splunk-radio-input name="spotify_viz_pack.stream_kpi.showDelta" default="true">
+            <option value="true">Show</option>
+            <option value="false">Hide</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show sparkline" help="Toggle the mini trend line at the bottom edge of the tile">
+        <splunk-radio-input name="spotify_viz_pack.stream_kpi.showSparkline" default="true">
+            <option value="true">Show</option>
+            <option value="false">Hide</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Decimal places" help="Number of decimal places. Set to -1 for automatic compact formatting (1.2M, 847K).">
+        <splunk-text-input name="spotify_viz_pack.stream_kpi.decimals" default="-1">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Unit" help="Optional unit suffix or prefix to append to the value (e.g. %, ms, $). Leave blank for none.">
+        <splunk-text-input name="spotify_viz_pack.stream_kpi.unit" default="">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Unit position" help="Place the unit before or after the value">
+        <splunk-radio-input name="spotify_viz_pack.stream_kpi.unitPosition" default="after">
+            <option value="after">After (100%)</option>
+            <option value="before">Before ($100)</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+    <splunk-control-group label="Accent color" help="Primary accent color used for delta badge, sparkline, and hover glow. Default is Spotify green.">
+        <splunk-color-picker name="spotify_viz_pack.stream_kpi.accentColor" default="#1DB954">
+            <splunk-color value="#1DB954" label="Spotify Green"></splunk-color>
+            <splunk-color value="#8B5CF6" label="Purple"></splunk-color>
+            <splunk-color value="#E91E8A" label="Pink"></splunk-color>
+            <splunk-color value="#3B82F6" label="Blue"></splunk-color>
+            <splunk-color value="#F59E0B" label="Amber"></splunk-color>
+            <splunk-color value="#14B8A6" label="Teal"></splunk-color>
+            <splunk-color value="#F97066" label="Coral"></splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Accent intensity" help="Controls the strength of the hover glow and sparkline gradient effects (0 = off, 100 = maximum).">
+        <splunk-text-input name="spotify_viz_pack.stream_kpi.accentIntensity" default="50">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>

@@ -1,0 +1,4 @@
+<nav search_view="search" color="#3D5A3A">
+  <view name="patagonia_operations" default="true" />
+  <view name="search" />
+</nav>

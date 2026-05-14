@@ -1,0 +1,13 @@
+_time,severity,region,message,service
+2026-05-14T08:12:00,critical,OCE,Match server pool exhausted — new matches queued,Match Making
+2026-05-14T07:45:00,warning,RU,Elevated packet loss on gateway nodes,Network
+2026-05-14T07:30:00,warning,PH,Queue time exceeding 3 minute SLA,Match Making
+2026-05-14T06:58:00,ok,EUW,Network latency returned to normal after maintenance,Network
+2026-05-14T06:22:00,critical,TR,Login service degraded — auth timeouts,Platform
+2026-05-14T05:40:00,ok,NA,Scheduled maintenance completed successfully,Platform
+2026-05-14T05:15:00,warning,BR,Champion select service experiencing delays,Game Client
+2026-05-14T04:50:00,ok,KR,Match history API restored after brief outage,API
+2026-05-14T04:10:00,critical,LAS,Database replication lag exceeding 30s threshold,Database
+2026-05-14T03:30:00,warning,EUNE,Spectator service intermittent failures,Game Client
+2026-05-14T02:55:00,ok,JP,CDN cache warmup complete for patch 14.10,CDN
+2026-05-14T02:20:00,warning,LAN,Store transaction failures elevated,Commerce

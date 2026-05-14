@@ -1,0 +1,18 @@
+[]
+access = read : [ * ], write : [ admin, sc_admin ]
+export = system
+
+[visualizations/riot_kpi_tile]
+export = system
+
+[visualizations/riot_latency_bars]
+export = system
+
+[visualizations/riot_load_gauge]
+export = system
+
+[visualizations/riot_incident_feed]
+export = system
+
+[lookups]
+export = system

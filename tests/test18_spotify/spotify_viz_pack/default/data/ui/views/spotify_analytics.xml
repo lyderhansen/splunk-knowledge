@@ -1,0 +1,675 @@
+<dashboard version="2" theme="dark">
+    <label>Spotify Analytics</label>
+    <description>Music streaming analytics — tracks, artists, playlists, and listening patterns</description>
+    <definition>
+    <![CDATA[
+{
+    "dataSources": {
+        "ds_total_streams": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup spotify_tracks.csv | stats sum(streams) as value | eval label=\"Total Streams\" | eval delta=\"+12.4%\" | eval sparkline=\"8420000,8680000,9120000,9340000,9580000,9870000,10240000,10580000,10920000,11340000,11780000,12420000\""
+            },
+            "name": "Total Streams"
+        },
+        "ds_active_listeners": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup spotify_listening.csv | stats sum(listeners) as value | eval label=\"Active Listeners\" | eval delta=\"+18.6%\" | eval sparkline=\"4210000,4340000,4560000,4670000,4790000,4935000,5120000,5290000,5460000,5670000,5890000,6210000\""
+            },
+            "name": "Active Listeners"
+        },
+        "ds_playlist_adds": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup spotify_tracks.csv | stats sum(playlist_adds) as value | eval label=\"Playlist Adds\" | eval delta=\"+8.7%\" | eval sparkline=\"2840000,2920000,3080000,3150000,3230000,3320000,3440000,3560000,3680000,3820000,3960000,4180000\""
+            },
+            "name": "Playlist Adds"
+        },
+        "ds_listening_heatmap": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup spotify_listening.csv"
+            },
+            "name": "Listening Heatmap"
+        },
+        "ds_genres": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup spotify_genres.csv | sort - share"
+            },
+            "name": "Genre Distribution"
+        },
+        "ds_audio_wave_overview": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup spotify_tracks.csv | stats sum(streams) as value | eval label=\"streams/min\" | eval status=\"NOW PLAYING\""
+            },
+            "name": "Audio Wave Overview"
+        },
+        "ds_top_track_kpi": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup spotify_tracks.csv | sort - streams | head 1 | eval label=\"#1 Track Streams\" | eval delta=\"+22.1%\" | rename streams as value"
+            },
+            "name": "Top Track KPI"
+        },
+        "ds_total_artists_kpi": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup spotify_artists.csv | stats dc(artist) as value | eval label=\"Active Artists\" | eval delta=\"+4.2%\""
+            },
+            "name": "Total Artists KPI"
+        },
+        "ds_tracks": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup spotify_tracks.csv | sort - streams"
+            },
+            "name": "Top Tracks"
+        },
+        "ds_artists": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup spotify_artists.csv | sort - monthly_listeners"
+            },
+            "name": "Artist Growth"
+        },
+        "ds_total_playlists_kpi": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup spotify_playlists.csv | stats count as value | eval label=\"Total Playlists\" | eval delta=\"+6.1%\""
+            },
+            "name": "Total Playlists KPI"
+        },
+        "ds_avg_skip_kpi": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup spotify_playlists.csv | stats avg(skip_rate) as value | eval value=round(value,1) | eval label=\"Avg Skip Rate\" | eval delta=\"-1.8%\""
+            },
+            "name": "Avg Skip Rate KPI"
+        },
+        "ds_playlists": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup spotify_playlists.csv | sort - followers"
+            },
+            "name": "Playlist Performance"
+        },
+        "ds_trends": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup spotify_trends.csv | sort metric period"
+            },
+            "name": "Metric Trends"
+        },
+        "ds_audio_wave_playlists": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup spotify_playlists.csv | stats sum(followers) as value | eval label=\"total followers\" | eval status=\"PLAYLISTS\""
+            },
+            "name": "Audio Wave Playlists"
+        }
+    },
+    "visualizations": {
+        "viz_canvas_bg": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#121212",
+                "strokeColor": "transparent"
+            }
+        },
+        "viz_banner_bg": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#1E1E1E",
+                "strokeColor": "transparent"
+            }
+        },
+        "viz_banner_accent": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#1DB954",
+                "strokeColor": "transparent"
+            }
+        },
+        "viz_banner_title": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "**SPOTIFY** &nbsp; ANALYTICS",
+                "fontColor": "#E1E1E1",
+                "fontSize": "extraLarge",
+                "fontFamily": "Splunk Platform Sans",
+                "backgroundColor": "transparent"
+            }
+        },
+        "viz_section_overview": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "STREAMING OVERVIEW",
+                "fontColor": "rgba(255,255,255,0.30)",
+                "fontSize": "extraSmall",
+                "fontFamily": "Splunk Platform Sans",
+                "backgroundColor": "transparent"
+            }
+        },
+        "viz_total_streams": {
+            "type": "spotify_viz_pack.stream_kpi",
+            "dataSources": {
+                "primary": "ds_total_streams"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "spotify_viz_pack.stream_kpi.valueField": "value",
+                "spotify_viz_pack.stream_kpi.labelField": "label",
+                "spotify_viz_pack.stream_kpi.deltaField": "delta",
+                "spotify_viz_pack.stream_kpi.sparklineField": "sparkline",
+                "spotify_viz_pack.stream_kpi.accentColor": "#1DB954"
+            }
+        },
+        "viz_active_listeners": {
+            "type": "spotify_viz_pack.stream_kpi",
+            "dataSources": {
+                "primary": "ds_active_listeners"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "spotify_viz_pack.stream_kpi.valueField": "value",
+                "spotify_viz_pack.stream_kpi.labelField": "label",
+                "spotify_viz_pack.stream_kpi.deltaField": "delta",
+                "spotify_viz_pack.stream_kpi.sparklineField": "sparkline",
+                "spotify_viz_pack.stream_kpi.accentColor": "#8B5CF6"
+            }
+        },
+        "viz_playlist_adds": {
+            "type": "spotify_viz_pack.stream_kpi",
+            "dataSources": {
+                "primary": "ds_playlist_adds"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "spotify_viz_pack.stream_kpi.valueField": "value",
+                "spotify_viz_pack.stream_kpi.labelField": "label",
+                "spotify_viz_pack.stream_kpi.deltaField": "delta",
+                "spotify_viz_pack.stream_kpi.sparklineField": "sparkline",
+                "spotify_viz_pack.stream_kpi.accentColor": "#E91E8A"
+            }
+        },
+        "viz_card_kpi_streams": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#1E1E1E",
+                "strokeColor": "rgba(29, 185, 84, 0.08)",
+                "strokeWidth": 1,
+                "rx": 8,
+                "ry": 8
+            }
+        },
+        "viz_card_kpi_listeners": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#1E1E1E",
+                "strokeColor": "rgba(139, 92, 246, 0.08)",
+                "strokeWidth": 1,
+                "rx": 8,
+                "ry": 8
+            }
+        },
+        "viz_card_kpi_adds": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#1E1E1E",
+                "strokeColor": "rgba(233, 30, 138, 0.08)",
+                "strokeWidth": 1,
+                "rx": 8,
+                "ry": 8
+            }
+        },
+        "viz_heatmap": {
+            "type": "spotify_viz_pack.listening_heatmap",
+            "dataSources": {
+                "primary": "ds_listening_heatmap"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "spotify_viz_pack.listening_heatmap.dayField": "day",
+                "spotify_viz_pack.listening_heatmap.hourField": "hour",
+                "spotify_viz_pack.listening_heatmap.valueField": "listeners"
+            }
+        },
+        "viz_card_heatmap": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#1E1E1E",
+                "strokeColor": "rgba(29, 185, 84, 0.08)",
+                "strokeWidth": 1,
+                "rx": 8,
+                "ry": 8
+            }
+        },
+        "viz_section_heatmap": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "LISTENING PATTERNS",
+                "fontColor": "rgba(255,255,255,0.30)",
+                "fontSize": "extraSmall",
+                "fontFamily": "Splunk Platform Sans",
+                "backgroundColor": "transparent"
+            }
+        },
+        "viz_audio_wave_overview": {
+            "type": "spotify_viz_pack.audio_wave",
+            "dataSources": {
+                "primary": "ds_audio_wave_overview"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "spotify_viz_pack.audio_wave.valueField": "value",
+                "spotify_viz_pack.audio_wave.labelField": "label",
+                "spotify_viz_pack.audio_wave.statusField": "status",
+                "spotify_viz_pack.audio_wave.accentColor": "#1DB954"
+            }
+        },
+        "viz_card_wave_overview": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#1E1E1E",
+                "strokeColor": "rgba(29, 185, 84, 0.08)",
+                "strokeWidth": 1,
+                "rx": 8,
+                "ry": 8
+            }
+        },
+        "viz_genres": {
+            "type": "spotify_viz_pack.genre_bars",
+            "dataSources": {
+                "primary": "ds_genres"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "spotify_viz_pack.genre_bars.genreField": "genre",
+                "spotify_viz_pack.genre_bars.shareField": "share",
+                "spotify_viz_pack.genre_bars.trendField": "trend",
+                "spotify_viz_pack.genre_bars.listenersField": "listeners"
+            }
+        },
+        "viz_card_genres": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#1E1E1E",
+                "strokeColor": "rgba(29, 185, 84, 0.08)",
+                "strokeWidth": 1,
+                "rx": 8,
+                "ry": 8
+            }
+        },
+        "viz_section_genres": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "GENRE DISTRIBUTION",
+                "fontColor": "rgba(255,255,255,0.30)",
+                "fontSize": "extraSmall",
+                "fontFamily": "Splunk Platform Sans",
+                "backgroundColor": "transparent"
+            }
+        },
+        "viz_top_track_kpi": {
+            "type": "spotify_viz_pack.stream_kpi",
+            "dataSources": {
+                "primary": "ds_top_track_kpi"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "spotify_viz_pack.stream_kpi.valueField": "value",
+                "spotify_viz_pack.stream_kpi.labelField": "label",
+                "spotify_viz_pack.stream_kpi.deltaField": "delta",
+                "spotify_viz_pack.stream_kpi.accentColor": "#1DB954"
+            }
+        },
+        "viz_total_artists_kpi": {
+            "type": "spotify_viz_pack.stream_kpi",
+            "dataSources": {
+                "primary": "ds_total_artists_kpi"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "spotify_viz_pack.stream_kpi.valueField": "value",
+                "spotify_viz_pack.stream_kpi.labelField": "label",
+                "spotify_viz_pack.stream_kpi.deltaField": "delta",
+                "spotify_viz_pack.stream_kpi.accentColor": "#8B5CF6",
+                "spotify_viz_pack.stream_kpi.showSparkline": "false"
+            }
+        },
+        "viz_card_top_track": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#1E1E1E",
+                "strokeColor": "rgba(29, 185, 84, 0.08)",
+                "strokeWidth": 1,
+                "rx": 8,
+                "ry": 8
+            }
+        },
+        "viz_card_total_artists": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#1E1E1E",
+                "strokeColor": "rgba(139, 92, 246, 0.08)",
+                "strokeWidth": 1,
+                "rx": 8,
+                "ry": 8
+            }
+        },
+        "viz_section_tracks": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "TOP TRACKS",
+                "fontColor": "rgba(255,255,255,0.30)",
+                "fontSize": "extraSmall",
+                "fontFamily": "Splunk Platform Sans",
+                "backgroundColor": "transparent"
+            }
+        },
+        "viz_tracks": {
+            "type": "spotify_viz_pack.track_ranking",
+            "dataSources": {
+                "primary": "ds_tracks"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "spotify_viz_pack.track_ranking.trackField": "track_name",
+                "spotify_viz_pack.track_ranking.artistField": "artist",
+                "spotify_viz_pack.track_ranking.streamsField": "streams",
+                "spotify_viz_pack.track_ranking.durationField": "duration",
+                "spotify_viz_pack.track_ranking.genreField": "genre"
+            }
+        },
+        "viz_card_tracks": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#1E1E1E",
+                "strokeColor": "rgba(29, 185, 84, 0.08)",
+                "strokeWidth": 1,
+                "rx": 8,
+                "ry": 8
+            }
+        },
+        "viz_section_artists": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "ARTIST GROWTH",
+                "fontColor": "rgba(255,255,255,0.30)",
+                "fontSize": "extraSmall",
+                "fontFamily": "Splunk Platform Sans",
+                "backgroundColor": "transparent"
+            }
+        },
+        "viz_artists": {
+            "type": "spotify_viz_pack.artist_cards",
+            "dataSources": {
+                "primary": "ds_artists"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "spotify_viz_pack.artist_cards.artistField": "artist",
+                "spotify_viz_pack.artist_cards.listenersField": "monthly_listeners",
+                "spotify_viz_pack.artist_cards.growthField": "growth",
+                "spotify_viz_pack.artist_cards.marketField": "top_market"
+            }
+        },
+        "viz_card_artists": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#1E1E1E",
+                "strokeColor": "rgba(29, 185, 84, 0.08)",
+                "strokeWidth": 1,
+                "rx": 8,
+                "ry": 8
+            }
+        },
+        "viz_total_playlists_kpi": {
+            "type": "spotify_viz_pack.stream_kpi",
+            "dataSources": {
+                "primary": "ds_total_playlists_kpi"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "spotify_viz_pack.stream_kpi.valueField": "value",
+                "spotify_viz_pack.stream_kpi.labelField": "label",
+                "spotify_viz_pack.stream_kpi.deltaField": "delta",
+                "spotify_viz_pack.stream_kpi.accentColor": "#1DB954",
+                "spotify_viz_pack.stream_kpi.showSparkline": "false"
+            }
+        },
+        "viz_avg_skip_kpi": {
+            "type": "spotify_viz_pack.stream_kpi",
+            "dataSources": {
+                "primary": "ds_avg_skip_kpi"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "spotify_viz_pack.stream_kpi.valueField": "value",
+                "spotify_viz_pack.stream_kpi.labelField": "label",
+                "spotify_viz_pack.stream_kpi.deltaField": "delta",
+                "spotify_viz_pack.stream_kpi.accentColor": "#F59E0B",
+                "spotify_viz_pack.stream_kpi.showSparkline": "false",
+                "spotify_viz_pack.stream_kpi.unit": "%",
+                "spotify_viz_pack.stream_kpi.unitPosition": "after",
+                "spotify_viz_pack.stream_kpi.decimals": "1"
+            }
+        },
+        "viz_card_playlists_kpi": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#1E1E1E",
+                "strokeColor": "rgba(29, 185, 84, 0.08)",
+                "strokeWidth": 1,
+                "rx": 8,
+                "ry": 8
+            }
+        },
+        "viz_card_skip_kpi": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#1E1E1E",
+                "strokeColor": "rgba(245, 158, 11, 0.08)",
+                "strokeWidth": 1,
+                "rx": 8,
+                "ry": 8
+            }
+        },
+        "viz_section_playlists": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "PLAYLIST PERFORMANCE",
+                "fontColor": "rgba(255,255,255,0.30)",
+                "fontSize": "extraSmall",
+                "fontFamily": "Splunk Platform Sans",
+                "backgroundColor": "transparent"
+            }
+        },
+        "viz_playlists": {
+            "type": "spotify_viz_pack.playlist_table",
+            "dataSources": {
+                "primary": "ds_playlists"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "spotify_viz_pack.playlist_table.playlistField": "playlist_name",
+                "spotify_viz_pack.playlist_table.followersField": "followers",
+                "spotify_viz_pack.playlist_table.tracksField": "tracks",
+                "spotify_viz_pack.playlist_table.durationField": "avg_duration",
+                "spotify_viz_pack.playlist_table.skipRateField": "skip_rate"
+            }
+        },
+        "viz_card_playlists": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#1E1E1E",
+                "strokeColor": "rgba(29, 185, 84, 0.08)",
+                "strokeWidth": 1,
+                "rx": 8,
+                "ry": 8
+            }
+        },
+        "viz_section_trends": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "METRIC TRENDS",
+                "fontColor": "rgba(255,255,255,0.30)",
+                "fontSize": "extraSmall",
+                "fontFamily": "Splunk Platform Sans",
+                "backgroundColor": "transparent"
+            }
+        },
+        "viz_trends": {
+            "type": "spotify_viz_pack.trend_spark",
+            "dataSources": {
+                "primary": "ds_trends"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "spotify_viz_pack.trend_spark.metricField": "metric",
+                "spotify_viz_pack.trend_spark.periodField": "period",
+                "spotify_viz_pack.trend_spark.valueField": "value"
+            }
+        },
+        "viz_card_trends": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#1E1E1E",
+                "strokeColor": "rgba(29, 185, 84, 0.08)",
+                "strokeWidth": 1,
+                "rx": 8,
+                "ry": 8
+            }
+        },
+        "viz_audio_wave_playlists": {
+            "type": "spotify_viz_pack.audio_wave",
+            "dataSources": {
+                "primary": "ds_audio_wave_playlists"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "spotify_viz_pack.audio_wave.valueField": "value",
+                "spotify_viz_pack.audio_wave.labelField": "label",
+                "spotify_viz_pack.audio_wave.statusField": "status",
+                "spotify_viz_pack.audio_wave.accentColor": "#8B5CF6",
+                "spotify_viz_pack.audio_wave.barCount": "5"
+            }
+        },
+        "viz_card_wave_playlists": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#1E1E1E",
+                "strokeColor": "rgba(139, 92, 246, 0.08)",
+                "strokeWidth": 1,
+                "rx": 8,
+                "ry": 8
+            }
+        }
+    },
+    "inputs": {},
+    "layout": {
+        "globalInputs": [],
+        "tabs": {
+            "items": [
+                {"layoutId": "tab_overview", "label": "Overview"},
+                {"layoutId": "tab_tracks", "label": "Tracks & Artists"},
+                {"layoutId": "tab_playlists", "label": "Playlists"}
+            ],
+            "options": {
+                "barPosition": "top",
+                "showTabBar": true
+            }
+        },
+        "layoutDefinitions": {
+            "tab_overview": {
+                "type": "absolute",
+                "options": {"width": 1920, "height": 1080, "display": "auto-scale"},
+                "structure": [
+                    {"item": "viz_canvas_bg", "type": "block", "position": {"x": 0, "y": 0, "w": 1920, "h": 1080}},
+                    {"item": "viz_banner_bg", "type": "block", "position": {"x": 0, "y": 0, "w": 1920, "h": 64}},
+                    {"item": "viz_banner_accent", "type": "block", "position": {"x": 0, "y": 64, "w": 1920, "h": 3}},
+                    {"item": "viz_banner_title", "type": "block", "position": {"x": 24, "y": 12, "w": 500, "h": 40}},
+
+                    {"item": "viz_section_overview", "type": "block", "position": {"x": 24, "y": 84, "w": 300, "h": 24}},
+
+                    {"item": "viz_card_kpi_streams", "type": "block", "position": {"x": 24, "y": 116, "w": 580, "h": 200}},
+                    {"item": "viz_total_streams", "type": "block", "position": {"x": 32, "y": 124, "w": 564, "h": 184}},
+
+                    {"item": "viz_card_kpi_listeners", "type": "block", "position": {"x": 620, "y": 116, "w": 430, "h": 200}},
+                    {"item": "viz_active_listeners", "type": "block", "position": {"x": 628, "y": 124, "w": 414, "h": 184}},
+
+                    {"item": "viz_card_kpi_adds", "type": "block", "position": {"x": 1066, "y": 116, "w": 430, "h": 200}},
+                    {"item": "viz_playlist_adds", "type": "block", "position": {"x": 1074, "y": 124, "w": 414, "h": 184}},
+
+                    {"item": "viz_card_wave_overview", "type": "block", "position": {"x": 1512, "y": 116, "w": 384, "h": 200}},
+                    {"item": "viz_audio_wave_overview", "type": "block", "position": {"x": 1520, "y": 124, "w": 368, "h": 184}},
+
+                    {"item": "viz_section_heatmap", "type": "block", "position": {"x": 24, "y": 332, "w": 300, "h": 24}},
+                    {"item": "viz_card_heatmap", "type": "block", "position": {"x": 24, "y": 364, "w": 1872, "h": 320}},
+                    {"item": "viz_heatmap", "type": "block", "position": {"x": 32, "y": 372, "w": 1856, "h": 304}},
+
+                    {"item": "viz_section_genres", "type": "block", "position": {"x": 24, "y": 700, "w": 300, "h": 24}},
+                    {"item": "viz_card_genres", "type": "block", "position": {"x": 24, "y": 732, "w": 1872, "h": 330}},
+                    {"item": "viz_genres", "type": "block", "position": {"x": 32, "y": 740, "w": 1856, "h": 314}}
+                ]
+            },
+            "tab_tracks": {
+                "type": "absolute",
+                "options": {"width": 1920, "height": 1080, "display": "auto-scale"},
+                "structure": [
+                    {"item": "viz_canvas_bg", "type": "block", "position": {"x": 0, "y": 0, "w": 1920, "h": 1080}},
+                    {"item": "viz_banner_bg", "type": "block", "position": {"x": 0, "y": 0, "w": 1920, "h": 64}},
+                    {"item": "viz_banner_accent", "type": "block", "position": {"x": 0, "y": 64, "w": 1920, "h": 3}},
+                    {"item": "viz_banner_title", "type": "block", "position": {"x": 24, "y": 12, "w": 500, "h": 40}},
+
+                    {"item": "viz_card_top_track", "type": "block", "position": {"x": 24, "y": 84, "w": 930, "h": 160}},
+                    {"item": "viz_top_track_kpi", "type": "block", "position": {"x": 32, "y": 92, "w": 914, "h": 144}},
+
+                    {"item": "viz_card_total_artists", "type": "block", "position": {"x": 970, "y": 84, "w": 926, "h": 160}},
+                    {"item": "viz_total_artists_kpi", "type": "block", "position": {"x": 978, "y": 92, "w": 910, "h": 144}},
+
+                    {"item": "viz_section_tracks", "type": "block", "position": {"x": 24, "y": 260, "w": 300, "h": 24}},
+                    {"item": "viz_card_tracks", "type": "block", "position": {"x": 24, "y": 292, "w": 1872, "h": 380}},
+                    {"item": "viz_tracks", "type": "block", "position": {"x": 32, "y": 300, "w": 1856, "h": 364}},
+
+                    {"item": "viz_section_artists", "type": "block", "position": {"x": 24, "y": 688, "w": 300, "h": 24}},
+                    {"item": "viz_card_artists", "type": "block", "position": {"x": 24, "y": 720, "w": 1872, "h": 340}},
+                    {"item": "viz_artists", "type": "block", "position": {"x": 32, "y": 728, "w": 1856, "h": 324}}
+                ]
+            },
+            "tab_playlists": {
+                "type": "absolute",
+                "options": {"width": 1920, "height": 1080, "display": "auto-scale"},
+                "structure": [
+                    {"item": "viz_canvas_bg", "type": "block", "position": {"x": 0, "y": 0, "w": 1920, "h": 1080}},
+                    {"item": "viz_banner_bg", "type": "block", "position": {"x": 0, "y": 0, "w": 1920, "h": 64}},
+                    {"item": "viz_banner_accent", "type": "block", "position": {"x": 0, "y": 64, "w": 1920, "h": 3}},
+                    {"item": "viz_banner_title", "type": "block", "position": {"x": 24, "y": 12, "w": 500, "h": 40}},
+
+                    {"item": "viz_card_playlists_kpi", "type": "block", "position": {"x": 24, "y": 84, "w": 620, "h": 160}},
+                    {"item": "viz_total_playlists_kpi", "type": "block", "position": {"x": 32, "y": 92, "w": 604, "h": 144}},
+
+                    {"item": "viz_card_skip_kpi", "type": "block", "position": {"x": 660, "y": 84, "w": 620, "h": 160}},
+                    {"item": "viz_avg_skip_kpi", "type": "block", "position": {"x": 668, "y": 92, "w": 604, "h": 144}},
+
+                    {"item": "viz_card_wave_playlists", "type": "block", "position": {"x": 1296, "y": 84, "w": 600, "h": 160}},
+                    {"item": "viz_audio_wave_playlists", "type": "block", "position": {"x": 1304, "y": 92, "w": 584, "h": 144}},
+
+                    {"item": "viz_section_playlists", "type": "block", "position": {"x": 24, "y": 260, "w": 300, "h": 24}},
+                    {"item": "viz_card_playlists", "type": "block", "position": {"x": 24, "y": 292, "w": 1240, "h": 770}},
+                    {"item": "viz_playlists", "type": "block", "position": {"x": 32, "y": 300, "w": 1224, "h": 754}},
+
+                    {"item": "viz_section_trends", "type": "block", "position": {"x": 1280, "y": 260, "w": 300, "h": 24}},
+                    {"item": "viz_card_trends", "type": "block", "position": {"x": 1280, "y": 292, "w": 616, "h": 770}},
+                    {"item": "viz_trends", "type": "block", "position": {"x": 1288, "y": 300, "w": 600, "h": 754}}
+                ]
+            }
+        }
+    }
+}
+    ]]>
+    </definition>
+</dashboard>

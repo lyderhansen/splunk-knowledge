@@ -1,0 +1,59 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+    <splunk-control-group label="Value field" help="SPL field containing the KPI value">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.valueField" value="value">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Label field" help="SPL field for the KPI label text">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.labelField" value="label">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Trend field" help="SPL field for week-over-week percentage change">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.trendField" value="trend">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Unit field" help="SPL field for value unit (e.g. $, min, %)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.unitField" value="unit">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+    <splunk-control-group label="Unit position" help="Display unit before or after the value">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.unitPosition" value="before">
+            <option value="before">Before</option>
+            <option value="after">After</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Decimal places" help="Number of decimal places (-1 for auto)">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.decimals" value="-1">
+            <option value="-1">Auto</option>
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+    <splunk-control-group label="Accent color" help="Color for accent elements">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.accentColor" type="custom" value="#007AFF">
+            <splunk-color>#007AFF</splunk-color>
+            <splunk-color>#0A84FF</splunk-color>
+            <splunk-color>#5856D6</splunk-color>
+            <splunk-color>#34C759</splunk-color>
+            <splunk-color>#FF9500</splunk-color>
+            <splunk-color>#FF3B30</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Accent intensity" help="Strength of accent effects (0-100)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.accentIntensity" value="50">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Theme" help="Auto detects dashboard theme">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto">
+            <option value="auto">Auto</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>

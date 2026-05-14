@@ -1,0 +1,24 @@
+[]
+access = read : [ * ], write : [ admin, sc_admin ]
+export = system
+
+[visualizations/battery_gauge]
+export = system
+
+[visualizations/range_kpi]
+export = system
+
+[visualizations/charge_gauge]
+export = system
+
+[visualizations/thermal_table]
+export = system
+
+[visualizations/energy_area]
+export = system
+
+[visualizations/regen_donut]
+export = system
+
+[lookups]
+export = system

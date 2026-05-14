@@ -1,0 +1,810 @@
+{
+  "title": "Fjellbryggeri — Brewfloor Live",
+  "description": "Real-time brewfloor decision support: 8-tank state, fermentation trends, quality alerts, CIP status. Designed for the wall above the brewfloor and the brewmaster's tablet during shift.",
+  "theme": "dark",
+  "dataSources": {
+    "ds_kpi_active_tanks": {
+      "type": "ds.search",
+      "name": "Active tanks count",
+      "options": {
+        "query": "| makeresults | eval active_tanks=8 | table active_tanks",
+        "queryParameters": { "earliest": "-15m", "latest": "now" },
+        "refresh": "30s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_kpi_quality_alerts": {
+      "type": "ds.search",
+      "name": "Open quality alerts",
+      "options": {
+        "query": "| makeresults | eval open_alerts=2 | table open_alerts",
+        "queryParameters": { "earliest": "-24h", "latest": "now" },
+        "refresh": "60s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_kpi_batches_onspec": {
+      "type": "ds.search",
+      "name": "Batches on spec count",
+      "options": {
+        "query": "| makeresults | eval on_spec=5 | table on_spec",
+        "queryParameters": { "earliest": "-24h", "latest": "now" },
+        "refresh": "60s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_kpi_next_step": {
+      "type": "ds.search",
+      "name": "Next critical step minutes",
+      "options": {
+        "query": "| makeresults | eval minutes=47 | table minutes",
+        "queryParameters": { "earliest": "-15m", "latest": "now" },
+        "refresh": "30s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_tank_bl01": {
+      "type": "ds.search",
+      "name": "Tank BL01 state",
+      "options": {
+        "query": "| makeresults | eval temp=18.2 | table temp",
+        "queryParameters": { "earliest": "-15m", "latest": "now" },
+        "refresh": "30s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_tank_bl02": {
+      "type": "ds.search",
+      "name": "Tank BL02 state",
+      "options": {
+        "query": "| makeresults | eval temp=20.1 | table temp",
+        "queryParameters": { "earliest": "-15m", "latest": "now" },
+        "refresh": "30s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_tank_bl03": {
+      "type": "ds.search",
+      "name": "Tank BL03 state",
+      "options": {
+        "query": "| makeresults | eval temp=19.5 | table temp",
+        "queryParameters": { "earliest": "-15m", "latest": "now" },
+        "refresh": "30s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_tank_bl04": {
+      "type": "ds.search",
+      "name": "Tank BL04 state",
+      "options": {
+        "query": "| makeresults | eval temp=22.0 | table temp",
+        "queryParameters": { "earliest": "-15m", "latest": "now" },
+        "refresh": "30s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_tank_bl05": {
+      "type": "ds.search",
+      "name": "Tank BL05 state",
+      "options": {
+        "query": "| makeresults | eval temp=4.0 | table temp",
+        "queryParameters": { "earliest": "-15m", "latest": "now" },
+        "refresh": "30s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_tank_bl06": {
+      "type": "ds.search",
+      "name": "Tank BL06 state",
+      "options": {
+        "query": "| makeresults | eval temp=18.7 | table temp",
+        "queryParameters": { "earliest": "-15m", "latest": "now" },
+        "refresh": "30s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_tank_bl07": {
+      "type": "ds.search",
+      "name": "Tank BL07 state",
+      "options": {
+        "query": "| makeresults | eval temp=2.5 | table temp",
+        "queryParameters": { "earliest": "-15m", "latest": "now" },
+        "refresh": "30s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_tank_bl08": {
+      "type": "ds.search",
+      "name": "Tank BL08 state",
+      "options": {
+        "query": "| makeresults | eval temp=19.8 | table temp",
+        "queryParameters": { "earliest": "-15m", "latest": "now" },
+        "refresh": "30s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_fermentation_curves": {
+      "type": "ds.search",
+      "name": "Fermentation curves 48h",
+      "options": {
+        "query": "| makeresults count=48 | streamstats count as i | eval _time = relative_time(now(), \"-\".(48-i).\"h\") | eval BL01 = max(2, round(14 - 0.25*i + 0.6*sin(i/3), 2)) | eval BL02 = max(2, round(13 - 0.22*i + 0.5*sin(i/4), 2)) | eval BL06 = max(2, round(14 - 0.20*i + 0.4*sin(i/3), 2)) | eval BL08 = max(2, round(13.5 - 0.21*i + 0.5*sin(i/2), 2)) | sort _time | table _time BL01 BL02 BL06 BL08",
+        "queryParameters": { "earliest": "-48h", "latest": "now" },
+        "refresh": "120s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_dissolved_oxygen": {
+      "type": "ds.search",
+      "name": "Dissolved oxygen by sample point",
+      "options": {
+        "query": "| makeresults | eval point=\"Boil-out\", do_ppb=42 | append [| makeresults | eval point=\"Post-Knockout\", do_ppb=18] | append [| makeresults | eval point=\"Post-Fermentation\", do_ppb=8] | append [| makeresults | eval point=\"Bottling\", do_ppb=12] | table point do_ppb",
+        "queryParameters": { "earliest": "-24h", "latest": "now" },
+        "refresh": "300s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_batches": {
+      "type": "ds.search",
+      "name": "Active batches progress",
+      "options": {
+        "query": "| makeresults | eval batch_id=\"2026-128\", recipe=\"Sommernatt Pilsner\", stage=\"Fermentation D5/7\", progress=71, eta=\"2 days\" | append [| makeresults | eval batch_id=\"2026-127\", recipe=\"Voss IPA\", stage=\"Fermentation D6/7\", progress=86, eta=\"1 day\"] | append [| makeresults | eval batch_id=\"2026-126\", recipe=\"Tjaere Stout\", stage=\"Conditioning D8/14\", progress=57, eta=\"6 days\"] | append [| makeresults | eval batch_id=\"2026-125\", recipe=\"Sommernatt Pilsner\", stage=\"Cold Crash D2/3\", progress=67, eta=\"1 day\"] | append [| makeresults | eval batch_id=\"2026-124\", recipe=\"Julestjerne\", stage=\"Conditioning D12/14\", progress=86, eta=\"2 days\"] | append [| makeresults | eval batch_id=\"2026-129\", recipe=\"Voss IPA\", stage=\"Boil active\", progress=22, eta=\"in tank now\"] | append [| makeresults | eval batch_id=\"2026-130\", recipe=\"Sommernatt Pilsner\", stage=\"Fermentation D3/7\", progress=43, eta=\"4 days\"] | append [| makeresults | eval batch_id=\"2026-131\", recipe=\"Tjaere Stout\", stage=\"Fermentation D4/7\", progress=57, eta=\"3 days\"] | table batch_id recipe stage progress eta",
+        "queryParameters": { "earliest": "-15m", "latest": "now" },
+        "refresh": "300s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_alerts": {
+      "type": "ds.search",
+      "name": "Quality alerts last 24h",
+      "options": {
+        "query": "| makeresults count=8 | streamstats count as i | eval _time = relative_time(now(), \"-\".(i*47).\"m\") | eval tank_id = case(i==1,\"BL04\",i==2,\"BL01\",i==3,\"BL07\",i==4,\"BL02\",i==5,\"BL05\",i==6,\"BL08\",i==7,\"BL03\",true(),\"BL06\") | eval alert_type = case(i==1,\"DO out of spec\",i==2,\"Temp deviation\",i==3,\"Pressure low\",i==4,\"Sensor fault\",i==5,\"CIP overdue\",i==6,\"Gravity stall\",i==7,\"DO spike\",true(),\"Temp deviation\") | eval severity = case(i==1,\"WARN\",i==2,\"WARN\",i==3,\"OK\",i==4,\"OK\",i==5,\"WARN\",i==6,\"OK\",i==7,\"OK\",true(),\"OK\") | eval message = case(i==1,\"DO 42 ppb at boil-out (limit 30)\",i==2,\"Temp drift +1.2C from setpoint\",i==3,\"Pressure recovered automatically\",i==4,\"Sensor reseated by Ingrid\",i==5,\"CIP cycle 4h overdue\",i==6,\"Gravity unchanged 6h, intervention applied\",i==7,\"DO spike during sampling\",true(),\"Minor drift, auto-corrected\") | eval ack = case(i==1,\"\",i==2,\"\",i==3,\"ingrid\",i==4,\"lars\",i==5,\"\",i==6,\"ingrid\",i==7,\"karl\",true(),\"karl\") | sort - _time | table _time tank_id alert_type severity message ack",
+        "queryParameters": { "earliest": "-24h", "latest": "now" },
+        "refresh": "60s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_cip_status": {
+      "type": "ds.search",
+      "name": "CIP cycle status by tank",
+      "options": {
+        "query": "| makeresults | eval tank=\"BL01\", last_clean=\"2026-04-29 02:14\", hours_since=12, result=\"PASS\" | append [| makeresults | eval tank=\"BL02\", last_clean=\"2026-04-28 22:00\", hours_since=16, result=\"PASS\"] | append [| makeresults | eval tank=\"BL03\", last_clean=\"2026-04-28 18:30\", hours_since=20, result=\"PASS\"] | append [| makeresults | eval tank=\"BL04\", last_clean=\"2026-04-28 04:00\", hours_since=34, result=\"PASS\"] | append [| makeresults | eval tank=\"BL05\", last_clean=\"2026-04-26 14:00\", hours_since=72, result=\"OVERDUE\"] | append [| makeresults | eval tank=\"BL06\", last_clean=\"2026-04-29 09:00\", hours_since=5, result=\"PASS\"] | append [| makeresults | eval tank=\"BL07\", last_clean=\"2026-04-27 11:00\", hours_since=51, result=\"PASS\"] | append [| makeresults | eval tank=\"BL08\", last_clean=\"2026-04-29 05:00\", hours_since=9, result=\"PASS\"] | table tank last_clean hours_since result",
+        "queryParameters": { "earliest": "-7d", "latest": "now" },
+        "refresh": "300s",
+        "refreshType": "delay"
+      }
+    }
+  },
+  "visualizations": {
+    "viz_brand_stripe": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#3D5A3F",
+        "fillOpacity": 1.0,
+        "strokeColor": "transparent",
+        "rx": 0
+      }
+    },
+    "viz_header_wordmark": {
+      "type": "splunk.markdown",
+      "options": {
+        "backgroundColor": "transparent",
+        "fontColor": "#F2EDE4",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "extraLarge",
+        "markdown": "## Fjellbryggeri"
+      }
+    },
+    "viz_header_subtitle": {
+      "type": "splunk.markdown",
+      "options": {
+        "backgroundColor": "transparent",
+        "fontColor": "#B5651D",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "large",
+        "markdown": "### BREWFLOOR LIVE"
+      }
+    },
+    "viz_header_status": {
+      "type": "splunk.markdown",
+      "options": {
+        "backgroundColor": "transparent",
+        "fontColor": "#A8AFA0",
+        "fontFamily": "Splunk Platform Mono",
+        "fontSize": "default",
+        "markdown": "**SHIFT** Ingrid · Karl · Lars  \n**REFRESH** 30s · live"
+      }
+    },
+    "viz_section_brewfloor": {
+      "type": "splunk.markdown",
+      "options": {
+        "backgroundColor": "transparent",
+        "fontColor": "#F2EDE4",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "large",
+        "markdown": "## Brewfloor Live"
+      }
+    },
+    "viz_card_kpi_strip": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2820",
+        "fillOpacity": 1.0,
+        "strokeColor": "#3D5A3F",
+        "strokeWidth": 1,
+        "rx": 10
+      }
+    },
+    "viz_kpi_active_tanks": {
+      "type": "splunk.singlevalue",
+      "title": "ACTIVE TANKS",
+      "dataSources": { "primary": "ds_kpi_active_tanks" },
+      "options": {
+        "backgroundColor": "transparent",
+        "majorColor": "#22C55E",
+        "majorFontSize": 64,
+        "unit": "of 8",
+        "unitPosition": "after",
+        "unitFontSize": 18,
+        "underLabel": "all tanks running ✓",
+        "underLabelFontSize": 13,
+        "trendDisplay": "off",
+        "sparklineDisplay": "off",
+        "shouldUseThousandSeparators": true
+      },
+      "eventHandlers": [
+        {
+          "type": "drilldown.linkToSearch",
+          "options": { "search": "index=brewery sourcetype=opcua_tank | stats latest(stage) by tank_id" }
+        }
+      ]
+    },
+    "viz_kpi_quality_alerts": {
+      "type": "splunk.singlevalue",
+      "title": "OPEN QUALITY ALERTS",
+      "dataSources": { "primary": "ds_kpi_quality_alerts" },
+      "options": {
+        "backgroundColor": "transparent",
+        "majorColor": "#FFB627",
+        "majorFontSize": 64,
+        "unitFontSize": 18,
+        "underLabel": "⚠ require ack from brewmaster",
+        "underLabelFontSize": 13,
+        "trendDisplay": "off",
+        "sparklineDisplay": "off",
+        "shouldUseThousandSeparators": true
+      },
+      "eventHandlers": [
+        {
+          "type": "drilldown.linkToSearch",
+          "options": { "search": "index=brewery sourcetype=quality_alert ack=\"\" earliest=-24h" }
+        }
+      ]
+    },
+    "viz_kpi_batches_onspec": {
+      "type": "splunk.singlevalue",
+      "title": "BATCHES ON-SPEC",
+      "dataSources": { "primary": "ds_kpi_batches_onspec" },
+      "options": {
+        "backgroundColor": "transparent",
+        "majorColor": "#22C55E",
+        "majorFontSize": 64,
+        "unit": "of 8",
+        "unitPosition": "after",
+        "unitFontSize": 18,
+        "underLabel": "all active batches tracking ✓",
+        "underLabelFontSize": 13,
+        "trendDisplay": "off",
+        "sparklineDisplay": "off",
+        "shouldUseThousandSeparators": true
+      },
+      "eventHandlers": [
+        {
+          "type": "drilldown.linkToSearch",
+          "options": { "search": "index=brewery sourcetype=beerware_batch status=active" }
+        }
+      ]
+    },
+    "viz_kpi_next_step": {
+      "type": "splunk.singlevalue",
+      "title": "NEXT CRITICAL STEP",
+      "dataSources": { "primary": "ds_kpi_next_step" },
+      "options": {
+        "backgroundColor": "transparent",
+        "majorColor": "#B5651D",
+        "majorFontSize": 64,
+        "unit": "min",
+        "unitPosition": "after",
+        "unitFontSize": 18,
+        "underLabel": "BL04 · Boil-out · Karl on standby",
+        "underLabelFontSize": 13,
+        "trendDisplay": "off",
+        "sparklineDisplay": "off",
+        "shouldUseThousandSeparators": true
+      },
+      "eventHandlers": [
+        {
+          "type": "drilldown.linkToSearch",
+          "options": { "search": "index=brewery sourcetype=beerware_batch tank_id=BL04 stage=\"Boil*\"" }
+        }
+      ]
+    },
+    "viz_section_tanks": {
+      "type": "splunk.markdown",
+      "options": {
+        "backgroundColor": "transparent",
+        "fontColor": "#F2EDE4",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "large",
+        "markdown": "## Tank Status"
+      }
+    },
+    "viz_card_tile_bl01": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2820",
+        "fillOpacity": 1.0,
+        "strokeColor": "#3D5A3F",
+        "strokeWidth": 1,
+        "rx": 10
+      }
+    },
+    "viz_card_tile_bl02": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2820",
+        "fillOpacity": 1.0,
+        "strokeColor": "#3D5A3F",
+        "strokeWidth": 1,
+        "rx": 10
+      }
+    },
+    "viz_card_tile_bl03": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2820",
+        "fillOpacity": 1.0,
+        "strokeColor": "#3D5A3F",
+        "strokeWidth": 1,
+        "rx": 10
+      }
+    },
+    "viz_card_tile_bl04": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#2A2118",
+        "fillOpacity": 1.0,
+        "strokeColor": "#B5651D",
+        "strokeWidth": 1,
+        "rx": 10
+      }
+    },
+    "viz_card_tile_bl05": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2820",
+        "fillOpacity": 1.0,
+        "strokeColor": "#3D5A3F",
+        "strokeWidth": 1,
+        "rx": 10
+      }
+    },
+    "viz_card_tile_bl06": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2820",
+        "fillOpacity": 1.0,
+        "strokeColor": "#3D5A3F",
+        "strokeWidth": 1,
+        "rx": 10
+      }
+    },
+    "viz_card_tile_bl07": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2820",
+        "fillOpacity": 1.0,
+        "strokeColor": "#3D5A3F",
+        "strokeWidth": 1,
+        "rx": 10
+      }
+    },
+    "viz_card_tile_bl08": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2820",
+        "fillOpacity": 1.0,
+        "strokeColor": "#3D5A3F",
+        "strokeWidth": 1,
+        "rx": 10
+      }
+    },
+    "viz_tile_bl01": {
+      "type": "splunk.singlevalue",
+      "title": "BL01 · Fermentation",
+      "dataSources": { "primary": "ds_tank_bl01" },
+      "options": {
+        "backgroundColor": "transparent",
+        "majorColor": "#F2EDE4",
+        "majorFontSize": 44,
+        "unit": "°C",
+        "unitPosition": "after",
+        "unitFontSize": 16,
+        "underLabel": "12.4 P · Batch 2026-128 ✓",
+        "underLabelFontSize": 12,
+        "trendDisplay": "off",
+        "sparklineDisplay": "off"
+      },
+      "eventHandlers": [
+        { "type": "drilldown.linkToSearch", "options": { "search": "index=brewery sourcetype=opcua_tank tank_id=BL01 earliest=-24h" } }
+      ]
+    },
+    "viz_tile_bl02": {
+      "type": "splunk.singlevalue",
+      "title": "BL02 · Fermentation",
+      "dataSources": { "primary": "ds_tank_bl02" },
+      "options": {
+        "backgroundColor": "transparent",
+        "majorColor": "#F2EDE4",
+        "majorFontSize": 44,
+        "unit": "°C",
+        "unitPosition": "after",
+        "unitFontSize": 16,
+        "underLabel": "11.8 P · Batch 2026-127 ✓",
+        "underLabelFontSize": 12,
+        "trendDisplay": "off",
+        "sparklineDisplay": "off"
+      },
+      "eventHandlers": [
+        { "type": "drilldown.linkToSearch", "options": { "search": "index=brewery sourcetype=opcua_tank tank_id=BL02 earliest=-24h" } }
+      ]
+    },
+    "viz_tile_bl03": {
+      "type": "splunk.singlevalue",
+      "title": "BL03 · Conditioning",
+      "dataSources": { "primary": "ds_tank_bl03" },
+      "options": {
+        "backgroundColor": "transparent",
+        "majorColor": "#F2EDE4",
+        "majorFontSize": 44,
+        "unit": "°C",
+        "unitPosition": "after",
+        "unitFontSize": 16,
+        "underLabel": "8.2 P · Batch 2026-126 ✓",
+        "underLabelFontSize": 12,
+        "trendDisplay": "off",
+        "sparklineDisplay": "off"
+      },
+      "eventHandlers": [
+        { "type": "drilldown.linkToSearch", "options": { "search": "index=brewery sourcetype=opcua_tank tank_id=BL03 earliest=-24h" } }
+      ]
+    },
+    "viz_tile_bl04": {
+      "type": "splunk.singlevalue",
+      "title": "BL04 · Boil",
+      "dataSources": { "primary": "ds_tank_bl04" },
+      "options": {
+        "backgroundColor": "transparent",
+        "majorColor": "#B5651D",
+        "majorFontSize": 44,
+        "unit": "°C",
+        "unitPosition": "after",
+        "unitFontSize": 16,
+        "underLabel": "14.1 P · Batch 2026-129 · attention",
+        "underLabelFontSize": 12,
+        "trendDisplay": "off",
+        "sparklineDisplay": "off"
+      },
+      "eventHandlers": [
+        { "type": "drilldown.linkToSearch", "options": { "search": "index=brewery sourcetype=opcua_tank tank_id=BL04 earliest=-24h" } }
+      ]
+    },
+    "viz_tile_bl05": {
+      "type": "splunk.singlevalue",
+      "title": "BL05 · Cold Crash",
+      "dataSources": { "primary": "ds_tank_bl05" },
+      "options": {
+        "backgroundColor": "transparent",
+        "majorColor": "#F2EDE4",
+        "majorFontSize": 44,
+        "unit": "°C",
+        "unitPosition": "after",
+        "unitFontSize": 16,
+        "underLabel": "4.5 P · Batch 2026-125 ✓",
+        "underLabelFontSize": 12,
+        "trendDisplay": "off",
+        "sparklineDisplay": "off"
+      },
+      "eventHandlers": [
+        { "type": "drilldown.linkToSearch", "options": { "search": "index=brewery sourcetype=opcua_tank tank_id=BL05 earliest=-24h" } }
+      ]
+    },
+    "viz_tile_bl06": {
+      "type": "splunk.singlevalue",
+      "title": "BL06 · Fermentation",
+      "dataSources": { "primary": "ds_tank_bl06" },
+      "options": {
+        "backgroundColor": "transparent",
+        "majorColor": "#F2EDE4",
+        "majorFontSize": 44,
+        "unit": "°C",
+        "unitPosition": "after",
+        "unitFontSize": 16,
+        "underLabel": "13.0 P · Batch 2026-130 ✓",
+        "underLabelFontSize": 12,
+        "trendDisplay": "off",
+        "sparklineDisplay": "off"
+      },
+      "eventHandlers": [
+        { "type": "drilldown.linkToSearch", "options": { "search": "index=brewery sourcetype=opcua_tank tank_id=BL06 earliest=-24h" } }
+      ]
+    },
+    "viz_tile_bl07": {
+      "type": "splunk.singlevalue",
+      "title": "BL07 · Conditioning",
+      "dataSources": { "primary": "ds_tank_bl07" },
+      "options": {
+        "backgroundColor": "transparent",
+        "majorColor": "#F2EDE4",
+        "majorFontSize": 44,
+        "unit": "°C",
+        "unitPosition": "after",
+        "unitFontSize": 16,
+        "underLabel": "2.1 P · Batch 2026-124 ✓",
+        "underLabelFontSize": 12,
+        "trendDisplay": "off",
+        "sparklineDisplay": "off"
+      },
+      "eventHandlers": [
+        { "type": "drilldown.linkToSearch", "options": { "search": "index=brewery sourcetype=opcua_tank tank_id=BL07 earliest=-24h" } }
+      ]
+    },
+    "viz_tile_bl08": {
+      "type": "splunk.singlevalue",
+      "title": "BL08 · Fermentation",
+      "dataSources": { "primary": "ds_tank_bl08" },
+      "options": {
+        "backgroundColor": "transparent",
+        "majorColor": "#F2EDE4",
+        "majorFontSize": 44,
+        "unit": "°C",
+        "unitPosition": "after",
+        "unitFontSize": 16,
+        "underLabel": "9.5 P · Batch 2026-131 ✓",
+        "underLabelFontSize": 12,
+        "trendDisplay": "off",
+        "sparklineDisplay": "off"
+      },
+      "eventHandlers": [
+        { "type": "drilldown.linkToSearch", "options": { "search": "index=brewery sourcetype=opcua_tank tank_id=BL08 earliest=-24h" } }
+      ]
+    },
+    "viz_hairline": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#B5651D",
+        "fillOpacity": 0.4,
+        "strokeColor": "transparent",
+        "rx": 0
+      }
+    },
+    "viz_section_trends": {
+      "type": "splunk.markdown",
+      "options": {
+        "backgroundColor": "transparent",
+        "fontColor": "#F2EDE4",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "large",
+        "markdown": "## Fermentation Trends & Quality"
+      }
+    },
+    "viz_card_curves": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2820",
+        "fillOpacity": 1.0,
+        "strokeColor": "#3D5A3F",
+        "strokeWidth": 1,
+        "rx": 10
+      }
+    },
+    "viz_curves": {
+      "type": "splunk.line",
+      "title": "FERMENTATION CURVES — LAST 48H",
+      "dataSources": { "primary": "ds_fermentation_curves" },
+      "options": {
+        "backgroundColor": "transparent",
+        "seriesColors": ["#22C55E", "#7DD87D", "#B5651D", "#D49060"],
+        "lineWidth": 2,
+        "showRoundedY": false,
+        "legendDisplay": "bottom",
+        "xAxisTitleVisibility": "hide",
+        "yAxisTitleText": "Plato",
+        "yAxisTitleVisibility": "show",
+        "xAxisLabelVisibility": "auto"
+      },
+      "eventHandlers": [
+        { "type": "drilldown.linkToSearch", "options": { "search": "index=brewery sourcetype=opcua_tank earliest=-48h | timechart span=15m avg(plato) by tank_id" } }
+      ]
+    },
+    "viz_card_do": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2820",
+        "fillOpacity": 1.0,
+        "strokeColor": "#3D5A3F",
+        "strokeWidth": 1,
+        "rx": 10
+      }
+    },
+    "viz_do_chart": {
+      "type": "splunk.column",
+      "title": "DISSOLVED OXYGEN BY SAMPLE POINT",
+      "dataSources": { "primary": "ds_dissolved_oxygen" },
+      "options": {
+        "backgroundColor": "transparent",
+        "seriesColors": ["#B5651D"],
+        "legendDisplay": "off",
+        "xAxisTitleVisibility": "hide",
+        "yAxisTitleText": "DO (ppb)",
+        "yAxisTitleVisibility": "show",
+        "showDataLabels": "all"
+      },
+      "eventHandlers": [
+        { "type": "drilldown.linkToSearch", "options": { "search": "index=brewery sourcetype=opcua_do_meter sample_point=$row.point$" } }
+      ]
+    },
+    "viz_section_batches": {
+      "type": "splunk.markdown",
+      "options": {
+        "backgroundColor": "transparent",
+        "fontColor": "#F2EDE4",
+        "fontFamily": "Splunk Platform Sans",
+        "fontSize": "large",
+        "markdown": "## Active Batches & Alerts"
+      }
+    },
+    "viz_card_batches": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2820",
+        "fillOpacity": 1.0,
+        "strokeColor": "#3D5A3F",
+        "strokeWidth": 1,
+        "rx": 10
+      }
+    },
+    "viz_table_batches": {
+      "type": "splunk.table",
+      "title": "ACTIVE BATCHES",
+      "dataSources": { "primary": "ds_batches" },
+      "options": {
+        "backgroundColor": "transparent",
+        "rowBackgroundColors": "> table | seriesByName('progress') | rangeValue(progressColors)",
+        "count": 10
+      },
+      "context": {
+        "progressColors": [
+          { "from": 80, "value": "transparent" },
+          { "from": 40, "to": 80, "value": "transparent" },
+          { "to": 40, "value": "transparent" }
+        ]
+      },
+      "eventHandlers": [
+        { "type": "drilldown.linkToSearch", "options": { "search": "index=brewery sourcetype=beerware_batch batch_id=$row.batch_id$" } }
+      ]
+    },
+    "viz_card_alerts": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2820",
+        "fillOpacity": 1.0,
+        "strokeColor": "#3D5A3F",
+        "strokeWidth": 1,
+        "rx": 10
+      }
+    },
+    "viz_table_alerts": {
+      "type": "splunk.table",
+      "title": "QUALITY ALERTS — LAST 24H",
+      "dataSources": { "primary": "ds_alerts" },
+      "options": {
+        "backgroundColor": "transparent",
+        "count": 10
+      },
+      "eventHandlers": [
+        { "type": "drilldown.linkToSearch", "options": { "search": "index=brewery sourcetype=quality_alert tank_id=$row.tank_id$ earliest=-24h" } }
+      ]
+    },
+    "viz_card_cip": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2820",
+        "fillOpacity": 1.0,
+        "strokeColor": "#3D5A3F",
+        "strokeWidth": 1,
+        "rx": 10
+      }
+    },
+    "viz_table_cip": {
+      "type": "splunk.table",
+      "title": "CIP STATUS BY TANK",
+      "dataSources": { "primary": "ds_cip_status" },
+      "options": {
+        "backgroundColor": "transparent",
+        "count": 10
+      },
+      "eventHandlers": [
+        { "type": "drilldown.linkToSearch", "options": { "search": "| inputlookup cip_log.csv | where tank=\"$row.tank$\"" } }
+      ]
+    },
+    "viz_footer": {
+      "type": "splunk.markdown",
+      "options": {
+        "backgroundColor": "transparent",
+        "fontColor": "#A8AFA0",
+        "fontFamily": "Splunk Platform Mono",
+        "fontSize": "extraSmall",
+        "markdown": "**SHIFT HANDOVER** Lead Ingrid · On-call brewmaster Karl · HACCP coordinator Lars  ·  **Beerware Pro** /batches  ·  **Runbook** wiki/brewfloor/runbook  ·  **Emergency** +47 56 51 00 00"
+      }
+    }
+  },
+  "inputs": {},
+  "defaults": {},
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1920,
+      "height": 1080,
+      "backgroundColor": "#1F1B16",
+      "display": "auto-scale"
+    },
+    "structure": [
+      { "item": "viz_brand_stripe",      "type": "block", "position": { "x": 0,    "y": 0,    "w": 1920, "h": 4 } },
+      { "item": "viz_header_wordmark",   "type": "block", "position": { "x": 32,   "y": 14,   "w": 400,  "h": 48 } },
+      { "item": "viz_header_subtitle",   "type": "block", "position": { "x": 720,  "y": 22,   "w": 480,  "h": 36 } },
+      { "item": "viz_header_status",     "type": "block", "position": { "x": 1568, "y": 14,   "w": 320,  "h": 50 } },
+
+      { "item": "viz_section_brewfloor", "type": "block", "position": { "x": 32,   "y": 72,   "w": 600,  "h": 40 } },
+      { "item": "viz_card_kpi_strip",    "type": "block", "position": { "x": 16,   "y": 112,  "w": 1888, "h": 160 } },
+      { "item": "viz_kpi_active_tanks",  "type": "block", "position": { "x": 32,   "y": 120,  "w": 448,  "h": 144 } },
+      { "item": "viz_kpi_quality_alerts","type": "block", "position": { "x": 496,  "y": 120,  "w": 448,  "h": 144 } },
+      { "item": "viz_kpi_batches_onspec","type": "block", "position": { "x": 960,  "y": 120,  "w": 448,  "h": 144 } },
+      { "item": "viz_kpi_next_step",     "type": "block", "position": { "x": 1424, "y": 120,  "w": 448,  "h": 144 } },
+
+      { "item": "viz_section_tanks",     "type": "block", "position": { "x": 32,   "y": 276,  "w": 600,  "h": 44 } },
+      { "item": "viz_card_tile_bl01",    "type": "block", "position": { "x": 32,   "y": 320,  "w": 448,  "h": 120 } },
+      { "item": "viz_card_tile_bl02",    "type": "block", "position": { "x": 496,  "y": 320,  "w": 448,  "h": 120 } },
+      { "item": "viz_card_tile_bl03",    "type": "block", "position": { "x": 960,  "y": 320,  "w": 448,  "h": 120 } },
+      { "item": "viz_card_tile_bl04",    "type": "block", "position": { "x": 1424, "y": 320,  "w": 448,  "h": 120 } },
+      { "item": "viz_card_tile_bl05",    "type": "block", "position": { "x": 32,   "y": 448,  "w": 448,  "h": 120 } },
+      { "item": "viz_card_tile_bl06",    "type": "block", "position": { "x": 496,  "y": 448,  "w": 448,  "h": 120 } },
+      { "item": "viz_card_tile_bl07",    "type": "block", "position": { "x": 960,  "y": 448,  "w": 448,  "h": 120 } },
+      { "item": "viz_card_tile_bl08",    "type": "block", "position": { "x": 1424, "y": 448,  "w": 448,  "h": 120 } },
+      { "item": "viz_tile_bl01",         "type": "block", "position": { "x": 32,   "y": 320,  "w": 448,  "h": 120 } },
+      { "item": "viz_tile_bl02",         "type": "block", "position": { "x": 496,  "y": 320,  "w": 448,  "h": 120 } },
+      { "item": "viz_tile_bl03",         "type": "block", "position": { "x": 960,  "y": 320,  "w": 448,  "h": 120 } },
+      { "item": "viz_tile_bl04",         "type": "block", "position": { "x": 1424, "y": 320,  "w": 448,  "h": 120 } },
+      { "item": "viz_tile_bl05",         "type": "block", "position": { "x": 32,   "y": 448,  "w": 448,  "h": 120 } },
+      { "item": "viz_tile_bl06",         "type": "block", "position": { "x": 496,  "y": 448,  "w": 448,  "h": 120 } },
+      { "item": "viz_tile_bl07",         "type": "block", "position": { "x": 960,  "y": 448,  "w": 448,  "h": 120 } },
+      { "item": "viz_tile_bl08",         "type": "block", "position": { "x": 1424, "y": 448,  "w": 448,  "h": 120 } },
+
+      { "item": "viz_hairline",          "type": "block", "position": { "x": 32,   "y": 588,  "w": 1856, "h": 2 } },
+      { "item": "viz_section_trends",    "type": "block", "position": { "x": 32,   "y": 596,  "w": 800,  "h": 40 } },
+      { "item": "viz_card_curves",       "type": "block", "position": { "x": 32,   "y": 636,  "w": 1248, "h": 220 } },
+      { "item": "viz_curves",            "type": "block", "position": { "x": 32,   "y": 636,  "w": 1248, "h": 220 } },
+      { "item": "viz_card_do",           "type": "block", "position": { "x": 1296, "y": 636,  "w": 592,  "h": 220 } },
+      { "item": "viz_do_chart",          "type": "block", "position": { "x": 1296, "y": 636,  "w": 592,  "h": 220 } },
+
+      { "item": "viz_section_batches",   "type": "block", "position": { "x": 32,   "y": 872,  "w": 600,  "h": 40 } },
+      { "item": "viz_card_batches",      "type": "block", "position": { "x": 32,   "y": 912,  "w": 620,  "h": 132 } },
+      { "item": "viz_table_batches",     "type": "block", "position": { "x": 32,   "y": 912,  "w": 620,  "h": 132 } },
+      { "item": "viz_card_alerts",       "type": "block", "position": { "x": 668,  "y": 912,  "w": 620,  "h": 132 } },
+      { "item": "viz_table_alerts",      "type": "block", "position": { "x": 668,  "y": 912,  "w": 620,  "h": 132 } },
+      { "item": "viz_card_cip",          "type": "block", "position": { "x": 1304, "y": 912,  "w": 584,  "h": 132 } },
+      { "item": "viz_table_cip",         "type": "block", "position": { "x": 1304, "y": 912,  "w": 584,  "h": 132 } },
+
+      { "item": "viz_footer",            "type": "block", "position": { "x": 32,   "y": 1052, "w": 1856, "h": 24 } }
+    ]
+  }
+}

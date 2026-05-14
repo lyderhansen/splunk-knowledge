@@ -1,0 +1,48 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+    <splunk-control-group label="Genre field" help="SPL field containing genre names">
+        <splunk-text-input name="spotify_viz_pack.genre_bars.genreField" default="genre">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Share field" help="SPL field containing percentage share (e.g. 34.2)">
+        <splunk-text-input name="spotify_viz_pack.genre_bars.shareField" default="share">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Trend field" help="SPL field containing trend direction: up, down, or stable">
+        <splunk-text-input name="spotify_viz_pack.genre_bars.trendField" default="trend">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Listeners field" help="SPL field containing raw listener count (shown in tooltip)">
+        <splunk-text-input name="spotify_viz_pack.genre_bars.listenersField" default="listeners">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Maximum bars" help="Maximum number of genres to display (sorted by share descending)">
+        <splunk-text-input name="spotify_viz_pack.genre_bars.maxBars" default="10">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+    <splunk-control-group label="Show trend arrow" help="Display ▲/▼/— trend indicator next to each percentage">
+        <splunk-radio-input name="spotify_viz_pack.genre_bars.showTrend" default="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Bar height" help="Row bar height in pixels. Set to 0 for automatic sizing based on panel height">
+        <splunk-text-input name="spotify_viz_pack.genre_bars.barHeight" default="0">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+    <splunk-control-group label="Theme" help="Color scheme — dark matches Spotify's default dark UI, light for bright backgrounds">
+        <splunk-radio-input name="spotify_viz_pack.genre_bars.theme" default="dark">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Accent intensity" help="Glow intensity behind bars (0 = no glow, 100 = maximum glow)">
+        <splunk-range-input name="spotify_viz_pack.genre_bars.accentIntensity" default="50" min="0" max="100" step="5">
+        </splunk-range-input>
+    </splunk-control-group>
+</form>

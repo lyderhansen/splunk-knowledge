@@ -1,0 +1,60 @@
+<form class="splunk-formatter-section" section-label="Data Configuration">
+    <splunk-control-group label="Time Field" help="Field containing the timestamp">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.timeField" value="_time">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Value Field" help="Field containing the metric value">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.valueField" value="value">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Data Display">
+    <splunk-control-group label="Label" help="Y-axis label for the metric">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.label" value="">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Unit" help="Unit suffix for tooltip values">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.unit" value="">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Threshold" help="Threshold value for horizontal reference line (-1 to hide)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.threshold" value="-1">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show Area Fill" help="Fill area under the trend line">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showFill" value="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show Dots" help="Show data point dots on the line">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showDots" value="false">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Color and Style">
+    <splunk-control-group label="Theme" help="Auto detects dashboard theme">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto">
+            <option value="auto">Auto</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Line Color" help="Color of the trend line">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.lineColor" type="custom" value="#F6821F">
+            <splunk-color>#F6821F</splunk-color>
+            <splunk-color>#6ECBF5</splunk-color>
+            <splunk-color>#34D399</splunk-color>
+            <splunk-color>#A78BFA</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Threshold Color" help="Color of the threshold line">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.thresholdColor" type="custom" value="#EF4444">
+            <splunk-color>#EF4444</splunk-color>
+            <splunk-color>#FBBF24</splunk-color>
+            <splunk-color>#8B8FA3</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+</form>

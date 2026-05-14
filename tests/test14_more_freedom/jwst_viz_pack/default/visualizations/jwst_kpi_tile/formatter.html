@@ -1,0 +1,223 @@
+<!-- JWST KPI Tile — Settings UI
+     Defaults MUST match visualization_source.js defaults (B7).
+     Section labels MUST match exactly as shown (B5). -->
+
+<!-- ================================================================
+     DATA CONFIGURATIONS
+     ================================================================ -->
+<form class="splunk-formatter-section" section-label="Data configurations">
+
+    <splunk-control-group
+        label="Value field"
+        name="valueField"
+        help="Field name containing the metric value (numeric or string).">
+        <splunk-text-input
+            name="valueField"
+            value="value">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group
+        label="Label field"
+        name="labelField"
+        help="Field name containing the metric label shown below the value.">
+        <splunk-text-input
+            name="labelField"
+            value="label">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group
+        label="Unit field"
+        name="unitField"
+        help="Field name containing the unit of measurement (e.g. K, %, Mbps).">
+        <splunk-text-input
+            name="unitField"
+            value="unit">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group
+        label="Trend field"
+        name="trendField"
+        help="Field name containing the trend delta as a percentage number.">
+        <splunk-text-input
+            name="trendField"
+            value="trend">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group
+        label="Sparkline field"
+        name="sparklineField"
+        help="Field name containing comma-separated historical values for sparkline.">
+        <splunk-text-input
+            name="sparklineField"
+            value="sparkline">
+        </splunk-text-input>
+    </splunk-control-group>
+
+</form>
+
+<!-- ================================================================
+     DATA DISPLAY
+     ================================================================ -->
+<form class="splunk-formatter-section" section-label="Data display">
+
+    <splunk-control-group
+        label="Value size"
+        name="valueSize"
+        help="Hero = 48px, Large = 36px, Medium = 24px, Small = 18px.">
+        <splunk-radio-input
+            name="valueSize"
+            value="hero">
+            <option value="hero">Hero</option>
+            <option value="large">Large</option>
+            <option value="medium">Medium</option>
+            <option value="small">Small</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+    <splunk-control-group
+        label="Decimal places"
+        name="valueDecimals"
+        help="Number of decimal places for numeric values. Use -1 for auto-format.">
+        <splunk-text-input
+            name="valueDecimals"
+            value="1">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group
+        label="Show sparkline"
+        name="showSparkline"
+        help="Show a thin sparkline at the bottom of the tile.">
+        <splunk-radio-input
+            name="showSparkline"
+            value="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+    <splunk-control-group
+        label="Show trend"
+        name="showTrend"
+        help="Show trend arrow and delta percentage to the right of the value.">
+        <splunk-radio-input
+            name="showTrend"
+            value="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+    <splunk-control-group
+        label="Hex accent"
+        name="hexAccent"
+        help="Show a small hexagonal JWST mirror accent in the top-right corner.">
+        <splunk-radio-input
+            name="hexAccent"
+            value="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+</form>
+
+<!-- ================================================================
+     THRESHOLDS
+     ================================================================ -->
+<form class="splunk-formatter-section" section-label="Thresholds">
+
+    <splunk-control-group
+        label="Warning threshold"
+        name="warningThreshold"
+        help="Value at or above this number turns the value gold. Leave blank to disable.">
+        <splunk-text-input
+            name="warningThreshold"
+            value="">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group
+        label="Critical threshold"
+        name="criticalThreshold"
+        help="Value at or above this number turns the value red with glow. Leave blank to disable.">
+        <splunk-text-input
+            name="criticalThreshold"
+            value="">
+        </splunk-text-input>
+    </splunk-control-group>
+
+</form>
+
+<!-- ================================================================
+     COLOR AND STYLE
+     ================================================================ -->
+<form class="splunk-formatter-section" section-label="Color and style">
+
+    <splunk-control-group
+        label="Normal value color"
+        name="normalColor"
+        help="Color of the value text when no threshold is breached.">
+        <splunk-text-input
+            name="normalColor"
+            value="#E8ECF1">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group
+        label="Warning color"
+        name="warningColor"
+        help="Value color when warning threshold is exceeded. Default: JWST mirror gold.">
+        <splunk-text-input
+            name="warningColor"
+            value="#D4A537">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group
+        label="Critical color"
+        name="criticalColor"
+        help="Value color when critical threshold is exceeded. A glow effect is also applied.">
+        <splunk-text-input
+            name="criticalColor"
+            value="#FF4D4D">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group
+        label="Sparkline color"
+        name="sparklineColor"
+        help="Color of the sparkline and its fill area.">
+        <splunk-text-input
+            name="sparklineColor"
+            value="#00B4D8">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group
+        label="Accent intensity"
+        name="accentIntensity"
+        help="Intensity of glow and accent effects (0 = none, 100 = maximum). Default: 50.">
+        <splunk-text-input
+            name="accentIntensity"
+            value="50">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group
+        label="Theme"
+        name="theme"
+        help="Dark theme uses void-black background tokens. Light theme uses white panel tokens.">
+        <splunk-radio-input
+            name="theme"
+            value="dark">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+</form>

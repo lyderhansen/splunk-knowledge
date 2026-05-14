@@ -1,0 +1,68 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+  <div class="control-group" label="Sensor Field" help="SPL field name for the sensor/component identifier">
+    <splunk-text-input name="display.visualizations.custom.porsche_taycan_viz.thermal_table.sensorField"
+      default="sensor">
+    </splunk-text-input>
+  </div>
+  <div class="control-group" label="Temperature Field" help="SPL field for current temperature in °C">
+    <splunk-text-input name="display.visualizations.custom.porsche_taycan_viz.thermal_table.tempField"
+      default="temp">
+    </splunk-text-input>
+  </div>
+  <div class="control-group" label="Max Temperature Field" help="SPL field for the historical maximum temperature in °C">
+    <splunk-text-input name="display.visualizations.custom.porsche_taycan_viz.thermal_table.maxTempField"
+      default="maxTemp">
+    </splunk-text-input>
+  </div>
+  <div class="control-group" label="Status Field" help="SPL field for row status — values: Normal, Warm, Hot">
+    <splunk-text-input name="display.visualizations.custom.porsche_taycan_viz.thermal_table.statusField"
+      default="status">
+    </splunk-text-input>
+  </div>
+  <div class="control-group" label="Max Rows" help="Maximum number of data rows to display (default 10)">
+    <splunk-text-input name="display.visualizations.custom.porsche_taycan_viz.thermal_table.maxRows"
+      default="10">
+    </splunk-text-input>
+  </div>
+</form>
+<form class="splunk-formatter-section" section-label="Data display">
+  <div class="control-group" label="Drilldown Token" help="Token name set when a row is clicked (e.g. selected_sensor)">
+    <splunk-text-input name="display.visualizations.custom.porsche_taycan_viz.thermal_table.tokenName"
+      default="selected_sensor">
+    </splunk-text-input>
+  </div>
+  <div class="control-group" label="Theme" help="Color theme — dark or light">
+    <splunk-radio-input name="display.visualizations.custom.porsche_taycan_viz.thermal_table.theme"
+      default="dark">
+      <option value="dark">Dark</option>
+      <option value="light">Light</option>
+    </splunk-radio-input>
+  </div>
+</form>
+<form class="splunk-formatter-section" section-label="Color and style">
+  <div class="control-group" label="Accent Color" help="Panel ambient glow accent color (hex, default #00C9A7)">
+    <splunk-color-picker name="display.visualizations.custom.porsche_taycan_viz.thermal_table.accentColor"
+      default="#00C9A7">
+    </splunk-color-picker>
+  </div>
+  <div class="control-group" label="Accent Intensity" help="Ambient glow intensity 0–100 (default 50)">
+    <splunk-text-input name="display.visualizations.custom.porsche_taycan_viz.thermal_table.accentIntensity"
+      default="50">
+    </splunk-text-input>
+  </div>
+  <div class="control-group" label="Normal Status Color" help="Dot color for Normal status (hex, default #10B981)">
+    <splunk-color-picker name="display.visualizations.custom.porsche_taycan_viz.thermal_table.normalColor"
+      default="#10B981">
+    </splunk-color-picker>
+  </div>
+  <div class="control-group" label="Warm Status Color" help="Dot color for Warm status (hex, default #F59E0B)">
+    <splunk-color-picker name="display.visualizations.custom.porsche_taycan_viz.thermal_table.warmColor"
+      default="#F59E0B">
+    </splunk-color-picker>
+  </div>
+  <div class="control-group" label="Hot Status Color" help="Dot color for Hot status (hex, default #EF4444)">
+    <splunk-color-picker name="display.visualizations.custom.porsche_taycan_viz.thermal_table.hotColor"
+      default="#EF4444">
+    </splunk-color-picker>
+  </div>
+</form>

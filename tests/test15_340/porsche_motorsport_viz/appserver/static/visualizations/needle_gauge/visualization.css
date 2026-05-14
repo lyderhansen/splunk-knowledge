@@ -1,0 +1,27 @@
+/*
+ * Porsche Motorsport Viz Pack — needle_gauge
+ *
+ * Minimal canvas container styling only.
+ * No font embedding (system stack via theme.js FONT_DATA / FONT_UI).
+ * Panel chrome (background, border, radius) is controlled by
+ * Dashboard Studio rectangle options — NOT here (vp-ref-gotchas B13, C1).
+ */
+
+/* Canvas fills the panel cell exactly */
+.needle-gauge-container,
+.needle-gauge-container canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/*
+ * Ensure the host element participates in layout correctly inside
+ * Dashboard Studio's resizable panel. overflow:hidden prevents the
+ * absolutely-positioned tooltip div from expanding the container.
+ */
+.needle-gauge-container {
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+}

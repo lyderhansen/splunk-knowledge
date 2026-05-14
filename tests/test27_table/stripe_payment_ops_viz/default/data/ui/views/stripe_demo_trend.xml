@@ -1,0 +1,29 @@
+<dashboard version="2" theme="light">
+    <label>Stripe Trend Demo</label>
+    <description>Demo of Stripe failure trend line with threshold marker</description>
+    <definition><![CDATA[
+{
+    "dataSources": {
+        "ds_trend": {
+            "type": "ds.search",
+            "options": { "query": "| inputlookup stripe_payment_ops_viz_demo_trend.csv | sort _time", "queryParameters": { "earliest": "-24h@h", "latest": "now" } },
+            "name": "Failure Trend"
+        }
+    },
+    "visualizations": {
+        "viz_trend": {
+            "type": "stripe_payment_ops_viz.stripe_trend",
+            "dataSources": { "primary": "ds_trend" },
+            "options": {}
+        }
+    },
+    "layout": {
+        "type": "absolute",
+        "options": { "width": 1920, "height": 600, "display": "auto-scale" },
+        "structure": [
+            { "item": "viz_trend", "position": { "x": 20, "y": 20, "w": 1880, "h": 560 } }
+        ]
+    }
+}
+    ]]></definition>
+</dashboard>

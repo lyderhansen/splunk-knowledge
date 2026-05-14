@@ -1,0 +1,50 @@
+<form class="splunk-formatter-section" section-label="Data Configuration">
+    <splunk-control-group label="Time Field" help="Field containing the event timestamp">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.timeField" value="_time">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Attack Type Field" help="Field containing the attack type or description">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.attackField" value="attack_type">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Severity Field" help="Field with severity level (critical/warning/info)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.severityField" value="severity">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Target Field" help="Field containing the target zone or resource">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.targetField" value="target">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Data Display">
+    <splunk-control-group label="Max Rows" help="Maximum number of events to display">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.maxRows" value="20">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show Severity Badge" help="Display severity color badge on each event">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showBadge" value="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Attack ID Field" help="Field containing the unique attack identifier for drilldown">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.attackIdField" value="attack_id">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Color and Style">
+    <splunk-control-group label="Theme" help="Auto detects dashboard theme">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto">
+            <option value="auto">Auto</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Accent Color" help="Primary accent color for headers and highlights">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.accentColor" type="custom" value="#F6821F">
+            <splunk-color>#F6821F</splunk-color>
+            <splunk-color>#6ECBF5</splunk-color>
+            <splunk-color>#A78BFA</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+</form>

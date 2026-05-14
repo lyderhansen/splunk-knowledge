@@ -1,0 +1,44 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+    <splunk-control-group label="Metric field" help="SPL field name for the KPI label">
+        <splunk-text-input name="uber_ops_viz.kpi_tile.metricField" value="metric">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Value field" help="SPL field name for the KPI value">
+        <splunk-text-input name="uber_ops_viz.kpi_tile.valueField" value="value">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Delta field" help="SPL field name for the trend delta percentage">
+        <splunk-text-input name="uber_ops_viz.kpi_tile.deltaField" value="delta">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Unit field" help="SPL field name for the unit suffix/prefix">
+        <splunk-text-input name="uber_ops_viz.kpi_tile.unitField" value="unit">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Unit position field" help="SPL field for unit placement (before/after)">
+        <splunk-text-input name="uber_ops_viz.kpi_tile.unitPositionField" value="unitPosition">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Data display">
+    <splunk-control-group label="Decimal places" help="Fixed decimal places (-1 for auto)">
+        <splunk-text-input name="uber_ops_viz.kpi_tile.decimals" value="-1">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Color and style">
+    <splunk-control-group label="Theme" help="Color theme">
+        <splunk-radio-input name="uber_ops_viz.kpi_tile.theme" value="dark">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Accent color" help="Primary accent color for the KPI glow and bar">
+        <splunk-color-picker name="uber_ops_viz.kpi_tile.accentColor" value="#06C167">
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Accent intensity" help="Glow and accent effect strength (0=off, 50=default, 100=max)">
+        <splunk-text-input name="uber_ops_viz.kpi_tile.accentIntensity" value="50">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>

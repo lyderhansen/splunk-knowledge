@@ -1,0 +1,11 @@
+_time,severity,category,message,region
+2026-05-13T08:42:00,critical,inventory,Wetsuit inventory below 30-day threshold — reorder initiated,Pacific Northwest
+2026-05-13T07:15:00,warning,sustainability,Carbon offset rate declining 8% week-over-week in Southeast region,Southeast
+2026-05-13T06:30:00,critical,inventory,Provisions & Food stock critical — 3 SKUs out of stock,Mountain West
+2026-05-12T22:10:00,warning,inventory,Fleece midlayer returns up 12% — quality review flagged,Northeast
+2026-05-12T18:45:00,info,sustainability,Pacific Northwest surpassed monthly renewable energy target,Pacific Northwest
+2026-05-12T15:20:00,warning,performance,Southwest retail conversion rate dropped below 2.1% threshold,Southwest
+2026-05-12T12:00:00,info,operations,Q2 supply chain audit completed — 94% compliance score,All Regions
+2026-05-12T09:30:00,critical,sustainability,Waste diversion rate fell below 80% target in Mountain West,Mountain West
+2026-05-11T16:45:00,warning,inventory,Footwear low-stock alerts triggered for 4 categories,Southeast
+2026-05-11T14:20:00,info,performance,Northeast region hit weekly revenue target 3 days early,Northeast

@@ -1,0 +1,5 @@
+metric,value,delta,unit
+Avg Completion Rate,73.2,2.4,%
+Avg Session Length,102,-4,min
+Bounce Rate,4.2,-0.8,%
+Repeat Viewing,34.8,5.1,%

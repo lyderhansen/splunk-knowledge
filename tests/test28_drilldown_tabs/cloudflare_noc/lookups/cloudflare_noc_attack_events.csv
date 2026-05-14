@@ -1,0 +1,13 @@
+_time,attack_type,severity,target,attack_id
+2026-05-14T09:52:14,SYN Flood (volumetric),critical,api.example.com,ATK-20260514-001
+2026-05-14T09:48:33,SQL Injection Attempt,warning,login.example.com,ATK-20260514-002
+2026-05-14T09:45:07,HTTP Flood L7,critical,cdn.example.com,ATK-20260514-003
+2026-05-14T09:41:22,DNS Amplification,warning,ns1.example.com,ATK-20260514-004
+2026-05-14T09:38:55,XSS Payload Detected,info,app.example.com,ATK-20260514-005
+2026-05-14T09:34:18,Credential Stuffing,warning,auth.example.com,ATK-20260514-006
+2026-05-14T09:30:44,UDP Flood,critical,edge-sfo.example.com,ATK-20260514-007
+2026-05-14T09:27:11,Bot Scraping Cluster,info,www.example.com,ATK-20260514-008
+2026-05-14T09:22:38,TLS Renegotiation Attack,warning,api.example.com,ATK-20260514-009
+2026-05-14T09:18:03,Slowloris L7,info,cdn.example.com,ATK-20260514-010
+2026-05-14T09:14:29,ICMP Flood,warning,edge-lhr.example.com,ATK-20260514-011
+2026-05-14T09:10:55,Path Traversal Attempt,info,app.example.com,ATK-20260514-012

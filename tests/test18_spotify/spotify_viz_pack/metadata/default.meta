@@ -1,0 +1,30 @@
+[]
+access = read : [ * ], write : [ admin, sc_admin ]
+export = system
+
+[lookups]
+export = system
+
+[visualizations/stream_kpi]
+export = system
+
+[visualizations/listening_heatmap]
+export = system
+
+[visualizations/genre_bars]
+export = system
+
+[visualizations/track_ranking]
+export = system
+
+[visualizations/artist_cards]
+export = system
+
+[visualizations/playlist_table]
+export = system
+
+[visualizations/audio_wave]
+export = system
+
+[visualizations/trend_spark]
+export = system

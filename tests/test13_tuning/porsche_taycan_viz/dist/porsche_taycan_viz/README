@@ -1,0 +1,24 @@
+Porsche Taycan Viz Pack
+======================
+
+Themed custom visualizations for Porsche Taycan EV telemetry
+dashboards. Precision instruments on dark glass panels with
+ambient glow effects.
+
+Visualizations:
+  - battery_gauge:  Segmented ring gauge for battery SOC
+  - range_kpi:      Single value tile with sparkline for range
+  - charge_gauge:   Horizontal bar gauge for charging power
+  - thermal_table:  Temperature sensor table with drilldown
+  - energy_area:    Stacked area chart for energy over time
+  - regen_donut:    Donut ring for regen vs consumption split
+
+Settings:
+  All visualizations support theme (dark/light), accentColor,
+  and accentIntensity (0-100) settings via the formatter panel.
+
+  Set panel backgroundColor to "transparent" in Dashboard Studio.
+
+Fonts:
+  Outfit (display) and JetBrains Mono (data) are embedded as
+  base64 woff2 — no external font requests.

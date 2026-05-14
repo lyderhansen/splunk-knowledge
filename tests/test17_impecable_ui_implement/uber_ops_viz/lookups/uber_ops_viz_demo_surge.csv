@@ -1,0 +1,289 @@
+hour,zone,surge
+0,Downtown,1.0
+0,Midtown,1.0
+0,Airport,1.2
+0,Uptown,1.0
+0,Waterfront,1.0
+0,Financial,1.0
+0,University,1.1
+0,Suburbs North,1.0
+0,Suburbs South,1.0
+0,Industrial,1.0
+0,Entertainment,1.3
+0,Tech Park,1.0
+1,Downtown,1.0
+1,Midtown,1.0
+1,Airport,1.1
+1,Uptown,1.0
+1,Waterfront,1.0
+1,Financial,1.0
+1,University,1.0
+1,Suburbs North,1.0
+1,Suburbs South,1.0
+1,Industrial,1.0
+1,Entertainment,1.2
+1,Tech Park,1.0
+2,Downtown,1.0
+2,Midtown,1.0
+2,Airport,1.0
+2,Uptown,1.0
+2,Waterfront,1.0
+2,Financial,1.0
+2,University,1.0
+2,Suburbs North,1.0
+2,Suburbs South,1.0
+2,Industrial,1.0
+2,Entertainment,1.1
+2,Tech Park,1.0
+3,Downtown,1.0
+3,Midtown,1.0
+3,Airport,1.0
+3,Uptown,1.0
+3,Waterfront,1.0
+3,Financial,1.0
+3,University,1.0
+3,Suburbs North,1.0
+3,Suburbs South,1.0
+3,Industrial,1.0
+3,Entertainment,1.0
+3,Tech Park,1.0
+4,Downtown,1.0
+4,Midtown,1.0
+4,Airport,1.1
+4,Uptown,1.0
+4,Waterfront,1.0
+4,Financial,1.0
+4,University,1.0
+4,Suburbs North,1.0
+4,Suburbs South,1.0
+4,Industrial,1.0
+4,Entertainment,1.0
+4,Tech Park,1.0
+5,Downtown,1.1
+5,Midtown,1.0
+5,Airport,1.3
+5,Uptown,1.0
+5,Waterfront,1.0
+5,Financial,1.1
+5,University,1.0
+5,Suburbs North,1.0
+5,Suburbs South,1.0
+5,Industrial,1.1
+5,Entertainment,1.0
+5,Tech Park,1.0
+6,Downtown,1.3
+6,Midtown,1.2
+6,Airport,1.5
+6,Uptown,1.1
+6,Waterfront,1.0
+6,Financial,1.4
+6,University,1.1
+6,Suburbs North,1.1
+6,Suburbs South,1.0
+6,Industrial,1.2
+6,Entertainment,1.0
+6,Tech Park,1.2
+7,Downtown,1.6
+7,Midtown,1.5
+7,Airport,1.8
+7,Uptown,1.3
+7,Waterfront,1.1
+7,Financial,1.7
+7,University,1.4
+7,Suburbs North,1.3
+7,Suburbs South,1.1
+7,Industrial,1.3
+7,Entertainment,1.0
+7,Tech Park,1.5
+8,Downtown,2.1
+8,Midtown,1.9
+8,Airport,2.3
+8,Uptown,1.5
+8,Waterfront,1.2
+8,Financial,2.2
+8,University,1.6
+8,Suburbs North,1.4
+8,Suburbs South,1.2
+8,Industrial,1.4
+8,Entertainment,1.0
+8,Tech Park,1.8
+9,Downtown,1.8
+9,Midtown,1.6
+9,Airport,2.0
+9,Uptown,1.3
+9,Waterfront,1.1
+9,Financial,1.9
+9,University,1.5
+9,Suburbs North,1.2
+9,Suburbs South,1.1
+9,Industrial,1.2
+9,Entertainment,1.0
+9,Tech Park,1.6
+10,Downtown,1.4
+10,Midtown,1.3
+10,Airport,1.6
+10,Uptown,1.1
+10,Waterfront,1.1
+10,Financial,1.4
+10,University,1.2
+10,Suburbs North,1.1
+10,Suburbs South,1.0
+10,Industrial,1.1
+10,Entertainment,1.1
+10,Tech Park,1.3
+11,Downtown,1.3
+11,Midtown,1.2
+11,Airport,1.4
+11,Uptown,1.1
+11,Waterfront,1.1
+11,Financial,1.3
+11,University,1.2
+11,Suburbs North,1.0
+11,Suburbs South,1.0
+11,Industrial,1.0
+11,Entertainment,1.2
+11,Tech Park,1.2
+12,Downtown,1.5
+12,Midtown,1.4
+12,Airport,1.5
+12,Uptown,1.2
+12,Waterfront,1.2
+12,Financial,1.3
+12,University,1.4
+12,Suburbs North,1.1
+12,Suburbs South,1.1
+12,Industrial,1.0
+12,Entertainment,1.3
+12,Tech Park,1.2
+13,Downtown,1.4
+13,Midtown,1.3
+13,Airport,1.4
+13,Uptown,1.1
+13,Waterfront,1.1
+13,Financial,1.2
+13,University,1.3
+13,Suburbs North,1.1
+13,Suburbs South,1.0
+13,Industrial,1.0
+13,Entertainment,1.2
+13,Tech Park,1.2
+14,Downtown,1.3
+14,Midtown,1.2
+14,Airport,1.3
+14,Uptown,1.1
+14,Waterfront,1.1
+14,Financial,1.2
+14,University,1.2
+14,Suburbs North,1.0
+14,Suburbs South,1.0
+14,Industrial,1.0
+14,Entertainment,1.1
+14,Tech Park,1.1
+15,Downtown,1.3
+15,Midtown,1.2
+15,Airport,1.4
+15,Uptown,1.1
+15,Waterfront,1.1
+15,Financial,1.3
+15,University,1.2
+15,Suburbs North,1.1
+15,Suburbs South,1.0
+15,Industrial,1.0
+15,Entertainment,1.2
+15,Tech Park,1.2
+16,Downtown,1.5
+16,Midtown,1.4
+16,Airport,1.6
+16,Uptown,1.2
+16,Waterfront,1.2
+16,Financial,1.5
+16,University,1.3
+16,Suburbs North,1.2
+16,Suburbs South,1.1
+16,Industrial,1.1
+16,Entertainment,1.3
+16,Tech Park,1.3
+17,Downtown,1.8
+17,Midtown,1.7
+17,Airport,1.9
+17,Uptown,1.4
+17,Waterfront,1.3
+17,Financial,1.8
+17,University,1.5
+17,Suburbs North,1.3
+17,Suburbs South,1.2
+17,Industrial,1.2
+17,Entertainment,1.5
+17,Tech Park,1.6
+18,Downtown,2.2
+18,Midtown,2.0
+18,Airport,2.4
+18,Uptown,1.6
+18,Waterfront,1.4
+18,Financial,2.1
+18,University,1.7
+18,Suburbs North,1.5
+18,Suburbs South,1.3
+18,Industrial,1.3
+18,Entertainment,1.8
+18,Tech Park,1.8
+19,Downtown,2.4
+19,Midtown,2.2
+19,Airport,2.5
+19,Uptown,1.7
+19,Waterfront,1.5
+19,Financial,2.0
+19,University,1.5
+19,Suburbs North,1.4
+19,Suburbs South,1.2
+19,Industrial,1.2
+19,Entertainment,2.1
+19,Tech Park,1.6
+20,Downtown,2.1
+20,Midtown,1.9
+20,Airport,2.2
+20,Uptown,1.5
+20,Waterfront,1.3
+20,Financial,1.7
+20,University,1.3
+20,Suburbs North,1.2
+20,Suburbs South,1.1
+20,Industrial,1.1
+20,Entertainment,2.3
+20,Tech Park,1.4
+21,Downtown,1.8
+21,Midtown,1.6
+21,Airport,1.9
+21,Uptown,1.3
+21,Waterfront,1.2
+21,Financial,1.4
+21,University,1.2
+21,Suburbs North,1.1
+21,Suburbs South,1.0
+21,Industrial,1.0
+21,Entertainment,2.0
+21,Tech Park,1.2
+22,Downtown,1.5
+22,Midtown,1.3
+22,Airport,1.6
+22,Uptown,1.1
+22,Waterfront,1.1
+22,Financial,1.2
+22,University,1.1
+22,Suburbs North,1.0
+22,Suburbs South,1.0
+22,Industrial,1.0
+22,Entertainment,1.7
+22,Tech Park,1.1
+23,Downtown,1.2
+23,Midtown,1.1
+23,Airport,1.4
+23,Uptown,1.0
+23,Waterfront,1.0
+23,Financial,1.0
+23,University,1.0
+23,Suburbs North,1.0
+23,Suburbs South,1.0
+23,Industrial,1.0
+23,Entertainment,1.5
+23,Tech Park,1.0

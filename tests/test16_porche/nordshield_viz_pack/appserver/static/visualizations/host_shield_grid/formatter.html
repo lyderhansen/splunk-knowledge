@@ -1,0 +1,91 @@
+<form class="splunk-formatter-section" section-label="Data fields">
+    <splunk-control-group label="Hostname field" help="SPL field containing the host name or identifier">
+        <splunk-text-input name="nordshield_viz_pack.host_shield_grid.hostnameField" default="hostname">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Status field" help="SPL field containing host status (healthy, degraded, warning, critical, offline)">
+        <splunk-text-input name="nordshield_viz_pack.host_shield_grid.statusField" default="status">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="OS field" help="SPL field containing the operating system name for tooltip display">
+        <splunk-text-input name="nordshield_viz_pack.host_shield_grid.osField" default="os">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Last seen field" help="SPL field containing last-seen timestamp or relative time string">
+        <splunk-text-input name="nordshield_viz_pack.host_shield_grid.lastSeenField" default="last_seen">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+    <splunk-control-group label="Healthy color" help="Cell fill color for hosts with healthy status">
+        <splunk-color-picker name="nordshield_viz_pack.host_shield_grid.colorHealthy" default="#00E5CC">
+            <splunk-color token="#00E5CC"></splunk-color>
+            <splunk-color token="#10B981"></splunk-color>
+            <splunk-color token="#22C55E"></splunk-color>
+            <splunk-color token="#4ADE80"></splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Degraded color" help="Cell fill color for hosts with degraded status">
+        <splunk-color-picker name="nordshield_viz_pack.host_shield_grid.colorDegraded" default="#38BDF8">
+            <splunk-color token="#38BDF8"></splunk-color>
+            <splunk-color token="#60A5FA"></splunk-color>
+            <splunk-color token="#818CF8"></splunk-color>
+            <splunk-color token="#93C5FD"></splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Warning color" help="Cell fill color for hosts with warning status">
+        <splunk-color-picker name="nordshield_viz_pack.host_shield_grid.colorWarning" default="#FFB020">
+            <splunk-color token="#FFB020"></splunk-color>
+            <splunk-color token="#F59E0B"></splunk-color>
+            <splunk-color token="#EAB308"></splunk-color>
+            <splunk-color token="#FB923C"></splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Critical color" help="Cell fill color for hosts with critical status — also used for glow effect">
+        <splunk-color-picker name="nordshield_viz_pack.host_shield_grid.colorCritical" default="#FFB020">
+            <splunk-color token="#FFB020"></splunk-color>
+            <splunk-color token="#F97316"></splunk-color>
+            <splunk-color token="#EF4444"></splunk-color>
+            <splunk-color token="#DC2626"></splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Offline color" help="Cell fill color for offline hosts (drawn with a border outline)">
+        <splunk-color-picker name="nordshield_viz_pack.host_shield_grid.colorOffline" default="#1E293B">
+            <splunk-color token="#1E293B"></splunk-color>
+            <splunk-color token="#0F172A"></splunk-color>
+            <splunk-color token="#1F2937"></splunk-color>
+            <splunk-color token="#111827"></splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Layout">
+    <splunk-control-group label="Cell gap (px)" help="Pixel gap between cells — default 3">
+        <splunk-text-input name="nordshield_viz_pack.host_shield_grid.cellGap" default="3">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Cell corner radius (px)" help="Corner radius applied to each cell square — 0 for sharp corners, 2 for subtle rounding">
+        <splunk-text-input name="nordshield_viz_pack.host_shield_grid.cellRadius" default="2">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Sort by severity" help="When enabled, critical hosts appear top-left and healthy hosts bottom-right">
+        <splunk-radio-input name="nordshield_viz_pack.host_shield_grid.sortBySeverity" default="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show summary strip" help="Show the status count summary bar across the top of the viz">
+        <splunk-radio-input name="nordshield_viz_pack.host_shield_grid.showSummary" default="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Effects">
+    <splunk-control-group label="Accent intensity" help="Controls the glow strength on critical cells — 0 disables glow, 100 is maximum intensity">
+        <splunk-text-input name="nordshield_viz_pack.host_shield_grid.accentIntensity" default="50">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>

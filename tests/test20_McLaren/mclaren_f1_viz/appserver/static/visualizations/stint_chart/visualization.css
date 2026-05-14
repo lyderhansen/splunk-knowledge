@@ -1,0 +1,18 @@
+/* McLaren F1 Telemetry — stint_chart visualization styles */
+
+/* Container must be positioned for the absolute tooltip to work */
+.splunk-view .custom-result-container,
+.custom-result-container {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+}
+
+/* Canvas fills the full container */
+.splunk-view .custom-result-container canvas,
+.custom-result-container canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}

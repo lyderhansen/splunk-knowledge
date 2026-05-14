@@ -1,0 +1,48 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+    <splunk-control-group label="Rank field" help="SPL field for the route ranking number">
+        <splunk-text-input name="uber_ops_viz.routes_table.rankField" value="rank">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Route field" help="SPL field for the route name">
+        <splunk-text-input name="uber_ops_viz.routes_table.routeField" value="route">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Trip count field" help="SPL field for the number of trips">
+        <splunk-text-input name="uber_ops_viz.routes_table.tripCountField" value="trip_count">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Avg fare field" help="SPL field for the average fare amount">
+        <splunk-text-input name="uber_ops_viz.routes_table.avgFareField" value="avg_fare">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Avg duration field" help="SPL field for the average trip duration">
+        <splunk-text-input name="uber_ops_viz.routes_table.avgDurationField" value="avg_duration">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Satisfaction field" help="SPL field for the satisfaction rate">
+        <splunk-text-input name="uber_ops_viz.routes_table.satisfactionField" value="satisfaction">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Data display">
+    <splunk-control-group label="Rows per page" help="Number of rows per page (default 10)">
+        <splunk-text-input name="uber_ops_viz.routes_table.rowsPerPage" value="10">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Color and style">
+    <splunk-control-group label="Theme" help="Color theme">
+        <splunk-radio-input name="uber_ops_viz.routes_table.theme" value="dark">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Accent color" help="Primary accent color for headers and highlights">
+        <splunk-color-picker name="uber_ops_viz.routes_table.accentColor" value="#06C167">
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Accent intensity" help="Glow effect strength (0=off, 50=default, 100=max)">
+        <splunk-text-input name="uber_ops_viz.routes_table.accentIntensity" value="50">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>

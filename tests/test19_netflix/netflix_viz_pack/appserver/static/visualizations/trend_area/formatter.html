@@ -1,0 +1,50 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+    <splunk-control-group label="Label field" help="SPL field for x-axis labels">
+        <splunk-text-input name="netflix_viz_pack.trend_area.labelField" value="week_number">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Series fields" help="Comma-separated SPL fields for each data series">
+        <splunk-text-input name="netflix_viz_pack.trend_area.series" value="new_signups,churned">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Series labels" help="Comma-separated display names for each series">
+        <splunk-text-input name="netflix_viz_pack.trend_area.seriesLabels" value="New Signups,Churned">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+    <splunk-control-group label="Show grid" help="Show horizontal grid lines">
+        <splunk-radio-input name="netflix_viz_pack.trend_area.showGrid" value="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+    <splunk-control-group label="Theme" help="Color scheme for the visualization">
+        <splunk-radio-input name="netflix_viz_pack.trend_area.theme" value="dark" default="">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Accent color" help="Primary series color">
+        <splunk-color-picker name="netflix_viz_pack.trend_area.accentColor"
+            type="custom" value="#E50914">
+            <splunk-color>#E50914</splunk-color>
+            <splunk-color>#B20710</splunk-color>
+            <splunk-color>#46D369</splunk-color>
+            <splunk-color>#F0B429</splunk-color>
+            <splunk-color>#F5F5F1</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Series colors" help="Comma-separated hex colors for each series">
+        <splunk-text-input name="netflix_viz_pack.trend_area.colors" value="#E50914,#5C5C5C">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Accent intensity" help="Crosshair and glow effect strength (0-100)">
+        <splunk-text-input name="netflix_viz_pack.trend_area.accentIntensity" value="50">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>

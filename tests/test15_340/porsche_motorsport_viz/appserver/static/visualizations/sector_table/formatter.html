@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    color: #CCCCCC;
+    background: #1A1A1A;
+    margin: 0;
+    padding: 8px 12px 16px;
+  }
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.40);
+    margin: 16px 0 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding-bottom: 4px;
+  }
+  .form-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 7px;
+    gap: 8px;
+  }
+  .form-row label {
+    color: rgba(255,255,255,0.70);
+    flex: 0 0 auto;
+    min-width: 110px;
+    font-size: 11px;
+  }
+  .form-row input[type="text"],
+  .form-row select {
+    flex: 1 1 auto;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #FFFFFF;
+    font-size: 11px;
+    padding: 3px 6px;
+    border-radius: 3px;
+    min-width: 0;
+  }
+  .form-row input[type="text"]:focus,
+  .form-row select:focus {
+    outline: none;
+    border-color: rgba(213,0,28,0.60);
+  }
+  .form-row input[type="range"] {
+    flex: 1 1 auto;
+    accent-color: #D5001C;
+  }
+  .form-row input[type="color"] {
+    flex: 0 0 auto;
+    width: 36px;
+    height: 24px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 3px;
+    background: none;
+    cursor: pointer;
+    padding: 1px;
+  }
+  .range-value {
+    flex: 0 0 28px;
+    text-align: right;
+    font-size: 11px;
+    color: rgba(255,255,255,0.50);
+  }
+  select option {
+    background: #2A2A2A;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- DATA FIELDS                                                   -->
+<!-- ============================================================ -->
+<div class="section-label">Data Fields</div>
+
+<div class="form-row">
+  <label>Driver field</label>
+  <input type="text" name="driverField" placeholder="driver" />
+</div>
+<div class="form-row">
+  <label>S1 field</label>
+  <input type="text" name="s1Field" placeholder="s1" />
+</div>
+<div class="form-row">
+  <label>S2 field</label>
+  <input type="text" name="s2Field" placeholder="s2" />
+</div>
+<div class="form-row">
+  <label>S3 field</label>
+  <input type="text" name="s3Field" placeholder="s3" />
+</div>
+<div class="form-row">
+  <label>Total field</label>
+  <input type="text" name="totalField" placeholder="total" />
+</div>
+<div class="form-row">
+  <label>S1 delta field</label>
+  <input type="text" name="s1DeltaField" placeholder="s1_delta" />
+</div>
+<div class="form-row">
+  <label>S2 delta field</label>
+  <input type="text" name="s2DeltaField" placeholder="s2_delta" />
+</div>
+<div class="form-row">
+  <label>S3 delta field</label>
+  <input type="text" name="s3DeltaField" placeholder="s3_delta" />
+</div>
+<div class="form-row">
+  <label>Total delta field</label>
+  <input type="text" name="totalDeltaField" placeholder="total_delta" />
+</div>
+<div class="form-row">
+  <label>Position field</label>
+  <input type="text" name="positionField" placeholder="position" />
+</div>
+
+<!-- ============================================================ -->
+<!-- DISPLAY                                                       -->
+<!-- ============================================================ -->
+<div class="section-label">Display</div>
+
+<div class="form-row">
+  <label>Theme</label>
+  <select name="theme">
+    <option value="dark">Dark</option>
+    <option value="light">Light</option>
+  </select>
+</div>
+<div class="form-row">
+  <label>Reference label</label>
+  <input type="text" name="referenceLabel" placeholder="e.g. Best lap" />
+</div>
+
+<!-- ============================================================ -->
+<!-- COLOR AND STYLE                                               -->
+<!-- ============================================================ -->
+<div class="section-label">Color and Style</div>
+
+<div class="form-row">
+  <label>Best sector color</label>
+  <input type="color" name="bestColor" value="#A855F7" />
+</div>
+<div class="form-row">
+  <label>Improved color</label>
+  <input type="color" name="improvedColor" value="#22C55E" />
+</div>
+<div class="form-row">
+  <label>Slower color</label>
+  <input type="color" name="slowerColor" value="#FFC907" />
+</div>
+<div class="form-row">
+  <label>Accent intensity</label>
+  <input type="range" name="accentIntensity" min="0" max="100" value="50"
+         oninput="this.nextElementSibling.textContent = this.value" />
+  <span class="range-value">50</span>
+</div>
+
+</body>
+</html>

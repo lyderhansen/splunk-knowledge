@@ -1,0 +1,67 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+
+    <splunk-control-group label="Time field" help="SPL field name for the message timestamp (e.g. _time). Used to sort messages newest-first and display HH:MM:SS">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.timeField" value="_time">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Driver field" help="SPL field name for the driver name — shown as an accent-colored badge and used as the drilldown click.name token">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.driverField" value="driver">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Message field" help="SPL field name for the radio message text — the main content of each row">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.messageField" value="message">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Priority field" help="SPL field name for message priority. Accepted values: critical (red), warning (orange), info (blue)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.priorityField" value="priority">
+        </splunk-text-input>
+    </splunk-control-group>
+
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+
+    <splunk-control-group label="Maximum messages" help="Maximum number of messages to show. Messages beyond this limit are summarised by a footer count indicator">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.maxMessages" value="20">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Show header" help="Show or hide the TEAM RADIO label at the top of the panel">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showHeader" value="true">
+            <option value="true">Show</option>
+            <option value="false">Hide</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+
+    <splunk-control-group label="Theme" help="Color scheme — dark for pitwall/carbon aesthetic, light for presentation mode">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.theme" value="dark">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Accent color" help="Color used for the driver badge fill and border — default is McLaren papaya orange">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.accentColor" type="custom" value="#FF8000">
+            <splunk-color>#FF8000</splunk-color>
+            <splunk-color>#47C7FC</splunk-color>
+            <splunk-color>#FF3333</splunk-color>
+            <splunk-color>#00D26A</splunk-color>
+            <splunk-color>#FFD700</splunk-color>
+            <splunk-color>#A855F7</splunk-color>
+            <splunk-color>#E8E8E8</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+
+    <splunk-control-group label="Accent intensity" help="Strength of the red glow on critical-priority messages. Range 0 (off) to 100 (maximum). Default 50">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.accentIntensity" value="50">
+        </splunk-text-input>
+    </splunk-control-group>
+
+</form>

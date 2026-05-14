@@ -1,0 +1,5 @@
+label,value,unit,trend,sparkline
+Active Players,3847291,,+12.3%,"3201000,3340000,3502000,3610000,3720000,3847291"
+Avg Match Latency,42,ms,-2.1%,"48,46,45,44,43,42"
+Queue Time,1.8,min,+0.3%,"1.5,1.6,1.7,1.6,1.7,1.8"
+Active Incidents,3,,-1,"5,4,4,3,3,3"

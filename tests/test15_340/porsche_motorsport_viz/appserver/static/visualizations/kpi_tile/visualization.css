@@ -1,0 +1,10 @@
+/* Porsche Motorsport Viz Pack — KPI Tile */
+/* Canvas fills the full cell; no font embedding needed (system fonts only). */
+
+.splunk-view .shared-reportviewer canvas,
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: default;
+}

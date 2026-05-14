@@ -1,0 +1,54 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+    <splunk-control-group label="Countdown field" help="SPL field containing the countdown value (T-HH:MM:SS, HH:MM:SS, or seconds as a number)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.valueField" value="countdown">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Label field" help="SPL field for the text displayed below the countdown (e.g. TERMINAL COUNTDOWN)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.labelField" value="label">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Phase field" help="SPL field for the mission phase badge shown in the top-right corner">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.phaseField" value="phase">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+    <splunk-control-group label="Show glow" help="Enable the blue DATA GLOW halo behind the countdown digits">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showGlow" value="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show vignette" help="Darken the panel edges for a deep-space immersive feel">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showVignette" value="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show accent lines" help="Draw subtle dashed crosshair lines behind the digits at 6% opacity">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showAccentLines" value="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+    <splunk-control-group label="Theme" help="Dark uses deep space (#060910) background; Light uses a bright instrument-panel background">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.theme" value="dark">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Accent color" help="Color used for ambient light, crosshair lines, phase badge border, and tooltip border">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.accentColor" type="custom" value="#0088CC">
+            <splunk-color>#0088CC</splunk-color>
+            <splunk-color>#00B8D4</splunk-color>
+            <splunk-color>#005F8E</splunk-color>
+            <splunk-color>#FF6B35</splunk-color>
+            <splunk-color>#00C853</splunk-color>
+            <splunk-color>#FF1744</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+</form>

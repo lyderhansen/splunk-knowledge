@@ -1,0 +1,79 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+
+    <splunk-control-group label="Track name field" help="SPL field containing the track name">
+        <splunk-text-input name="spotify_viz_pack.track_ranking.trackField" default="track_name">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Artist field" help="SPL field containing the artist name">
+        <splunk-text-input name="spotify_viz_pack.track_ranking.artistField" default="artist">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Streams field" help="SPL field containing the stream count (numeric)">
+        <splunk-text-input name="spotify_viz_pack.track_ranking.streamsField" default="streams">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Duration field" help="SPL field containing track duration (e.g. 3:22)">
+        <splunk-text-input name="spotify_viz_pack.track_ranking.durationField" default="duration">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Genre field" help="SPL field containing genre name (drives colored dot)">
+        <splunk-text-input name="spotify_viz_pack.track_ranking.genreField" default="genre">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Max rows" help="Maximum number of tracks to display (default: 10)">
+        <splunk-text-input name="spotify_viz_pack.track_ranking.maxRows" default="10">
+        </splunk-text-input>
+    </splunk-control-group>
+
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+
+    <splunk-control-group label="Show duration badge" help="Display the rounded duration pill on each row">
+        <splunk-radio-input name="spotify_viz_pack.track_ranking.showDuration" default="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Show genre dot" help="Display the colored genre indicator dot on each row">
+        <splunk-radio-input name="spotify_viz_pack.track_ranking.showGenre" default="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+
+    <splunk-control-group label="Theme" help="Dark or light panel background mode">
+        <splunk-radio-input name="spotify_viz_pack.track_ranking.theme" default="dark">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Accent color" help="Primary accent color used for top ranks and bar gradient start">
+        <splunk-color-picker name="spotify_viz_pack.track_ranking.accentColor" default="#1DB954">
+            <splunk-color value="#1DB954" label="Spotify Green"></splunk-color>
+            <splunk-color value="#14B8A6" label="Teal"></splunk-color>
+            <splunk-color value="#8B5CF6" label="Purple"></splunk-color>
+            <splunk-color value="#E91E8A" label="Pink"></splunk-color>
+            <splunk-color value="#3B82F6" label="Blue"></splunk-color>
+            <splunk-color value="#F59E0B" label="Amber"></splunk-color>
+            <splunk-color value="#F97066" label="Coral"></splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+
+    <splunk-control-group label="Accent intensity" help="Glow strength on top-ranked bars (0 = off, 100 = maximum)">
+        <splunk-range-input name="spotify_viz_pack.track_ranking.accentIntensity" default="50" min="0" max="100" step="5">
+        </splunk-range-input>
+    </splunk-control-group>
+
+</form>

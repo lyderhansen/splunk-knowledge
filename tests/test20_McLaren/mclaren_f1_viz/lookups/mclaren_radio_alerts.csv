@@ -1,0 +1,21 @@
+_time,driver,message,priority
+2024-03-10 15:42:18,Norris,"Box box box. Medium tyres ready.",critical
+2024-03-10 15:41:52,Piastri,"Oscar your pace is strong. Stay out.",info
+2024-03-10 15:40:30,Verstappen,"I'm losing rear grip. These hards are gone.",warning
+2024-03-10 15:39:15,Norris,"Gap to Verstappen is 0.2. Push now.",critical
+2024-03-10 15:38:44,Hamilton,"We think rain in 10 laps. Standby.",warning
+2024-03-10 15:37:22,Leclerc,"Tyres are overheating. Manage please.",warning
+2024-03-10 15:36:08,Piastri,"DRS enabled. You have DRS.",info
+2024-03-10 15:35:51,Russell,"Safety car. Delta positive. Good job.",critical
+2024-03-10 15:34:30,Norris,"Purple sector 1. Personal best.",info
+2024-03-10 15:33:18,Sainz,"We are Plan B. Box this lap.",critical
+2024-03-10 15:32:45,Alonso,"Fernando pace is good. P8 is yours.",info
+2024-03-10 15:31:12,Gasly,"Track limits warning. Turn 9.",warning
+2024-03-10 15:30:28,Verstappen,"Understood. I will push.",info
+2024-03-10 15:29:55,Norris,"Fastest lap. 1:21.584.",info
+2024-03-10 15:28:40,Piastri,"Blue flags ahead. Backmarkers in sector 2.",warning
+2024-03-10 15:27:18,Hamilton,"Copy. Switch to engine mode 8.",info
+2024-03-10 15:26:05,Leclerc,"Box confirmed. Hards ready.",critical
+2024-03-10 15:25:30,Stroll,"Five second penalty. Unsafe release.",critical
+2024-03-10 15:24:12,Norris,"Lando you are fastest on track.",info
+2024-03-10 15:23:45,Russell,"VSC ending. VSC ending.",warning

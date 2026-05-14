@@ -1,0 +1,384 @@
+{
+  "title": "REMA 1000 — Security Operations (NOC Wall)",
+  "description": "Live SOC overview for the NOC wall display. Severity buckets, geographic origin, top attackers, MITRE ATTACK pattern, and high-severity event feed.",
+  "theme": "dark",
+  "dataSources": {
+    "ds_crit": {
+      "type": "ds.search",
+      "name": "Critical events trend",
+      "options": {
+        "query": "| makeresults count=60 | streamstats count as i | eval _time = relative_time(now(), \"-\".(60-i).\"m\") | eval critical_events = max(0, round(15 + 4*sin(i/8) + 2*sin(i/3))) | sort _time | table _time critical_events",
+        "queryParameters": { "earliest": "-1h", "latest": "now" },
+        "refresh": "60s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_high": {
+      "type": "ds.search",
+      "name": "High severity trend",
+      "options": {
+        "query": "| makeresults count=60 | streamstats count as i | eval _time = relative_time(now(), \"-\".(60-i).\"m\") | eval high_events = max(0, round(40 + 8*sin(i/6) + 4*sin(i/2))) | sort _time | table _time high_events",
+        "queryParameters": { "earliest": "-1h", "latest": "now" },
+        "refresh": "60s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_med": {
+      "type": "ds.search",
+      "name": "Medium severity trend",
+      "options": {
+        "query": "| makeresults count=60 | streamstats count as i | eval _time = relative_time(now(), \"-\".(60-i).\"m\") | eval medium_events = max(0, round(105 + 12*sin(i/7) + 5*cos(i/3))) | sort _time | table _time medium_events",
+        "queryParameters": { "earliest": "-1h", "latest": "now" },
+        "refresh": "60s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_low": {
+      "type": "ds.search",
+      "name": "Low severity trend",
+      "options": {
+        "query": "| makeresults count=60 | streamstats count as i | eval _time = relative_time(now(), \"-\".(60-i).\"m\") | eval low_events = max(0, round(870 + 30*sin(i/9) + 10*sin(i/4))) | sort _time | table _time low_events",
+        "queryParameters": { "earliest": "-1h", "latest": "now" },
+        "refresh": "60s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_total": {
+      "type": "ds.search",
+      "name": "Total events trend",
+      "options": {
+        "query": "| makeresults count=60 | streamstats count as i | eval _time = relative_time(now(), \"-\".(60-i).\"m\") | eval total_events = max(0, round(1030 + 50*sin(i/8) + 15*cos(i/3))) | sort _time | table _time total_events",
+        "queryParameters": { "earliest": "-1h", "latest": "now" },
+        "refresh": "60s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_geo_origin": {
+      "type": "ds.search",
+      "name": "Geographic origin of threats",
+      "options": {
+        "query": "| makeresults | eval lat=59.9, lon=10.7, city=\"Oslo\", events=145, country=\"Norway\" | append [| makeresults | eval lat=60.39, lon=5.32, city=\"Bergen\", events=89, country=\"Norway\"] | append [| makeresults | eval lat=63.43, lon=10.39, city=\"Trondheim\", events=62, country=\"Norway\"] | append [| makeresults | eval lat=58.97, lon=5.73, city=\"Stavanger\", events=45, country=\"Norway\"] | append [| makeresults | eval lat=39.9, lon=116.4, city=\"Beijing\", events=187, country=\"China\"] | append [| makeresults | eval lat=55.75, lon=37.62, city=\"Moscow\", events=156, country=\"Russia\"] | append [| makeresults | eval lat=52.52, lon=13.40, city=\"Berlin\", events=23, country=\"Germany\"] | append [| makeresults | eval lat=51.51, lon=-0.13, city=\"London\", events=68, country=\"United Kingdom\"] | append [| makeresults | eval lat=40.71, lon=-74.0, city=\"New York\", events=94, country=\"United States\"] | append [| makeresults | eval lat=22.32, lon=114.17, city=\"Hong Kong\", events=121, country=\"China\"] | append [| makeresults | eval lat=43.65, lon=-79.38, city=\"Toronto\", events=37, country=\"Canada\"] | append [| makeresults | eval lat=-23.55, lon=-46.63, city=\"Sao Paulo\", events=52, country=\"Brazil\"] | table lat lon city events country",
+        "queryParameters": { "earliest": "-24h", "latest": "now" },
+        "refresh": "120s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_top_attackers": {
+      "type": "ds.search",
+      "name": "Top attackers by source IP",
+      "options": {
+        "query": "| makeresults | eval src_ip=\"195.211.4.18\", attacks=324 | append [| makeresults | eval src_ip=\"202.108.7.99\", attacks=287] | append [| makeresults | eval src_ip=\"103.24.155.40\", attacks=201] | append [| makeresults | eval src_ip=\"88.221.93.16\", attacks=142] | append [| makeresults | eval src_ip=\"45.142.122.71\", attacks=98] | append [| makeresults | eval src_ip=\"176.55.31.207\", attacks=76] | append [| makeresults | eval src_ip=\"217.144.10.85\", attacks=54] | sort - attacks | table src_ip attacks",
+        "queryParameters": { "earliest": "-24h", "latest": "now" },
+        "refresh": "60s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_attack_pattern": {
+      "type": "ds.search",
+      "name": "MITRE ATTACK technique pattern",
+      "options": {
+        "query": "| makeresults | eval tactic=\"Initial Access\", technique=\"T1078\", attempts=45 | append [| makeresults | eval tactic=\"Initial Access\", technique=\"T1133\", attempts=23] | append [| makeresults | eval tactic=\"Initial Access\", technique=\"T1190\", attempts=18] | append [| makeresults | eval tactic=\"Execution\", technique=\"T1059\", attempts=67] | append [| makeresults | eval tactic=\"Execution\", technique=\"T1204\", attempts=12] | append [| makeresults | eval tactic=\"Persistence\", technique=\"T1098\", attempts=8] | append [| makeresults | eval tactic=\"Persistence\", technique=\"T1136\", attempts=15] | append [| makeresults | eval tactic=\"Credential Access\", technique=\"T1110\", attempts=89] | append [| makeresults | eval tactic=\"Credential Access\", technique=\"T1003\", attempts=34] | append [| makeresults | eval tactic=\"Lateral Movement\", technique=\"T1021\", attempts=22] | append [| makeresults | eval tactic=\"Impact\", technique=\"T1486\", attempts=4] | append [| makeresults | eval tactic=\"Impact\", technique=\"T1490\", attempts=2] | table tactic technique attempts",
+        "queryParameters": { "earliest": "-24h", "latest": "now" },
+        "refresh": "120s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_live_feed": {
+      "type": "ds.search",
+      "name": "Live high severity event feed",
+      "options": {
+        "query": "| makeresults count=12 | streamstats count as i | eval _time = relative_time(now(), \"-\".(i*7).\"s\") | eval severity = case(i==1, \"CRIT\", i==2, \"HIGH\", i==3, \"HIGH\", i==4, \"MED\", i==5, \"MED\", i==6, \"HIGH\", i==7, \"MED\", i==8, \"CRIT\", i==9, \"MED\", i==10, \"HIGH\", i==11, \"MED\", true(), \"MED\") | eval host = case(i==1, \"payroll-svc-3\", i==2, \"bastion-eu-1\", i==3, \"payroll-svc\", i==4, \"store-1247-pos\", i==5, \"store-0884-pos\", i==6, \"vpn-gw-no-1\", i==7, \"store-2048-pos\", i==8, \"backup-srv-2\", i==9, \"store-0451-pos\", i==10, \"bastion-no-2\", i==11, \"store-1893-pos\", true(), \"store-0322-pos\") | eval mitre = case(i==1, \"T1486\", i==2, \"T1110\", i==3, \"T1078\", i==4, \"T1133\", i==5, \"T1059\", i==6, \"T1190\", i==7, \"T1059\", i==8, \"T1490\", i==9, \"T1204\", i==10, \"T1110\", i==11, \"T1133\", true(), \"T1059\") | eval description = case(i==1, \"Data Encrypted for Impact\", i==2, \"Brute Force\", i==3, \"Valid Accounts\", i==4, \"External Remote Services\", i==5, \"Command and Scripting Interpreter\", i==6, \"Exploit Public-Facing Application\", i==7, \"Command and Scripting Interpreter\", i==8, \"Inhibit System Recovery\", i==9, \"User Execution\", i==10, \"Brute Force\", i==11, \"External Remote Services\", true(), \"Command and Scripting Interpreter\") | eval _raw = severity . \"  \" . strftime(_time, \"%H:%M:%S\") . \"  \" . host . \"  \" . mitre . \"  \" . description | sort - _time | table _time _raw severity host mitre description",
+        "queryParameters": { "earliest": "-5m", "latest": "now" },
+        "refresh": "30s",
+        "refreshType": "delay"
+      }
+    }
+  },
+  "visualizations": {
+    "viz_brand_band_bg": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#E2231A",
+        "fillOpacity": 1.0,
+        "strokeColor": "transparent",
+        "rx": 0
+      }
+    },
+    "viz_brand_band_logo": {
+      "type": "splunk.markdown",
+      "options": {
+        "backgroundColor": "transparent",
+        "fontColor": "#FFFFFF",
+        "fontFamily": "Splunk Data Sans",
+        "fontSize": "extraLarge",
+        "markdown": "## REMA 1000"
+      }
+    },
+    "viz_brand_band_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "backgroundColor": "transparent",
+        "fontColor": "#FFFFFF",
+        "fontFamily": "Splunk Data Sans",
+        "fontSize": "large",
+        "markdown": "### SECURITY OPERATIONS — LIVE"
+      }
+    },
+    "viz_brand_band_status": {
+      "type": "splunk.markdown",
+      "options": {
+        "backgroundColor": "transparent",
+        "fontColor": "#FFFFFF",
+        "fontFamily": "Splunk Platform Mono",
+        "fontSize": "default",
+        "markdown": "**STATUS** ACTIVE  \n**REFRESH** 60s"
+      }
+    },
+    "viz_severity_strip_card": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#0F1117",
+        "fillOpacity": 1.0,
+        "strokeColor": "#1FBAD6",
+        "strokeWidth": 1,
+        "rx": 8
+      }
+    },
+    "viz_card_map": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#0F1117",
+        "fillOpacity": 1.0,
+        "strokeColor": "#1FBAD6",
+        "strokeWidth": 1,
+        "rx": 8
+      }
+    },
+    "viz_card_attackers": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#0F1117",
+        "fillOpacity": 1.0,
+        "strokeColor": "#1FBAD6",
+        "strokeWidth": 1,
+        "rx": 8
+      }
+    },
+    "viz_card_punchcard": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#0F1117",
+        "fillOpacity": 1.0,
+        "strokeColor": "#1FBAD6",
+        "strokeWidth": 1,
+        "rx": 8
+      }
+    },
+    "viz_card_feed": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#0F1117",
+        "fillOpacity": 1.0,
+        "strokeColor": "#1FBAD6",
+        "strokeWidth": 1,
+        "rx": 8
+      }
+    },
+    "viz_kpi_crit": {
+      "type": "splunk.singlevalue",
+      "title": "CRITICAL",
+      "dataSources": { "primary": "ds_crit" },
+      "options": {
+        "backgroundColor": "transparent",
+        "majorColor": "#DC4E41",
+        "majorFontSize": 96,
+        "trendDisplay": "absolute",
+        "trendFontSize": 18,
+        "sparklineDisplay": "below",
+        "sparklineStrokeColor": "#DC4E41",
+        "sparklineAreaDisplay": "filled",
+        "sparklineAreaColor": "#DC4E41",
+        "underLabel": "vs prior hour",
+        "underLabelFontSize": 14,
+        "shouldUseThousandSeparators": true
+      }
+    },
+    "viz_kpi_high": {
+      "type": "splunk.singlevalue",
+      "title": "HIGH",
+      "dataSources": { "primary": "ds_high" },
+      "options": {
+        "backgroundColor": "transparent",
+        "majorColor": "#F1813F",
+        "majorFontSize": 96,
+        "trendDisplay": "absolute",
+        "trendFontSize": 18,
+        "sparklineDisplay": "below",
+        "sparklineStrokeColor": "#F1813F",
+        "sparklineAreaDisplay": "filled",
+        "sparklineAreaColor": "#F1813F",
+        "underLabel": "vs prior hour",
+        "underLabelFontSize": 14,
+        "shouldUseThousandSeparators": true
+      }
+    },
+    "viz_kpi_med": {
+      "type": "splunk.singlevalue",
+      "title": "MEDIUM",
+      "dataSources": { "primary": "ds_med" },
+      "options": {
+        "backgroundColor": "transparent",
+        "majorColor": "#F8BE34",
+        "majorFontSize": 96,
+        "trendDisplay": "absolute",
+        "trendFontSize": 18,
+        "sparklineDisplay": "below",
+        "sparklineStrokeColor": "#F8BE34",
+        "sparklineAreaDisplay": "filled",
+        "sparklineAreaColor": "#F8BE34",
+        "underLabel": "vs prior hour",
+        "underLabelFontSize": 14,
+        "shouldUseThousandSeparators": true
+      }
+    },
+    "viz_kpi_low": {
+      "type": "splunk.singlevalue",
+      "title": "LOW",
+      "dataSources": { "primary": "ds_low" },
+      "options": {
+        "backgroundColor": "transparent",
+        "majorColor": "#53A051",
+        "majorFontSize": 96,
+        "trendDisplay": "absolute",
+        "trendFontSize": 18,
+        "sparklineDisplay": "below",
+        "sparklineStrokeColor": "#53A051",
+        "sparklineAreaDisplay": "filled",
+        "sparklineAreaColor": "#53A051",
+        "underLabel": "vs prior hour",
+        "underLabelFontSize": 14,
+        "shouldUseThousandSeparators": true
+      }
+    },
+    "viz_kpi_total": {
+      "type": "splunk.singlevalue",
+      "title": "TOTAL 24H",
+      "dataSources": { "primary": "ds_total" },
+      "options": {
+        "backgroundColor": "transparent",
+        "majorColor": "#FFFFFF",
+        "majorFontSize": 96,
+        "trendDisplay": "absolute",
+        "trendFontSize": 18,
+        "sparklineDisplay": "below",
+        "sparklineStrokeColor": "#1FBAD6",
+        "sparklineAreaDisplay": "filled",
+        "sparklineAreaColor": "#1FBAD6",
+        "underLabel": "vs prior hour",
+        "underLabelFontSize": 14,
+        "shouldUseThousandSeparators": true
+      }
+    },
+    "viz_geo_map": {
+      "type": "splunk.map",
+      "title": "GEOGRAPHIC ORIGIN",
+      "dataSources": { "primary": "ds_geo_origin" },
+      "options": {
+        "backgroundColor": "transparent",
+        "layers": [
+          {
+            "type": "marker",
+            "latitude":  "> primary | seriesByName('lat')",
+            "longitude": "> primary | seriesByName('lon')",
+            "dataColors": "> primary | seriesByName('events') | rangeValue(thresholds)",
+            "additionalTooltipFields": ["city", "country", "events"]
+          }
+        ],
+        "center": [40, 20],
+        "zoom": 1.6
+      },
+      "context": {
+        "thresholds": [
+          { "from": 150,             "value": "#DC4E41" },
+          { "from": 80, "to": 150,   "value": "#F1813F" },
+          { "from": 30, "to": 80,    "value": "#F8BE34" },
+          {             "to": 30,    "value": "#1FBAD6" }
+        ]
+      }
+    },
+    "viz_top_attackers": {
+      "type": "splunk.bar",
+      "title": "TOP ATTACKERS",
+      "dataSources": { "primary": "ds_top_attackers" },
+      "options": {
+        "backgroundColor": "transparent",
+        "seriesColors": ["#DC4E41"],
+        "legendDisplay": "off",
+        "xAxisTitleText": "Attacks (24h)",
+        "xAxisTitleVisibility": "show",
+        "yAxisTitleVisibility": "hide",
+        "yAxisLabelVisibility": "auto",
+        "yAxisMajorTickVisibility": "hide",
+        "showDataLabels": "all"
+      }
+    },
+    "viz_attack_pattern": {
+      "type": "splunk.punchcard",
+      "title": "MITRE ATTACK PATTERN — 24H",
+      "dataSources": { "primary": "ds_attack_pattern" },
+      "options": {
+        "backgroundColor": "transparent",
+        "bubbleRadiusMin": 4,
+        "bubbleRadiusMax": 20,
+        "bubbleSizeMethod": "area",
+        "bubbleLabelDisplay": "max",
+        "showMaxValuePulsation": false,
+        "seriesColors": ["#DC4E41"]
+      }
+    },
+    "viz_live_feed": {
+      "type": "splunk.events",
+      "title": "LIVE EVENT FEED",
+      "dataSources": { "primary": "ds_live_feed" },
+      "options": {
+        "backgroundColor": "transparent",
+        "showFieldSummary": false,
+        "footerFields": ["host", "mitre", "severity"]
+      }
+    }
+  },
+  "inputs": {},
+  "defaults": {},
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1920,
+      "height": 1080,
+      "backgroundColor": "#000000",
+      "display": "auto-scale"
+    },
+    "structure": [
+      { "item": "viz_brand_band_bg",       "type": "block", "position": { "x": 0,    "y": 0,   "w": 1920, "h": 80 } },
+      { "item": "viz_brand_band_logo",     "type": "block", "position": { "x": 32,   "y": 14,  "w": 320,  "h": 56 } },
+      { "item": "viz_brand_band_title",    "type": "block", "position": { "x": 640,  "y": 22,  "w": 640,  "h": 44 } },
+      { "item": "viz_brand_band_status",   "type": "block", "position": { "x": 1568, "y": 18,  "w": 320,  "h": 52 } },
+
+      { "item": "viz_severity_strip_card", "type": "block", "position": { "x": 16,   "y": 96,  "w": 1888, "h": 200 } },
+      { "item": "viz_kpi_crit",            "type": "block", "position": { "x": 32,   "y": 112, "w": 360,  "h": 168 } },
+      { "item": "viz_kpi_high",            "type": "block", "position": { "x": 408,  "y": 112, "w": 360,  "h": 168 } },
+      { "item": "viz_kpi_med",             "type": "block", "position": { "x": 784,  "y": 112, "w": 360,  "h": 168 } },
+      { "item": "viz_kpi_low",             "type": "block", "position": { "x": 1160, "y": 112, "w": 360,  "h": 168 } },
+      { "item": "viz_kpi_total",           "type": "block", "position": { "x": 1536, "y": 112, "w": 360,  "h": 168 } },
+
+      { "item": "viz_card_map",            "type": "block", "position": { "x": 16,   "y": 312, "w": 1248, "h": 504 } },
+      { "item": "viz_geo_map",             "type": "block", "position": { "x": 16,   "y": 312, "w": 1248, "h": 504 } },
+      { "item": "viz_card_attackers",      "type": "block", "position": { "x": 1280, "y": 312, "w": 624,  "h": 240 } },
+      { "item": "viz_top_attackers",       "type": "block", "position": { "x": 1280, "y": 312, "w": 624,  "h": 240 } },
+      { "item": "viz_card_punchcard",      "type": "block", "position": { "x": 1280, "y": 568, "w": 624,  "h": 248 } },
+      { "item": "viz_attack_pattern",      "type": "block", "position": { "x": 1280, "y": 568, "w": 624,  "h": 248 } },
+
+      { "item": "viz_card_feed",           "type": "block", "position": { "x": 16,   "y": 832, "w": 1888, "h": 232 } },
+      { "item": "viz_live_feed",           "type": "block", "position": { "x": 16,   "y": 832, "w": 1888, "h": 232 } }
+    ]
+  }
+}

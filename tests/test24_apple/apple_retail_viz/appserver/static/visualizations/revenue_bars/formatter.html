@@ -1,0 +1,69 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+    <splunk-control-group label="Label field" help="SPL field for store/row name">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.labelField" value="store">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Value field" help="SPL field for the numeric value (revenue, count, etc.)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.valueField" value="revenue">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Delta field" help="SPL field for percent change vs target">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.deltaField" value="delta">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Unit" help="Unit symbol to display with values">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.unit" value="$">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+    <splunk-control-group label="Unit position" help="Display unit before or after the value">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.unitPosition" value="before">
+            <option value="before">Before</option>
+            <option value="after">After</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Decimal places" help="Number of decimal places (-1 for auto)">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.decimals" value="-1">
+            <option value="-1">Auto</option>
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Max bars" help="Maximum number of bars to display">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.maxBars" value="10">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show rank numbers" help="Show numeric rank before store name">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showRank" value="true">
+            <option value="true">Show</option>
+            <option value="false">Hide</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+    <splunk-control-group label="Bar color" help="Primary color for bars">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.barColor" type="custom" value="#007AFF">
+            <splunk-color>#007AFF</splunk-color>
+            <splunk-color>#0A84FF</splunk-color>
+            <splunk-color>#5856D6</splunk-color>
+            <splunk-color>#34C759</splunk-color>
+            <splunk-color>#FF9500</splunk-color>
+            <splunk-color>#FF3B30</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Accent intensity" help="Strength of accent effects (0-100)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.accentIntensity" value="50">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Theme" help="Auto detects dashboard theme">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto">
+            <option value="auto">Auto</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>

@@ -1,0 +1,8 @@
+/* range_kpi/visualization.css */
+/* Minimal container styles. Fonts injected by theme.js. */
+
+.range-kpi-container,
+.splunk-view .dashboard-cell-visualization {
+    overflow: hidden;
+    position: relative;
+}

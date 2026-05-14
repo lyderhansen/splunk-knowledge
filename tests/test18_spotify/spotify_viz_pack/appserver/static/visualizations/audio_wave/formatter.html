@@ -1,0 +1,62 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+    <splunk-control-group label="Value field" help="SPL field containing the numeric value shown above the bars (e.g. stream count). Leave blank to hide the value.">
+        <splunk-text-input name="spotify_viz_pack.audio_wave.valueField" default="value">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Label field" help="SPL field containing the label shown below the bars (e.g. 'Active Streams'). Leave blank to hide.">
+        <splunk-text-input name="spotify_viz_pack.audio_wave.labelField" default="label">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Status field" help="SPL field containing the status text shown above the value (e.g. 'NOW PLAYING'). Leave blank to hide.">
+        <splunk-text-input name="spotify_viz_pack.audio_wave.statusField" default="status">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+    <splunk-control-group label="Bar count" help="Number of equalizer bars. Odd numbers look best — the center bar is always tallest.">
+        <splunk-radio-input name="spotify_viz_pack.audio_wave.barCount" default="7">
+            <option value="5">5 bars</option>
+            <option value="7">7 bars</option>
+            <option value="9">9 bars</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Animation speed" help="How fast the bars oscillate. Normal matches a typical 120 BPM track feel.">
+        <splunk-radio-input name="spotify_viz_pack.audio_wave.animationSpeed" default="normal">
+            <option value="slow">Slow</option>
+            <option value="normal">Normal</option>
+            <option value="fast">Fast</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show reflection" help="Draw a faded mirror of the bars below the floor — adds depth and visual weight.">
+        <splunk-radio-input name="spotify_viz_pack.audio_wave.showReflection" default="true">
+            <option value="true">Show</option>
+            <option value="false">Hide</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show glow" help="Enable the Spotify-green ambient glow and bar shadow effects.">
+        <splunk-radio-input name="spotify_viz_pack.audio_wave.showGlow" default="true">
+            <option value="true">Show</option>
+            <option value="false">Hide</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+    <splunk-control-group label="Accent color" help="Color of the equalizer bars and glow effects. Spotify green by default.">
+        <splunk-color-picker name="spotify_viz_pack.audio_wave.accentColor" default="#1DB954">
+            <splunk-color value="#1DB954" label="Spotify Green"></splunk-color>
+            <splunk-color value="#1ED760" label="Spotify Bright Green"></splunk-color>
+            <splunk-color value="#8B5CF6" label="Purple"></splunk-color>
+            <splunk-color value="#E91E8A" label="Pink"></splunk-color>
+            <splunk-color value="#3B82F6" label="Blue"></splunk-color>
+            <splunk-color value="#F59E0B" label="Amber"></splunk-color>
+            <splunk-color value="#14B8A6" label="Teal"></splunk-color>
+            <splunk-color value="#F97066" label="Coral"></splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Accent intensity" help="Controls the strength of the glow, ambient pulse, and reflection effects. 0 = off, 100 = maximum.">
+        <splunk-text-input name="spotify_viz_pack.audio_wave.accentIntensity" default="50">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>

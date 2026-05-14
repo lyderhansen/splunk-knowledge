@@ -1,0 +1,9 @@
+[]
+access = read : [ * ], write : [ admin, sc_admin ]
+export = system
+
+[visualizations/nps_ring_gauge]
+export = system
+
+[lookups]
+export = system

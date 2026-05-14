@@ -1,0 +1,21 @@
+[]
+access = read : [ * ], write : [ admin, sc_admin ]
+export = system
+
+[visualizations/cf_kpi_tile]
+export = system
+
+[visualizations/cf_edge_grid]
+export = system
+
+[visualizations/cf_trend_line]
+export = system
+
+[visualizations/cf_attack_timeline]
+export = system
+
+[visualizations/cf_cache_bars]
+export = system
+
+[lookups]
+export = system

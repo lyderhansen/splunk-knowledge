@@ -1,0 +1,4 @@
+<nav search_view="search" color="#010A13">
+  <view name="riot_liveops_overview" default="true" />
+  <view name="search" />
+</nav>

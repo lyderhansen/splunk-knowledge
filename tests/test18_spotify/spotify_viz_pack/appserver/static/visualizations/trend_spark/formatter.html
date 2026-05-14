@@ -1,0 +1,44 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+    <splunk-control-group label="Metric field" help="SPL field containing the metric name — one row per metric per period (e.g. total_streams, active_listeners)">
+        <splunk-text-input name="spotify_viz_pack.trend_spark.metricField" default="metric">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Period field" help="SPL field containing the time period label for each data point (e.g. 2024-01, 2024-Q1). Sorted lexicographically.">
+        <splunk-text-input name="spotify_viz_pack.trend_spark.periodField" default="period">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Value field" help="SPL field containing the numeric value for each metric and period combination">
+        <splunk-text-input name="spotify_viz_pack.trend_spark.valueField" default="value">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Max metrics" help="Maximum number of metric rows to display. Extra metrics beyond this limit are ignored. (default: 6)">
+        <splunk-text-input name="spotify_viz_pack.trend_spark.maxMetrics" default="6">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+    <splunk-control-group label="Show gradient fill" help="Fill the area under each sparkline with a translucent gradient in the row accent color">
+        <splunk-radio-input name="spotify_viz_pack.trend_spark.showFill" default="true">
+            <option value="true">Show</option>
+            <option value="false">Hide</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show delta indicator" help="Show a small up/down arrow next to each current value indicating trend direction vs. first data point">
+        <splunk-radio-input name="spotify_viz_pack.trend_spark.showDelta" default="true">
+            <option value="true">Show</option>
+            <option value="false">Hide</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+    <splunk-control-group label="Accent intensity" help="Controls the strength of hover glow and sparkline fill effects (0 = off, 100 = maximum). Default: 50.">
+        <splunk-text-input name="spotify_viz_pack.trend_spark.accentIntensity" default="50">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Line width" help="Thickness in pixels of each sparkline stroke. Hover state automatically adds 1px. Default: 2.">
+        <splunk-text-input name="spotify_viz_pack.trend_spark.lineWidth" default="2">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>

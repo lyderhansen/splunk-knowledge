@@ -1,0 +1,95 @@
+<form class="splunk-formatter-section" section-label="Data Configuration">
+    <splunk-control-group label="Hidden Columns" help="Comma-separated field names to hide">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.hiddenColumns" value="">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Money Fields" help="Comma-separated fields to format as currency">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.moneyFields" value="amount">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Column Widths (px)">
+    <splunk-control-group label="Column 1" help="fieldname:width — e.g. _time:180">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.cw1" value="">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Column 2" help="fieldname:width — e.g. transaction_id:160">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.cw2" value="">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Column 3" help="fieldname:width — e.g. amount:100">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.cw3" value="">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Column 4" help="fieldname:width — e.g. currency:80">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.cw4" value="">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Column 5" help="fieldname:width — e.g. status:100">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.cw5" value="">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Column 6" help="fieldname:width — e.g. merchant:150">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.cw6" value="">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Column 7" help="fieldname:width — e.g. payment_method:130">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.cw7" value="">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Column 8" help="fieldname:width — e.g. country:80">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.cw8" value="">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Display Options">
+    <splunk-control-group label="Rows Per Page" help="Number of rows per page (10-100)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.maxRows" value="20">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Default Sort Column" help="Field name to sort by initially">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.sortField" value="_time">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Default Sort Order" help="Initial sort direction">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.sortOrder" value="desc">
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show Row Numbers" help="Display row position column">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showRowNumbers" value="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Stripe Rows" help="Alternate row background tint">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.stripeRows" value="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Color and Style">
+    <splunk-control-group label="Theme" help="Auto detects dashboard theme">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto">
+            <option value="auto">Auto</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Accent Color" help="Header accent underline color">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.accentColor" type="custom" value="0x635BFF">
+            <splunk-color>0x635BFF</splunk-color>
+            <splunk-color>0x0048E5</splunk-color>
+            <splunk-color>0x3ECF8E</splunk-color>
+            <splunk-color>0xDF1B41</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Status Colors" help="Mapping: succeeded=green, failed=red, disputed=amber, refunded=dim">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showStatusColors" value="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>

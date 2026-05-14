@@ -1,0 +1,65 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+
+    <splunk-control-group label="Artist field" help="SPL field containing the artist name">
+        <splunk-text-input name="spotify_viz_pack.artist_cards.artistField" default="artist">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Monthly listeners field" help="SPL field containing the numeric monthly listener count">
+        <splunk-text-input name="spotify_viz_pack.artist_cards.listenersField" default="monthly_listeners">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Growth field" help="SPL field containing the growth delta string (e.g. +15.3%, -2.3%)">
+        <splunk-text-input name="spotify_viz_pack.artist_cards.growthField" default="growth">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Top market field" help="SPL field containing the top market country name (optional)">
+        <splunk-text-input name="spotify_viz_pack.artist_cards.marketField" default="top_market">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Max cards" help="Maximum number of artist cards to display (sorted by listeners descending)">
+        <splunk-text-input name="spotify_viz_pack.artist_cards.maxCards" default="15">
+        </splunk-text-input>
+    </splunk-control-group>
+
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+
+    <splunk-control-group label="Show top market badge" help="Display the country market pill on each card">
+        <splunk-radio-input name="spotify_viz_pack.artist_cards.showMarket" default="true">
+            <option value="true">Show</option>
+            <option value="false">Hide</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Columns" help="Number of card columns. Set to 0 for automatic (2-4 columns based on panel width).">
+        <splunk-text-input name="spotify_viz_pack.artist_cards.columns" default="0">
+        </splunk-text-input>
+    </splunk-control-group>
+
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+
+    <splunk-control-group label="Accent color" help="Primary color used for the growth badge, hover border glow, and bottom accent bar">
+        <splunk-color-picker name="spotify_viz_pack.artist_cards.accentColor" default="#1DB954">
+            <splunk-color value="#1DB954" label="Spotify Green"></splunk-color>
+            <splunk-color value="#14B8A6" label="Teal"></splunk-color>
+            <splunk-color value="#8B5CF6" label="Purple"></splunk-color>
+            <splunk-color value="#E91E8A" label="Pink"></splunk-color>
+            <splunk-color value="#3B82F6" label="Blue"></splunk-color>
+            <splunk-color value="#F59E0B" label="Amber"></splunk-color>
+            <splunk-color value="#F97066" label="Coral"></splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+
+    <splunk-control-group label="Accent intensity" help="Controls the strength of the hover card glow and accent bar opacity (0 = off, 100 = maximum)">
+        <splunk-range-input name="spotify_viz_pack.artist_cards.accentIntensity" default="50" min="0" max="100" step="5">
+        </splunk-range-input>
+    </splunk-control-group>
+
+</form>

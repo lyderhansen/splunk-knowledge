@@ -1,0 +1,5 @@
+metric,value,delta,unit,label
+blocked_requests,14829,-8.3,/hr,Blocked Requests
+active_mitigations,3,0,,Active Mitigations
+waf_triggers,892,15.2,/hr,WAF Triggers
+bot_score_avg,32.4,-2.1,,Bot Score Avg

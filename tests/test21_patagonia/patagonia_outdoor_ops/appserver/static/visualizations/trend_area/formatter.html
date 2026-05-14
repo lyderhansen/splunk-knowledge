@@ -1,0 +1,70 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+  <splunk-control-group label="Theme" help="Auto detects dark or light from the Splunk interface. Override to force a specific palette.">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" default="auto">
+      <option value="auto">Auto</option>
+      <option value="dark">Dark</option>
+      <option value="light">Light</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="X-axis field" help="SPL field name for the time/category axis (typically month). Default: month">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.xField" default="month"></splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Y-axis field" help="SPL field name for the primary numeric metric. Default: carbon_offset_tons">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.yField" default="carbon_offset_tons"></splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Target field" help="SPL field name for the target/goal value line. Leave blank or absent in data to hide. Default: target_tons">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.targetField" default="target_tons"></splunk-text-input>
+  </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+  <splunk-control-group label="Show data dots" help="Display small filled circles at each data point on the actual-value line.">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.showDots" default="true">
+      <option value="true">On</option>
+      <option value="false">Off</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Show target line" help="Display the dashed target reference line and its shaded area fill.">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.showTarget" default="true">
+      <option value="true">On</option>
+      <option value="false">Off</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Show legend" help="Display an inline legend below the chart identifying the Actual and Target lines.">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.showLegend" default="true">
+      <option value="true">On</option>
+      <option value="false">Off</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+  <splunk-control-group label="Area color" help="Fill and line color for the actual-value area chart. Default: forest green (#5E8F5C)">
+    <splunk-color-picker type="custom" name="{{VIZ_NAMESPACE}}.areaColor" default="#5E8F5C">
+      <splunk-color>#5E8F5C</splunk-color>
+      <splunk-color>#4A7A48</splunk-color>
+      <splunk-color>#3D5A3A</splunk-color>
+      <splunk-color>#7EA97C</splunk-color>
+      <splunk-color>#6899A9</splunk-color>
+    </splunk-color-picker>
+  </splunk-control-group>
+
+  <splunk-control-group label="Target color" help="Color of the dashed target line and its background fill. Default: sandstone (#C9956B)">
+    <splunk-color-picker type="custom" name="{{VIZ_NAMESPACE}}.targetColor" default="#C9956B">
+      <splunk-color>#C9956B</splunk-color>
+      <splunk-color>#B07F55</splunk-color>
+      <splunk-color>#B86B52</splunk-color>
+      <splunk-color>#8B6B4A</splunk-color>
+      <splunk-color>#6899A9</splunk-color>
+    </splunk-color-picker>
+  </splunk-control-group>
+
+  <splunk-control-group label="Accent intensity (0–100)" help="Controls area fill opacity and line glow strength. 50 = balanced; 100 = richest fill. Default: 50">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.accentIntensity" default="50"></splunk-text-input>
+  </splunk-control-group>
+</form>

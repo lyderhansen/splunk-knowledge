@@ -1,0 +1,62 @@
+<dashboard version="2" theme="light">
+    <label>Stripe KPI Demo</label>
+    <description>Demo of Stripe KPI tile visualization with different configurations</description>
+    <definition><![CDATA[
+{
+    "dataSources": {
+        "ds_volume": {
+            "type": "ds.search",
+            "options": { "query": "| inputlookup stripe_payment_ops_viz_demo_kpis.csv | where label=\"Total Volume\"", "queryParameters": { "earliest": "-24h@h", "latest": "now" } },
+            "name": "Volume"
+        },
+        "ds_success": {
+            "type": "ds.search",
+            "options": { "query": "| inputlookup stripe_payment_ops_viz_demo_kpis.csv | where label=\"Success Rate\"", "queryParameters": { "earliest": "-24h@h", "latest": "now" } },
+            "name": "Success"
+        },
+        "ds_settlement": {
+            "type": "ds.search",
+            "options": { "query": "| inputlookup stripe_payment_ops_viz_demo_kpis.csv | where label=\"Avg Settlement\"", "queryParameters": { "earliest": "-24h@h", "latest": "now" } },
+            "name": "Settlement"
+        },
+        "ds_disputes": {
+            "type": "ds.search",
+            "options": { "query": "| inputlookup stripe_payment_ops_viz_demo_kpis.csv | where label=\"Active Disputes\"", "queryParameters": { "earliest": "-24h@h", "latest": "now" } },
+            "name": "Disputes"
+        }
+    },
+    "visualizations": {
+        "viz_volume": {
+            "type": "stripe_payment_ops_viz.stripe_kpi",
+            "dataSources": { "primary": "ds_volume" },
+            "options": {}
+        },
+        "viz_success": {
+            "type": "stripe_payment_ops_viz.stripe_kpi",
+            "dataSources": { "primary": "ds_success" },
+            "options": { "unitPosition": "suffix", "decimals": "2", "accentColor": "0x3ECF8E" }
+        },
+        "viz_settlement": {
+            "type": "stripe_payment_ops_viz.stripe_kpi",
+            "dataSources": { "primary": "ds_settlement" },
+            "options": { "unitPosition": "suffix", "accentColor": "0x0048E5" }
+        },
+        "viz_disputes": {
+            "type": "stripe_payment_ops_viz.stripe_kpi",
+            "dataSources": { "primary": "ds_disputes" },
+            "options": { "unitPosition": "suffix", "accentColor": "0xDF1B41" }
+        }
+    },
+    "layout": {
+        "type": "absolute",
+        "options": { "width": 1920, "height": 300, "display": "auto-scale" },
+        "structure": [
+            { "item": "viz_volume", "position": { "x": 20, "y": 20, "w": 450, "h": 120 } },
+            { "item": "viz_success", "position": { "x": 490, "y": 20, "w": 450, "h": 120 } },
+            { "item": "viz_settlement", "position": { "x": 960, "y": 20, "w": 450, "h": 120 } },
+            { "item": "viz_disputes", "position": { "x": 1430, "y": 20, "w": 470, "h": 120 } }
+        ]
+    }
+}
+    ]]></definition>
+</dashboard>

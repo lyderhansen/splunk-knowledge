@@ -1,0 +1,67 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+
+    <splunk-control-group label="Driver field" help="SPL field name for the driver name (one row per stint per driver)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.driverField" value="driver">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Stint field" help="SPL field name for the stint number (1, 2, 3...)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.stintField" value="stint">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Compound field" help="SPL field name for the tire compound (Soft, Medium, Hard, Inter, Wet)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.compoundField" value="compound">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Start lap field" help="SPL field name for the lap number when this stint started">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.startLapField" value="start_lap">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="End lap field" help="SPL field name for the lap number when this stint ended">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.endLapField" value="end_lap">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Avg degradation field" help="Optional SPL field for average tire degradation per lap — drives the fade gradient on each bar">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.avgDegField" value="avg_deg">
+        </splunk-text-input>
+    </splunk-control-group>
+
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+
+    <splunk-control-group label="Show legend" help="Show or hide the compound color legend at the bottom of the chart">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showLegend" value="true">
+            <option value="true">Show</option>
+            <option value="false">Hide</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Show degradation" help="Show or hide the left-to-right tire wear gradient on each stint bar">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showDegradation" value="true">
+            <option value="true">Show</option>
+            <option value="false">Hide</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+
+    <splunk-control-group label="Theme" help="Color scheme — dark for pitwall/carbon aesthetic, light for presentation mode">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.theme" value="dark">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Accent intensity" help="Strength of glow and shadow effects on hover. Range 0 (off) to 100 (maximum)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.accentIntensity" value="50">
+        </splunk-text-input>
+    </splunk-control-group>
+
+</form>

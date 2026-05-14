@@ -1,0 +1,138 @@
+<form class="splunk-viz-formatter-form">
+
+  <!-- =====================================================================
+       DATA FIELDS
+  ====================================================================== -->
+  <div class="control-group">
+    <label class="control-label">Band Field</label>
+    <div class="controls">
+      <input type="text"
+             name="display.visualizations.custom.jwst_viz_pack.jwst_data_cascade.bandField"
+             value="band"
+             class="input-small"
+             help="Name of the field containing the frequency band or channel label (default: band)." />
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label">Transferred Field</label>
+    <div class="controls">
+      <input type="text"
+             name="display.visualizations.custom.jwst_viz_pack.jwst_data_cascade.transferredField"
+             value="transferred_gb"
+             class="input-small"
+             help="Field name for gigabytes already downloaded from the spacecraft (default: transferred_gb)." />
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label">Planned Field</label>
+    <div class="controls">
+      <input type="text"
+             name="display.visualizations.custom.jwst_viz_pack.jwst_data_cascade.plannedField"
+             value="planned_gb"
+             class="input-small"
+             help="Field name for the total gigabytes planned for this contact window (default: planned_gb)." />
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label">Rate Field</label>
+    <div class="controls">
+      <input type="text"
+             name="display.visualizations.custom.jwst_viz_pack.jwst_data_cascade.rateField"
+             value="rate_mbps"
+             class="input-small"
+             help="Field name for the current transfer rate in Mbps. Controls particle speed. Leave blank if unavailable (default: rate_mbps)." />
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       COLORS
+  ====================================================================== -->
+  <div class="control-group">
+    <label class="control-label">Stream Color</label>
+    <div class="controls">
+      <input type="text"
+             name="display.visualizations.custom.jwst_viz_pack.jwst_data_cascade.streamColor"
+             value="#00B4D8"
+             class="input-small splunk-color-picker"
+             help="Hex color for the leading (transferred) portion of each stream. Particles are tinted between this and the completed color (default: #00B4D8 JWST cyan)." />
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label">Completed Color</label>
+    <div class="controls">
+      <input type="text"
+             name="display.visualizations.custom.jwst_viz_pack.jwst_data_cascade.completedColor"
+             value="#D4A537"
+             class="input-small splunk-color-picker"
+             help="Hex color for the trailing end of the gradient and the aggregate summary total. Defaults to mission gold (#D4A537)." />
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label">Pending Color</label>
+    <div class="controls">
+      <input type="text"
+             name="display.visualizations.custom.jwst_viz_pack.jwst_data_cascade.pendingColor"
+             value="rgba(232,236,241,0.08)"
+             class="input-small"
+             help="CSS color for the undownloaded (remaining) portion of each stream, shown as a dotted trough (default: dim white at 8% opacity)." />
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       DISPLAY OPTIONS
+  ====================================================================== -->
+  <div class="control-group">
+    <label class="control-label">Show Rate Labels</label>
+    <div class="controls">
+      <select name="display.visualizations.custom.jwst_viz_pack.jwst_data_cascade.showRate"
+              help="Display the current transfer rate (Mbps) at the right edge of each band label row. Requires a valid rateField in the data.">
+        <option value="true">Yes</option>
+        <option value="false">No</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label">Animate Streams</label>
+    <div class="controls">
+      <select name="display.visualizations.custom.jwst_viz_pack.jwst_data_cascade.animateStreams"
+              help="Enable moving particle dots that flow along each transferred stream to simulate live data download. Disable for static dashboards or PDF exports.">
+        <option value="true">Yes</option>
+        <option value="false">No</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label">Accent Intensity (0–100)</label>
+    <div class="controls">
+      <input type="number"
+             name="display.visualizations.custom.jwst_viz_pack.jwst_data_cascade.accentIntensity"
+             value="50"
+             min="0"
+             max="100"
+             class="input-small"
+             help="Controls the brightness of glow effects behind the transferred stream and leading-edge pulse. 0 = no glow, 100 = maximum luminance. Default 50." />
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       THEME
+  ====================================================================== -->
+  <div class="control-group">
+    <label class="control-label">Theme</label>
+    <div class="controls">
+      <select name="display.visualizations.custom.jwst_viz_pack.jwst_data_cascade.theme"
+              help="Choose dark (default, deep space background assumed) or light for bright dashboard backgrounds. All color tokens adapt automatically.">
+        <option value="dark">Dark</option>
+        <option value="light">Light</option>
+      </select>
+    </div>
+  </div>
+
+</form>

@@ -1,0 +1,430 @@
+<dashboard version="2" theme="dark">
+  <label>McLaren Telemetry</label>
+  <description>McLaren F1 Race Telemetry — Live Timing, Strategy, Pit Wall</description>
+  <definition><![CDATA[
+{
+  "dataSources": {
+    "ds_static": {
+      "type": "ds.search",
+      "options": { "query": "| makeresults count=1" },
+      "name": "Static"
+    },
+    "ds_lap_telemetry": {
+      "type": "ds.search",
+      "options": { "query": "| inputlookup mclaren_lap_telemetry.csv | sort 0 position" },
+      "name": "Lap Telemetry"
+    },
+    "ds_kpi_position": {
+      "type": "ds.search",
+      "options": { "query": "| inputlookup mclaren_lap_telemetry.csv | head 1 | eval value=position, label=\"POSITION\"" },
+      "name": "KPI Position"
+    },
+    "ds_kpi_fastest": {
+      "type": "ds.search",
+      "options": { "query": "| inputlookup mclaren_lap_telemetry.csv | head 1 | eval value=lap_time, label=\"FASTEST LAP\"" },
+      "name": "KPI Fastest Lap"
+    },
+    "ds_kpi_gap": {
+      "type": "ds.search",
+      "options": { "query": "| inputlookup mclaren_lap_telemetry.csv | where position=\"P2\" | eval value=gap, label=\"GAP P1-P2\"" },
+      "name": "KPI Gap"
+    },
+    "ds_kpi_lap": {
+      "type": "ds.search",
+      "options": { "query": "| inputlookup mclaren_lap_telemetry.csv | head 1 | eval value=lap_number, label=\"LAP\", unit=\"/ 57\"" },
+      "name": "KPI Lap"
+    },
+    "ds_tire_strategy": {
+      "type": "ds.search",
+      "options": { "query": "| inputlookup mclaren_tire_strategy.csv" },
+      "name": "Tire Strategy"
+    },
+    "ds_kpi_compound": {
+      "type": "ds.search",
+      "options": { "query": "| inputlookup mclaren_lap_telemetry.csv | head 1 | eval value=compound, label=\"LEADER COMPOUND\"" },
+      "name": "KPI Compound"
+    },
+    "ds_kpi_degradation": {
+      "type": "ds.search",
+      "options": { "query": "| inputlookup mclaren_tire_strategy.csv | stats avg(avg_deg) as avg_val | eval value=round(avg_val, 3), label=\"AVG DEGRADATION\"" },
+      "name": "KPI Degradation"
+    },
+    "ds_kpi_stints": {
+      "type": "ds.search",
+      "options": { "query": "| inputlookup mclaren_tire_strategy.csv | stats dc(stint) as v by driver | stats max(v) as value | eval label=\"MOST STINTS\"" },
+      "name": "KPI Stints"
+    },
+    "ds_pit_stops": {
+      "type": "ds.search",
+      "options": { "query": "| inputlookup mclaren_pit_stops.csv | sort 0 pit_time" },
+      "name": "Pit Stops"
+    },
+    "ds_radio_alerts": {
+      "type": "ds.search",
+      "options": { "query": "| inputlookup mclaren_radio_alerts.csv | sort 0 - _time" },
+      "name": "Radio Alerts"
+    },
+    "ds_kpi_best_pit": {
+      "type": "ds.search",
+      "options": { "query": "| inputlookup mclaren_pit_stops.csv | stats min(pit_time) as value | eval label=\"BEST PIT\", unit=\"s\"" },
+      "name": "KPI Best Pit"
+    },
+    "ds_kpi_avg_pit": {
+      "type": "ds.search",
+      "options": { "query": "| inputlookup mclaren_pit_stops.csv | stats avg(pit_time) as v | eval value=round(v, 1), label=\"AVG PIT\", unit=\"s\"" },
+      "name": "KPI Avg Pit"
+    },
+    "ds_kpi_pos_lost": {
+      "type": "ds.search",
+      "options": { "query": "| inputlookup mclaren_pit_stops.csv | stats sum(positions_lost) as value | eval label=\"POSITIONS LOST\"" },
+      "name": "KPI Positions Lost"
+    }
+  },
+  "visualizations": {
+    "viz_banner": {
+      "type": "infographic_shapes.infographic_shapes",
+      "options": {
+        "backgroundColor": "transparent",
+        "infographic_shapes.infographic_shapes.shape": "rectangle",
+        "infographic_shapes.infographic_shapes.fillType": "linear_gradient",
+        "infographic_shapes.infographic_shapes.fillColor": "#FF8000",
+        "infographic_shapes.infographic_shapes.fillColor2": "#CC5500",
+        "infographic_shapes.infographic_shapes.gradientAngle": "90",
+        "infographic_shapes.infographic_shapes.shadowEnabled": "false",
+        "infographic_shapes.infographic_shapes.strokeEnabled": "false"
+      },
+      "dataSources": { "primary": "ds_static" }
+    },
+    "viz_logo": {
+      "type": "splunk.image",
+      "options": {
+        "src": "/static/app/mclaren_f1_viz/images/mclaren_logo.svg",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "**McLAREN PIT WALL**",
+        "fontColor": "#FFFFFF",
+        "backgroundColor": "transparent",
+        "fontSize": "large"
+      }
+    },
+
+    "viz_race_kpi_pos": {
+      "type": "mclaren_f1_viz.kpi_tile",
+      "options": {
+        "backgroundColor": "#1E1E1E",
+        "mclaren_f1_viz.kpi_tile.valueField": "value",
+        "mclaren_f1_viz.kpi_tile.labelField": "label",
+        "mclaren_f1_viz.kpi_tile.theme": "dark",
+        "mclaren_f1_viz.kpi_tile.accentColor": "#FF8000",
+        "mclaren_f1_viz.kpi_tile.decimals": "-1"
+      },
+      "dataSources": { "primary": "ds_kpi_position" }
+    },
+    "viz_race_kpi_fast": {
+      "type": "mclaren_f1_viz.kpi_tile",
+      "options": {
+        "backgroundColor": "#1E1E1E",
+        "mclaren_f1_viz.kpi_tile.valueField": "value",
+        "mclaren_f1_viz.kpi_tile.labelField": "label",
+        "mclaren_f1_viz.kpi_tile.theme": "dark",
+        "mclaren_f1_viz.kpi_tile.accentColor": "#FF8000",
+        "mclaren_f1_viz.kpi_tile.decimals": "-1"
+      },
+      "dataSources": { "primary": "ds_kpi_fastest" }
+    },
+    "viz_race_kpi_gap": {
+      "type": "mclaren_f1_viz.kpi_tile",
+      "options": {
+        "backgroundColor": "#1E1E1E",
+        "mclaren_f1_viz.kpi_tile.valueField": "value",
+        "mclaren_f1_viz.kpi_tile.labelField": "label",
+        "mclaren_f1_viz.kpi_tile.theme": "dark",
+        "mclaren_f1_viz.kpi_tile.accentColor": "#47C7FC",
+        "mclaren_f1_viz.kpi_tile.decimals": "-1"
+      },
+      "dataSources": { "primary": "ds_kpi_gap" }
+    },
+    "viz_race_kpi_lap": {
+      "type": "mclaren_f1_viz.kpi_tile",
+      "options": {
+        "backgroundColor": "#1E1E1E",
+        "mclaren_f1_viz.kpi_tile.valueField": "value",
+        "mclaren_f1_viz.kpi_tile.labelField": "label",
+        "mclaren_f1_viz.kpi_tile.unitField": "unit",
+        "mclaren_f1_viz.kpi_tile.theme": "dark",
+        "mclaren_f1_viz.kpi_tile.accentColor": "#FF8000",
+        "mclaren_f1_viz.kpi_tile.decimals": "0"
+      },
+      "dataSources": { "primary": "ds_kpi_lap" }
+    },
+    "viz_timing_tower": {
+      "type": "mclaren_f1_viz.timing_tower",
+      "options": {
+        "backgroundColor": "transparent",
+        "mclaren_f1_viz.timing_tower.positionField": "position",
+        "mclaren_f1_viz.timing_tower.driverField": "driver",
+        "mclaren_f1_viz.timing_tower.gapField": "gap",
+        "mclaren_f1_viz.timing_tower.compoundField": "compound",
+        "mclaren_f1_viz.timing_tower.lapTimeField": "lap_time",
+        "mclaren_f1_viz.timing_tower.theme": "dark",
+        "mclaren_f1_viz.timing_tower.accentColor": "#FF8000",
+        "mclaren_f1_viz.timing_tower.showLapTime": "true",
+        "mclaren_f1_viz.timing_tower.maxRows": "20"
+      },
+      "dataSources": { "primary": "ds_lap_telemetry" }
+    },
+    "viz_sector_bars": {
+      "type": "mclaren_f1_viz.sector_bars",
+      "options": {
+        "backgroundColor": "transparent",
+        "mclaren_f1_viz.sector_bars.driverField": "driver",
+        "mclaren_f1_viz.sector_bars.sector1Field": "sector_1",
+        "mclaren_f1_viz.sector_bars.sector2Field": "sector_2",
+        "mclaren_f1_viz.sector_bars.sector3Field": "sector_3",
+        "mclaren_f1_viz.sector_bars.lapTimeField": "lap_time",
+        "mclaren_f1_viz.sector_bars.sector1Color": "#FF8000",
+        "mclaren_f1_viz.sector_bars.sector2Color": "#47C7FC",
+        "mclaren_f1_viz.sector_bars.sector3Color": "#A855F7",
+        "mclaren_f1_viz.sector_bars.theme": "dark",
+        "mclaren_f1_viz.sector_bars.maxRows": "20"
+      },
+      "dataSources": { "primary": "ds_lap_telemetry" }
+    },
+
+    "viz_strat_kpi_compound": {
+      "type": "mclaren_f1_viz.kpi_tile",
+      "options": {
+        "backgroundColor": "#1E1E1E",
+        "mclaren_f1_viz.kpi_tile.valueField": "value",
+        "mclaren_f1_viz.kpi_tile.labelField": "label",
+        "mclaren_f1_viz.kpi_tile.theme": "dark",
+        "mclaren_f1_viz.kpi_tile.accentColor": "#FFD700",
+        "mclaren_f1_viz.kpi_tile.decimals": "-1"
+      },
+      "dataSources": { "primary": "ds_kpi_compound" }
+    },
+    "viz_strat_kpi_deg": {
+      "type": "mclaren_f1_viz.kpi_tile",
+      "options": {
+        "backgroundColor": "#1E1E1E",
+        "mclaren_f1_viz.kpi_tile.valueField": "value",
+        "mclaren_f1_viz.kpi_tile.labelField": "label",
+        "mclaren_f1_viz.kpi_tile.theme": "dark",
+        "mclaren_f1_viz.kpi_tile.accentColor": "#FF8000",
+        "mclaren_f1_viz.kpi_tile.decimals": "3"
+      },
+      "dataSources": { "primary": "ds_kpi_degradation" }
+    },
+    "viz_strat_kpi_stints": {
+      "type": "mclaren_f1_viz.kpi_tile",
+      "options": {
+        "backgroundColor": "#1E1E1E",
+        "mclaren_f1_viz.kpi_tile.valueField": "value",
+        "mclaren_f1_viz.kpi_tile.labelField": "label",
+        "mclaren_f1_viz.kpi_tile.theme": "dark",
+        "mclaren_f1_viz.kpi_tile.accentColor": "#A855F7",
+        "mclaren_f1_viz.kpi_tile.decimals": "0"
+      },
+      "dataSources": { "primary": "ds_kpi_stints" }
+    },
+    "viz_stint_chart": {
+      "type": "mclaren_f1_viz.stint_chart",
+      "options": {
+        "backgroundColor": "transparent",
+        "mclaren_f1_viz.stint_chart.driverField": "driver",
+        "mclaren_f1_viz.stint_chart.stintField": "stint",
+        "mclaren_f1_viz.stint_chart.compoundField": "compound",
+        "mclaren_f1_viz.stint_chart.startLapField": "start_lap",
+        "mclaren_f1_viz.stint_chart.endLapField": "end_lap",
+        "mclaren_f1_viz.stint_chart.avgDegField": "avg_deg",
+        "mclaren_f1_viz.stint_chart.theme": "dark",
+        "mclaren_f1_viz.stint_chart.showLegend": "true",
+        "mclaren_f1_viz.stint_chart.showDegradation": "true"
+      },
+      "dataSources": { "primary": "ds_tire_strategy" }
+    },
+
+    "viz_pit_kpi_best": {
+      "type": "mclaren_f1_viz.kpi_tile",
+      "options": {
+        "backgroundColor": "#1E1E1E",
+        "mclaren_f1_viz.kpi_tile.valueField": "value",
+        "mclaren_f1_viz.kpi_tile.labelField": "label",
+        "mclaren_f1_viz.kpi_tile.unitField": "unit",
+        "mclaren_f1_viz.kpi_tile.theme": "dark",
+        "mclaren_f1_viz.kpi_tile.accentColor": "#00D26A",
+        "mclaren_f1_viz.kpi_tile.decimals": "1"
+      },
+      "dataSources": { "primary": "ds_kpi_best_pit" }
+    },
+    "viz_pit_kpi_avg": {
+      "type": "mclaren_f1_viz.kpi_tile",
+      "options": {
+        "backgroundColor": "#1E1E1E",
+        "mclaren_f1_viz.kpi_tile.valueField": "value",
+        "mclaren_f1_viz.kpi_tile.labelField": "label",
+        "mclaren_f1_viz.kpi_tile.unitField": "unit",
+        "mclaren_f1_viz.kpi_tile.theme": "dark",
+        "mclaren_f1_viz.kpi_tile.accentColor": "#FF8000",
+        "mclaren_f1_viz.kpi_tile.decimals": "1"
+      },
+      "dataSources": { "primary": "ds_kpi_avg_pit" }
+    },
+    "viz_pit_kpi_lost": {
+      "type": "mclaren_f1_viz.kpi_tile",
+      "options": {
+        "backgroundColor": "#1E1E1E",
+        "mclaren_f1_viz.kpi_tile.valueField": "value",
+        "mclaren_f1_viz.kpi_tile.labelField": "label",
+        "mclaren_f1_viz.kpi_tile.theme": "dark",
+        "mclaren_f1_viz.kpi_tile.accentColor": "#FF3333",
+        "mclaren_f1_viz.kpi_tile.decimals": "0"
+      },
+      "dataSources": { "primary": "ds_kpi_pos_lost" }
+    },
+    "viz_pit_gauge": {
+      "type": "mclaren_f1_viz.pit_gauge",
+      "options": {
+        "backgroundColor": "transparent",
+        "mclaren_f1_viz.pit_gauge.driverField": "driver",
+        "mclaren_f1_viz.pit_gauge.pitTimeField": "pit_time",
+        "mclaren_f1_viz.pit_gauge.lapField": "lap",
+        "mclaren_f1_viz.pit_gauge.positionsLostField": "positions_lost",
+        "mclaren_f1_viz.pit_gauge.targetMin": "2.0",
+        "mclaren_f1_viz.pit_gauge.targetMax": "2.8",
+        "mclaren_f1_viz.pit_gauge.maxTime": "5.0",
+        "mclaren_f1_viz.pit_gauge.theme": "dark",
+        "mclaren_f1_viz.pit_gauge.accentColor": "#FF8000"
+      },
+      "dataSources": { "primary": "ds_pit_stops" }
+    },
+    "viz_radio_feed": {
+      "type": "mclaren_f1_viz.radio_feed",
+      "options": {
+        "backgroundColor": "transparent",
+        "mclaren_f1_viz.radio_feed.timeField": "_time",
+        "mclaren_f1_viz.radio_feed.driverField": "driver",
+        "mclaren_f1_viz.radio_feed.messageField": "message",
+        "mclaren_f1_viz.radio_feed.priorityField": "priority",
+        "mclaren_f1_viz.radio_feed.theme": "dark",
+        "mclaren_f1_viz.radio_feed.accentColor": "#FF8000",
+        "mclaren_f1_viz.radio_feed.maxMessages": "20",
+        "mclaren_f1_viz.radio_feed.showHeader": "true"
+      },
+      "dataSources": { "primary": "ds_radio_alerts" }
+    },
+
+    "viz_label_timing": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "LIVE TIMING",
+        "fontColor": "#646464",
+        "backgroundColor": "transparent",
+        "fontSize": "extraSmall"
+      }
+    },
+    "viz_label_sectors": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "SECTOR ANALYSIS",
+        "fontColor": "#646464",
+        "backgroundColor": "transparent",
+        "fontSize": "extraSmall"
+      }
+    },
+    "viz_label_strategy": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "TIRE STRATEGY",
+        "fontColor": "#646464",
+        "backgroundColor": "transparent",
+        "fontSize": "extraSmall"
+      }
+    },
+    "viz_label_pits": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "PIT STOPS",
+        "fontColor": "#646464",
+        "backgroundColor": "transparent",
+        "fontSize": "extraSmall"
+      }
+    },
+    "viz_label_radio": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "TEAM RADIO",
+        "fontColor": "#646464",
+        "backgroundColor": "transparent",
+        "fontSize": "extraSmall"
+      }
+    }
+  },
+  "inputs": {},
+  "layout": {
+    "globalInputs": [],
+    "tabs": {
+      "items": [
+        { "layoutId": "tab_race", "label": "RACE" },
+        { "layoutId": "tab_strategy", "label": "STRATEGY" },
+        { "layoutId": "tab_pitwall", "label": "PIT WALL" }
+      ],
+      "options": { "barPosition": "top", "showTabBar": true }
+    },
+    "layoutDefinitions": {
+      "tab_race": {
+        "type": "absolute",
+        "options": { "width": 1920, "height": 800, "display": "auto-scale" },
+        "structure": [
+          { "item": "viz_banner", "type": "block", "position": { "x": 0, "y": 0, "w": 1920, "h": 60 } },
+          { "item": "viz_logo", "type": "block", "position": { "x": 20, "y": 8, "w": 180, "h": 44 } },
+          { "item": "viz_title", "type": "block", "position": { "x": 216, "y": 14, "w": 400, "h": 32 } },
+          { "item": "viz_race_kpi_pos", "type": "block", "position": { "x": 16, "y": 70, "w": 460, "h": 110 } },
+          { "item": "viz_race_kpi_fast", "type": "block", "position": { "x": 486, "y": 70, "w": 460, "h": 110 } },
+          { "item": "viz_race_kpi_gap", "type": "block", "position": { "x": 956, "y": 70, "w": 460, "h": 110 } },
+          { "item": "viz_race_kpi_lap", "type": "block", "position": { "x": 1426, "y": 70, "w": 478, "h": 110 } },
+          { "item": "viz_label_timing", "type": "block", "position": { "x": 16, "y": 190, "w": 200, "h": 16 } },
+          { "item": "viz_label_sectors", "type": "block", "position": { "x": 966, "y": 190, "w": 200, "h": 16 } },
+          { "item": "viz_timing_tower", "type": "block", "position": { "x": 16, "y": 210, "w": 940, "h": 560 } },
+          { "item": "viz_sector_bars", "type": "block", "position": { "x": 966, "y": 210, "w": 938, "h": 560 } }
+        ]
+      },
+      "tab_strategy": {
+        "type": "absolute",
+        "options": { "width": 1920, "height": 800, "display": "auto-scale" },
+        "structure": [
+          { "item": "viz_banner", "type": "block", "position": { "x": 0, "y": 0, "w": 1920, "h": 60 } },
+          { "item": "viz_logo", "type": "block", "position": { "x": 20, "y": 8, "w": 180, "h": 44 } },
+          { "item": "viz_title", "type": "block", "position": { "x": 216, "y": 14, "w": 400, "h": 32 } },
+          { "item": "viz_strat_kpi_compound", "type": "block", "position": { "x": 16, "y": 70, "w": 620, "h": 110 } },
+          { "item": "viz_strat_kpi_deg", "type": "block", "position": { "x": 646, "y": 70, "w": 620, "h": 110 } },
+          { "item": "viz_strat_kpi_stints", "type": "block", "position": { "x": 1276, "y": 70, "w": 628, "h": 110 } },
+          { "item": "viz_label_strategy", "type": "block", "position": { "x": 16, "y": 190, "w": 200, "h": 16 } },
+          { "item": "viz_stint_chart", "type": "block", "position": { "x": 16, "y": 210, "w": 1888, "h": 560 } }
+        ]
+      },
+      "tab_pitwall": {
+        "type": "absolute",
+        "options": { "width": 1920, "height": 800, "display": "auto-scale" },
+        "structure": [
+          { "item": "viz_banner", "type": "block", "position": { "x": 0, "y": 0, "w": 1920, "h": 60 } },
+          { "item": "viz_logo", "type": "block", "position": { "x": 20, "y": 8, "w": 180, "h": 44 } },
+          { "item": "viz_title", "type": "block", "position": { "x": 216, "y": 14, "w": 400, "h": 32 } },
+          { "item": "viz_pit_kpi_best", "type": "block", "position": { "x": 16, "y": 70, "w": 620, "h": 110 } },
+          { "item": "viz_pit_kpi_avg", "type": "block", "position": { "x": 646, "y": 70, "w": 620, "h": 110 } },
+          { "item": "viz_pit_kpi_lost", "type": "block", "position": { "x": 1276, "y": 70, "w": 628, "h": 110 } },
+          { "item": "viz_label_pits", "type": "block", "position": { "x": 16, "y": 190, "w": 200, "h": 16 } },
+          { "item": "viz_label_radio", "type": "block", "position": { "x": 966, "y": 190, "w": 200, "h": 16 } },
+          { "item": "viz_pit_gauge", "type": "block", "position": { "x": 16, "y": 210, "w": 940, "h": 560 } },
+          { "item": "viz_radio_feed", "type": "block", "position": { "x": 966, "y": 210, "w": 938, "h": 560 } }
+        ]
+      }
+    }
+  }
+}
+  ]]></definition>
+</dashboard>

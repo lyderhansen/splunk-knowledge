@@ -1,0 +1,16 @@
+/* Porsche Motorsport Viz Pack — Energy Bar */
+/* Minimal canvas host styling — no panel chrome drawn here */
+
+.energy-bar-viz {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.energy-bar-viz canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}

@@ -1,0 +1,77 @@
+<!--
+    Porsche Motorsport Viz Pack — needle_gauge formatter
+    Namespace: porsche_motorsport_viz.needle_gauge
+    Section labels follow Dashboard Studio casing exactly (B5).
+-->
+
+<form class="splunk-formatter-section" section-label="Data Fields">
+
+    <splunk-control-group label="Value field" help="Field name containing the current gauge reading (e.g. 'value').">
+        <splunk-text-input name="porsche_motorsport_viz.needle_gauge.valueField" default="value">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Min field" help="Field name for the gauge minimum. Leave blank to use default (0).">
+        <splunk-text-input name="porsche_motorsport_viz.needle_gauge.minField" default="min">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Max field" help="Field name for the gauge maximum. Leave blank to use default (350).">
+        <splunk-text-input name="porsche_motorsport_viz.needle_gauge.maxField" default="max">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Red zone start field" help="Field name for the red zone threshold. Leave blank to use default (280).">
+        <splunk-text-input name="porsche_motorsport_viz.needle_gauge.redZoneStartField" default="redZoneStart">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Label field" help="Field name for the gauge label text (e.g. 'SPEED'). Optional.">
+        <splunk-text-input name="porsche_motorsport_viz.needle_gauge.labelField" default="label">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Unit field" help="Field name for the unit string (e.g. 'km/h', 'rpm'). Optional.">
+        <splunk-text-input name="porsche_motorsport_viz.needle_gauge.unitField" default="unit">
+        </splunk-text-input>
+    </splunk-control-group>
+
+</form>
+
+<form class="splunk-formatter-section" section-label="Display">
+
+    <splunk-control-group label="Tick count" help="Number of major divisions on the arc (default 8, giving 9 labeled positions including start and end).">
+        <splunk-text-input name="porsche_motorsport_viz.needle_gauge.tickCount" default="8">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Theme" help="Color scheme. Match the Dashboard Studio background.">
+        <splunk-radio-input name="porsche_motorsport_viz.needle_gauge.theme" default="dark">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+
+    <splunk-control-group label="Accent color" help="Color for the red zone arc and needle glow. Porsche palette: #D5001C (Porsche Red), #FFC907 (Yellow), #0072C6 (Blue), #39B54A (Green).">
+        <splunk-color-picker name="porsche_motorsport_viz.needle_gauge.accentColor" default="#D5001C">
+            <preset-colors>
+                <color>#D5001C</color>
+                <color>#FFC907</color>
+                <color>#0072C6</color>
+                <color>#39B54A</color>
+                <color>#FFFFFF</color>
+                <color>#8C8C8C</color>
+            </preset-colors>
+        </splunk-color-picker>
+    </splunk-control-group>
+
+    <splunk-control-group label="Accent intensity" help="Glow strength for the red zone arc. 0 = no glow, 100 = maximum glow. Default 50.">
+        <splunk-range-input name="porsche_motorsport_viz.needle_gauge.accentIntensity" default="50" min="0" max="100" step="1">
+        </splunk-range-input>
+    </splunk-control-group>
+
+</form>

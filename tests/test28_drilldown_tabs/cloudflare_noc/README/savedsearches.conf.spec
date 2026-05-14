@@ -1,0 +1,52 @@
+display.visualizations.custom.cloudflare_noc.cf_kpi_tile.valueField = <string>
+display.visualizations.custom.cloudflare_noc.cf_kpi_tile.deltaField = <string>
+display.visualizations.custom.cloudflare_noc.cf_kpi_tile.label = <string>
+display.visualizations.custom.cloudflare_noc.cf_kpi_tile.unit = <string>
+display.visualizations.custom.cloudflare_noc.cf_kpi_tile.unitPosition = <string>
+display.visualizations.custom.cloudflare_noc.cf_kpi_tile.decimals = <integer>
+display.visualizations.custom.cloudflare_noc.cf_kpi_tile.showDelta = <boolean>
+display.visualizations.custom.cloudflare_noc.cf_kpi_tile.themeMode = <string>
+display.visualizations.custom.cloudflare_noc.cf_kpi_tile.accentColor = <string>
+display.visualizations.custom.cloudflare_noc.cf_kpi_tile.showGlow = <boolean>
+
+display.visualizations.custom.cloudflare_noc.cf_edge_grid.locationField = <string>
+display.visualizations.custom.cloudflare_noc.cf_edge_grid.statusField = <string>
+display.visualizations.custom.cloudflare_noc.cf_edge_grid.latencyField = <string>
+display.visualizations.custom.cloudflare_noc.cf_edge_grid.columns = <integer>
+display.visualizations.custom.cloudflare_noc.cf_edge_grid.showLatency = <boolean>
+display.visualizations.custom.cloudflare_noc.cf_edge_grid.showLabels = <boolean>
+display.visualizations.custom.cloudflare_noc.cf_edge_grid.themeMode = <string>
+display.visualizations.custom.cloudflare_noc.cf_edge_grid.healthyColor = <string>
+display.visualizations.custom.cloudflare_noc.cf_edge_grid.degradedColor = <string>
+display.visualizations.custom.cloudflare_noc.cf_edge_grid.downColor = <string>
+
+display.visualizations.custom.cloudflare_noc.cf_trend_line.timeField = <string>
+display.visualizations.custom.cloudflare_noc.cf_trend_line.valueField = <string>
+display.visualizations.custom.cloudflare_noc.cf_trend_line.label = <string>
+display.visualizations.custom.cloudflare_noc.cf_trend_line.unit = <string>
+display.visualizations.custom.cloudflare_noc.cf_trend_line.threshold = <float>
+display.visualizations.custom.cloudflare_noc.cf_trend_line.showFill = <boolean>
+display.visualizations.custom.cloudflare_noc.cf_trend_line.showDots = <boolean>
+display.visualizations.custom.cloudflare_noc.cf_trend_line.themeMode = <string>
+display.visualizations.custom.cloudflare_noc.cf_trend_line.lineColor = <string>
+display.visualizations.custom.cloudflare_noc.cf_trend_line.thresholdColor = <string>
+
+display.visualizations.custom.cloudflare_noc.cf_attack_timeline.timeField = <string>
+display.visualizations.custom.cloudflare_noc.cf_attack_timeline.attackField = <string>
+display.visualizations.custom.cloudflare_noc.cf_attack_timeline.severityField = <string>
+display.visualizations.custom.cloudflare_noc.cf_attack_timeline.targetField = <string>
+display.visualizations.custom.cloudflare_noc.cf_attack_timeline.attackIdField = <string>
+display.visualizations.custom.cloudflare_noc.cf_attack_timeline.maxRows = <integer>
+display.visualizations.custom.cloudflare_noc.cf_attack_timeline.showBadge = <boolean>
+display.visualizations.custom.cloudflare_noc.cf_attack_timeline.themeMode = <string>
+display.visualizations.custom.cloudflare_noc.cf_attack_timeline.accentColor = <string>
+
+display.visualizations.custom.cloudflare_noc.cf_cache_bars.categoryField = <string>
+display.visualizations.custom.cloudflare_noc.cf_cache_bars.valueField = <string>
+display.visualizations.custom.cloudflare_noc.cf_cache_bars.maxBars = <integer>
+display.visualizations.custom.cloudflare_noc.cf_cache_bars.showValues = <boolean>
+display.visualizations.custom.cloudflare_noc.cf_cache_bars.unit = <string>
+display.visualizations.custom.cloudflare_noc.cf_cache_bars.maxValue = <float>
+display.visualizations.custom.cloudflare_noc.cf_cache_bars.themeMode = <string>
+display.visualizations.custom.cloudflare_noc.cf_cache_bars.barColor = <string>
+display.visualizations.custom.cloudflare_noc.cf_cache_bars.showGradient = <boolean>

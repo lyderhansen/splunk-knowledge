@@ -1,0 +1,75 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+  <splunk-control-group label="Theme" help="Auto detects dark or light from the Splunk interface. Override to force a specific palette.">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" default="auto">
+      <option value="auto">Auto</option>
+      <option value="dark">Dark</option>
+      <option value="light">Light</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Region field" help="SPL field name containing the region label for each row. Default: region">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.regionField" default="region"></splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Value field" help="SPL field name containing the numeric composite score. Default: composite_score">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.valueField" default="composite_score"></splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Max value" help="Maximum expected score used to scale bars. Default: 100">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.maxValue" default="100"></splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Sort order" help="Order in which regions are listed. Descending shows highest score at top.">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.sortOrder" default="descending">
+      <option value="descending">Descending</option>
+      <option value="ascending">Ascending</option>
+      <option value="none">Data order</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+  <splunk-control-group label="Show grid lines" help="Display subtle vertical guide lines at 25, 50, and 75 score marks.">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.showGridLines" default="true">
+      <option value="true">On</option>
+      <option value="false">Off</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Show values" help="Display the numeric score to the right of each bar.">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.showValues" default="true">
+      <option value="true">On</option>
+      <option value="false">Off</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Bar corner radius" help="Rounded radius on the right end of each bar in pixels. 0 = square, 4 = subtle. Default: 4">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.barRadius" default="4"></splunk-text-input>
+  </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+  <splunk-control-group label="Low color" help="Bar fill color when the score is near zero. Default: earth tone (#8B6B4A)">
+    <splunk-color-picker type="custom" name="{{VIZ_NAMESPACE}}.lowColor" default="#8B6B4A">
+      <splunk-color>#8B6B4A</splunk-color>
+      <splunk-color>#6E5538</splunk-color>
+      <splunk-color>#A0805C</splunk-color>
+      <splunk-color>#C9956B</splunk-color>
+      <splunk-color>#B86B52</splunk-color>
+    </splunk-color-picker>
+  </splunk-control-group>
+
+  <splunk-control-group label="High color" help="Bar fill color when the score approaches max. Default: forest green (#5E8F5C)">
+    <splunk-color-picker type="custom" name="{{VIZ_NAMESPACE}}.highColor" default="#5E8F5C">
+      <splunk-color>#5E8F5C</splunk-color>
+      <splunk-color>#4A7A48</splunk-color>
+      <splunk-color>#3D5A3A</splunk-color>
+      <splunk-color>#7EA97C</splunk-color>
+      <splunk-color>#6899A9</splunk-color>
+    </splunk-color-picker>
+  </splunk-control-group>
+
+  <splunk-control-group label="Accent intensity (0–100)" help="Controls bar fill opacity and saturation. 50 = balanced; 100 = richest bars. Default: 50">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.accentIntensity" default="50"></splunk-text-input>
+  </splunk-control-group>
+</form>

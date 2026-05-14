@@ -1,0 +1,100 @@
+<form class="splunk-formatter-section" section-label="Data Configuration">
+    <splunk-control-group label="Score Field" help="Field containing the NPS score (0-100)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.scoreField" value="score">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Label Field" help="Field for the label displayed below the score">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.labelField" value="label">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Target Field" help="Field for the target score marker">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.targetField" value="target">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Max Value" help="Maximum gauge value (default 100)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.maxValue" value="100">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Data Display">
+    <splunk-control-group label="Show Target" help="Display target marker on the arc">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showTarget" value="true">
+            <option value="true">Show</option>
+            <option value="false">Hide</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Pulse Animation" help="Subtle pulse on the arc when score is in promoter zone">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showAnimation" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Zone Low Threshold" help="Score below this is Detractor zone (default 30)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.zoneLow" value="30">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Zone High Threshold" help="Score above this is Promoter zone (default 60)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.zoneHigh" value="60">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and Style">
+    <splunk-control-group label="Theme" help="Auto detects dashboard theme">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto">
+            <option value="auto">Auto</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Accent Color" help="Primary brand color for gauge elements">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.accentColor" type="custom" value="0x0077B6">
+            <splunk-color>0x0077B6</splunk-color>
+            <splunk-color>0x023E8A</splunk-color>
+            <splunk-color>0x00B4D8</splunk-color>
+            <splunk-color>0x48CAE4</splunk-color>
+            <splunk-color>0x2D8A4E</splunk-color>
+            <splunk-color>0x6C63FF</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+
+    <splunk-control-group label="Accent Intensity" help="Intensity of accent glow and highlights (0-100)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.accentIntensity" value="50">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Detractor Color" help="Color for the low/detractor zone">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.detractorColor" type="custom" value="0xE63946">
+            <splunk-color>0xE63946</splunk-color>
+            <splunk-color>0xC1292E</splunk-color>
+            <splunk-color>0xD62828</splunk-color>
+            <splunk-color>0xEF476F</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+
+    <splunk-control-group label="Passive Color" help="Color for the middle/passive zone">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.passiveColor" type="custom" value="0xF4A261">
+            <splunk-color>0xF4A261</splunk-color>
+            <splunk-color>0xE9C46A</splunk-color>
+            <splunk-color>0xFFB703</splunk-color>
+            <splunk-color>0xFB8500</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+
+    <splunk-control-group label="Promoter Color" help="Color for the high/promoter zone">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.promoterColor" type="custom" value="0x2DC653">
+            <splunk-color>0x2DC653</splunk-color>
+            <splunk-color>0x2D8A4E</splunk-color>
+            <splunk-color>0x06D6A0</splunk-color>
+            <splunk-color>0x38B000</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+</form>

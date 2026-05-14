@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="{{SPLUNKWEB_URL_PREFIX}}/static/css/bootstrap-enterprise.css" />
+    <link rel="stylesheet" type="text/css" href="{{SPLUNKWEB_URL_PREFIX}}/static/css/splunkformatter.css" />
+    <script src="{{SPLUNKWEB_URL_PREFIX}}/static/js/i18n.js"></script>
+    <script src="{{SPLUNKWEB_URL_PREFIX}}/static/js/splunk_formatter.js"></script>
+</head>
+<body class="splunk-formatter-body">
+
+<form class="splunk-formatter-form">
+
+    <div class="section-label">Data configurations</div>
+
+    <div class="control-group" help="Field name containing the battery SOC value (0–100)">
+        <label class="control-label">Value field</label>
+        <div class="controls">
+            <splunk-text-input name="display.visualizations.custom.porsche_taycan_viz.battery_gauge.valueField"
+                defaultValue="value">
+            </splunk-text-input>
+        </div>
+    </div>
+
+    <div class="control-group" help="Number of decimal places to display for the SOC value">
+        <label class="control-label">Decimal places</label>
+        <div class="controls">
+            <splunk-text-input name="display.visualizations.custom.porsche_taycan_viz.battery_gauge.decimals"
+                defaultValue="0">
+            </splunk-text-input>
+        </div>
+    </div>
+
+    <div class="section-label">Data display</div>
+
+    <div class="control-group" help="Unit label appended to the value in the center">
+        <label class="control-label">Unit</label>
+        <div class="controls">
+            <splunk-text-input name="display.visualizations.custom.porsche_taycan_viz.battery_gauge.unit"
+                defaultValue="%">
+            </splunk-text-input>
+        </div>
+    </div>
+
+    <div class="control-group" help="Show or hide the BATTERY label below the center value">
+        <label class="control-label">Show label</label>
+        <div class="controls">
+            <splunk-radio-input name="display.visualizations.custom.porsche_taycan_viz.battery_gauge.showLabel"
+                defaultValue="true">
+                <opt value="true" label="Yes"></opt>
+                <opt value="false" label="No"></opt>
+            </splunk-radio-input>
+        </div>
+    </div>
+
+    <div class="section-label">Color and style</div>
+
+    <div class="control-group" help="Base accent color for filled segments above 50% SOC">
+        <label class="control-label">Accent color</label>
+        <div class="controls">
+            <splunk-color-picker name="display.visualizations.custom.porsche_taycan_viz.battery_gauge.accentColor"
+                defaultValue="#00C9A7">
+            </splunk-color-picker>
+        </div>
+    </div>
+
+    <div class="control-group" help="SOC threshold (%) below which segments render in warning color">
+        <label class="control-label">Warning threshold</label>
+        <div class="controls">
+            <splunk-text-input name="display.visualizations.custom.porsche_taycan_viz.battery_gauge.warnThreshold"
+                defaultValue="20">
+            </splunk-text-input>
+        </div>
+    </div>
+
+    <div class="control-group" help="SOC threshold (%) below which segments render in critical/danger color">
+        <label class="control-label">Critical threshold</label>
+        <div class="controls">
+            <splunk-text-input name="display.visualizations.custom.porsche_taycan_viz.battery_gauge.critThreshold"
+                defaultValue="10">
+            </splunk-text-input>
+        </div>
+    </div>
+
+    <div class="control-group" help="Glow intensity 0–100 for segment shadows and ambient halo">
+        <label class="control-label">Accent intensity</label>
+        <div class="controls">
+            <splunk-text-input name="display.visualizations.custom.porsche_taycan_viz.battery_gauge.accentIntensity"
+                defaultValue="50">
+            </splunk-text-input>
+        </div>
+    </div>
+
+    <div class="control-group" help="Enable or disable the glow and halo effects">
+        <label class="control-label">Glow enabled</label>
+        <div class="controls">
+            <splunk-radio-input name="display.visualizations.custom.porsche_taycan_viz.battery_gauge.glowEnabled"
+                defaultValue="true">
+                <opt value="true" label="On"></opt>
+                <opt value="false" label="Off"></opt>
+            </splunk-radio-input>
+        </div>
+    </div>
+
+    <div class="control-group" help="Color theme for the panel background and text tokens">
+        <label class="control-label">Theme</label>
+        <div class="controls">
+            <splunk-radio-input name="display.visualizations.custom.porsche_taycan_viz.battery_gauge.theme"
+                defaultValue="dark">
+                <opt value="dark" label="Dark"></opt>
+                <opt value="light" label="Light"></opt>
+            </splunk-radio-input>
+        </div>
+    </div>
+
+</form>
+
+</body>
+</html>

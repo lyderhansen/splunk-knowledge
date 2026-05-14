@@ -1,0 +1,611 @@
+<dashboard version="2" theme="light">
+    <label>Apple Retail Analytics</label>
+    <description>Weekly store performance — revenue, traffic, satisfaction, and alerts</description>
+    <definition>
+    <![CDATA[
+{
+    "dataSources": {
+        "ds_kpi_revenue": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup apple_kpi_data.csv | where label=\"Total Revenue\"",
+                "queryParameters": {
+                    "earliest": "-7d@d",
+                    "latest": "now"
+                }
+            },
+            "name": "KPI Revenue"
+        },
+        "ds_kpi_traffic": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup apple_kpi_data.csv | where label=\"Foot Traffic\"",
+                "queryParameters": {
+                    "earliest": "-7d@d",
+                    "latest": "now"
+                }
+            },
+            "name": "KPI Traffic"
+        },
+        "ds_kpi_nps": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup apple_kpi_data.csv | where label=\"Avg NPS\"",
+                "queryParameters": {
+                    "earliest": "-7d@d",
+                    "latest": "now"
+                }
+            },
+            "name": "KPI NPS"
+        },
+        "ds_kpi_wait": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup apple_kpi_data.csv | where label=\"Genius Bar Avg Wait\"",
+                "queryParameters": {
+                    "earliest": "-7d@d",
+                    "latest": "now"
+                }
+            },
+            "name": "KPI Wait Time"
+        },
+        "ds_store_revenue": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup apple_store_revenue.csv | sort -revenue | head 10",
+                "queryParameters": {
+                    "earliest": "-7d@d",
+                    "latest": "now"
+                }
+            },
+            "name": "Store Revenue Ranking"
+        },
+        "ds_weekly_trend": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup apple_weekly_revenue.csv | eval _time=strptime(week, \"%Y-%m-%d\") | sort _time | table _time revenue target",
+                "queryParameters": {
+                    "earliest": "-90d@d",
+                    "latest": "now"
+                }
+            },
+            "name": "Weekly Revenue Trend"
+        },
+        "ds_product_mix": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup apple_product_mix.csv | sort -revenue",
+                "queryParameters": {
+                    "earliest": "-7d@d",
+                    "latest": "now"
+                }
+            },
+            "name": "Product Category Mix"
+        },
+        "ds_satisfaction": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup apple_satisfaction.csv",
+                "queryParameters": {
+                    "earliest": "-7d@d",
+                    "latest": "now"
+                }
+            },
+            "name": "Satisfaction Gauge"
+        },
+        "ds_alerts": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup apple_alerts.csv | sort -_time",
+                "queryParameters": {
+                    "earliest": "-7d@d",
+                    "latest": "now"
+                }
+            },
+            "name": "Store Alerts"
+        }
+    },
+    "visualizations": {
+        "viz_header_bg": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#FFFFFF",
+                "strokeColor": "rgba(0,0,0,0.04)",
+                "strokeWidth": 1,
+                "rx": 0,
+                "ry": 0
+            }
+        },
+        "viz_header_accent": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#007AFF",
+                "rx": 0,
+                "ry": 0
+            }
+        },
+        "viz_header_logo": {
+            "type": "splunk.image",
+            "options": {
+                "src": "/static/app/apple_retail_viz/images/apple_logo.svg",
+                "preserveAspectRatio": true
+            }
+        },
+        "viz_header_title": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "### Apple Retail Analytics",
+                "fontColor": "#1D1D1F",
+                "fontSize": "extraLarge",
+                "fontFamily": "\"SF Pro Display\", -apple-system, BlinkMacSystemFont, sans-serif"
+            }
+        },
+        "viz_header_subtitle": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "Weekly Performance Overview",
+                "fontColor": "#86868B",
+                "fontSize": "small"
+            }
+        },
+        "viz_section_kpi": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "KEY METRICS",
+                "fontColor": "rgba(29,29,31,0.30)",
+                "fontSize": "extraSmall"
+            }
+        },
+        "viz_kpi_revenue": {
+            "type": "apple_retail_viz.kpi_tile",
+            "dataSources": {
+                "primary": "ds_kpi_revenue"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "apple_retail_viz.kpi_tile.valueField": "value",
+                "apple_retail_viz.kpi_tile.labelField": "label",
+                "apple_retail_viz.kpi_tile.trendField": "trend",
+                "apple_retail_viz.kpi_tile.unitField": "unit",
+                "apple_retail_viz.kpi_tile.unitPosition": "before",
+                "apple_retail_viz.kpi_tile.decimals": "-1",
+                "apple_retail_viz.kpi_tile.accentColor": "#007AFF",
+                "apple_retail_viz.kpi_tile.accentIntensity": "50",
+                "apple_retail_viz.kpi_tile.themeMode": "auto"
+            }
+        },
+        "viz_kpi_traffic": {
+            "type": "apple_retail_viz.kpi_tile",
+            "dataSources": {
+                "primary": "ds_kpi_traffic"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "apple_retail_viz.kpi_tile.valueField": "value",
+                "apple_retail_viz.kpi_tile.labelField": "label",
+                "apple_retail_viz.kpi_tile.trendField": "trend",
+                "apple_retail_viz.kpi_tile.unitField": "unit",
+                "apple_retail_viz.kpi_tile.accentColor": "#5856D6",
+                "apple_retail_viz.kpi_tile.accentIntensity": "50",
+                "apple_retail_viz.kpi_tile.themeMode": "auto"
+            }
+        },
+        "viz_kpi_nps": {
+            "type": "apple_retail_viz.kpi_tile",
+            "dataSources": {
+                "primary": "ds_kpi_nps"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "apple_retail_viz.kpi_tile.valueField": "value",
+                "apple_retail_viz.kpi_tile.labelField": "label",
+                "apple_retail_viz.kpi_tile.trendField": "trend",
+                "apple_retail_viz.kpi_tile.unitField": "unit",
+                "apple_retail_viz.kpi_tile.accentColor": "#34C759",
+                "apple_retail_viz.kpi_tile.accentIntensity": "50",
+                "apple_retail_viz.kpi_tile.themeMode": "auto"
+            }
+        },
+        "viz_kpi_wait": {
+            "type": "apple_retail_viz.kpi_tile",
+            "dataSources": {
+                "primary": "ds_kpi_wait"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "apple_retail_viz.kpi_tile.valueField": "value",
+                "apple_retail_viz.kpi_tile.labelField": "label",
+                "apple_retail_viz.kpi_tile.trendField": "trend",
+                "apple_retail_viz.kpi_tile.unitField": "unit",
+                "apple_retail_viz.kpi_tile.unitPosition": "after",
+                "apple_retail_viz.kpi_tile.accentColor": "#FF9500",
+                "apple_retail_viz.kpi_tile.accentIntensity": "50",
+                "apple_retail_viz.kpi_tile.themeMode": "auto"
+            }
+        },
+        "viz_card_kpi_revenue": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#FFFFFF",
+                "strokeColor": "rgba(0,0,0,0.04)",
+                "strokeWidth": 1,
+                "rx": 12,
+                "ry": 12
+            }
+        },
+        "viz_card_kpi_traffic": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#FFFFFF",
+                "strokeColor": "rgba(0,0,0,0.04)",
+                "strokeWidth": 1,
+                "rx": 12,
+                "ry": 12
+            }
+        },
+        "viz_card_kpi_nps": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#FFFFFF",
+                "strokeColor": "rgba(0,0,0,0.04)",
+                "strokeWidth": 1,
+                "rx": 12,
+                "ry": 12
+            }
+        },
+        "viz_card_kpi_wait": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#FFFFFF",
+                "strokeColor": "rgba(0,0,0,0.04)",
+                "strokeWidth": 1,
+                "rx": 12,
+                "ry": 12
+            }
+        },
+        "viz_section_revenue": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "STORE REVENUE RANKING",
+                "fontColor": "rgba(29,29,31,0.30)",
+                "fontSize": "extraSmall"
+            }
+        },
+        "viz_card_revenue_bars": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#FFFFFF",
+                "strokeColor": "rgba(0,0,0,0.04)",
+                "strokeWidth": 1,
+                "rx": 12,
+                "ry": 12
+            }
+        },
+        "viz_revenue_bars": {
+            "type": "apple_retail_viz.revenue_bars",
+            "dataSources": {
+                "primary": "ds_store_revenue"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "apple_retail_viz.revenue_bars.labelField": "store",
+                "apple_retail_viz.revenue_bars.valueField": "revenue",
+                "apple_retail_viz.revenue_bars.deltaField": "delta",
+                "apple_retail_viz.revenue_bars.unit": "$",
+                "apple_retail_viz.revenue_bars.unitPosition": "before",
+                "apple_retail_viz.revenue_bars.maxBars": "10",
+                "apple_retail_viz.revenue_bars.showRank": "true",
+                "apple_retail_viz.revenue_bars.barColor": "#007AFF",
+                "apple_retail_viz.revenue_bars.accentIntensity": "50",
+                "apple_retail_viz.revenue_bars.themeMode": "auto"
+            }
+        },
+        "viz_section_trend": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "WEEKLY REVENUE TREND",
+                "fontColor": "rgba(29,29,31,0.30)",
+                "fontSize": "extraSmall"
+            }
+        },
+        "viz_card_trend": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#FFFFFF",
+                "strokeColor": "rgba(0,0,0,0.04)",
+                "strokeWidth": 1,
+                "rx": 12,
+                "ry": 12
+            }
+        },
+        "viz_weekly_trend": {
+            "type": "splunk.line",
+            "dataSources": {
+                "primary": "ds_weekly_trend"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "seriesColors": ["#007AFF", "#E5E5EA"],
+                "xAxisTitleVisibility": "hide",
+                "yAxisTitleVisibility": "hide",
+                "legendDisplay": "top",
+                "showSplitSeries": false,
+                "dataValuesDisplay": "off",
+                "nullValueDisplay": "connect"
+            }
+        },
+        "viz_section_mix": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "PRODUCT CATEGORY MIX",
+                "fontColor": "rgba(29,29,31,0.30)",
+                "fontSize": "extraSmall"
+            }
+        },
+        "viz_card_product_mix": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#FFFFFF",
+                "strokeColor": "rgba(0,0,0,0.04)",
+                "strokeWidth": 1,
+                "rx": 12,
+                "ry": 12
+            }
+        },
+        "viz_product_mix": {
+            "type": "apple_retail_viz.product_mix",
+            "dataSources": {
+                "primary": "ds_product_mix"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "apple_retail_viz.product_mix.categoryField": "category",
+                "apple_retail_viz.product_mix.valueField": "revenue",
+                "apple_retail_viz.product_mix.unit": "$",
+                "apple_retail_viz.product_mix.unitPosition": "before",
+                "apple_retail_viz.product_mix.showReadout": "true",
+                "apple_retail_viz.product_mix.showLegend": "true",
+                "apple_retail_viz.product_mix.colors": "#007AFF,#5856D6,#AF52DE,#FF2D55,#FF9500",
+                "apple_retail_viz.product_mix.accentIntensity": "50",
+                "apple_retail_viz.product_mix.themeMode": "auto"
+            }
+        },
+        "viz_section_satisfaction": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "GENIUS BAR SATISFACTION",
+                "fontColor": "rgba(29,29,31,0.30)",
+                "fontSize": "extraSmall"
+            }
+        },
+        "viz_card_satisfaction": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#FFFFFF",
+                "strokeColor": "rgba(0,0,0,0.04)",
+                "strokeWidth": 1,
+                "rx": 12,
+                "ry": 12
+            }
+        },
+        "viz_satisfaction_gauge": {
+            "type": "apple_retail_viz.satisfaction_gauge",
+            "dataSources": {
+                "primary": "ds_satisfaction"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "apple_retail_viz.satisfaction_gauge.valueField": "value",
+                "apple_retail_viz.satisfaction_gauge.maxValueField": "maxValue",
+                "apple_retail_viz.satisfaction_gauge.labelField": "metric",
+                "apple_retail_viz.satisfaction_gauge.maxValue": "100",
+                "apple_retail_viz.satisfaction_gauge.thresholdLow": "50",
+                "apple_retail_viz.satisfaction_gauge.thresholdHigh": "70",
+                "apple_retail_viz.satisfaction_gauge.decimals": "0",
+                "apple_retail_viz.satisfaction_gauge.accentColor": "#007AFF",
+                "apple_retail_viz.satisfaction_gauge.accentIntensity": "50",
+                "apple_retail_viz.satisfaction_gauge.themeMode": "auto"
+            }
+        },
+        "viz_section_alerts": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "STORE ALERTS",
+                "fontColor": "rgba(29,29,31,0.30)",
+                "fontSize": "extraSmall"
+            }
+        },
+        "viz_card_alerts": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#FFFFFF",
+                "strokeColor": "rgba(0,0,0,0.04)",
+                "strokeWidth": 1,
+                "rx": 12,
+                "ry": 12
+            }
+        },
+        "viz_alert_feed": {
+            "type": "apple_retail_viz.alert_feed",
+            "dataSources": {
+                "primary": "ds_alerts"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "apple_retail_viz.alert_feed.severityField": "severity",
+                "apple_retail_viz.alert_feed.storeField": "store",
+                "apple_retail_viz.alert_feed.messageField": "message",
+                "apple_retail_viz.alert_feed.timeField": "_time",
+                "apple_retail_viz.alert_feed.maxRows": "20",
+                "apple_retail_viz.alert_feed.accentIntensity": "50",
+                "apple_retail_viz.alert_feed.themeMode": "auto"
+            }
+        }
+    },
+    "inputs": {},
+    "layout": {
+        "type": "absolute",
+        "options": {
+            "width": 1920,
+            "height": 1200,
+            "backgroundColor": "#F5F5F7",
+            "display": "auto-scale"
+        },
+        "structure": [
+            {
+                "item": "viz_header_bg",
+                "type": "block",
+                "position": { "x": 0, "y": 0, "w": 1920, "h": 64 }
+            },
+            {
+                "item": "viz_header_accent",
+                "type": "block",
+                "position": { "x": 0, "y": 62, "w": 1920, "h": 2 }
+            },
+            {
+                "item": "viz_header_logo",
+                "type": "block",
+                "position": { "x": 24, "y": 10, "w": 200, "h": 44 }
+            },
+            {
+                "item": "viz_header_subtitle",
+                "type": "block",
+                "position": { "x": 240, "y": 22, "w": 300, "h": 24 }
+            },
+            {
+                "item": "viz_section_kpi",
+                "type": "block",
+                "position": { "x": 28, "y": 78, "w": 200, "h": 20 }
+            },
+
+            {
+                "item": "viz_card_kpi_revenue",
+                "type": "block",
+                "position": { "x": 24, "y": 102, "w": 450, "h": 140 }
+            },
+            {
+                "item": "viz_kpi_revenue",
+                "type": "block",
+                "position": { "x": 28, "y": 106, "w": 442, "h": 132 }
+            },
+
+            {
+                "item": "viz_card_kpi_traffic",
+                "type": "block",
+                "position": { "x": 490, "y": 102, "w": 450, "h": 140 }
+            },
+            {
+                "item": "viz_kpi_traffic",
+                "type": "block",
+                "position": { "x": 494, "y": 106, "w": 442, "h": 132 }
+            },
+
+            {
+                "item": "viz_card_kpi_nps",
+                "type": "block",
+                "position": { "x": 956, "y": 102, "w": 450, "h": 140 }
+            },
+            {
+                "item": "viz_kpi_nps",
+                "type": "block",
+                "position": { "x": 960, "y": 106, "w": 442, "h": 132 }
+            },
+
+            {
+                "item": "viz_card_kpi_wait",
+                "type": "block",
+                "position": { "x": 1422, "y": 102, "w": 474, "h": 140 }
+            },
+            {
+                "item": "viz_kpi_wait",
+                "type": "block",
+                "position": { "x": 1426, "y": 106, "w": 466, "h": 132 }
+            },
+
+            {
+                "item": "viz_section_revenue",
+                "type": "block",
+                "position": { "x": 28, "y": 260, "w": 300, "h": 20 }
+            },
+            {
+                "item": "viz_card_revenue_bars",
+                "type": "block",
+                "position": { "x": 24, "y": 284, "w": 920, "h": 440 }
+            },
+            {
+                "item": "viz_revenue_bars",
+                "type": "block",
+                "position": { "x": 28, "y": 288, "w": 912, "h": 432 }
+            },
+
+            {
+                "item": "viz_section_trend",
+                "type": "block",
+                "position": { "x": 964, "y": 260, "w": 300, "h": 20 }
+            },
+            {
+                "item": "viz_card_trend",
+                "type": "block",
+                "position": { "x": 960, "y": 284, "w": 936, "h": 440 }
+            },
+            {
+                "item": "viz_weekly_trend",
+                "type": "block",
+                "position": { "x": 976, "y": 300, "w": 904, "h": 408 }
+            },
+
+            {
+                "item": "viz_section_mix",
+                "type": "block",
+                "position": { "x": 28, "y": 740, "w": 300, "h": 20 }
+            },
+            {
+                "item": "viz_card_product_mix",
+                "type": "block",
+                "position": { "x": 24, "y": 764, "w": 620, "h": 410 }
+            },
+            {
+                "item": "viz_product_mix",
+                "type": "block",
+                "position": { "x": 28, "y": 768, "w": 612, "h": 402 }
+            },
+
+            {
+                "item": "viz_section_satisfaction",
+                "type": "block",
+                "position": { "x": 664, "y": 740, "w": 300, "h": 20 }
+            },
+            {
+                "item": "viz_card_satisfaction",
+                "type": "block",
+                "position": { "x": 660, "y": 764, "w": 440, "h": 410 }
+            },
+            {
+                "item": "viz_satisfaction_gauge",
+                "type": "block",
+                "position": { "x": 664, "y": 768, "w": 432, "h": 402 }
+            },
+
+            {
+                "item": "viz_section_alerts",
+                "type": "block",
+                "position": { "x": 1120, "y": 740, "w": 300, "h": 20 }
+            },
+            {
+                "item": "viz_card_alerts",
+                "type": "block",
+                "position": { "x": 1116, "y": 764, "w": 780, "h": 410 }
+            },
+            {
+                "item": "viz_alert_feed",
+                "type": "block",
+                "position": { "x": 1120, "y": 768, "w": 772, "h": 402 }
+            }
+        ]
+    },
+    "description": "Apple Retail Analytics — weekly store performance dashboard",
+    "title": "Apple Retail Analytics"
+}
+    ]]>
+    </definition>
+</dashboard>

@@ -1,0 +1,77 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+  <splunk-control-group label="Value field" help="SPL field name that holds the main numeric value.">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.valueField" default="value"></splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Label field" help="SPL field name for the metric label shown below the value.">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.labelField" default="metric"></splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Unit field" help="SPL field name for the unit symbol (e.g. kg, %, km).">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.unitField" default="unit"></splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Trend field" help="SPL field name for the trend delta value (numeric, e.g. 4.2 means +4.2%).">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.trendField" default="trend"></splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Sparkline field" help="SPL field name for comma-separated sparkline data points.">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.sparklineField" default="sparkline"></splunk-text-input>
+  </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+  <splunk-control-group label="Unit position" help="Show the unit symbol before or after the value.">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.unitPosition" default="after">
+      <option value="before">Before</option>
+      <option value="after">After</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Compact numbers" help="Abbreviate large numbers (e.g. 1,400 to 1.4K).">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.compact" default="true">
+      <option value="true">On</option>
+      <option value="false">Off</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Decimals" help="Number of decimal places. Use -1 for automatic formatting.">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.decimals" default="-1"></splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Show sparkline" help="Display the mini trend sparkline at the bottom of the panel.">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.showSparkline" default="true">
+      <option value="true">On</option>
+      <option value="false">Off</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Show trend indicator" help="Display the trend arrow and delta percentage in the top-right corner.">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.showTrend" default="true">
+      <option value="true">On</option>
+      <option value="false">Off</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+  <splunk-control-group label="Theme" help="Use auto to follow the Splunk dark/light mode; override with dark or light.">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" default="auto">
+      <option value="auto">Auto</option>
+      <option value="dark">Dark</option>
+      <option value="light">Light</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Value color" help="Color of the main KPI value text.">
+    <splunk-color-picker type="custom" name="{{VIZ_NAMESPACE}}.valueColor" default="#5E8F5C"></splunk-color-picker>
+  </splunk-control-group>
+
+  <splunk-control-group label="Accent color" help="Color of the left-edge accent bar.">
+    <splunk-color-picker type="custom" name="{{VIZ_NAMESPACE}}.accentColor" default="#5E8F5C"></splunk-color-picker>
+  </splunk-control-group>
+
+  <splunk-control-group label="Accent intensity (0-100)" help="Controls the opacity strength of the accent bar. 50 = balanced.">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.accentIntensity" default="50"></splunk-text-input>
+  </splunk-control-group>
+</form>

@@ -1,0 +1,24 @@
+[]
+access = read : [ * ], write : [ admin, sc_admin ]
+export = system
+
+[visualizations/jwst_heat_grid]
+export = system
+
+[visualizations/jwst_instrument_matrix]
+export = system
+
+[visualizations/jwst_data_cascade]
+export = system
+
+[visualizations/jwst_observation_queue]
+export = system
+
+[visualizations/jwst_power_horizon]
+export = system
+
+[visualizations/jwst_kpi_tile]
+export = system
+
+[lookups]
+export = system

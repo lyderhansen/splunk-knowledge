@@ -1,0 +1,8 @@
+/* battery_gauge/visualization.css */
+/* Minimal container styles. Fonts injected by theme.js. */
+
+.battery-gauge-container,
+.splunk-view .dashboard-cell-visualization {
+    overflow: hidden;
+    position: relative;
+}

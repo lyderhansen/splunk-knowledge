@@ -1,0 +1,45 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+    <splunk-control-group label="Day Field" help="SPL field containing day name or number (e.g. Monday, Mon, 1-7)">
+        <splunk-text-input name="nordshield_viz_pack.attack_heatmap.dayField" default="day"></splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Hour Field" help="SPL field containing hour as 0-23 integer">
+        <splunk-text-input name="nordshield_viz_pack.attack_heatmap.hourField" default="hour"></splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Count Field" help="SPL field containing the attack count per cell">
+        <splunk-text-input name="nordshield_viz_pack.attack_heatmap.countField" default="count"></splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Color and style">
+    <splunk-control-group label="Low Color" help="Cell color for zero or near-zero attack counts">
+        <splunk-color-picker name="nordshield_viz_pack.attack_heatmap.colorLow" default="#1A2236">
+            <splunk-color token="#1A2236"></splunk-color>
+            <splunk-color token="#0F1628"></splunk-color>
+            <splunk-color token="#080C18"></splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Mid Color" help="Cell color at medium attack intensity (50% of max)">
+        <splunk-color-picker name="nordshield_viz_pack.attack_heatmap.colorMid" default="#00E5CC">
+            <splunk-color token="#00E5CC"></splunk-color>
+            <splunk-color token="#38BDF8"></splunk-color>
+            <splunk-color token="#8B5CF6"></splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="High Color" help="Cell color at maximum attack intensity">
+        <splunk-color-picker name="nordshield_viz_pack.attack_heatmap.colorHigh" default="#FFB020">
+            <splunk-color token="#FFB020"></splunk-color>
+            <splunk-color token="#D946EF"></splunk-color>
+            <splunk-color token="#FF4444"></splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Accent Intensity" help="Effect intensity for cell brightness (0-100, default 50)">
+        <splunk-text-input name="nordshield_viz_pack.attack_heatmap.accentIntensity" default="50"></splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Data display">
+    <splunk-control-group label="Highlight Current Hour" help="Draw a border around the current hour column">
+        <splunk-radio-input name="nordshield_viz_pack.attack_heatmap.highlightCurrent" default="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>

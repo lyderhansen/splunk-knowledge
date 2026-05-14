@@ -1,0 +1,15 @@
+/* Porsche Motorsport Viz Pack — Tire Timeline */
+
+.tire-timeline-viz {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.tire-timeline-viz canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}

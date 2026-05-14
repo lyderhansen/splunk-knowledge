@@ -1,0 +1,39 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+    <splunk-control-group label="Severity field" help="SPL field for alert severity (critical, warning, info)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.severityField" value="severity">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Store field" help="SPL field for the store name">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.storeField" value="store">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Message field" help="SPL field for the alert message text">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.messageField" value="message">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Time field" help="SPL field for the event timestamp">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.timeField" value="_time">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+    <splunk-control-group label="Max rows" help="Maximum number of alerts to display">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.maxRows" value="20">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+    <splunk-control-group label="Accent intensity" help="Strength of hover highlight (0-100)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.accentIntensity" value="50">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Theme" help="Auto detects dashboard theme">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto">
+            <option value="auto">Auto</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>

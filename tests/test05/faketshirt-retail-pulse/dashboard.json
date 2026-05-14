@@ -1,0 +1,1395 @@
+{
+  "title": "Discovery - Retail Pulse",
+  "description": "Real-time revenue, order, and site health dashboard for the FAKE T-Shirt Company. Designed for Director of Retail Operations.",
+  "defaults": {
+    "dataSources": {
+      "ds.search": {
+        "options": {
+          "queryParameters": {
+            "earliest": "$global_time.earliest$",
+            "latest": "$global_time.latest$"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showLastUpdated": false
+      }
+    }
+  },
+  "inputs": {
+    "input_global_trp": {
+      "type": "input.timerange",
+      "title": "Time Range",
+      "options": {
+        "token": "global_time",
+        "defaultValue": "1767225600,1769904000"
+      }
+    }
+  },
+  "dataSources": {
+    "ds_kpi_revenue": {
+      "type": "ds.search",
+      "name": "ds_kpi_revenue",
+      "options": {
+        "query": "index=fake_tshrt sourcetype=\"FAKE:online:order\" | timechart span=1h sum(pricing.total) as revenue"
+      }
+    },
+    "ds_kpi_orders": {
+      "type": "ds.search",
+      "name": "ds_kpi_orders",
+      "options": {
+        "query": "index=fake_tshrt sourcetype=\"FAKE:online:order\" | timechart span=1h count as orders"
+      }
+    },
+    "ds_kpi_pricing_errors": {
+      "type": "ds.search",
+      "name": "ds_kpi_pricing_errors",
+      "options": {
+        "query": "index=fake_tshrt sourcetype=\"FAKE:online:order\" wrong_price=true | timechart span=1h count as wrong_orders sum(revenue_impact) as impact"
+      }
+    },
+    "ds_kpi_site_error_rate": {
+      "type": "ds.search",
+      "name": "ds_kpi_site_error_rate",
+      "options": {
+        "query": "index=fake_tshrt sourcetype=\"FAKE:access_combined\" | eval is_5xx=if(status>=500,1,0) | timechart span=1h sum(is_5xx) as errors count as requests | eval error_rate=round(100*errors/requests,2) | table _time error_rate"
+      }
+    },
+    "ds_tile_orders_per_hour": {
+      "type": "ds.search",
+      "name": "ds_tile_orders_per_hour",
+      "options": {
+        "query": "index=fake_tshrt sourcetype=\"FAKE:online:order\" | stats count as orders by date_hour | stats avg(orders) as ordersperhour"
+      }
+    },
+    "ds_tile_aov": {
+      "type": "ds.search",
+      "name": "ds_tile_aov",
+      "options": {
+        "query": "index=fake_tshrt sourcetype=\"FAKE:online:order\" | stats avg(pricing.total) as aov"
+      }
+    },
+    "ds_tile_unique_customers": {
+      "type": "ds.search",
+      "name": "ds_tile_unique_customers",
+      "options": {
+        "query": "index=fake_tshrt sourcetype=\"FAKE:online:order\" | stats dc(customerId) as unique_customers"
+      }
+    },
+    "ds_tile_dlq": {
+      "type": "ds.search",
+      "name": "ds_tile_dlq",
+      "options": {
+        "query": "index=fake_tshrt sourcetype=\"FAKE:azure:servicebus\" status=\"DeadLettered\" | stats count as dlq_count"
+      }
+    },
+    "ds_tile_failed": {
+      "type": "ds.search",
+      "name": "ds_tile_failed",
+      "options": {
+        "query": "index=fake_tshrt sourcetype=\"FAKE:azure:servicebus\" status=\"Failed\" | stats count as failed_count"
+      }
+    },
+    "ds_tile_completed": {
+      "type": "ds.search",
+      "name": "ds_tile_completed",
+      "options": {
+        "query": "index=fake_tshrt sourcetype=\"FAKE:azure:servicebus\" status=\"Completed\" | stats count as completed_count"
+      }
+    },
+    "ds_revenue_trend": {
+      "type": "ds.search",
+      "name": "ds_revenue_trend",
+      "options": {
+        "query": "index=fake_tshrt sourcetype=\"FAKE:online:order\" | timechart span=6h sum(pricing.total) as revenue"
+      }
+    },
+    "ds_orders_by_category": {
+      "type": "ds.search",
+      "name": "ds_orders_by_category",
+      "options": {
+        "query": "index=fake_tshrt sourcetype=\"FAKE:online:order\" | spath items{}.category as category | stats count by category | sort -count"
+      }
+    },
+    "ds_orders_by_segment": {
+      "type": "ds.search",
+      "name": "ds_orders_by_segment",
+      "options": {
+        "query": "index=fake_tshrt sourcetype=\"FAKE:online:order\" | stats count by segment | sort -count"
+      }
+    },
+    "ds_site_error_trend": {
+      "type": "ds.search",
+      "name": "ds_site_error_trend",
+      "options": {
+        "query": "index=fake_tshrt sourcetype=\"FAKE:access_combined\" | eval is_5xx=if(status>=500,1,0) | timechart span=1h sum(is_5xx) as errors count as requests | eval error_rate=round(100*errors/requests,2) | table _time error_rate"
+      }
+    },
+    "ds_top_products": {
+      "type": "ds.search",
+      "name": "ds_top_products",
+      "options": {
+        "query": "index=fake_tshrt sourcetype=\"FAKE:online:order\" | spath items{} output=item | mvexpand item | spath input=item | stats sum(lineTotal) as revenue count as units by name | sort -revenue | head 10 | eval revenue=tostring(round(revenue,0),\"commas\") | rename name as Product, units as Units, revenue as Revenue"
+      }
+    },
+    "ds_recent_pricing_errors": {
+      "type": "ds.search",
+      "name": "ds_recent_pricing_errors",
+      "options": {
+        "query": "index=fake_tshrt sourcetype=\"FAKE:online:order\" wrong_price=true | sort -_time | eval _color_rank=case(priceErrorType==\"price_doubled\", 1, priceErrorType==\"price_halved\", 2, true(), 3) | eval Time=strftime(_time, \"%b %d %H:%M\"), OrigPrice=tostring(originalPrice,\"commas\"), Charged=tostring(round('pricing.total',2),\"commas\"), Impact=tostring(round(revenue_impact,2),\"commas\") | table Time orderId customerId priceErrorType OrigPrice Charged Impact _color_rank | rename orderId as \"Order ID\", customerId as Customer, priceErrorType as \"Error Type\", OrigPrice as \"Orig Price\", Charged as \"Charged\", Impact as \"Impact ($)\" | head 20"
+      }
+    }
+  },
+  "visualizations": {
+    "viz_brand_wordmark": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# FAKE T-Shirt Co. \u2014 Retail Pulse",
+        "fontColor": "#00D2FF",
+        "fontSize": "extraLarge",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_brand_stripe": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#00D2FF",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 0
+      }
+    },
+    "viz_section_pulse": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## Today's Pulse\n\nReal-time revenue, orders, pricing integrity, and site health.",
+        "fontColor": "#F1F5F9",
+        "fontSize": "large",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_section_sales": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## Sales Activity\n\nRolling indicators across the active period.",
+        "fontColor": "#F1F5F9",
+        "fontSize": "large",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_section_integrity": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## Pricing Integrity & Site Health\n\nRevenue trend, mix, and site error rate. Pricing errors caught here before customer complaints.",
+        "fontColor": "#F1F5F9",
+        "fontSize": "large",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_section_products": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## Top Products & Recent Pricing Errors\n\nTop-selling SKUs and a watchlist of any wrong-priced orders.",
+        "fontColor": "#F1F5F9",
+        "fontSize": "large",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_footer": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "**Quick links** | [ServiceNow incidents](#) | [Discovery: Orders](discovery_orders) | [Discovery: Site Health](discovery_site_health) | **Owner**: maya.chen@theFakeTshirtCompany.com",
+        "fontColor": "#7F8C9A",
+        "fontSize": "small",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_shadow_kpi_revenue": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2937",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 14
+      },
+      "cornerRadius": [
+        14,
+        14,
+        14,
+        14
+      ]
+    },
+    "viz_shadow_kpi_orders": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2937",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 14
+      },
+      "cornerRadius": [
+        14,
+        14,
+        14,
+        14
+      ]
+    },
+    "viz_shadow_kpi_pricing": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2937",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 14
+      },
+      "cornerRadius": [
+        14,
+        14,
+        14,
+        14
+      ]
+    },
+    "viz_shadow_kpi_site": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2937",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 14
+      },
+      "cornerRadius": [
+        14,
+        14,
+        14,
+        14
+      ]
+    },
+    "viz_kpi_revenue": {
+      "type": "splunk.singlevalue",
+      "title": "Revenue (period)",
+      "dataSources": {
+        "primary": "ds_kpi_revenue"
+      },
+      "options": {
+        "majorValue": "> sparklineValues | lastPoint()",
+        "trendValue": "> sparklineValues | delta(-2)",
+        "sparklineValues": "> primary | seriesByName('revenue')",
+        "sparklineDisplay": "below",
+        "trendDisplay": "off",
+        "majorColor": "#00D2FF",
+        "backgroundColor": "#13141A",
+        "showSparklineAreaGraph": true,
+        "sparklineStrokeColor": "#00D2FF",
+        "majorFontSize": 44,
+        "unit": "$",
+        "unitPosition": "before",
+        "underLabel": "hourly buckets, total in window",
+        "underLabelFontSize": 13
+      },
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "viz_kpi_orders": {
+      "type": "splunk.singlevalue",
+      "title": "Orders (period)",
+      "dataSources": {
+        "primary": "ds_kpi_orders"
+      },
+      "options": {
+        "majorValue": "> sparklineValues | lastPoint()",
+        "trendValue": "> sparklineValues | delta(-2)",
+        "sparklineValues": "> primary | seriesByName('orders')",
+        "sparklineDisplay": "below",
+        "trendDisplay": "off",
+        "majorColor": "#7B56DB",
+        "backgroundColor": "#13141A",
+        "showSparklineAreaGraph": true,
+        "sparklineStrokeColor": "#7B56DB",
+        "majorFontSize": 44,
+        "underLabel": "order count, hourly buckets",
+        "underLabelFontSize": 13
+      },
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "viz_kpi_pricing_errors": {
+      "type": "splunk.singlevalue",
+      "title": "Wrong-Priced Orders",
+      "dataSources": {
+        "primary": "ds_kpi_pricing_errors"
+      },
+      "options": {
+        "majorValue": "> sparklineValues | lastPoint()",
+        "trendValue": "> sparklineValues | delta(-2)",
+        "sparklineValues": "> primary | seriesByName('wrong_orders')",
+        "sparklineDisplay": "below",
+        "trendDisplay": "off",
+        "majorColor": "> majorValue | rangeValue(majorColorConfig)",
+        "backgroundColor": "#13141A",
+        "showSparklineAreaGraph": true,
+        "sparklineStrokeColor": "#F1813F",
+        "majorFontSize": 44,
+        "underLabel": "dead_letter_pricing scenario",
+        "underLabelFontSize": 13
+      },
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "context": {
+        "majorColorConfig": [
+          {
+            "to": 1,
+            "value": "#53A051"
+          },
+          {
+            "from": 1,
+            "to": 50,
+            "value": "#F8BE34"
+          },
+          {
+            "from": 50,
+            "value": "#DC4E41"
+          }
+        ]
+      }
+    },
+    "viz_kpi_site_error": {
+      "type": "splunk.singlevalue",
+      "title": "Site Error Rate",
+      "dataSources": {
+        "primary": "ds_kpi_site_error_rate"
+      },
+      "options": {
+        "majorValue": "> sparklineValues | lastPoint()",
+        "trendValue": "> sparklineValues | delta(-2)",
+        "sparklineValues": "> primary | seriesByName('error_rate')",
+        "sparklineDisplay": "below",
+        "trendDisplay": "off",
+        "majorColor": "> majorValue | rangeValue(majorColorConfig)",
+        "backgroundColor": "#13141A",
+        "showSparklineAreaGraph": true,
+        "sparklineStrokeColor": "#009CEB",
+        "majorFontSize": 44,
+        "unit": "%",
+        "unitPosition": "after",
+        "numberPrecision": 2,
+        "underLabel": "HTTP 5xx / total requests",
+        "underLabelFontSize": 13
+      },
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "context": {
+        "majorColorConfig": [
+          {
+            "to": 0.5,
+            "value": "#53A051"
+          },
+          {
+            "from": 0.5,
+            "to": 2,
+            "value": "#F8BE34"
+          },
+          {
+            "from": 2,
+            "value": "#DC4E41"
+          }
+        ]
+      }
+    },
+    "viz_shadow_tile_orders_hour": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2937",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 12
+      },
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "viz_shadow_tile_aov": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2937",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 12
+      },
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "viz_shadow_tile_customers": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2937",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 12
+      },
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "viz_shadow_tile_dlq": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2937",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 12
+      },
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "viz_shadow_tile_failed": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2937",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 12
+      },
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "viz_shadow_tile_completed": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2937",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 12
+      },
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "viz_tile_orders_hour": {
+      "type": "splunk.singlevalue",
+      "title": "Orders / hour",
+      "dataSources": {
+        "primary": "ds_tile_orders_per_hour"
+      },
+      "options": {
+        "majorValue": "> primary | seriesByName('ordersperhour') | lastPoint()",
+        "majorColor": "#00D2FF",
+        "sparklineDisplay": "off",
+        "trendDisplay": "off",
+        "backgroundColor": "#13141A",
+        "majorFontSize": 32,
+        "underLabel": "avg per hour-of-day",
+        "underLabelFontSize": 11
+      },
+      "cornerRadius": [
+        10,
+        10,
+        10,
+        10
+      ]
+    },
+    "viz_tile_aov": {
+      "type": "splunk.singlevalue",
+      "title": "Avg Order Value",
+      "dataSources": {
+        "primary": "ds_tile_aov"
+      },
+      "options": {
+        "majorValue": "> primary | seriesByName('aov') | lastPoint()",
+        "majorColor": "#7B56DB",
+        "sparklineDisplay": "off",
+        "trendDisplay": "off",
+        "backgroundColor": "#13141A",
+        "majorFontSize": 32,
+        "unit": "$",
+        "unitPosition": "before",
+        "numberPrecision": 2,
+        "underLabel": "$ per order, period",
+        "underLabelFontSize": 11
+      },
+      "cornerRadius": [
+        10,
+        10,
+        10,
+        10
+      ]
+    },
+    "viz_tile_customers": {
+      "type": "splunk.singlevalue",
+      "title": "Unique Customers",
+      "dataSources": {
+        "primary": "ds_tile_unique_customers"
+      },
+      "options": {
+        "majorValue": "> primary | seriesByName('unique_customers') | lastPoint()",
+        "majorColor": "#53A051",
+        "sparklineDisplay": "off",
+        "trendDisplay": "off",
+        "backgroundColor": "#13141A",
+        "majorFontSize": 32,
+        "underLabel": "distinct, period",
+        "underLabelFontSize": 11
+      },
+      "cornerRadius": [
+        10,
+        10,
+        10,
+        10
+      ]
+    },
+    "viz_tile_dlq": {
+      "type": "splunk.singlevalue",
+      "title": "DLQ Depth",
+      "dataSources": {
+        "primary": "ds_tile_dlq"
+      },
+      "options": {
+        "majorValue": "> primary | seriesByName('dlq_count') | lastPoint()",
+        "majorColor": "> majorValue | rangeValue(majorColorConfig)",
+        "sparklineDisplay": "off",
+        "trendDisplay": "off",
+        "backgroundColor": "#13141A",
+        "majorFontSize": 32,
+        "underLabel": "dead-lettered ServiceBus",
+        "underLabelFontSize": 11
+      },
+      "cornerRadius": [
+        10,
+        10,
+        10,
+        10
+      ],
+      "context": {
+        "majorColorConfig": [
+          {
+            "to": 1,
+            "value": "#53A051"
+          },
+          {
+            "from": 1,
+            "to": 10,
+            "value": "#F8BE34"
+          },
+          {
+            "from": 10,
+            "value": "#DC4E41"
+          }
+        ]
+      }
+    },
+    "viz_tile_failed": {
+      "type": "splunk.singlevalue",
+      "title": "Failed Orders",
+      "dataSources": {
+        "primary": "ds_tile_failed"
+      },
+      "options": {
+        "majorValue": "> primary | seriesByName('failed_count') | lastPoint()",
+        "majorColor": "> majorValue | rangeValue(majorColorConfig)",
+        "sparklineDisplay": "off",
+        "trendDisplay": "off",
+        "backgroundColor": "#13141A",
+        "majorFontSize": 32,
+        "underLabel": "ServiceBus status=Failed",
+        "underLabelFontSize": 11
+      },
+      "cornerRadius": [
+        10,
+        10,
+        10,
+        10
+      ],
+      "context": {
+        "majorColorConfig": [
+          {
+            "to": 1,
+            "value": "#53A051"
+          },
+          {
+            "from": 1,
+            "to": 5,
+            "value": "#F8BE34"
+          },
+          {
+            "from": 5,
+            "value": "#DC4E41"
+          }
+        ]
+      }
+    },
+    "viz_tile_completed": {
+      "type": "splunk.singlevalue",
+      "title": "Completed Orders",
+      "dataSources": {
+        "primary": "ds_tile_completed"
+      },
+      "options": {
+        "majorValue": "> primary | seriesByName('completed_count') | lastPoint()",
+        "majorColor": "#00CDAF",
+        "sparklineDisplay": "off",
+        "trendDisplay": "off",
+        "backgroundColor": "#13141A",
+        "majorFontSize": 32,
+        "underLabel": "ServiceBus status=Completed",
+        "underLabelFontSize": 11
+      },
+      "cornerRadius": [
+        10,
+        10,
+        10,
+        10
+      ]
+    },
+    "viz_shadow_revenue": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2937",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 14
+      },
+      "cornerRadius": [
+        14,
+        14,
+        14,
+        14
+      ]
+    },
+    "viz_shadow_categories": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2937",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 14
+      },
+      "cornerRadius": [
+        14,
+        14,
+        14,
+        14
+      ]
+    },
+    "viz_shadow_segments": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2937",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 14
+      },
+      "cornerRadius": [
+        14,
+        14,
+        14,
+        14
+      ]
+    },
+    "viz_shadow_siteerror": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2937",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 14
+      },
+      "cornerRadius": [
+        14,
+        14,
+        14,
+        14
+      ]
+    },
+    "viz_revenue_trend": {
+      "type": "splunk.area",
+      "title": "Revenue Trend (6h buckets)",
+      "dataSources": {
+        "primary": "ds_revenue_trend"
+      },
+      "options": {
+        "legendDisplay": "off",
+        "nullValueDisplay": "zero",
+        "areaOpacity": 0.35,
+        "backgroundColor": "#13141A",
+        "yAxisAbbreviation": "auto",
+        "axisTitleX": {
+          "visibility": "hide"
+        },
+        "axisTitleY": {
+          "visibility": "hide"
+        },
+        "seriesColors": [
+          "#00D2FF"
+        ]
+      },
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "viz_donut_categories": {
+      "type": "splunk.pie",
+      "title": "Orders by Product Category",
+      "dataSources": {
+        "primary": "ds_orders_by_category"
+      },
+      "options": {
+        "labelDisplay": "valuesAndPercentage",
+        "showDonutHole": true,
+        "backgroundColor": "#13141A",
+        "seriesColors": [
+          "#00D2FF",
+          "#7B56DB",
+          "#53A051",
+          "#F8BE34",
+          "#DC4E41"
+        ]
+      },
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "viz_donut_segments": {
+      "type": "splunk.pie",
+      "title": "Orders by Customer Segment",
+      "dataSources": {
+        "primary": "ds_orders_by_segment"
+      },
+      "options": {
+        "labelDisplay": "valuesAndPercentage",
+        "showDonutHole": true,
+        "backgroundColor": "#13141A",
+        "seriesColors": [
+          "#00D2FF",
+          "#7B56DB",
+          "#53A051",
+          "#F8BE34"
+        ]
+      },
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "viz_site_error": {
+      "type": "splunk.line",
+      "title": "Site Error Rate (% HTTP 5xx, hourly)",
+      "dataSources": {
+        "primary": "ds_site_error_trend"
+      },
+      "options": {
+        "legendDisplay": "off",
+        "backgroundColor": "#13141A",
+        "axisTitleX": {
+          "visibility": "hide"
+        },
+        "axisTitleY": {
+          "visibility": "hide"
+        },
+        "lineWidth": 2,
+        "lineSmoothing": "linear",
+        "seriesColors": [
+          "#F1813F"
+        ]
+      },
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "viz_shadow_topproducts": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2937",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 14
+      },
+      "cornerRadius": [
+        14,
+        14,
+        14,
+        14
+      ]
+    },
+    "viz_shadow_pricingerrors": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2937",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 14
+      },
+      "cornerRadius": [
+        14,
+        14,
+        14,
+        14
+      ]
+    },
+    "viz_top_products": {
+      "type": "splunk.table",
+      "title": "Top 10 Products by Revenue",
+      "dataSources": {
+        "primary": "ds_top_products"
+      },
+      "options": {
+        "count": 10,
+        "showRowNumbers": false,
+        "showInternalFields": false,
+        "headerVisibility": "fixed",
+        "backgroundColor": "#13141A",
+        "columnFormat": {
+          "Product": {
+            "width": 280
+          },
+          "Units": {
+            "width": 100,
+            "align": "right"
+          },
+          "Revenue": {
+            "width": 130,
+            "align": "right"
+          }
+        }
+      },
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "viz_pricing_errors_table": {
+      "type": "splunk.table",
+      "title": "Recent Pricing Errors (top 20)",
+      "dataSources": {
+        "primary": "ds_recent_pricing_errors"
+      },
+      "options": {
+        "count": 20,
+        "showRowNumbers": false,
+        "showInternalFields": false,
+        "headerVisibility": "fixed",
+        "backgroundColor": "#13141A",
+        "columnFormat": {
+          "Time": {
+            "width": 110
+          },
+          "Order ID": {
+            "width": 130
+          },
+          "Customer": {
+            "width": 110
+          },
+          "Error Type": {
+            "width": 130
+          },
+          "Orig Price": {
+            "width": 100,
+            "align": "right"
+          },
+          "Charged": {
+            "width": 100,
+            "align": "right"
+          },
+          "Impact ($)": {
+            "width": 100,
+            "align": "right"
+          }
+        },
+        "tableFormat": {
+          "rowBackgroundColors": "> table | seriesByName(\"_color_rank\") | rangeValue(rowColorConfig)"
+        }
+      },
+      "context": {
+        "rowColorConfig": [
+          {
+            "from": 0,
+            "to": 1.5,
+            "value": "#DC4E41"
+          },
+          {
+            "from": 1.5,
+            "to": 2.5,
+            "value": "#F1813F"
+          },
+          {
+            "from": 2.5,
+            "value": "transparent"
+          }
+        ]
+      },
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ]
+    }
+  },
+  "layout": {
+    "globalInputs": [
+      "input_global_trp"
+    ],
+    "layoutDefinitions": {
+      "layout_main": {
+        "type": "absolute",
+        "options": {
+          "width": 1920,
+          "height": 1980,
+          "display": "auto-scale",
+          "backgroundColor": "#0B0C10"
+        },
+        "structure": [
+          {
+            "item": "viz_brand_wordmark",
+            "type": "block",
+            "position": {
+              "x": 20,
+              "y": 30,
+              "w": 800,
+              "h": 60
+            }
+          },
+          {
+            "item": "viz_brand_stripe",
+            "type": "block",
+            "position": {
+              "x": 20,
+              "y": 100,
+              "w": 1880,
+              "h": 4
+            }
+          },
+          {
+            "item": "viz_section_pulse",
+            "type": "block",
+            "position": {
+              "x": 20,
+              "y": 120,
+              "w": 1880,
+              "h": 50
+            }
+          },
+          {
+            "item": "viz_shadow_kpi_revenue",
+            "type": "block",
+            "position": {
+              "x": 24,
+              "y": 184,
+              "w": 460,
+              "h": 200
+            }
+          },
+          {
+            "item": "viz_shadow_kpi_orders",
+            "type": "block",
+            "position": {
+              "x": 504,
+              "y": 184,
+              "w": 460,
+              "h": 200
+            }
+          },
+          {
+            "item": "viz_shadow_kpi_pricing",
+            "type": "block",
+            "position": {
+              "x": 984,
+              "y": 184,
+              "w": 460,
+              "h": 200
+            }
+          },
+          {
+            "item": "viz_shadow_kpi_site",
+            "type": "block",
+            "position": {
+              "x": 1464,
+              "y": 184,
+              "w": 460,
+              "h": 200
+            }
+          },
+          {
+            "item": "viz_kpi_revenue",
+            "type": "block",
+            "position": {
+              "x": 20,
+              "y": 180,
+              "w": 460,
+              "h": 200
+            }
+          },
+          {
+            "item": "viz_kpi_orders",
+            "type": "block",
+            "position": {
+              "x": 500,
+              "y": 180,
+              "w": 460,
+              "h": 200
+            }
+          },
+          {
+            "item": "viz_kpi_pricing_errors",
+            "type": "block",
+            "position": {
+              "x": 980,
+              "y": 180,
+              "w": 460,
+              "h": 200
+            }
+          },
+          {
+            "item": "viz_kpi_site_error",
+            "type": "block",
+            "position": {
+              "x": 1460,
+              "y": 180,
+              "w": 460,
+              "h": 200
+            }
+          },
+          {
+            "item": "viz_section_sales",
+            "type": "block",
+            "position": {
+              "x": 20,
+              "y": 410,
+              "w": 1880,
+              "h": 50
+            }
+          },
+          {
+            "item": "viz_shadow_tile_orders_hour",
+            "type": "block",
+            "position": {
+              "x": 24,
+              "y": 474,
+              "w": 300,
+              "h": 160
+            }
+          },
+          {
+            "item": "viz_shadow_tile_aov",
+            "type": "block",
+            "position": {
+              "x": 344,
+              "y": 474,
+              "w": 300,
+              "h": 160
+            }
+          },
+          {
+            "item": "viz_shadow_tile_customers",
+            "type": "block",
+            "position": {
+              "x": 664,
+              "y": 474,
+              "w": 300,
+              "h": 160
+            }
+          },
+          {
+            "item": "viz_shadow_tile_dlq",
+            "type": "block",
+            "position": {
+              "x": 984,
+              "y": 474,
+              "w": 300,
+              "h": 160
+            }
+          },
+          {
+            "item": "viz_shadow_tile_failed",
+            "type": "block",
+            "position": {
+              "x": 1304,
+              "y": 474,
+              "w": 300,
+              "h": 160
+            }
+          },
+          {
+            "item": "viz_shadow_tile_completed",
+            "type": "block",
+            "position": {
+              "x": 1624,
+              "y": 474,
+              "w": 300,
+              "h": 160
+            }
+          },
+          {
+            "item": "viz_tile_orders_hour",
+            "type": "block",
+            "position": {
+              "x": 20,
+              "y": 470,
+              "w": 300,
+              "h": 160
+            }
+          },
+          {
+            "item": "viz_tile_aov",
+            "type": "block",
+            "position": {
+              "x": 340,
+              "y": 470,
+              "w": 300,
+              "h": 160
+            }
+          },
+          {
+            "item": "viz_tile_customers",
+            "type": "block",
+            "position": {
+              "x": 660,
+              "y": 470,
+              "w": 300,
+              "h": 160
+            }
+          },
+          {
+            "item": "viz_tile_dlq",
+            "type": "block",
+            "position": {
+              "x": 980,
+              "y": 470,
+              "w": 300,
+              "h": 160
+            }
+          },
+          {
+            "item": "viz_tile_failed",
+            "type": "block",
+            "position": {
+              "x": 1300,
+              "y": 470,
+              "w": 300,
+              "h": 160
+            }
+          },
+          {
+            "item": "viz_tile_completed",
+            "type": "block",
+            "position": {
+              "x": 1620,
+              "y": 470,
+              "w": 300,
+              "h": 160
+            }
+          },
+          {
+            "item": "viz_section_integrity",
+            "type": "block",
+            "position": {
+              "x": 20,
+              "y": 660,
+              "w": 1880,
+              "h": 50
+            }
+          },
+          {
+            "item": "viz_shadow_revenue",
+            "type": "block",
+            "position": {
+              "x": 24,
+              "y": 724,
+              "w": 930,
+              "h": 320
+            }
+          },
+          {
+            "item": "viz_shadow_categories",
+            "type": "block",
+            "position": {
+              "x": 974,
+              "y": 724,
+              "w": 930,
+              "h": 320
+            }
+          },
+          {
+            "item": "viz_revenue_trend",
+            "type": "block",
+            "position": {
+              "x": 20,
+              "y": 720,
+              "w": 930,
+              "h": 320
+            }
+          },
+          {
+            "item": "viz_donut_categories",
+            "type": "block",
+            "position": {
+              "x": 970,
+              "y": 720,
+              "w": 930,
+              "h": 320
+            }
+          },
+          {
+            "item": "viz_shadow_segments",
+            "type": "block",
+            "position": {
+              "x": 24,
+              "y": 1064,
+              "w": 930,
+              "h": 320
+            }
+          },
+          {
+            "item": "viz_shadow_siteerror",
+            "type": "block",
+            "position": {
+              "x": 974,
+              "y": 1064,
+              "w": 930,
+              "h": 320
+            }
+          },
+          {
+            "item": "viz_donut_segments",
+            "type": "block",
+            "position": {
+              "x": 20,
+              "y": 1060,
+              "w": 930,
+              "h": 320
+            }
+          },
+          {
+            "item": "viz_site_error",
+            "type": "block",
+            "position": {
+              "x": 970,
+              "y": 1060,
+              "w": 930,
+              "h": 320
+            }
+          },
+          {
+            "item": "viz_section_products",
+            "type": "block",
+            "position": {
+              "x": 20,
+              "y": 1400,
+              "w": 1880,
+              "h": 50
+            }
+          },
+          {
+            "item": "viz_shadow_topproducts",
+            "type": "block",
+            "position": {
+              "x": 24,
+              "y": 1464,
+              "w": 700,
+              "h": 420
+            }
+          },
+          {
+            "item": "viz_shadow_pricingerrors",
+            "type": "block",
+            "position": {
+              "x": 744,
+              "y": 1464,
+              "w": 1180,
+              "h": 420
+            }
+          },
+          {
+            "item": "viz_top_products",
+            "type": "block",
+            "position": {
+              "x": 20,
+              "y": 1460,
+              "w": 700,
+              "h": 420
+            }
+          },
+          {
+            "item": "viz_pricing_errors_table",
+            "type": "block",
+            "position": {
+              "x": 740,
+              "y": 1460,
+              "w": 1180,
+              "h": 420
+            }
+          },
+          {
+            "item": "viz_footer",
+            "type": "block",
+            "position": {
+              "x": 20,
+              "y": 1900,
+              "w": 1880,
+              "h": 60
+            }
+          }
+        ]
+      }
+    },
+    "options": {},
+    "tabs": {
+      "items": [
+        {
+          "label": "Main",
+          "layoutId": "layout_main"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,6 @@
+<nav>
+    <default>
+        <view name="nps_ring_gauge_demo" />
+    </default>
+    <view name="nps_ring_gauge_demo" label="NPS Ring Gauge" />
+</nav>

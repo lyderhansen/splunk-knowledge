@@ -1,0 +1,61 @@
+<form class="splunk-formatter-section" section-label="Data Configuration">
+    <splunk-control-group label="Value Field" help="Field containing the KPI value">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.valueField" value="value">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Label Field" help="Field containing the KPI label">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.labelField" value="label">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Unit Field" help="Field containing the unit (ms, min, etc)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.unitField" value="unit">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Trend Field" help="Field containing trend delta (+12.3%)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.trendField" value="trend">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Sparkline Field" help="Comma-separated values for sparkline">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.sparklineField" value="sparkline">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Display">
+    <splunk-control-group label="Show Trend" help="Display trend delta indicator">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showTrend" value="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show Sparkline" help="Display sparkline underneath value">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showSparkline" value="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Decimals" help="Decimal places (-1 for auto)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.decimals" value="-1">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Color and Style">
+    <splunk-control-group label="Theme" help="Auto detects dashboard theme">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto">
+            <option value="auto">Auto</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Accent Color" help="Hextech glow accent color">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.accentColor" type="custom" value="0x0AC8B9">
+            <splunk-color>0x0AC8B9</splunk-color>
+            <splunk-color>0xC89B3C</splunk-color>
+            <splunk-color>0xE84057</splunk-color>
+            <splunk-color>0xF0B232</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Glow Intensity" help="0-100, controls accent glow brightness">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.glowIntensity" value="60">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>

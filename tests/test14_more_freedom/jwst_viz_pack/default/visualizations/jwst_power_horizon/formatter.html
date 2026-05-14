@@ -1,0 +1,115 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+
+    <splunk-control-group label="Time field" help="Field containing the timestamp for the X-axis.">
+        <splunk-text-input
+            name="{{VIZ_NAMESPACE}}.timeField"
+            default="_time"
+            placeholder="_time">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Solar generation field" help="Field name for solar panel wattage output.">
+        <splunk-text-input
+            name="{{VIZ_NAMESPACE}}.generationField"
+            default="solar_watts"
+            placeholder="solar_watts">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Consumption field" help="Field name for instrument power consumption in watts.">
+        <splunk-text-input
+            name="{{VIZ_NAMESPACE}}.consumptionField"
+            default="consumption_watts"
+            placeholder="consumption_watts">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Battery field" help="Optional field name for battery charge percentage (0–100). Leave blank to hide the battery line.">
+        <splunk-text-input
+            name="{{VIZ_NAMESPACE}}.batteryField"
+            default="battery_pct"
+            placeholder="battery_pct">
+        </splunk-text-input>
+    </splunk-control-group>
+
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+
+    <splunk-control-group label="Show battery line" help="Display the dashed battery percentage line on the secondary right axis.">
+        <splunk-radio-input
+            name="{{VIZ_NAMESPACE}}.showBattery"
+            default="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Show balance zone" help="Shade the area between the generation and consumption curves green (surplus) or red (deficit).">
+        <splunk-radio-input
+            name="{{VIZ_NAMESPACE}}.showBalance"
+            default="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Smoothing" help="Use catmull-rom curve smoothing through data points. Disable for a sharp step-line look.">
+        <splunk-radio-input
+            name="{{VIZ_NAMESPACE}}.smoothing"
+            default="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+
+    <splunk-control-group label="Generation color" help="Color for the solar generation area and line (default: mission gold).">
+        <splunk-color-input
+            name="{{VIZ_NAMESPACE}}.generationColor"
+            default="#D4A537">
+        </splunk-color-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Consumption color" help="Color for the instrument consumption area and line (default: telemetry magenta).">
+        <splunk-color-input
+            name="{{VIZ_NAMESPACE}}.consumptionColor"
+            default="#E040A0">
+        </splunk-color-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Surplus color" help="Fill color for the balance zone when generation exceeds consumption.">
+        <splunk-color-input
+            name="{{VIZ_NAMESPACE}}.surplusColor"
+            default="#34D399">
+        </splunk-color-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Deficit color" help="Fill color for the balance zone when consumption exceeds generation.">
+        <splunk-color-input
+            name="{{VIZ_NAMESPACE}}.deficitColor"
+            default="#FF4D4D">
+        </splunk-color-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Accent intensity" help="Controls glow brightness and area opacity. Range 0–100. Default: 50.">
+        <splunk-text-input
+            name="{{VIZ_NAMESPACE}}.accentIntensity"
+            default="50"
+            placeholder="50">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Theme" help="Dark uses the deep space background palette. Light uses a high-contrast bright palette.">
+        <splunk-radio-input
+            name="{{VIZ_NAMESPACE}}.theme"
+            default="dark">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+</form>

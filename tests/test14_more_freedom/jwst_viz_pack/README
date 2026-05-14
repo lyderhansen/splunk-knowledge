@@ -1,0 +1,67 @@
+JWST Mission Operations Viz Pack
+=================================
+
+Themed Canvas 2D custom visualizations for James Webb Space Telescope
+mission operations dashboards. Deep space aesthetic with infrared
+spectrum palette and hexagonal motifs.
+
+Visualizations
+--------------
+
+jwst_heat_grid          Hexagonal heat grid for sensor temperature monitoring
+jwst_instrument_matrix  2x2 instrument status cards with drilldown
+jwst_data_cascade       Animated data download cascade with particle effects
+jwst_observation_queue  Prioritized observation target list
+jwst_power_horizon      Dual-layer area chart (solar gen vs consumption)
+jwst_kpi_tile           Single value KPI with sparkline and threshold colors
+
+Design Tokens
+-------------
+
+Font display:   Oxanium (base64-embedded)
+Font mono:      JetBrains Mono (base64-embedded)
+Dark bg:        #06080F (void black)
+Gold accent:    #D4A537 (JWST mirror gold)
+Cyan:           #00B4D8 (infrared short wavelength)
+Magenta:        #E040A0 (infrared mid wavelength)
+
+Data Sources
+------------
+
+All demo data via CSV lookups in lookups/ directory:
+
+sensor_temperatures.csv   6 sensors x 24 hours = 144 rows
+instrument_status.csv     4 instruments
+data_downloads.csv        5 data bands
+observation_queue.csv     5 observation targets
+power_balance.csv         48 time points (30min intervals)
+kpi_summary.csv           6 key metrics with sparkline data
+
+Dashboard JSON Options
+----------------------
+
+Every custom viz panel MUST have:
+  "backgroundColor": "transparent"
+
+Viz type format:
+  "type": "jwst_viz_pack.{viz_name}"
+
+Building
+--------
+
+Prerequisites: Node.js (for webpack)
+
+  chmod +x build.sh
+  ./build.sh
+
+The script builds all 6 vizs, verifies AMD wrappers, and creates
+dist/jwst_viz_pack.tar.gz for Splunk installation.
+
+Hero Image
+----------
+
+Place a JWST deep field image at:
+  appserver/static/images/hero_jwst.jpg
+
+Recommended: NASA public domain imagery from images.nasa.gov
+Search for "Webb deep field" or "Pillars of Creation Webb"

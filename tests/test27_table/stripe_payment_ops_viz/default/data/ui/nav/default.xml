@@ -1,0 +1,7 @@
+<nav search_view="search" color="#635BFF">
+  <view name="stripe_payment_ops" default="true" />
+  <view name="stripe_demo_kpi" />
+  <view name="stripe_demo_table" />
+  <view name="stripe_demo_trend" />
+  <view name="stripe_demo_gauge" />
+</nav>

@@ -1,0 +1,95 @@
+<!--
+  SpaceX Mission Control — Burn Tracker Formatter
+  Formatter options for the landing burn descent trajectory viz.
+  Section labels must match Splunk formatter contract exactly.
+-->
+<form class="splunk-formatter">
+
+  <!-- ═══════════════════════════════════════════════════════
+       Data configurations
+  ══════════════════════════════════════════════════════════ -->
+  <splunk-control-group
+    label="Altitude field"
+    help="Field name containing altitude values in kilometers.">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.burn_tracker.altitudeField"
+      default="altitude">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Velocity field"
+    help="Field name containing velocity values in m/s. Negative values indicate descent.">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.burn_tracker.velocityField"
+      default="velocity">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Phase field"
+    help="Field name for the burn phase label (e.g. 'Landing Burn', 'Entry Burn', 'Coast'). Controls segment color.">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.burn_tracker.phaseField"
+      default="phase">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Time field"
+    help="Field name for the mission elapsed time string. Shown in the hover tooltip.">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.burn_tracker.timeField"
+      default="time">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <!-- ═══════════════════════════════════════════════════════
+       Data display
+  ══════════════════════════════════════════════════════════ -->
+  <splunk-control-group
+    label="Show grid"
+    help="Render faint dashed grid lines behind the trajectory at 4% opacity.">
+    <splunk-radio-input
+      name="display.visualizations.custom.spacex_mission_control.burn_tracker.showGrid"
+      default="true">
+      <option value="true">On</option>
+      <option value="false">Off</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Show phase labels"
+    help="Display burn phase names along the right edge of the chart with colored indicator dots.">
+    <splunk-radio-input
+      name="display.visualizations.custom.spacex_mission_control.burn_tracker.showPhaseLabels"
+      default="true">
+      <option value="true">On</option>
+      <option value="false">Off</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+
+  <!-- ═══════════════════════════════════════════════════════
+       Color and style
+  ══════════════════════════════════════════════════════════ -->
+  <splunk-control-group
+    label="Accent color"
+    help="Primary trajectory and Boostback Burn segment color. Use a hex value (e.g. #0088CC).">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.burn_tracker.accentColor"
+      default="#0088CC">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Theme"
+    help="Color palette. Use dark for mission control dashboards, light for bright environments.">
+    <splunk-radio-input
+      name="display.visualizations.custom.spacex_mission_control.burn_tracker.theme"
+      default="dark">
+      <option value="dark">Dark</option>
+      <option value="light">Light</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+
+</form>

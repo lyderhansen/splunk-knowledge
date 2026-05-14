@@ -1,0 +1,24 @@
+[]
+access = read : [ * ], write : [ admin, sc_admin ]
+export = system
+
+[visualizations/countdown_timer]
+export = system
+
+[visualizations/telemetry_gauge]
+export = system
+
+[visualizations/fuel_gauge]
+export = system
+
+[visualizations/stage_tracker]
+export = system
+
+[visualizations/burn_tracker]
+export = system
+
+[visualizations/mission_kpi]
+export = system
+
+[visualizations/event_ticker]
+export = system

@@ -1,0 +1,46 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+    <splunk-control-group label="Trip ID field" help="SPL field for the trip identifier">
+        <splunk-text-input name="uber_ops_viz.trip_feed.tripIdField" value="trip_id">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Origin field" help="SPL field for the trip origin">
+        <splunk-text-input name="uber_ops_viz.trip_feed.originField" value="origin">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Destination field" help="SPL field for the trip destination">
+        <splunk-text-input name="uber_ops_viz.trip_feed.destinationField" value="destination">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Fare field" help="SPL field for the trip fare amount">
+        <splunk-text-input name="uber_ops_viz.trip_feed.fareField" value="fare">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Distance field" help="SPL field for trip distance">
+        <splunk-text-input name="uber_ops_viz.trip_feed.distanceField" value="distance">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Duration field" help="SPL field for trip duration">
+        <splunk-text-input name="uber_ops_viz.trip_feed.durationField" value="duration">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Rating field" help="SPL field for trip rating">
+        <splunk-text-input name="uber_ops_viz.trip_feed.ratingField" value="rating">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Color and style">
+    <splunk-control-group label="Theme" help="Color theme">
+        <splunk-radio-input name="uber_ops_viz.trip_feed.theme" value="dark">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Accent color" help="Primary accent color">
+        <splunk-color-picker name="uber_ops_viz.trip_feed.accentColor" value="#06C167">
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Accent intensity" help="Glow effect strength (0=off, 50=default, 100=max)">
+        <splunk-text-input name="uber_ops_viz.trip_feed.accentIntensity" value="50">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>

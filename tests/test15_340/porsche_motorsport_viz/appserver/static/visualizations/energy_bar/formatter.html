@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <style>
+        body {
+            margin: 0;
+            padding: 8px;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 12px;
+            color: #c8c9ca;
+            background: #1a1b1e;
+        }
+        h3 {
+            margin: 0 0 6px 0;
+            padding: 0 0 4px 0;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #ffffff;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .section {
+            margin-bottom: 14px;
+        }
+        .form-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            gap: 8px;
+        }
+        label {
+            flex: 0 0 110px;
+            color: #a7a8aa;
+            font-size: 11px;
+        }
+        input[type="text"],
+        select {
+            flex: 1;
+            background: #2a2b2e;
+            border: 1px solid rgba(255,255,255,0.10);
+            border-radius: 3px;
+            color: #ffffff;
+            font-size: 11px;
+            padding: 3px 6px;
+            min-width: 0;
+        }
+        input[type="color"] {
+            flex: 0 0 40px;
+            height: 22px;
+            border: 1px solid rgba(255,255,255,0.10);
+            border-radius: 3px;
+            background: #2a2b2e;
+            cursor: pointer;
+            padding: 1px;
+        }
+        input[type="range"] {
+            flex: 1;
+            accent-color: #D5001C;
+        }
+        .range-val {
+            flex: 0 0 28px;
+            text-align: right;
+            font-size: 11px;
+            color: #a7a8aa;
+        }
+        .color-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .color-row input[type="text"] {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- ── Data Fields ──────────────────────────────────────────── -->
+    <div class="section">
+        <h3>Data Fields</h3>
+
+        <div class="form-row">
+            <label for="labelField">Label field</label>
+            <input type="text" id="labelField"
+                   data-default="label"
+                   name="display.visualizations.custom.porsche_motorsport_viz.energy_bar.labelField"
+                   placeholder="label" />
+        </div>
+
+        <div class="form-row">
+            <label for="attackField">Attack field</label>
+            <input type="text" id="attackField"
+                   data-default="attack"
+                   name="display.visualizations.custom.porsche_motorsport_viz.energy_bar.attackField"
+                   placeholder="attack" />
+        </div>
+
+        <div class="form-row">
+            <label for="defendField">Defend field</label>
+            <input type="text" id="defendField"
+                   data-default="defend"
+                   name="display.visualizations.custom.porsche_motorsport_viz.energy_bar.defendField"
+                   placeholder="defend" />
+        </div>
+
+        <div class="form-row">
+            <label for="neutralField">Neutral field</label>
+            <input type="text" id="neutralField"
+                   data-default="neutral"
+                   name="display.visualizations.custom.porsche_motorsport_viz.energy_bar.neutralField"
+                   placeholder="neutral" />
+        </div>
+    </div>
+
+    <!-- ── Display ─────────────────────────────────────────────── -->
+    <div class="section">
+        <h3>Display</h3>
+
+        <div class="form-row">
+            <label for="theme">Theme</label>
+            <select id="theme"
+                    name="display.visualizations.custom.porsche_motorsport_viz.energy_bar.theme">
+                <option value="dark">Dark</option>
+                <option value="light">Light</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- ── Color and Style ─────────────────────────────────────── -->
+    <div class="section">
+        <h3>Color and Style</h3>
+
+        <div class="form-row">
+            <label for="attackColor">Attack color</label>
+            <div class="color-row" style="flex:1">
+                <input type="color" id="attackColorPicker"
+                       value="#D5001C" />
+                <input type="text" id="attackColor"
+                       data-default="#D5001C"
+                       name="display.visualizations.custom.porsche_motorsport_viz.energy_bar.attackColor"
+                       placeholder="#D5001C" />
+            </div>
+        </div>
+
+        <div class="form-row">
+            <label for="defendColor">Defend color</label>
+            <div class="color-row" style="flex:1">
+                <input type="color" id="defendColorPicker"
+                       value="#0072C6" />
+                <input type="text" id="defendColor"
+                       data-default="#0072C6"
+                       name="display.visualizations.custom.porsche_motorsport_viz.energy_bar.defendColor"
+                       placeholder="#0072C6" />
+            </div>
+        </div>
+
+        <div class="form-row">
+            <label for="neutralColor">Neutral color</label>
+            <div class="color-row" style="flex:1">
+                <input type="color" id="neutralColorPicker"
+                       value="#8C8C8C" />
+                <input type="text" id="neutralColor"
+                       data-default="#8C8C8C"
+                       name="display.visualizations.custom.porsche_motorsport_viz.energy_bar.neutralColor"
+                       placeholder="#8C8C8C" />
+            </div>
+        </div>
+
+        <div class="form-row">
+            <label for="accentIntensity">Accent intensity</label>
+            <input type="range" id="accentIntensity"
+                   min="0" max="100" step="1" value="50"
+                   name="display.visualizations.custom.porsche_motorsport_viz.energy_bar.accentIntensity" />
+            <span class="range-val" id="accentIntensityVal">50</span>
+        </div>
+    </div>
+
+    <script>
+        // Sync range value display
+        var intensitySlider = document.getElementById('accentIntensity');
+        var intensityVal    = document.getElementById('accentIntensityVal');
+        intensitySlider.addEventListener('input', function () {
+            intensityVal.textContent = intensitySlider.value;
+        });
+
+        // Sync color picker <-> text input pairs
+        function syncColorPair(pickerId, textId) {
+            var picker = document.getElementById(pickerId);
+            var text   = document.getElementById(textId);
+
+            picker.addEventListener('input', function () {
+                text.value = picker.value;
+                text.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+
+            text.addEventListener('change', function () {
+                var v = text.value.trim();
+                if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+                    picker.value = v;
+                }
+            });
+        }
+
+        syncColorPair('attackColorPicker',  'attackColor');
+        syncColorPair('defendColorPicker',  'defendColor');
+        syncColorPair('neutralColorPicker', 'neutralColor');
+    </script>
+</body>
+</html>

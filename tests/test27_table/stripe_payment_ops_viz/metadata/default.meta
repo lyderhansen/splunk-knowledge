@@ -1,0 +1,18 @@
+[]
+access = read : [ * ], write : [ admin, sc_admin ]
+export = system
+
+[visualizations/stripe_kpi]
+export = system
+
+[visualizations/stripe_table]
+export = system
+
+[visualizations/stripe_trend]
+export = system
+
+[visualizations/stripe_gauge]
+export = system
+
+[lookups]
+export = system

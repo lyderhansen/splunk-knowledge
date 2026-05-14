@@ -1,0 +1,59 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+  <splunk-control-group label="Value field" help="SPL field name for the current progress value.">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.valueField" default="value"></splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Target field" help="SPL field name for the goal or ceiling value.">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.targetField" default="target"></splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Label field" help="SPL field name for an optional descriptive label shown below the readout.">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.labelField" default="label"></splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Max value" help="Upper bound for the arc. Values at or above this fill the arc completely.">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.maxValue" default="100"></splunk-text-input>
+  </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+  <splunk-control-group label="Decimals" help="Number of decimal places for the percentage readout.">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.decimals" default="0"></splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Show ridgeline" help="Display the faint mountain ridgeline silhouette inside the arc.">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.showRidgeline" default="true">
+      <option value="true">On</option>
+      <option value="false">Off</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Show value readout" help="Display the value / target numbers and the custom label below the percentage.">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.showTargetText" default="true">
+      <option value="true">On</option>
+      <option value="false">Off</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+  <splunk-control-group label="Theme" help="Use auto to follow the Splunk dark/light mode; override with dark or light.">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" default="auto">
+      <option value="auto">Auto</option>
+      <option value="dark">Dark</option>
+      <option value="light">Light</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Gauge start color" help="Color at the left (start) of the arc fill gradient. Default is earth brown.">
+    <splunk-color-picker type="custom" name="{{VIZ_NAMESPACE}}.gaugeStartColor" default="#8B6B4A"></splunk-color-picker>
+  </splunk-control-group>
+
+  <splunk-control-group label="Gauge end color" help="Color at the right (end) of the arc fill gradient. Default is Patagonia green.">
+    <splunk-color-picker type="custom" name="{{VIZ_NAMESPACE}}.gaugeEndColor" default="#5E8F5C"></splunk-color-picker>
+  </splunk-control-group>
+
+  <splunk-control-group label="Accent intensity (0-100)" help="Controls the glow strength at the arc endpoint. 50 = natural; 0 = no glow.">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.accentIntensity" default="50"></splunk-text-input>
+  </splunk-control-group>
+</form>

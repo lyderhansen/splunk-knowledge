@@ -1,0 +1,15 @@
+/* Porsche Motorsport Viz Pack — Sector Table */
+
+.porsche-sector-table-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.porsche-sector-table-wrapper canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: default;
+}

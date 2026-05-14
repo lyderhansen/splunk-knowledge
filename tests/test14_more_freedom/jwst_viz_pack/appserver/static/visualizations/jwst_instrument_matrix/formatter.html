@@ -1,0 +1,150 @@
+<form class="splunk-formatter">
+
+  <!-- ================================================================ -->
+  <!-- DATA CONFIGURATIONS                                               -->
+  <!-- ================================================================ -->
+  <splunk-control-group
+    label="Data Configurations"
+    data-format="header">
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Instrument field"
+    help="Field name containing the instrument identifier (NIRCam, NIRSpec, MIRI, FGS).">
+    <splunk-text-input
+      name="display.visualizations.custom.jwst_viz_pack.jwst_instrument_matrix.instrumentField"
+      default="instrument">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Status field"
+    help="Field name for instrument status. Accepted values: active, idle, calibration, error.">
+    <splunk-text-input
+      name="display.visualizations.custom.jwst_viz_pack.jwst_instrument_matrix.statusField"
+      default="status">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Mode field"
+    help="Field name for the current operating mode string (e.g. DEEP_FIELD, STANDBY).">
+    <splunk-text-input
+      name="display.visualizations.custom.jwst_viz_pack.jwst_instrument_matrix.modeField"
+      default="mode">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Uptime field"
+    help="Field name for uptime percentage (0-100). Leave empty to hide the uptime bar.">
+    <splunk-text-input
+      name="display.visualizations.custom.jwst_viz_pack.jwst_instrument_matrix.uptimeField"
+      default="uptime_pct">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <!-- ================================================================ -->
+  <!-- DATA DISPLAY                                                      -->
+  <!-- ================================================================ -->
+  <splunk-control-group
+    label="Data Display"
+    data-format="header">
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Show uptime bar"
+    help="When enabled, a thin uptime progress bar is rendered at the bottom of each instrument card.">
+    <splunk-radio-input
+      name="display.visualizations.custom.jwst_viz_pack.jwst_instrument_matrix.showUptime"
+      default="true">
+      <splunk-radio-option label="On"  value="true"></splunk-radio-option>
+      <splunk-radio-option label="Off" value="false"></splunk-radio-option>
+    </splunk-radio-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Enable drilldown"
+    help="When enabled, clicking a card fires a drilldown event and sets the selected instrument token.">
+    <splunk-radio-input
+      name="display.visualizations.custom.jwst_viz_pack.jwst_instrument_matrix.enableDrilldown"
+      default="true">
+      <splunk-radio-option label="On"  value="true"></splunk-radio-option>
+      <splunk-radio-option label="Off" value="false"></splunk-radio-option>
+    </splunk-radio-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Drilldown token name"
+    help="Name of the dashboard token that receives the selected instrument name on click.">
+    <splunk-text-input
+      name="display.visualizations.custom.jwst_viz_pack.jwst_instrument_matrix.drilldownTokenName"
+      default="selected_instrument">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Theme"
+    help="Choose dark for space-black backgrounds or light for white-background layouts.">
+    <splunk-radio-input
+      name="display.visualizations.custom.jwst_viz_pack.jwst_instrument_matrix.theme"
+      default="dark">
+      <splunk-radio-option label="Dark"  value="dark"></splunk-radio-option>
+      <splunk-radio-option label="Light" value="light"></splunk-radio-option>
+    </splunk-radio-input>
+  </splunk-control-group>
+
+  <!-- ================================================================ -->
+  <!-- COLOR AND STYLE                                                   -->
+  <!-- ================================================================ -->
+  <splunk-control-group
+    label="Color and Style"
+    data-format="header">
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Active status color"
+    help="Hex color used for the status dot, uptime bar, and border glow when status is 'active'. Default: #34D399 (green).">
+    <splunk-text-input
+      name="display.visualizations.custom.jwst_viz_pack.jwst_instrument_matrix.activeColor"
+      default="#34D399">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Idle status color"
+    help="Hex color for static dots when status is 'idle'. Default: #00B4D8 (cyan).">
+    <splunk-text-input
+      name="display.visualizations.custom.jwst_viz_pack.jwst_instrument_matrix.idleColor"
+      default="#00B4D8">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Calibration status color"
+    help="Hex color for oscillating dots when status is 'calibration'. Default: #D4A537 (gold).">
+    <splunk-text-input
+      name="display.visualizations.custom.jwst_viz_pack.jwst_instrument_matrix.calibrationColor"
+      default="#D4A537">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Error status color"
+    help="Hex color for flashing dots when status is 'error'. Default: #FF4D4D (red).">
+    <splunk-text-input
+      name="display.visualizations.custom.jwst_viz_pack.jwst_instrument_matrix.errorColor"
+      default="#FF4D4D">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Accent intensity"
+    help="Controls glow, border brightness, and hex corner opacity. Range 0 (no glow) to 100 (full intensity). Default: 50.">
+    <splunk-text-input
+      name="display.visualizations.custom.jwst_viz_pack.jwst_instrument_matrix.accentIntensity"
+      default="50">
+    </splunk-text-input>
+  </splunk-control-group>
+
+</form>

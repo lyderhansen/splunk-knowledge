@@ -1,0 +1,5 @@
+metric,value,delta,unit,unitPosition
+Active Rides,12847,8.3,,before
+Avg ETA,3.2 min,,-0.4,after
+Avg Rating,4.92,,0.03,after
+Surge Multiplier,2.4x,,0.6,after

@@ -1,0 +1,151 @@
+hostname,status,os,last_seen
+prod-web-01,healthy,Ubuntu 22.04,2026-05-07T14:58:02Z
+prod-web-02,healthy,Ubuntu 22.04,2026-05-07T14:57:44Z
+prod-web-03,healthy,Ubuntu 22.04,2026-05-07T14:58:11Z
+prod-web-04,healthy,Ubuntu 22.04,2026-05-07T14:57:59Z
+prod-web-05,healthy,Ubuntu 22.04,2026-05-07T14:58:03Z
+prod-web-06,healthy,RHEL 8.9,2026-05-07T14:57:51Z
+prod-web-07,healthy,RHEL 8.9,2026-05-07T14:58:07Z
+prod-web-08,warning,RHEL 8.9,2026-05-07T14:56:33Z
+prod-api-01,healthy,Ubuntu 22.04,2026-05-07T14:58:01Z
+prod-api-02,healthy,Ubuntu 22.04,2026-05-07T14:57:58Z
+prod-api-03,healthy,Ubuntu 22.04,2026-05-07T14:58:04Z
+prod-api-04,healthy,RHEL 8.9,2026-05-07T14:57:47Z
+prod-api-05,healthy,RHEL 8.9,2026-05-07T14:58:09Z
+prod-api-06,warning,Ubuntu 22.04,2026-05-07T14:55:22Z
+prod-db-01,healthy,RHEL 8.9,2026-05-07T14:58:00Z
+prod-db-02,healthy,RHEL 8.9,2026-05-07T14:57:55Z
+prod-db-03,healthy,RHEL 8.9,2026-05-07T14:58:06Z
+prod-db-04,critical,RHEL 8.9,2026-05-07T14:53:18Z
+dc-sql-01,healthy,Windows Server 2022,2026-05-07T14:58:02Z
+dc-sql-02,healthy,Windows Server 2022,2026-05-07T14:57:50Z
+dc-sql-03,healthy,Windows Server 2022,2026-05-07T14:58:08Z
+dc-sql-04,warning,Windows Server 2022,2026-05-07T14:54:41Z
+dc-ad-01,healthy,Windows Server 2022,2026-05-07T14:57:59Z
+dc-ad-02,healthy,Windows Server 2022,2026-05-07T14:58:03Z
+dc-ad-03,healthy,Windows Server 2022,2026-05-07T14:57:46Z
+dc-ad-04,critical,Windows Server 2022,2026-05-07T14:51:07Z
+dc-file-01,healthy,Windows Server 2022,2026-05-07T14:58:01Z
+dc-file-02,healthy,Windows Server 2022,2026-05-07T14:57:53Z
+dc-print-01,healthy,Windows Server 2022,2026-05-07T14:58:05Z
+dc-print-02,healthy,Windows Server 2022,2026-05-07T14:57:48Z
+dev-api-01,healthy,Ubuntu 22.04,2026-05-07T14:57:57Z
+dev-api-02,healthy,Ubuntu 22.04,2026-05-07T14:58:10Z
+dev-api-03,healthy,Ubuntu 22.04,2026-05-07T14:57:44Z
+dev-api-04,healthy,Ubuntu 22.04,2026-05-07T14:58:02Z
+dev-api-05,healthy,Debian 12,2026-05-07T14:57:56Z
+dev-api-06,healthy,Debian 12,2026-05-07T14:58:04Z
+dev-api-07,warning,Debian 12,2026-05-07T14:55:39Z
+dev-api-08,healthy,Debian 12,2026-05-07T14:57:51Z
+dev-api-09,healthy,Debian 12,2026-05-07T14:58:07Z
+dev-api-10,healthy,Ubuntu 22.04,2026-05-07T14:57:49Z
+dev-api-11,healthy,Ubuntu 22.04,2026-05-07T14:58:01Z
+dev-api-12,healthy,Ubuntu 22.04,2026-05-07T14:57:55Z
+dev-db-01,healthy,PostgreSQL 15 / RHEL 8.9,2026-05-07T14:58:03Z
+dev-db-02,healthy,RHEL 8.9,2026-05-07T14:57:48Z
+dev-db-03,healthy,RHEL 8.9,2026-05-07T14:58:06Z
+stg-web-01,healthy,Ubuntu 22.04,2026-05-07T14:57:59Z
+stg-web-02,healthy,Ubuntu 22.04,2026-05-07T14:58:02Z
+stg-web-03,healthy,Ubuntu 22.04,2026-05-07T14:57:46Z
+stg-api-01,healthy,Ubuntu 22.04,2026-05-07T14:58:04Z
+stg-api-02,healthy,Ubuntu 22.04,2026-05-07T14:57:53Z
+stg-api-03,healthy,RHEL 8.9,2026-05-07T14:58:08Z
+stg-db-01,healthy,RHEL 8.9,2026-05-07T14:57:51Z
+stg-db-02,warning,RHEL 8.9,2026-05-07T14:55:17Z
+stg-db-03,healthy,RHEL 8.9,2026-05-07T14:58:01Z
+edge-fw-01,healthy,RHEL 8.9,2026-05-07T14:57:58Z
+edge-fw-02,healthy,RHEL 8.9,2026-05-07T14:58:05Z
+edge-fw-03,healthy,RHEL 8.9,2026-05-07T14:57:47Z
+edge-fw-04,warning,RHEL 8.9,2026-05-07T14:54:09Z
+edge-lb-01,healthy,Ubuntu 22.04,2026-05-07T14:58:03Z
+edge-lb-02,healthy,Ubuntu 22.04,2026-05-07T14:57:56Z
+edge-lb-03,healthy,Ubuntu 22.04,2026-05-07T14:58:07Z
+edge-proxy-01,healthy,Ubuntu 22.04,2026-05-07T14:57:50Z
+edge-proxy-02,healthy,Ubuntu 22.04,2026-05-07T14:58:02Z
+vpn-gw-01,healthy,RHEL 8.9,2026-05-07T14:57:59Z
+vpn-gw-02,healthy,RHEL 8.9,2026-05-07T14:58:04Z
+vpn-gw-03,healthy,RHEL 8.9,2026-05-07T14:57:48Z
+vpn-gw-04,critical,RHEL 8.9,2026-05-07T14:49:33Z
+vpn-concentrator-01,healthy,RHEL 8.9,2026-05-07T14:58:01Z
+vpn-concentrator-02,warning,RHEL 8.9,2026-05-07T14:55:31Z
+k8s-master-01,healthy,Ubuntu 22.04,2026-05-07T14:58:03Z
+k8s-master-02,healthy,Ubuntu 22.04,2026-05-07T14:57:57Z
+k8s-master-03,healthy,Ubuntu 22.04,2026-05-07T14:58:06Z
+k8s-node-01,healthy,Ubuntu 22.04,2026-05-07T14:57:51Z
+k8s-node-02,healthy,Ubuntu 22.04,2026-05-07T14:58:02Z
+k8s-node-03,healthy,Ubuntu 22.04,2026-05-07T14:57:46Z
+k8s-node-04,healthy,Ubuntu 22.04,2026-05-07T14:58:05Z
+k8s-node-05,healthy,Ubuntu 22.04,2026-05-07T14:57:53Z
+k8s-node-06,healthy,Ubuntu 22.04,2026-05-07T14:58:08Z
+k8s-node-07,healthy,Ubuntu 22.04,2026-05-07T14:57:49Z
+k8s-node-08,healthy,Ubuntu 22.04,2026-05-07T14:58:03Z
+k8s-node-09,healthy,Ubuntu 22.04,2026-05-07T14:57:56Z
+k8s-node-10,healthy,Ubuntu 22.04,2026-05-07T14:58:01Z
+k8s-node-11,healthy,Ubuntu 22.04,2026-05-07T14:57:47Z
+k8s-node-12,healthy,Ubuntu 22.04,2026-05-07T14:58:04Z
+k8s-node-13,healthy,Ubuntu 22.04,2026-05-07T14:57:52Z
+k8s-node-14,warning,Ubuntu 22.04,2026-05-07T14:55:08Z
+k8s-node-15,healthy,Ubuntu 22.04,2026-05-07T14:58:02Z
+k8s-node-16,healthy,Ubuntu 22.04,2026-05-07T14:57:50Z
+k8s-etcd-01,healthy,Ubuntu 22.04,2026-05-07T14:58:06Z
+k8s-etcd-02,healthy,Ubuntu 22.04,2026-05-07T14:57:54Z
+k8s-etcd-03,warning,Ubuntu 22.04,2026-05-07T14:55:44Z
+mail-relay-01,healthy,Ubuntu 22.04,2026-05-07T14:57:58Z
+mail-relay-02,healthy,Ubuntu 22.04,2026-05-07T14:58:03Z
+mail-exch-01,healthy,Windows Server 2022,2026-05-07T14:57:48Z
+mail-exch-02,healthy,Windows Server 2022,2026-05-07T14:58:05Z
+mail-exch-03,warning,Windows Server 2022,2026-05-07T14:54:55Z
+mail-spam-01,healthy,Ubuntu 22.04,2026-05-07T14:57:51Z
+dns-auth-01,healthy,RHEL 8.9,2026-05-07T14:58:02Z
+dns-auth-02,healthy,RHEL 8.9,2026-05-07T14:57:47Z
+dns-resolver-01,healthy,RHEL 8.9,2026-05-07T14:58:04Z
+dns-resolver-02,healthy,RHEL 8.9,2026-05-07T14:57:55Z
+dns-resolver-03,healthy,RHEL 8.9,2026-05-07T14:58:07Z
+mon-prom-01,healthy,Ubuntu 22.04,2026-05-07T14:57:59Z
+mon-grafana-01,healthy,Ubuntu 22.04,2026-05-07T14:58:02Z
+mon-elastic-01,healthy,Ubuntu 22.04,2026-05-07T14:57:53Z
+mon-elastic-02,healthy,Ubuntu 22.04,2026-05-07T14:58:06Z
+mon-elastic-03,healthy,Ubuntu 22.04,2026-05-07T14:57:49Z
+mon-alertmgr-01,healthy,Ubuntu 22.04,2026-05-07T14:58:01Z
+mon-logstash-01,healthy,Ubuntu 22.04,2026-05-07T14:57:56Z
+mon-logstash-02,warning,Ubuntu 22.04,2026-05-07T14:54:37Z
+mon-kibana-01,healthy,Ubuntu 22.04,2026-05-07T14:57:51Z
+prod-cache-01,healthy,Ubuntu 22.04,2026-05-07T14:58:03Z
+prod-cache-02,healthy,Ubuntu 22.04,2026-05-07T14:57:48Z
+prod-cache-03,healthy,Ubuntu 22.04,2026-05-07T14:58:05Z
+prod-queue-01,healthy,Ubuntu 22.04,2026-05-07T14:57:57Z
+prod-queue-02,healthy,Ubuntu 22.04,2026-05-07T14:58:02Z
+prod-queue-03,healthy,Ubuntu 22.04,2026-05-07T14:57:52Z
+prod-batch-01,healthy,RHEL 8.9,2026-05-07T14:58:07Z
+prod-batch-02,healthy,RHEL 8.9,2026-05-07T14:57:46Z
+prod-batch-03,healthy,RHEL 8.9,2026-05-07T14:58:04Z
+prod-sched-01,warning,RHEL 8.9,2026-05-07T14:56:01Z
+prod-nfs-01,healthy,RHEL 8.9,2026-05-07T14:58:01Z
+prod-nfs-02,healthy,RHEL 8.9,2026-05-07T14:57:50Z
+prod-nfs-03,degraded,RHEL 8.9,2026-05-07T14:52:14Z
+stg-cache-01,healthy,Ubuntu 22.04,2026-05-07T14:58:05Z
+stg-queue-01,degraded,Ubuntu 22.04,2026-05-07T14:52:44Z
+dev-build-01,healthy,Ubuntu 22.04,2026-05-07T14:58:02Z
+dev-build-02,healthy,Ubuntu 22.04,2026-05-07T14:57:56Z
+dev-build-03,healthy,Ubuntu 22.04,2026-05-07T14:58:04Z
+dev-jenkins-01,healthy,Ubuntu 22.04,2026-05-07T14:57:51Z
+dev-jenkins-02,healthy,Ubuntu 22.04,2026-05-07T14:58:06Z
+dev-nexus-01,healthy,Ubuntu 22.04,2026-05-07T14:57:47Z
+dev-sonar-01,healthy,Ubuntu 22.04,2026-05-07T14:58:03Z
+dev-gitlab-01,healthy,Ubuntu 22.04,2026-05-07T14:57:54Z
+dev-gitlab-02,critical,Ubuntu 22.04,2026-05-07T14:51:39Z
+dev-vault-01,healthy,Ubuntu 22.04,2026-05-07T14:57:49Z
+dev-vault-02,healthy,Ubuntu 22.04,2026-05-07T14:58:05Z
+prod-bastion-01,healthy,Ubuntu 22.04,2026-05-07T14:57:58Z
+prod-bastion-02,critical,Ubuntu 22.04,2026-05-07T14:50:58Z
+prod-vault-01,healthy,Ubuntu 22.04,2026-05-07T14:57:52Z
+prod-vault-02,healthy,Ubuntu 22.04,2026-05-07T14:58:07Z
+prod-hsm-01,healthy,RHEL 8.9,2026-05-07T14:57:46Z
+edge-waf-01,healthy,RHEL 8.9,2026-05-07T14:58:04Z
+edge-waf-02,healthy,RHEL 8.9,2026-05-07T14:57:51Z
+edge-ids-01,healthy,Ubuntu 22.04,2026-05-07T14:58:02Z
+edge-ids-02,healthy,Ubuntu 22.04,2026-05-07T14:57:55Z
+edge-siem-01,healthy,Ubuntu 22.04,2026-05-07T14:58:06Z
+edge-siem-02,healthy,Ubuntu 22.04,2026-05-07T14:57:49Z
+edge-nac-01,healthy,RHEL 8.9,2026-05-07T14:58:01Z
+edge-nac-02,offline,RHEL 8.9,2026-05-07T06:32:11Z

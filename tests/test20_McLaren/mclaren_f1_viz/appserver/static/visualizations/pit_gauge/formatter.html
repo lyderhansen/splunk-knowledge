@@ -1,0 +1,70 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+
+    <splunk-control-group label="Driver field" help="SPL field name for the driver — also used as the drilldown click.name token">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.driverField" value="driver">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Pit time field" help="SPL field name for pit stop duration in seconds (e.g. 2.4)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.pitTimeField" value="pit_time">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Lap field" help="SPL field name for the lap number on which the pit stop occurred">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.lapField" value="lap">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Positions lost field" help="SPL field name for positions lost during the stop (0 = no change, positive integer = positions dropped)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.positionsLostField" value="positions_lost">
+        </splunk-text-input>
+    </splunk-control-group>
+
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+
+    <splunk-control-group label="Target zone start (s)" help="Left edge of the target pit time band in seconds. Stops within the band are shown in the safe zone highlight. Default 2.0">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.targetMin" value="2.0">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Target zone end (s)" help="Right edge of the target pit time band in seconds. Stops slower than this threshold shift the fill bar toward danger red. Default 2.8">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.targetMax" value="2.8">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Gauge maximum (s)" help="Right end of the gauge scale in seconds. The longest bar represents this value. Automatically expands to fit data if data exceeds this setting. Default 5.0">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.maxTime" value="5.0">
+        </splunk-text-input>
+    </splunk-control-group>
+
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+
+    <splunk-control-group label="Theme" help="Color scheme — dark for pitwall/carbon aesthetic, light for presentation mode">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.theme" value="dark">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Accent color" help="Fill bar color for fast stops within the target zone — default is McLaren papaya orange">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.accentColor" type="custom" value="#FF8000">
+            <splunk-color>#FF8000</splunk-color>
+            <splunk-color>#47C7FC</splunk-color>
+            <splunk-color>#FF3333</splunk-color>
+            <splunk-color>#00D26A</splunk-color>
+            <splunk-color>#FFD700</splunk-color>
+            <splunk-color>#A855F7</splunk-color>
+            <splunk-color>#E8E8E8</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+
+    <splunk-control-group label="Accent intensity" help="Strength of the fastest-stop edge glow and hover highlight. Range 0 (off) to 100 (maximum). Default 50">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.accentIntensity" value="50">
+        </splunk-text-input>
+    </splunk-control-group>
+
+</form>

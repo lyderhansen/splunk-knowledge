@@ -1,0 +1,1380 @@
+{
+  "title": "ACME Daily Controls",
+  "description": "CISO daily control validation. Dark trading-floor palette via ui-ux-pro-max financial-dashboard.",
+  "defaults": {
+    "dataSources": {
+      "ds.search": {
+        "options": {
+          "queryParameters": {
+            "earliest": "-24h@h",
+            "latest": "now"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showLastUpdated": false
+      }
+    }
+  },
+  "inputs": {},
+  "dataSources": {
+    "kpi_critical_incidents": {
+      "type": "ds.search",
+      "options": {
+        "query": "| makeresults count=14 | streamstats count as day | eval _time = now() - 86400 * (14 - day) | eval count = case(day=1,2,day=2,3,day=3,1,day=4,4,day=5,2,day=6,1,day=7,3,day=8,5,day=9,2,day=10,1,day=11,2,day=12,1,day=13,0,day=14,0) | table _time count"
+      },
+      "name": "kpi_critical_incidents"
+    },
+    "kpi_edr_coverage": {
+      "type": "ds.search",
+      "options": {
+        "query": "| makeresults count=14 | streamstats count as day | eval _time = now() - 86400 * (14 - day) | eval pct = case(day=1,93.2,day=2,93.8,day=3,94.5,day=4,94.1,day=5,95.0,day=6,95.3,day=7,95.0,day=8,95.5,day=9,95.8,day=10,96.0,day=11,95.7,day=12,96.2,day=13,96.0,day=14,96.4) | table _time pct"
+      },
+      "name": "kpi_edr_coverage"
+    },
+    "kpi_patch_compliance": {
+      "type": "ds.search",
+      "options": {
+        "query": "| makeresults count=14 | streamstats count as day | eval _time = now() - 86400 * (14 - day) | eval pct = case(day=1,89.5,day=2,89.0,day=3,88.5,day=4,88.0,day=5,87.5,day=6,87.0,day=7,86.5,day=8,86.0,day=9,85.5,day=10,85.0,day=11,86.0,day=12,86.5,day=13,87.0,day=14,87.3) | table _time pct"
+      },
+      "name": "kpi_patch_compliance"
+    },
+    "kpi_alerts_triaged": {
+      "type": "ds.search",
+      "options": {
+        "query": "| makeresults count=14 | streamstats count as day | eval _time = now() - 86400 * (14 - day) | eval count = case(day=1,135,day=2,128,day=3,140,day=4,155,day=5,148,day=6,132,day=7,138,day=8,145,day=9,152,day=10,128,day=11,135,day=12,140,day=13,144,day=14,142) | table _time count"
+      },
+      "name": "kpi_alerts_triaged"
+    },
+    "tile_incidents_24h": {
+      "type": "ds.search",
+      "options": {
+        "query": "| makeresults count=14 | streamstats count as day | eval _time = now() - 86400 * (14 - day) | eval count = case(day=1,5,day=2,8,day=3,12,day=4,9,day=5,7,day=6,4,day=7,6,day=8,11,day=9,8,day=10,9,day=11,7,day=12,6,day=13,8,day=14,7) | table _time count"
+      },
+      "name": "tile_incidents_24h"
+    },
+    "tile_open_cases": {
+      "type": "ds.search",
+      "options": {
+        "query": "| makeresults count=14 | streamstats count as day | eval _time = now() - 86400 * (14 - day) | eval count = case(day=1,18,day=2,16,day=3,17,day=4,15,day=5,14,day=6,13,day=7,15,day=8,14,day=9,13,day=10,12,day=11,11,day=12,12,day=13,13,day=14,12) | table _time count"
+      },
+      "name": "tile_open_cases"
+    },
+    "tile_failed_logins": {
+      "type": "ds.search",
+      "options": {
+        "query": "| makeresults count=14 | streamstats count as day | eval _time = now() - 86400 * (14 - day) | eval count = case(day=1,180,day=2,210,day=3,195,day=4,220,day=5,205,day=6,240,day=7,225,day=8,250,day=9,235,day=10,215,day=11,225,day=12,240,day=13,228,day=14,234) | table _time count"
+      },
+      "name": "tile_failed_logins"
+    },
+    "tile_dns_suspicious": {
+      "type": "ds.search",
+      "options": {
+        "query": "| makeresults count=14 | streamstats count as day | eval _time = now() - 86400 * (14 - day) | eval count = case(day=3,1,day=8,2,day=12,1,1==1,0) | table _time count"
+      },
+      "name": "tile_dns_suspicious"
+    },
+    "tile_critical_vulns": {
+      "type": "ds.search",
+      "options": {
+        "query": "| makeresults count=14 | streamstats count as day | eval _time = now() - 86400 * (14 - day) | eval count = case(day=1,4,day=2,4,day=3,5,day=4,5,day=5,4,day=6,4,day=7,3,day=8,3,day=9,4,day=10,4,day=11,3,day=12,3,day=13,3,day=14,3) | table _time count"
+      },
+      "name": "tile_critical_vulns"
+    },
+    "tile_untested_controls": {
+      "type": "ds.search",
+      "options": {
+        "query": "| makeresults count=14 | streamstats count as day | eval _time = now() - 86400 * (14 - day) | eval count = case(day=1,4,day=2,3,day=3,3,day=4,2,day=5,2,day=6,2,day=7,1,day=8,1,day=9,2,day=10,1,day=11,1,day=12,1,day=13,1,day=14,1) | table _time count"
+      },
+      "name": "tile_untested_controls"
+    },
+    "trend_incidents_14d": {
+      "type": "ds.search",
+      "options": {
+        "query": "| makeresults count=14 | streamstats count as day | eval _time = now() - 86400 * (14 - day) | eval incidents = case(day=1,8,day=2,6,day=3,7,day=4,9,day=5,5,day=6,4,day=7,6,day=8,12,day=9,10,day=10,7,day=11,5,day=12,4,day=13,3,day=14,2) | table _time incidents"
+      },
+      "name": "trend_incidents_14d"
+    },
+    "controls_grid": {
+      "type": "ds.search",
+      "options": {
+        "query": "| makeresults count=10 | streamstats count as i | eval domain=case(i<=2, \"Endpoint\", i<=4, \"Identity\", i<=6, \"Network\", i<=8, \"Data\", 1==1, \"Cloud\") | eval control=case(i=1, \"EDR Coverage\", i=2, \"Disk Encryption\", i=3, \"MFA Enforcement\", i=4, \"PAM Sessions\", i=5, \"Egress Monitoring\", i=6, \"DNS Filtering\", i=7, \"DLP Coverage\", i=8, \"Backup Validation\", i=9, \"Cloud Posture\", 1==1, \"Container Scanning\") | eval status=case(i=2, \"DEGRADED\", i=7, \"FAILED\", 1==1, \"OK\") | eval status_glyph=case(status=\"OK\", \"OK \u2713\", status=\"DEGRADED\", \"DEGRADED \u26a0\", status=\"FAILED\", \"FAILED \u2717\") | eval last_tested=strftime(now()-3600*case(i=2,2, i=7,1, 1==1,12), \"%b %d %H:%M\") | rename domain as Domain control as Control status_glyph as Status last_tested as \"Last Tested\" | table Domain Control Status \"Last Tested\""
+      },
+      "name": "controls_grid"
+    }
+  },
+  "visualizations": {
+    "viz_brand_icon": {
+      "type": "splunk.choropleth.svg",
+      "options": {
+        "svg": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FF2942' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M12 2L4 6v6c0 5.5 3.8 10.7 8 12 4.2-1.3 8-6.5 8-12V6l-8-4z'/></svg>",
+        "backgroundColor": "transparent"
+      },
+      "context": {},
+      "containerOptions": {},
+      "showProgressBar": false,
+      "showLastUpdated": false
+    },
+    "viz_brand_wordmark": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# ACME",
+        "fontFamily": "Times New Roman",
+        "fontColor": "#FF2942",
+        "fontSize": "extraLarge",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_brand_stripe": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#FF2942",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 0
+      }
+    },
+    "viz_section_posture": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## Today's Posture",
+        "fontFamily": "Times New Roman",
+        "fontColor": "#F1F5F9",
+        "fontSize": "large",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_hero_accent_stripe": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#FF2942",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 2
+      }
+    },
+    "viz_shadow_kpi_critical": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2A44",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 12,
+        "cornerRadius": [
+          14,
+          14,
+          14,
+          14
+        ]
+      },
+      "cornerRadius": [
+        14,
+        14,
+        14,
+        14
+      ]
+    },
+    "viz_shadow_kpi_edr": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2A44",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 12,
+        "cornerRadius": [
+          14,
+          14,
+          14,
+          14
+        ]
+      },
+      "cornerRadius": [
+        14,
+        14,
+        14,
+        14
+      ]
+    },
+    "viz_shadow_kpi_patch": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2A44",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 12,
+        "cornerRadius": [
+          14,
+          14,
+          14,
+          14
+        ]
+      },
+      "cornerRadius": [
+        14,
+        14,
+        14,
+        14
+      ]
+    },
+    "viz_shadow_kpi_triaged": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2A44",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 12,
+        "cornerRadius": [
+          14,
+          14,
+          14,
+          14
+        ]
+      },
+      "cornerRadius": [
+        14,
+        14,
+        14,
+        14
+      ]
+    },
+    "viz_kpi_critical": {
+      "type": "splunk.singlevalue",
+      "title": "Active Critical Incidents",
+      "options": {
+        "majorColor": "> primary | seriesByName(\"count\") | lastPoint() | rangeValue(majorColorConfig)",
+        "majorFontSize": 60,
+        "underLabel": "vs target 0",
+        "underLabelFontSize": 13,
+        "backgroundColor": "#11182A",
+        "sparklineDisplay": "below",
+        "showSparklineAreaGraph": true,
+        "trendDisplay": "off",
+        "cornerRadius": [
+          12,
+          12,
+          12,
+          12
+        ]
+      },
+      "context": {
+        "majorColorConfig": [
+          {
+            "to": 1,
+            "value": "#22C55E"
+          },
+          {
+            "from": 1,
+            "to": 5,
+            "value": "#FFB627"
+          },
+          {
+            "from": 5,
+            "value": "#FF4D4D"
+          }
+        ]
+      },
+      "dataSources": {
+        "primary": "kpi_critical_incidents"
+      },
+      "eventHandlers": [
+        {
+          "type": "drilldown.linkToUrl",
+          "options": {
+            "url": "/app/search/search?q=index%3Dincidents%20severity%3Dcritical%20status%3Dopen",
+            "newTab": false
+          }
+        }
+      ],
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "viz_kpi_edr": {
+      "type": "splunk.singlevalue",
+      "title": "EDR Coverage",
+      "options": {
+        "majorColor": "> primary | seriesByName(\"pct\") | lastPoint() | rangeValue(majorColorConfig)",
+        "majorFontSize": 36,
+        "unit": "%",
+        "unitPosition": "after",
+        "numberPrecision": 1,
+        "underLabel": "vs target 95%",
+        "underLabelFontSize": 13,
+        "backgroundColor": "#11182A",
+        "sparklineDisplay": "below",
+        "showSparklineAreaGraph": true,
+        "trendDisplay": "off",
+        "cornerRadius": [
+          12,
+          12,
+          12,
+          12
+        ]
+      },
+      "context": {
+        "majorColorConfig": [
+          {
+            "to": 85,
+            "value": "#FF4D4D"
+          },
+          {
+            "from": 85,
+            "to": 95,
+            "value": "#FFB627"
+          },
+          {
+            "from": 95,
+            "value": "#22C55E"
+          }
+        ]
+      },
+      "dataSources": {
+        "primary": "kpi_edr_coverage"
+      },
+      "eventHandlers": [
+        {
+          "type": "drilldown.linkToUrl",
+          "options": {
+            "url": "/app/search/search?q=index%3Dedr_coverage%20status%3Dnon-compliant",
+            "newTab": false
+          }
+        }
+      ],
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "viz_kpi_patch": {
+      "type": "splunk.singlevalue",
+      "title": "Patch Compliance",
+      "options": {
+        "majorColor": "> primary | seriesByName(\"pct\") | lastPoint() | rangeValue(majorColorConfig)",
+        "majorFontSize": 36,
+        "unit": "%",
+        "unitPosition": "after",
+        "numberPrecision": 1,
+        "underLabel": "vs target 95%",
+        "underLabelFontSize": 13,
+        "backgroundColor": "#11182A",
+        "sparklineDisplay": "below",
+        "showSparklineAreaGraph": true,
+        "trendDisplay": "off",
+        "cornerRadius": [
+          12,
+          12,
+          12,
+          12
+        ]
+      },
+      "context": {
+        "majorColorConfig": [
+          {
+            "to": 80,
+            "value": "#FF4D4D"
+          },
+          {
+            "from": 80,
+            "to": 90,
+            "value": "#FFB627"
+          },
+          {
+            "from": 90,
+            "value": "#22C55E"
+          }
+        ]
+      },
+      "dataSources": {
+        "primary": "kpi_patch_compliance"
+      },
+      "eventHandlers": [
+        {
+          "type": "drilldown.linkToUrl",
+          "options": {
+            "url": "/app/search/search?q=index%3Dpatch_status%20status%3Dmissing",
+            "newTab": false
+          }
+        }
+      ],
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "viz_kpi_triaged": {
+      "type": "splunk.singlevalue",
+      "title": "Alerts Triaged Today",
+      "options": {
+        "majorColor": "#3B82F6",
+        "majorFontSize": 36,
+        "underLabel": "vs target 150",
+        "underLabelFontSize": 13,
+        "backgroundColor": "#11182A",
+        "sparklineDisplay": "below",
+        "showSparklineAreaGraph": true,
+        "trendDisplay": "off",
+        "cornerRadius": [
+          12,
+          12,
+          12,
+          12
+        ]
+      },
+      "dataSources": {
+        "primary": "kpi_alerts_triaged"
+      },
+      "eventHandlers": [
+        {
+          "type": "drilldown.linkToUrl",
+          "options": {
+            "url": "/app/search/search?q=index%3Dtriage_history%20earliest%3D%40d",
+            "newTab": false
+          }
+        }
+      ],
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "viz_section_pulse": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## Threat Pulse",
+        "fontFamily": "Times New Roman",
+        "fontColor": "#F1F5F9",
+        "fontSize": "large",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_shadow_tile_incidents": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2A44",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 12,
+        "cornerRadius": [
+          14,
+          14,
+          14,
+          14
+        ]
+      },
+      "cornerRadius": [
+        14,
+        14,
+        14,
+        14
+      ]
+    },
+    "viz_shadow_tile_cases": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2A44",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 12,
+        "cornerRadius": [
+          14,
+          14,
+          14,
+          14
+        ]
+      },
+      "cornerRadius": [
+        14,
+        14,
+        14,
+        14
+      ]
+    },
+    "viz_shadow_tile_logins": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2A44",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 12,
+        "cornerRadius": [
+          14,
+          14,
+          14,
+          14
+        ]
+      },
+      "cornerRadius": [
+        14,
+        14,
+        14,
+        14
+      ]
+    },
+    "viz_shadow_tile_dns": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2A44",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 12,
+        "cornerRadius": [
+          14,
+          14,
+          14,
+          14
+        ]
+      },
+      "cornerRadius": [
+        14,
+        14,
+        14,
+        14
+      ]
+    },
+    "viz_shadow_tile_vulns": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2A44",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 12,
+        "cornerRadius": [
+          14,
+          14,
+          14,
+          14
+        ]
+      },
+      "cornerRadius": [
+        14,
+        14,
+        14,
+        14
+      ]
+    },
+    "viz_shadow_tile_untested": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2A44",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 12,
+        "cornerRadius": [
+          14,
+          14,
+          14,
+          14
+        ]
+      },
+      "cornerRadius": [
+        14,
+        14,
+        14,
+        14
+      ]
+    },
+    "viz_tile_incidents": {
+      "type": "splunk.singlevalue",
+      "title": "Incidents 14d",
+      "options": {
+        "majorColor": "> primary | seriesByName(\"count\") | lastPoint() | rangeValue(majorColorConfig)",
+        "majorFontSize": 28,
+        "backgroundColor": "#11182A",
+        "sparklineDisplay": "below",
+        "showSparklineAreaGraph": true,
+        "trendDisplay": "off",
+        "cornerRadius": [
+          12,
+          12,
+          12,
+          12
+        ]
+      },
+      "context": {
+        "majorColorConfig": [
+          {
+            "to": 1,
+            "value": "#22C55E"
+          },
+          {
+            "from": 1,
+            "to": 10,
+            "value": "#FFB627"
+          },
+          {
+            "from": 10,
+            "value": "#FF4D4D"
+          }
+        ]
+      },
+      "dataSources": {
+        "primary": "tile_incidents_24h"
+      },
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "viz_tile_cases": {
+      "type": "splunk.singlevalue",
+      "title": "Open Cases",
+      "options": {
+        "majorColor": "#A855F7",
+        "majorFontSize": 28,
+        "backgroundColor": "#11182A",
+        "sparklineDisplay": "below",
+        "showSparklineAreaGraph": true,
+        "trendDisplay": "off",
+        "cornerRadius": [
+          12,
+          12,
+          12,
+          12
+        ]
+      },
+      "dataSources": {
+        "primary": "tile_open_cases"
+      },
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "viz_tile_logins": {
+      "type": "splunk.singlevalue",
+      "title": "Failed Logins 24h",
+      "options": {
+        "majorColor": "> primary | seriesByName(\"count\") | lastPoint() | rangeValue(majorColorConfig)",
+        "majorFontSize": 28,
+        "backgroundColor": "#11182A",
+        "sparklineDisplay": "below",
+        "showSparklineAreaGraph": true,
+        "trendDisplay": "off",
+        "cornerRadius": [
+          12,
+          12,
+          12,
+          12
+        ]
+      },
+      "context": {
+        "majorColorConfig": [
+          {
+            "to": 100,
+            "value": "#22C55E"
+          },
+          {
+            "from": 100,
+            "to": 500,
+            "value": "#FFB627"
+          },
+          {
+            "from": 500,
+            "value": "#FF4D4D"
+          }
+        ]
+      },
+      "dataSources": {
+        "primary": "tile_failed_logins"
+      },
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "viz_tile_dns": {
+      "type": "splunk.singlevalue",
+      "title": "Suspicious DNS",
+      "options": {
+        "majorColor": "> primary | seriesByName(\"count\") | lastPoint() | rangeValue(majorColorConfig)",
+        "majorFontSize": 28,
+        "backgroundColor": "#11182A",
+        "sparklineDisplay": "below",
+        "showSparklineAreaGraph": true,
+        "trendDisplay": "off",
+        "cornerRadius": [
+          12,
+          12,
+          12,
+          12
+        ]
+      },
+      "context": {
+        "majorColorConfig": [
+          {
+            "to": 1,
+            "value": "#22C55E"
+          },
+          {
+            "from": 1,
+            "to": 10,
+            "value": "#FFB627"
+          },
+          {
+            "from": 10,
+            "value": "#FF4D4D"
+          }
+        ]
+      },
+      "dataSources": {
+        "primary": "tile_dns_suspicious"
+      },
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "viz_tile_vulns": {
+      "type": "splunk.singlevalue",
+      "title": "Critical Vulns",
+      "options": {
+        "majorColor": "> primary | seriesByName(\"count\") | lastPoint() | rangeValue(majorColorConfig)",
+        "majorFontSize": 28,
+        "backgroundColor": "#11182A",
+        "sparklineDisplay": "below",
+        "showSparklineAreaGraph": true,
+        "trendDisplay": "off",
+        "cornerRadius": [
+          12,
+          12,
+          12,
+          12
+        ]
+      },
+      "context": {
+        "majorColorConfig": [
+          {
+            "to": 1,
+            "value": "#22C55E"
+          },
+          {
+            "from": 1,
+            "to": 5,
+            "value": "#FFB627"
+          },
+          {
+            "from": 5,
+            "value": "#FF4D4D"
+          }
+        ]
+      },
+      "dataSources": {
+        "primary": "tile_critical_vulns"
+      },
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "viz_tile_untested": {
+      "type": "splunk.singlevalue",
+      "title": "Untested Controls",
+      "options": {
+        "majorColor": "> primary | seriesByName(\"count\") | lastPoint() | rangeValue(majorColorConfig)",
+        "majorFontSize": 28,
+        "backgroundColor": "#11182A",
+        "sparklineDisplay": "below",
+        "showSparklineAreaGraph": true,
+        "trendDisplay": "off",
+        "cornerRadius": [
+          12,
+          12,
+          12,
+          12
+        ]
+      },
+      "context": {
+        "majorColorConfig": [
+          {
+            "to": 1,
+            "value": "#22C55E"
+          },
+          {
+            "from": 1,
+            "to": 5,
+            "value": "#FFB627"
+          },
+          {
+            "from": 5,
+            "value": "#FF4D4D"
+          }
+        ]
+      },
+      "dataSources": {
+        "primary": "tile_untested_controls"
+      },
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "viz_hairline_divider": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#2A3349",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 1
+      }
+    },
+    "viz_section_trend": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## Trend & Control Health",
+        "fontFamily": "Times New Roman",
+        "fontColor": "#F1F5F9",
+        "fontSize": "large",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_shadow_trend": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2A44",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 12,
+        "cornerRadius": [
+          14,
+          14,
+          14,
+          14
+        ]
+      },
+      "cornerRadius": [
+        14,
+        14,
+        14,
+        14
+      ]
+    },
+    "viz_shadow_table": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#1F2A44",
+        "fillOpacity": 1,
+        "strokeColor": "transparent",
+        "rx": 12,
+        "cornerRadius": [
+          14,
+          14,
+          14,
+          14
+        ]
+      },
+      "cornerRadius": [
+        14,
+        14,
+        14,
+        14
+      ]
+    },
+    "viz_trend_line": {
+      "type": "splunk.line",
+      "title": "Incident Volume \u2014 Last 14 Days",
+      "options": {
+        "backgroundColor": "#11182A",
+        "seriesColors": [
+          "#22C55E"
+        ],
+        "yAxisAbbreviation": "off",
+        "showSplitSeries": false,
+        "axisLabelsX": {
+          "visibility": "show"
+        },
+        "axisLabelsY": {
+          "visibility": "show"
+        },
+        "axisTitleX": {
+          "visibility": "hide"
+        },
+        "axisTitleY": {
+          "visibility": "hide"
+        },
+        "legendDisplay": "off",
+        "lineWidth": 3,
+        "showRoundedY": false,
+        "cornerRadius": [
+          12,
+          12,
+          12,
+          12
+        ],
+        "lineSmoothing": "linear"
+      },
+      "dataSources": {
+        "primary": "trend_incidents_14d"
+      },
+      "eventHandlers": [
+        {
+          "type": "drilldown.linkToUrl",
+          "options": {
+            "url": "/app/search/search?q=index%3Dincidents%20earliest%3D-14d%40d",
+            "newTab": false
+          }
+        }
+      ],
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "viz_controls_table": {
+      "type": "splunk.table",
+      "title": "Control Health by Domain",
+      "options": {
+        "backgroundColor": "#11182A",
+        "headerBackgroundColor": "#0A0F1C",
+        "headerTextColor": "#94A3B8",
+        "rowNumbers": false,
+        "count": 10,
+        "cornerRadius": [
+          12,
+          12,
+          12,
+          12
+        ],
+        "columnFormat": {
+          "Domain": {
+            "width": 90
+          },
+          "Control": {
+            "width": 170
+          },
+          "Status": {
+            "width": 130,
+            "rowBackgroundColors": "> table | seriesByName(\"Status\") | matchValue(statusBg)",
+            "rowColors": "> table | seriesByName(\"Status\") | matchValue(statusFg)"
+          },
+          "Last Tested": {
+            "width": 100
+          }
+        }
+      },
+      "context": {
+        "statusBg": [
+          {
+            "match": "OK \u2713",
+            "value": "transparent"
+          },
+          {
+            "match": "DEGRADED \u26a0",
+            "value": "#FFB627"
+          },
+          {
+            "match": "FAILED \u2717",
+            "value": "#FF4D4D"
+          }
+        ],
+        "statusFg": [
+          {
+            "match": "OK \u2713",
+            "value": "#22C55E"
+          },
+          {
+            "match": "DEGRADED \u26a0",
+            "value": "#0A0F1C"
+          },
+          {
+            "match": "FAILED \u2717",
+            "value": "#FFFFFF"
+          }
+        ]
+      },
+      "dataSources": {
+        "primary": "controls_grid"
+      },
+      "eventHandlers": [
+        {
+          "type": "drilldown.linkToUrl",
+          "options": {
+            "url": "/app/search/search?q=index%3Dcontrol_status%20control%3D%22$row.Control$%22",
+            "newTab": false
+          }
+        }
+      ],
+      "cornerRadius": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    "viz_footer_escalation": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "**Escalation** \u2014 **Runbook**: [Controls runbook](#) \u00b7 **On-call**: Sec-Ops Tier-2 (PagerDuty *acme-secops*) \u00b7 **Slack**: [#sec-controls-daily](#) \u00b7 **Owner**: ciso-controls@acme.com",
+        "fontFamily": "Splunk Platform Sans",
+        "fontColor": "#94A3B8",
+        "fontSize": "small",
+        "backgroundColor": "transparent"
+      }
+    }
+  },
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1440,
+      "height": 960,
+      "backgroundColor": "#0A0F1C",
+      "display": "auto-scale"
+    },
+    "structure": [
+      {
+        "item": "viz_brand_wordmark",
+        "type": "block",
+        "position": {
+          "x": 32,
+          "y": 32,
+          "w": 280,
+          "h": 60
+        }
+      },
+      {
+        "item": "viz_brand_icon",
+        "type": "block",
+        "position": {
+          "x": 336,
+          "y": 40,
+          "w": 44,
+          "h": 44
+        }
+      },
+      {
+        "item": "viz_brand_stripe",
+        "type": "block",
+        "position": {
+          "x": 32,
+          "y": 92,
+          "w": 1376,
+          "h": 4
+        }
+      },
+      {
+        "item": "viz_section_posture",
+        "type": "block",
+        "position": {
+          "x": 32,
+          "y": 108,
+          "w": 1376,
+          "h": 36
+        }
+      },
+      {
+        "item": "viz_shadow_kpi_critical",
+        "type": "block",
+        "position": {
+          "x": 39,
+          "y": 159,
+          "w": 430,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_shadow_kpi_edr",
+        "type": "block",
+        "position": {
+          "x": 493,
+          "y": 159,
+          "w": 290,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_shadow_kpi_patch",
+        "type": "block",
+        "position": {
+          "x": 807,
+          "y": 159,
+          "w": 290,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_shadow_kpi_triaged",
+        "type": "block",
+        "position": {
+          "x": 1121,
+          "y": 159,
+          "w": 290,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_hero_accent_stripe",
+        "type": "block",
+        "position": {
+          "x": 32,
+          "y": 156,
+          "w": 4,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_kpi_critical",
+        "type": "block",
+        "position": {
+          "x": 36,
+          "y": 156,
+          "w": 430,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_kpi_edr",
+        "type": "block",
+        "position": {
+          "x": 490,
+          "y": 156,
+          "w": 290,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_kpi_patch",
+        "type": "block",
+        "position": {
+          "x": 804,
+          "y": 156,
+          "w": 290,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_kpi_triaged",
+        "type": "block",
+        "position": {
+          "x": 1118,
+          "y": 156,
+          "w": 290,
+          "h": 130
+        }
+      },
+      {
+        "item": "viz_section_pulse",
+        "type": "block",
+        "position": {
+          "x": 32,
+          "y": 304,
+          "w": 1376,
+          "h": 32
+        }
+      },
+      {
+        "item": "viz_shadow_tile_incidents",
+        "type": "block",
+        "position": {
+          "x": 35,
+          "y": 351,
+          "w": 209,
+          "h": 88
+        }
+      },
+      {
+        "item": "viz_shadow_tile_cases",
+        "type": "block",
+        "position": {
+          "x": 268,
+          "y": 351,
+          "w": 209,
+          "h": 88
+        }
+      },
+      {
+        "item": "viz_shadow_tile_logins",
+        "type": "block",
+        "position": {
+          "x": 501,
+          "y": 351,
+          "w": 209,
+          "h": 88
+        }
+      },
+      {
+        "item": "viz_shadow_tile_dns",
+        "type": "block",
+        "position": {
+          "x": 734,
+          "y": 351,
+          "w": 209,
+          "h": 88
+        }
+      },
+      {
+        "item": "viz_shadow_tile_vulns",
+        "type": "block",
+        "position": {
+          "x": 967,
+          "y": 351,
+          "w": 209,
+          "h": 88
+        }
+      },
+      {
+        "item": "viz_shadow_tile_untested",
+        "type": "block",
+        "position": {
+          "x": 1202,
+          "y": 351,
+          "w": 209,
+          "h": 88
+        }
+      },
+      {
+        "item": "viz_tile_incidents",
+        "type": "block",
+        "position": {
+          "x": 32,
+          "y": 348,
+          "w": 209,
+          "h": 88
+        }
+      },
+      {
+        "item": "viz_tile_cases",
+        "type": "block",
+        "position": {
+          "x": 265,
+          "y": 348,
+          "w": 209,
+          "h": 88
+        }
+      },
+      {
+        "item": "viz_tile_logins",
+        "type": "block",
+        "position": {
+          "x": 498,
+          "y": 348,
+          "w": 209,
+          "h": 88
+        }
+      },
+      {
+        "item": "viz_tile_dns",
+        "type": "block",
+        "position": {
+          "x": 731,
+          "y": 348,
+          "w": 209,
+          "h": 88
+        }
+      },
+      {
+        "item": "viz_tile_vulns",
+        "type": "block",
+        "position": {
+          "x": 964,
+          "y": 348,
+          "w": 209,
+          "h": 88
+        }
+      },
+      {
+        "item": "viz_tile_untested",
+        "type": "block",
+        "position": {
+          "x": 1199,
+          "y": 348,
+          "w": 209,
+          "h": 88
+        }
+      },
+      {
+        "item": "viz_hairline_divider",
+        "type": "block",
+        "position": {
+          "x": 32,
+          "y": 460,
+          "w": 1376,
+          "h": 2
+        }
+      },
+      {
+        "item": "viz_section_trend",
+        "type": "block",
+        "position": {
+          "x": 32,
+          "y": 476,
+          "w": 1376,
+          "h": 36
+        }
+      },
+      {
+        "item": "viz_shadow_trend",
+        "type": "block",
+        "position": {
+          "x": 35,
+          "y": 527,
+          "w": 836,
+          "h": 296
+        }
+      },
+      {
+        "item": "viz_shadow_table",
+        "type": "block",
+        "position": {
+          "x": 895,
+          "y": 527,
+          "w": 516,
+          "h": 296
+        }
+      },
+      {
+        "item": "viz_trend_line",
+        "type": "block",
+        "position": {
+          "x": 32,
+          "y": 524,
+          "w": 836,
+          "h": 296
+        }
+      },
+      {
+        "item": "viz_controls_table",
+        "type": "block",
+        "position": {
+          "x": 892,
+          "y": 524,
+          "w": 516,
+          "h": 296
+        }
+      },
+      {
+        "item": "viz_footer_escalation",
+        "type": "block",
+        "position": {
+          "x": 32,
+          "y": 848,
+          "w": 1376,
+          "h": 56
+        }
+      }
+    ]
+  }
+}

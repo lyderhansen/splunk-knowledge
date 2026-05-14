@@ -1,0 +1,57 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+    <splunk-control-group label="Category field" help="SPL field for the category name">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.categoryField" value="category">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Value field" help="SPL field for the numeric value per category">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.valueField" value="revenue">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Unit" help="Unit symbol for values (e.g. $, %, units)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.unit" value="$">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Unit position" help="Display unit before or after value">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.unitPosition" value="before">
+            <option value="before">Before</option>
+            <option value="after">After</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+    <splunk-control-group label="Show center readout" help="Display total value in the donut center">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showReadout" value="true">
+            <option value="true">Show</option>
+            <option value="false">Hide</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show legend" help="Display category legend with values">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showLegend" value="true">
+            <option value="true">Show</option>
+            <option value="false">Hide</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Ring width" help="Donut ring thickness (auto or pixels)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.ringWidth" value="auto">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+    <splunk-control-group label="Segment colors" help="Comma-separated hex colors for categories">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.colors" value="#007AFF,#5856D6,#AF52DE,#FF2D55,#FF9500">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Accent intensity" help="Strength of hover glow effect (0-100)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.accentIntensity" value="50">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Theme" help="Auto detects dashboard theme">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto">
+            <option value="auto">Auto</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>

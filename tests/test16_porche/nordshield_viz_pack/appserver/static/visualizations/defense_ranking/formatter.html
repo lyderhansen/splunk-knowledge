@@ -1,0 +1,82 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+    <splunk-control-group label="Service name field" help="SPL field containing the service or resource name">
+        <splunk-text-input name="nordshield_viz_pack.defense_ranking.nameField" default="service_name">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Attack count field" help="SPL field containing total attack count per service">
+        <splunk-text-input name="nordshield_viz_pack.defense_ranking.countField" default="attack_count">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Blocked count field" help="SPL field containing number of blocked attacks">
+        <splunk-text-input name="nordshield_viz_pack.defense_ranking.blockedField" default="blocked_count">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Success rate field" help="SPL field containing the success rate string (e.g. 99.7%). Leave empty to calculate from blocked/attack counts.">
+        <splunk-text-input name="nordshield_viz_pack.defense_ranking.rateField" default="success_rate">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+    <splunk-control-group label="Maximum bars" help="Maximum number of service rows to display (top N by attack count)">
+        <splunk-text-input name="nordshield_viz_pack.defense_ranking.maxBars" default="10">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show success rate badge" help="Show or hide the success rate badge on each row">
+        <splunk-radio-input name="nordshield_viz_pack.defense_ranking.showRate" default="true">
+            <option value="true">Show</option>
+            <option value="false">Hide</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Good threshold (%)" help="Success rate at or above this value shows the cyan badge (default: 99)">
+        <splunk-text-input name="nordshield_viz_pack.defense_ranking.rateThresholdGood" default="99">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Warning threshold (%)" help="Success rate between warning and good thresholds shows the amber badge (default: 97)">
+        <splunk-text-input name="nordshield_viz_pack.defense_ranking.rateThresholdWarn" default="97">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+    <splunk-control-group label="Blocked color" help="Fill color for the blocked-attacks portion of the bar">
+        <splunk-color-picker name="nordshield_viz_pack.defense_ranking.colorBlocked" default="#00E5CC">
+            <splunk-color token="#00E5CC"></splunk-color>
+            <splunk-color token="#38BDF8"></splunk-color>
+            <splunk-color token="#8B5CF6"></splunk-color>
+            <splunk-color token="#22D3EE"></splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Passed-through color" help="Fill color for the passed-through (unblocked) attacks portion of the bar">
+        <splunk-color-picker name="nordshield_viz_pack.defense_ranking.colorPassed" default="#FFB020">
+            <splunk-color token="#FFB020"></splunk-color>
+            <splunk-color token="#D946EF"></splunk-color>
+            <splunk-color token="#F43F5E"></splunk-color>
+            <splunk-color token="#FB923C"></splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Bar background color" help="Background track color behind each bar">
+        <splunk-color-picker name="nordshield_viz_pack.defense_ranking.barBg" default="#1A2236">
+            <splunk-color token="#1A2236"></splunk-color>
+            <splunk-color token="#0F1628"></splunk-color>
+            <splunk-color token="#080C18"></splunk-color>
+            <splunk-color token="#111827"></splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Bar height (px)" help="Height of each bar row in pixels (default: 28)">
+        <splunk-text-input name="nordshield_viz_pack.defense_ranking.barHeight" default="28">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Bar gap (px)" help="Vertical gap between bar rows in pixels (default: 8)">
+        <splunk-text-input name="nordshield_viz_pack.defense_ranking.barGap" default="8">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Bar corner radius (px)" help="Corner radius for bar segments in pixels (default: 3)">
+        <splunk-text-input name="nordshield_viz_pack.defense_ranking.barRadius" default="3">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Accent intensity (0-100)" help="Controls glow and hover highlight intensity. 0 = no effects, 100 = maximum glow (default: 50)">
+        <splunk-text-input name="nordshield_viz_pack.defense_ranking.accentIntensity" default="50">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>

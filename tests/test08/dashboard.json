@@ -1,0 +1,535 @@
+{
+  "title": "Security Operations Center",
+  "description": "Real-time security posture and threat intelligence",
+  "theme": "dark",
+  "dataSources": {
+    "ds_stub": {
+      "type": "ds.test",
+      "options": {
+        "data": {
+          "fields": [{"name": "_stub"}],
+          "columns": [["1"]]
+        }
+      },
+      "name": "Icon stub"
+    },
+    "ds_kpi_critical": {
+      "type": "ds.search",
+      "options": {
+        "query": "| makeresults | eval value=7",
+        "queryParameters": {
+          "earliest": "-24h@h",
+          "latest": "now"
+        },
+        "name": "Critical Alert Count"
+      }
+    },
+    "ds_kpi_high": {
+      "type": "ds.search",
+      "options": {
+        "query": "| makeresults | eval value=23",
+        "queryParameters": {
+          "earliest": "-24h@h",
+          "latest": "now"
+        },
+        "name": "High Alert Count"
+      }
+    },
+    "ds_kpi_medium": {
+      "type": "ds.search",
+      "options": {
+        "query": "| makeresults | eval value=89",
+        "queryParameters": {
+          "earliest": "-24h@h",
+          "latest": "now"
+        },
+        "name": "Medium Alert Count"
+      }
+    },
+    "ds_kpi_low": {
+      "type": "ds.search",
+      "options": {
+        "query": "| makeresults | eval value=342",
+        "queryParameters": {
+          "earliest": "-24h@h",
+          "latest": "now"
+        },
+        "name": "Low Alert Count"
+      }
+    },
+    "ds_alert_volume": {
+      "type": "ds.search",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as hour | eval _time=relative_time(now(), \"-24h@h\")+(hour*3600) | eval Critical=random()%5+1, High=random()%15+5, Medium=random()%30+10, Low=random()%50+20 | table _time Critical High Medium Low",
+        "queryParameters": {
+          "earliest": "-24h@h",
+          "latest": "now"
+        },
+        "name": "Alert Volume Over Time"
+      }
+    },
+    "ds_top_threats": {
+      "type": "ds.search",
+      "options": {
+        "query": "| makeresults count=10 | streamstats count as idx | eval threat_name=case(idx=1,\"Brute Force SSH\",idx=2,\"SQL Injection Attempt\",idx=3,\"Ransomware C2 Beacon\",idx=4,\"Network Port Scan\",idx=5,\"Phishing Campaign\",idx=6,\"DNS Tunneling\",idx=7,\"Credential Stuffing\",idx=8,\"DDoS Amplification\",idx=9,\"Lateral Movement\",idx=10,\"Data Exfiltration\") | eval count=case(idx=1,847,idx=2,623,idx=3,412,idx=4,389,idx=5,356,idx=6,278,idx=7,234,idx=8,198,idx=9,167,idx=10,142) | eval severity=case(idx<=3,\"Critical\",idx<=5,\"High\",idx<=8,\"Medium\",true(),\"Low\") | eval source=case(idx%3=0,\"Firewall\",idx%3=1,\"IDS-IPS\",idx%3=2,\"SIEM Correlation\") | table threat_name count severity source",
+        "queryParameters": {
+          "earliest": "-24h@h",
+          "latest": "now"
+        },
+        "name": "Top 10 Threats"
+      }
+    },
+    "ds_severity_dist": {
+      "type": "ds.search",
+      "options": {
+        "query": "| makeresults count=4 | streamstats count as idx | eval severity=case(idx=1,\"Critical\",idx=2,\"High\",idx=3,\"Medium\",idx=4,\"Low\") | eval count=case(idx=1,7,idx=2,23,idx=3,89,idx=4,342) | table severity count",
+        "queryParameters": {
+          "earliest": "-24h@h",
+          "latest": "now"
+        },
+        "name": "Severity Distribution"
+      }
+    },
+    "ds_incidents_30d": {
+      "type": "ds.search",
+      "options": {
+        "query": "| makeresults count=30 | streamstats count as day | eval _time=relative_time(now(), \"-30d@d\")+(day*86400) | eval incidents=random()%50+20 | eval _time=strftime(_time, \"%Y-%m-%d\") | table _time incidents",
+        "queryParameters": {
+          "earliest": "-30d@d",
+          "latest": "now"
+        },
+        "name": "Incidents Over 30 Days"
+      }
+    }
+  },
+  "visualizations": {
+    "viz_gradient_wash": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#8b5cf6",
+        "fillOpacity": 0.03,
+        "strokeColor": "transparent"
+      }
+    },
+    "viz_glow_outer": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#8b5cf6",
+        "fillOpacity": 0.04,
+        "strokeColor": "transparent"
+      },
+      "cornerRadius": [16, 16, 16, 16]
+    },
+    "viz_glow_inner": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#8b5cf6",
+        "fillOpacity": 0.08,
+        "strokeColor": "transparent"
+      },
+      "cornerRadius": [12, 12, 12, 12]
+    },
+    "viz_shadow_kpi": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#111827",
+        "fillOpacity": 1,
+        "strokeColor": "#1e293b",
+        "strokeWidth": 1
+      },
+      "cornerRadius": [6, 6, 6, 6]
+    },
+    "viz_shadow_charts_left": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#111827",
+        "fillOpacity": 1,
+        "strokeColor": "#1e293b",
+        "strokeWidth": 1
+      },
+      "cornerRadius": [6, 6, 6, 6]
+    },
+    "viz_shadow_charts_right": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#111827",
+        "fillOpacity": 1,
+        "strokeColor": "#1e293b",
+        "strokeWidth": 1
+      },
+      "cornerRadius": [6, 6, 6, 6]
+    },
+    "viz_shadow_lower_left": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#111827",
+        "fillOpacity": 1,
+        "strokeColor": "#1e293b",
+        "strokeWidth": 1
+      },
+      "cornerRadius": [6, 6, 6, 6]
+    },
+    "viz_shadow_lower_right": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#111827",
+        "fillOpacity": 1,
+        "strokeColor": "#1e293b",
+        "strokeWidth": 1
+      },
+      "cornerRadius": [6, 6, 6, 6]
+    },
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# Security Operations Center\n**Real-time threat intelligence and security posture**",
+        "fontColor": "#e2e8f0",
+        "fontSize": "extraLarge"
+      }
+    },
+    "viz_icon_shield": {
+      "type": "icon_library.icon_library",
+      "dataSources": { "primary": "ds_stub" },
+      "options": {
+        "icon_library.icon_library.iconName": "shield",
+        "icon_library.icon_library.iconColor": "#8b5cf6",
+        "icon_library.icon_library.iconSize": "0",
+        "icon_library.icon_library.bgShape": "none",
+        "icon_library.icon_library.shadow": "no",
+        "icon_library.icon_library.glow": "yes",
+        "icon_library.icon_library.glowColor": "#8b5cf6",
+        "icon_library.icon_library.glowSize": "8"
+      }
+    },
+    "viz_section_kpi": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## Alert Status\nActive alerts by severity level across all monitored systems",
+        "fontColor": "#94a3b8",
+        "fontSize": "small"
+      }
+    },
+    "viz_kpi_critical": {
+      "type": "splunk.singlevalue",
+      "title": "Critical Alerts",
+      "dataSources": { "primary": "ds_kpi_critical" },
+      "options": {
+        "majorColor": "#ef4444",
+        "backgroundColor": "transparent",
+        "underLabel": "CRITICAL"
+      },
+      "cornerRadius": [6, 6, 6, 6]
+    },
+    "viz_kpi_high": {
+      "type": "splunk.singlevalue",
+      "title": "High Alerts",
+      "dataSources": { "primary": "ds_kpi_high" },
+      "options": {
+        "majorColor": "#f97316",
+        "backgroundColor": "transparent",
+        "underLabel": "HIGH"
+      },
+      "cornerRadius": [6, 6, 6, 6]
+    },
+    "viz_kpi_medium": {
+      "type": "splunk.singlevalue",
+      "title": "Medium Alerts",
+      "dataSources": { "primary": "ds_kpi_medium" },
+      "options": {
+        "majorColor": "#eab308",
+        "backgroundColor": "transparent",
+        "underLabel": "MEDIUM"
+      },
+      "cornerRadius": [6, 6, 6, 6]
+    },
+    "viz_kpi_low": {
+      "type": "splunk.singlevalue",
+      "title": "Low Alerts",
+      "dataSources": { "primary": "ds_kpi_low" },
+      "options": {
+        "majorColor": "#06b6d4",
+        "backgroundColor": "transparent",
+        "underLabel": "LOW"
+      },
+      "cornerRadius": [6, 6, 6, 6]
+    },
+    "viz_icon_critical": {
+      "type": "icon_library.icon_library",
+      "dataSources": { "primary": "ds_stub" },
+      "options": {
+        "icon_library.icon_library.customIcon": "crisis_alert",
+        "icon_library.icon_library.iconColor": "#ef4444",
+        "icon_library.icon_library.iconSize": "0",
+        "icon_library.icon_library.bgShape": "none",
+        "icon_library.icon_library.shadow": "no",
+        "icon_library.icon_library.glow": "no"
+      }
+    },
+    "viz_icon_high": {
+      "type": "icon_library.icon_library",
+      "dataSources": { "primary": "ds_stub" },
+      "options": {
+        "icon_library.icon_library.customIcon": "error",
+        "icon_library.icon_library.iconColor": "#f97316",
+        "icon_library.icon_library.iconSize": "0",
+        "icon_library.icon_library.bgShape": "none",
+        "icon_library.icon_library.shadow": "no",
+        "icon_library.icon_library.glow": "no"
+      }
+    },
+    "viz_icon_medium": {
+      "type": "icon_library.icon_library",
+      "dataSources": { "primary": "ds_stub" },
+      "options": {
+        "icon_library.icon_library.customIcon": "warning",
+        "icon_library.icon_library.iconColor": "#eab308",
+        "icon_library.icon_library.iconSize": "0",
+        "icon_library.icon_library.bgShape": "none",
+        "icon_library.icon_library.shadow": "no",
+        "icon_library.icon_library.glow": "no"
+      }
+    },
+    "viz_icon_low": {
+      "type": "icon_library.icon_library",
+      "dataSources": { "primary": "ds_stub" },
+      "options": {
+        "icon_library.icon_library.customIcon": "verified_user",
+        "icon_library.icon_library.iconColor": "#06b6d4",
+        "icon_library.icon_library.iconSize": "0",
+        "icon_library.icon_library.bgShape": "none",
+        "icon_library.icon_library.shadow": "no",
+        "icon_library.icon_library.glow": "no"
+      }
+    },
+    "viz_section_charts": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## Threat Trends\nAlert volume patterns and severity distribution over time",
+        "fontColor": "#94a3b8",
+        "fontSize": "small"
+      }
+    },
+    "viz_alert_volume": {
+      "type": "splunk.area",
+      "title": "Alert Volume (24h)",
+      "dataSources": { "primary": "ds_alert_volume" },
+      "options": {
+        "stackMode": "stacked",
+        "xAxisTitleVisibility": "hide",
+        "yAxisTitleVisibility": "hide",
+        "backgroundColor": "transparent",
+        "seriesColors": ["#ef4444", "#f97316", "#eab308", "#06b6d4"],
+        "legendDisplay": "top",
+        "showSplitSeries": false,
+        "areaOpacity": 0.7
+      }
+    },
+    "viz_severity_dist": {
+      "type": "splunk.column",
+      "title": "Severity Breakdown",
+      "dataSources": { "primary": "ds_severity_dist" },
+      "options": {
+        "xAxisTitleVisibility": "hide",
+        "yAxisTitleVisibility": "hide",
+        "backgroundColor": "transparent",
+        "seriesColors": ["#8b5cf6"],
+        "legendDisplay": "off",
+        "dataValuesDisplay": "all"
+      }
+    },
+    "viz_section_lower": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## Threat Intelligence\nTop active threats and 30-day incident trend",
+        "fontColor": "#94a3b8",
+        "fontSize": "small"
+      }
+    },
+    "viz_top_threats": {
+      "type": "splunk.table",
+      "title": "Top 10 Active Threats",
+      "dataSources": { "primary": "ds_top_threats" },
+      "options": {
+        "backgroundColor": "transparent",
+        "tableFormat": {
+          "rowBackgroundColors": "> table | seriesByIndex(0) | pick(alternatingRowColors)",
+          "data": "> table | seriesByIndex(0) | formatByType(TableFormatting)"
+        },
+        "headerVisibility": "fixed",
+        "count": 10
+      },
+      "eventHandlers": [
+        {
+          "type": "drilldown.linkToSearch",
+          "options": {
+            "query": "index=* sourcetype=* threat_name=\"$row.threat_name$\" | stats count by src_ip, dest_ip, severity"
+          }
+        }
+      ]
+    },
+    "viz_incidents_30d": {
+      "type": "splunk.area",
+      "title": "Incidents (30 Days)",
+      "dataSources": { "primary": "ds_incidents_30d" },
+      "options": {
+        "xAxisTitleVisibility": "hide",
+        "yAxisTitleVisibility": "hide",
+        "backgroundColor": "transparent",
+        "seriesColors": ["#8b5cf6"],
+        "legendDisplay": "off",
+        "areaOpacity": 0.5,
+        "showDataPoints": "all"
+      }
+    },
+    "viz_footer": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "**Escalation:** #soc-alerts (Slack) | **Runbook:** wiki.internal/soc-runbook | **On-call:** PagerDuty SOC-Tier1 | **Updated:** Every 60s",
+        "fontColor": "#64748b",
+        "fontSize": "small"
+      }
+    }
+  },
+  "inputs": {},
+  "defaults": {},
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1920,
+      "height": 1080,
+      "backgroundColor": "#0a0f1a"
+    },
+    "structure": [
+      {
+        "item": "viz_gradient_wash",
+        "type": "block",
+        "position": { "x": 0, "y": 0, "w": 1920, "h": 400 }
+      },
+      {
+        "item": "viz_glow_outer",
+        "type": "block",
+        "position": { "x": 15, "y": 95, "w": 1890, "h": 185 }
+      },
+      {
+        "item": "viz_glow_inner",
+        "type": "block",
+        "position": { "x": 22, "y": 100, "w": 1876, "h": 175 }
+      },
+      {
+        "item": "viz_shadow_kpi",
+        "type": "block",
+        "position": { "x": 30, "y": 105, "w": 1860, "h": 165 }
+      },
+      {
+        "item": "viz_shadow_charts_left",
+        "type": "block",
+        "position": { "x": 30, "y": 310, "w": 1180, "h": 290 }
+      },
+      {
+        "item": "viz_shadow_charts_right",
+        "type": "block",
+        "position": { "x": 1230, "y": 310, "w": 660, "h": 290 }
+      },
+      {
+        "item": "viz_shadow_lower_left",
+        "type": "block",
+        "position": { "x": 30, "y": 645, "w": 1180, "h": 280 }
+      },
+      {
+        "item": "viz_shadow_lower_right",
+        "type": "block",
+        "position": { "x": 1230, "y": 645, "w": 660, "h": 280 }
+      },
+      {
+        "item": "viz_title",
+        "type": "block",
+        "position": { "x": 80, "y": 10, "w": 700, "h": 90 }
+      },
+      {
+        "item": "viz_icon_shield",
+        "type": "block",
+        "position": { "x": 30, "y": 15, "w": 50, "h": 50 }
+      },
+      {
+        "item": "viz_section_kpi",
+        "type": "block",
+        "position": { "x": 40, "y": 75, "w": 600, "h": 30 }
+      },
+      {
+        "item": "viz_icon_critical",
+        "type": "block",
+        "position": { "x": 55, "y": 115, "w": 40, "h": 40 }
+      },
+      {
+        "item": "viz_kpi_critical",
+        "type": "block",
+        "position": { "x": 50, "y": 155, "w": 410, "h": 100 }
+      },
+      {
+        "item": "viz_icon_high",
+        "type": "block",
+        "position": { "x": 515, "y": 115, "w": 40, "h": 40 }
+      },
+      {
+        "item": "viz_kpi_high",
+        "type": "block",
+        "position": { "x": 510, "y": 155, "w": 410, "h": 100 }
+      },
+      {
+        "item": "viz_icon_medium",
+        "type": "block",
+        "position": { "x": 975, "y": 115, "w": 40, "h": 40 }
+      },
+      {
+        "item": "viz_kpi_medium",
+        "type": "block",
+        "position": { "x": 970, "y": 155, "w": 410, "h": 100 }
+      },
+      {
+        "item": "viz_icon_low",
+        "type": "block",
+        "position": { "x": 1435, "y": 115, "w": 40, "h": 40 }
+      },
+      {
+        "item": "viz_kpi_low",
+        "type": "block",
+        "position": { "x": 1430, "y": 155, "w": 420, "h": 100 }
+      },
+      {
+        "item": "viz_section_charts",
+        "type": "block",
+        "position": { "x": 40, "y": 282, "w": 600, "h": 28 }
+      },
+      {
+        "item": "viz_alert_volume",
+        "type": "block",
+        "position": { "x": 40, "y": 320, "w": 1160, "h": 270 }
+      },
+      {
+        "item": "viz_severity_dist",
+        "type": "block",
+        "position": { "x": 1240, "y": 320, "w": 640, "h": 270 }
+      },
+      {
+        "item": "viz_section_lower",
+        "type": "block",
+        "position": { "x": 40, "y": 615, "w": 600, "h": 28 }
+      },
+      {
+        "item": "viz_top_threats",
+        "type": "block",
+        "position": { "x": 40, "y": 655, "w": 1160, "h": 260 }
+      },
+      {
+        "item": "viz_incidents_30d",
+        "type": "block",
+        "position": { "x": 1240, "y": 655, "w": 640, "h": 260 }
+      },
+      {
+        "item": "viz_footer",
+        "type": "block",
+        "position": { "x": 30, "y": 940, "w": 1860, "h": 40 }
+      }
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+trip_id,rider,origin,destination,fare,distance,duration,rating,status,_time
+TR-90481,Alex M.,Downtown,Airport,42.50,18.3,28 min,4.9,completed,1715280000
+TR-90480,Sam K.,Midtown,University,12.80,4.1,11 min,5.0,completed,1715279940
+TR-90479,Jordan L.,Tech Park,Financial,18.90,7.2,16 min,4.8,completed,1715279880
+TR-90478,Riley P.,Suburbs North,Downtown,31.20,14.5,24 min,4.7,completed,1715279820
+TR-90477,Casey T.,Entertainment,Waterfront,22.40,9.8,19 min,5.0,completed,1715279760
+TR-90476,Morgan D.,Airport,Midtown,38.60,16.7,32 min,4.6,completed,1715279700
+TR-90475,Taylor H.,University,Uptown,9.50,3.2,8 min,4.9,completed,1715279640
+TR-90474,Drew F.,Financial,Suburbs South,27.80,12.1,22 min,4.8,completed,1715279580
+TR-90473,Avery N.,Industrial,Tech Park,15.30,5.9,13 min,5.0,completed,1715279520
+TR-90472,Quinn B.,Waterfront,Entertainment,19.70,8.4,17 min,4.7,completed,1715279460
+TR-90471,Blake W.,Downtown,Midtown,8.20,2.8,7 min,4.9,completed,1715279400
+TR-90470,Jamie R.,Uptown,Airport,35.40,15.6,26 min,4.5,completed,1715279340
+TR-90469,Chris E.,Suburbs South,Downtown,29.10,13.3,23 min,4.8,completed,1715279280
+TR-90468,Pat G.,Entertainment,University,14.60,5.5,12 min,5.0,completed,1715279220
+TR-90467,Skyler V.,Tech Park,Waterfront,21.30,9.1,18 min,4.9,completed,1715279160
+TR-90466,Reese C.,Financial,Airport,33.80,14.9,25 min,4.6,completed,1715279100
+TR-90465,Dana O.,Midtown,Suburbs North,24.50,10.7,20 min,4.8,completed,1715279040
+TR-90464,Lee S.,Downtown,Industrial,16.90,6.4,14 min,4.7,completed,1715278980
+TR-90463,Robin A.,Airport,Entertainment,29.70,12.8,21 min,5.0,completed,1715278920
+TR-90462,Sage M.,University,Financial,11.40,3.9,9 min,4.9,completed,1715278860

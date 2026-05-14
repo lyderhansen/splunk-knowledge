@@ -1,0 +1,21 @@
+[]
+access = read : [ * ], write : [ admin, sc_admin ]
+export = system
+
+[visualizations/kpi_tile]
+export = system
+
+[visualizations/surge_heatmap]
+export = system
+
+[visualizations/supply_gauge]
+export = system
+
+[visualizations/trip_feed]
+export = system
+
+[visualizations/routes_table]
+export = system
+
+[lookups]
+export = system

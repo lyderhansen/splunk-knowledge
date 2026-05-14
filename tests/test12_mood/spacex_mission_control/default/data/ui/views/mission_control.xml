@@ -1,0 +1,528 @@
+<dashboard version="2" theme="dark">
+  <label>SpaceX Mission Control</label>
+  <description>Falcon 9 launch telemetry dashboard — all custom visualizations from spacex_mission_control viz pack</description>
+  <definition><![CDATA[
+{
+  "dataSources": {
+    "ds_countdown": {
+      "type": "ds.search",
+      "name": "Countdown",
+      "options": {
+        "query": "| makeresults | eval countdown=\"T-00:12:34\", label=\"TERMINAL COUNTDOWN\", phase=\"POWERED FLIGHT\""
+      }
+    },
+    "ds_altitude": {
+      "type": "ds.search",
+      "name": "Altitude",
+      "options": {
+        "query": "| makeresults | eval value=142.7, label=\"ALTITUDE\", unit=\"km\", min=0, max=500"
+      }
+    },
+    "ds_velocity": {
+      "type": "ds.search",
+      "name": "Velocity",
+      "options": {
+        "query": "| makeresults | eval value=1847.3, label=\"VELOCITY\", unit=\"m/s\", min=0, max=8000"
+      }
+    },
+    "ds_lox": {
+      "type": "ds.search",
+      "name": "LOX Fuel",
+      "options": {
+        "query": "| makeresults | eval value=73.2, label=\"LOX\", max=100"
+      }
+    },
+    "ds_rp1": {
+      "type": "ds.search",
+      "name": "RP-1 Fuel",
+      "options": {
+        "query": "| makeresults | eval value=68.5, label=\"RP-1\", max=100"
+      }
+    },
+    "ds_stages": {
+      "type": "ds.search",
+      "name": "Mission Stages",
+      "options": {
+        "query": "| makeresults count=9 | streamstats count as order | eval stage=case(order=1,\"PRE-LAUNCH\",order=2,\"LIFTOFF\",order=3,\"MAX-Q\",order=4,\"MECO\",order=5,\"STAGE SEP\",order=6,\"SES-1\",order=7,\"FAIRING SEP\",order=8,\"SECO-1\",order=9,\"COAST\"), status=case(order<=4,\"complete\",order=5,\"active\",order>=6,\"pending\")"
+      }
+    },
+    "ds_burn": {
+      "type": "ds.search",
+      "name": "Burn Trajectory",
+      "options": {
+        "query": "| makeresults count=25 | streamstats count as idx | eval altitude=round(72-(idx*2.8),1), velocity=round(-380+(idx*14),0), phase=case(idx<=6,\"Boostback Burn\",idx<=12,\"Coast\",idx<=19,\"Entry Burn\",idx>=20,\"Landing Burn\"), time=\"T+00:0\".idx.\":00\" | fields altitude velocity phase time"
+      }
+    },
+    "ds_maxq": {
+      "type": "ds.search",
+      "name": "Max-Q",
+      "options": {
+        "query": "| makeresults | eval value=12384, label=\"MAX-Q\", unit=\"Pa\", trend=-2.1"
+      }
+    },
+    "ds_apogee": {
+      "type": "ds.search",
+      "name": "Apogee",
+      "options": {
+        "query": "| makeresults | eval value=210.4, label=\"APOGEE\", unit=\"km\", trend=0.3"
+      }
+    },
+    "ds_gforce": {
+      "type": "ds.search",
+      "name": "G-Force",
+      "options": {
+        "query": "| makeresults | eval value=3.2, label=\"G-FORCE\", unit=\"G\""
+      }
+    },
+    "ds_speed": {
+      "type": "ds.search",
+      "name": "Max Speed",
+      "options": {
+        "query": "| makeresults | eval value=7842, label=\"MAX SPEED\", unit=\"m/s\", trend=1.5"
+      }
+    },
+    "ds_duration": {
+      "type": "ds.search",
+      "name": "Mission Time",
+      "options": {
+        "query": "| makeresults | eval value=\"T+00:08:42\", label=\"MISSION TIME\""
+      }
+    },
+    "ds_events": {
+      "type": "ds.search",
+      "name": "Mission Events",
+      "options": {
+        "query": "| makeresults count=12 | streamstats count as order | eval time=case(order=1,\"T+00:08:42\",order=2,\"T+00:08:14\",order=3,\"T+00:07:30\",order=4,\"T+00:04:33\",order=5,\"T+00:02:48\",order=6,\"T+00:02:34\",order=7,\"T+00:01:24\",order=8,\"T+00:01:12\",order=9,\"T+00:00:03\",order=10,\"T+00:00:00\",order=11,\"T-00:00:10\",order=12,\"T-00:01:00\"), event=case(order=1,\"SES-1 Ignition\",order=2,\"Stage Separation\",order=3,\"MECO\",order=4,\"Max-Q\",order=5,\"Throttle Bucket\",order=6,\"Go for Launch\",order=7,\"Prop Load Complete\",order=8,\"Strongback Retract\",order=9,\"Ignition Sequence\",order=10,\"Liftoff\",order=11,\"Terminal Count\",order=12,\"Final Poll\"), status=case(order=4,\"warning\",order>=1,\"nominal\") | fields time event status"
+      }
+    }
+  },
+  "visualizations": {
+    "viz_hero_image": {
+      "type": "splunk.image",
+      "options": {
+        "src": "/static/app/spacex_mission_control/images/hero.jpg"
+      }
+    },
+    "viz_hero_overlay": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "rgba(6,9,16,0.55)",
+        "strokeColor": "transparent"
+      }
+    },
+    "viz_hero_fade": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#060910",
+        "fillOpacity": 0.92,
+        "strokeColor": "transparent"
+      }
+    },
+    "viz_wordmark": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# SPACEX\n**MISSION CONTROL** — FALCON 9",
+        "fontColor": "rgba(226,232,240,0.85)",
+        "fontSize": "extraSmall"
+      }
+    },
+    "viz_countdown": {
+      "type": "spacex_mission_control.countdown_timer",
+      "dataSources": {
+        "primary": "ds_countdown"
+      },
+      "options": {
+        "backgroundColor": "transparent",
+        "spacex_mission_control.countdown_timer.valueField": "countdown",
+        "spacex_mission_control.countdown_timer.labelField": "label",
+        "spacex_mission_control.countdown_timer.phaseField": "phase",
+        "spacex_mission_control.countdown_timer.showGlow": "true",
+        "spacex_mission_control.countdown_timer.showVignette": "true",
+        "spacex_mission_control.countdown_timer.showAccentLines": "true",
+        "spacex_mission_control.countdown_timer.accentColor": "#0088CC",
+        "spacex_mission_control.countdown_timer.theme": "dark"
+      }
+    },
+    "viz_phase_kpi": {
+      "type": "spacex_mission_control.mission_kpi",
+      "dataSources": {
+        "primary": "ds_duration"
+      },
+      "options": {
+        "backgroundColor": "transparent",
+        "spacex_mission_control.mission_kpi.valueField": "value",
+        "spacex_mission_control.mission_kpi.labelField": "label",
+        "spacex_mission_control.mission_kpi.theme": "dark"
+      }
+    },
+    "viz_stage_label": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "MISSION TIMELINE",
+        "fontColor": "rgba(226,232,240,0.30)",
+        "fontSize": "extraSmall"
+      }
+    },
+    "viz_stages": {
+      "type": "spacex_mission_control.stage_tracker",
+      "dataSources": {
+        "primary": "ds_stages"
+      },
+      "options": {
+        "backgroundColor": "transparent",
+        "spacex_mission_control.stage_tracker.stageField": "stage",
+        "spacex_mission_control.stage_tracker.statusField": "status",
+        "spacex_mission_control.stage_tracker.orderField": "order",
+        "spacex_mission_control.stage_tracker.accentColor": "#0088CC",
+        "spacex_mission_control.stage_tracker.completeColor": "#00C853",
+        "spacex_mission_control.stage_tracker.showPulse": "true",
+        "spacex_mission_control.stage_tracker.theme": "dark"
+      }
+    },
+    "viz_telemetry_label": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "TELEMETRY",
+        "fontColor": "rgba(226,232,240,0.30)",
+        "fontSize": "extraSmall"
+      }
+    },
+    "viz_altitude": {
+      "type": "spacex_mission_control.telemetry_gauge",
+      "dataSources": {
+        "primary": "ds_altitude"
+      },
+      "options": {
+        "backgroundColor": "transparent",
+        "spacex_mission_control.telemetry_gauge.valueField": "value",
+        "spacex_mission_control.telemetry_gauge.labelField": "label",
+        "spacex_mission_control.telemetry_gauge.unitField": "unit",
+        "spacex_mission_control.telemetry_gauge.minField": "min",
+        "spacex_mission_control.telemetry_gauge.maxField": "max",
+        "spacex_mission_control.telemetry_gauge.decimals": "1",
+        "spacex_mission_control.telemetry_gauge.accentColor": "#0088CC",
+        "spacex_mission_control.telemetry_gauge.showTickMarks": "true",
+        "spacex_mission_control.telemetry_gauge.theme": "dark"
+      }
+    },
+    "viz_velocity": {
+      "type": "spacex_mission_control.telemetry_gauge",
+      "dataSources": {
+        "primary": "ds_velocity"
+      },
+      "options": {
+        "backgroundColor": "transparent",
+        "spacex_mission_control.telemetry_gauge.valueField": "value",
+        "spacex_mission_control.telemetry_gauge.labelField": "label",
+        "spacex_mission_control.telemetry_gauge.unitField": "unit",
+        "spacex_mission_control.telemetry_gauge.minField": "min",
+        "spacex_mission_control.telemetry_gauge.maxField": "max",
+        "spacex_mission_control.telemetry_gauge.decimals": "0",
+        "spacex_mission_control.telemetry_gauge.accentColor": "#00B8D4",
+        "spacex_mission_control.telemetry_gauge.showTickMarks": "true",
+        "spacex_mission_control.telemetry_gauge.theme": "dark"
+      }
+    },
+    "viz_lox": {
+      "type": "spacex_mission_control.fuel_gauge",
+      "dataSources": {
+        "primary": "ds_lox"
+      },
+      "options": {
+        "backgroundColor": "transparent",
+        "spacex_mission_control.fuel_gauge.valueField": "value",
+        "spacex_mission_control.fuel_gauge.labelField": "label",
+        "spacex_mission_control.fuel_gauge.maxField": "max",
+        "spacex_mission_control.fuel_gauge.decimals": "1",
+        "spacex_mission_control.fuel_gauge.accentColor": "#0088CC",
+        "spacex_mission_control.fuel_gauge.theme": "dark"
+      }
+    },
+    "viz_rp1": {
+      "type": "spacex_mission_control.fuel_gauge",
+      "dataSources": {
+        "primary": "ds_rp1"
+      },
+      "options": {
+        "backgroundColor": "transparent",
+        "spacex_mission_control.fuel_gauge.valueField": "value",
+        "spacex_mission_control.fuel_gauge.labelField": "label",
+        "spacex_mission_control.fuel_gauge.maxField": "max",
+        "spacex_mission_control.fuel_gauge.decimals": "1",
+        "spacex_mission_control.fuel_gauge.accentColor": "#FF6B35",
+        "spacex_mission_control.fuel_gauge.theme": "dark"
+      }
+    },
+    "viz_data_label": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "MISSION DATA",
+        "fontColor": "rgba(226,232,240,0.30)",
+        "fontSize": "extraSmall"
+      }
+    },
+    "viz_maxq": {
+      "type": "spacex_mission_control.mission_kpi",
+      "dataSources": {
+        "primary": "ds_maxq"
+      },
+      "options": {
+        "backgroundColor": "transparent",
+        "spacex_mission_control.mission_kpi.valueField": "value",
+        "spacex_mission_control.mission_kpi.labelField": "label",
+        "spacex_mission_control.mission_kpi.unitField": "unit",
+        "spacex_mission_control.mission_kpi.trendField": "trend",
+        "spacex_mission_control.mission_kpi.decimals": "0",
+        "spacex_mission_control.mission_kpi.accentColor": "#0088CC",
+        "spacex_mission_control.mission_kpi.theme": "dark"
+      }
+    },
+    "viz_apogee": {
+      "type": "spacex_mission_control.mission_kpi",
+      "dataSources": {
+        "primary": "ds_apogee"
+      },
+      "options": {
+        "backgroundColor": "transparent",
+        "spacex_mission_control.mission_kpi.valueField": "value",
+        "spacex_mission_control.mission_kpi.labelField": "label",
+        "spacex_mission_control.mission_kpi.unitField": "unit",
+        "spacex_mission_control.mission_kpi.trendField": "trend",
+        "spacex_mission_control.mission_kpi.decimals": "1",
+        "spacex_mission_control.mission_kpi.accentColor": "#0088CC",
+        "spacex_mission_control.mission_kpi.theme": "dark"
+      }
+    },
+    "viz_gforce": {
+      "type": "spacex_mission_control.mission_kpi",
+      "dataSources": {
+        "primary": "ds_gforce"
+      },
+      "options": {
+        "backgroundColor": "transparent",
+        "spacex_mission_control.mission_kpi.valueField": "value",
+        "spacex_mission_control.mission_kpi.labelField": "label",
+        "spacex_mission_control.mission_kpi.unitField": "unit",
+        "spacex_mission_control.mission_kpi.decimals": "1",
+        "spacex_mission_control.mission_kpi.accentColor": "#FF6B35",
+        "spacex_mission_control.mission_kpi.theme": "dark"
+      }
+    },
+    "viz_speed": {
+      "type": "spacex_mission_control.mission_kpi",
+      "dataSources": {
+        "primary": "ds_speed"
+      },
+      "options": {
+        "backgroundColor": "transparent",
+        "spacex_mission_control.mission_kpi.valueField": "value",
+        "spacex_mission_control.mission_kpi.labelField": "label",
+        "spacex_mission_control.mission_kpi.unitField": "unit",
+        "spacex_mission_control.mission_kpi.trendField": "trend",
+        "spacex_mission_control.mission_kpi.decimals": "0",
+        "spacex_mission_control.mission_kpi.accentColor": "#00B8D4",
+        "spacex_mission_control.mission_kpi.theme": "dark"
+      }
+    },
+    "viz_duration": {
+      "type": "spacex_mission_control.mission_kpi",
+      "dataSources": {
+        "primary": "ds_speed"
+      },
+      "options": {
+        "backgroundColor": "transparent",
+        "spacex_mission_control.mission_kpi.valueField": "value",
+        "spacex_mission_control.mission_kpi.labelField": "label",
+        "spacex_mission_control.mission_kpi.unitField": "unit",
+        "spacex_mission_control.mission_kpi.trendField": "trend",
+        "spacex_mission_control.mission_kpi.decimals": "0",
+        "spacex_mission_control.mission_kpi.accentColor": "#00B8D4",
+        "spacex_mission_control.mission_kpi.theme": "dark"
+      }
+    },
+    "viz_descent_label": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "BOOSTER DESCENT TRAJECTORY",
+        "fontColor": "rgba(226,232,240,0.30)",
+        "fontSize": "extraSmall"
+      }
+    },
+    "viz_burn": {
+      "type": "spacex_mission_control.burn_tracker",
+      "dataSources": {
+        "primary": "ds_burn"
+      },
+      "options": {
+        "backgroundColor": "transparent",
+        "spacex_mission_control.burn_tracker.altitudeField": "altitude",
+        "spacex_mission_control.burn_tracker.velocityField": "velocity",
+        "spacex_mission_control.burn_tracker.phaseField": "phase",
+        "spacex_mission_control.burn_tracker.timeField": "time",
+        "spacex_mission_control.burn_tracker.accentColor": "#0088CC",
+        "spacex_mission_control.burn_tracker.showGrid": "true",
+        "spacex_mission_control.burn_tracker.showPhaseLabels": "true",
+        "spacex_mission_control.burn_tracker.theme": "dark"
+      }
+    },
+    "viz_events_label": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "MISSION EVENTS",
+        "fontColor": "rgba(226,232,240,0.30)",
+        "fontSize": "extraSmall"
+      }
+    },
+    "viz_events": {
+      "type": "spacex_mission_control.event_ticker",
+      "dataSources": {
+        "primary": "ds_events"
+      },
+      "options": {
+        "backgroundColor": "transparent",
+        "spacex_mission_control.event_ticker.timeField": "time",
+        "spacex_mission_control.event_ticker.eventField": "event",
+        "spacex_mission_control.event_ticker.statusField": "status",
+        "spacex_mission_control.event_ticker.maxRows": "20",
+        "spacex_mission_control.event_ticker.accentColor": "#0088CC",
+        "spacex_mission_control.event_ticker.showHeader": "true",
+        "spacex_mission_control.event_ticker.theme": "dark"
+      }
+    }
+  },
+  "inputs": {},
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1920,
+      "height": 1080,
+      "backgroundColor": "#060910",
+      "display": "auto-scale"
+    },
+    "structure": [
+      {
+        "item": "viz_hero_image",
+        "type": "block",
+        "position": { "x": 0, "y": 0, "w": 1920, "h": 440 }
+      },
+      {
+        "item": "viz_hero_overlay",
+        "type": "block",
+        "position": { "x": 0, "y": 0, "w": 1920, "h": 440 }
+      },
+      {
+        "item": "viz_hero_fade",
+        "type": "block",
+        "position": { "x": 0, "y": 370, "w": 1920, "h": 70 }
+      },
+      {
+        "item": "viz_wordmark",
+        "type": "block",
+        "position": { "x": 48, "y": 24, "w": 400, "h": 64 }
+      },
+      {
+        "item": "viz_phase_kpi",
+        "type": "block",
+        "position": { "x": 1640, "y": 24, "w": 240, "h": 100 }
+      },
+      {
+        "item": "viz_countdown",
+        "type": "block",
+        "position": { "x": 360, "y": 80, "w": 1200, "h": 280 }
+      },
+
+      {
+        "item": "viz_stage_label",
+        "type": "block",
+        "position": { "x": 48, "y": 450, "w": 200, "h": 22 }
+      },
+      {
+        "item": "viz_stages",
+        "type": "block",
+        "position": { "x": 40, "y": 472, "w": 1840, "h": 60 }
+      },
+
+      {
+        "item": "viz_telemetry_label",
+        "type": "block",
+        "position": { "x": 48, "y": 546, "w": 200, "h": 22 }
+      },
+      {
+        "item": "viz_altitude",
+        "type": "block",
+        "position": { "x": 40, "y": 568, "w": 260, "h": 260 }
+      },
+      {
+        "item": "viz_velocity",
+        "type": "block",
+        "position": { "x": 310, "y": 568, "w": 260, "h": 260 }
+      },
+      {
+        "item": "viz_lox",
+        "type": "block",
+        "position": { "x": 580, "y": 568, "w": 140, "h": 260 }
+      },
+      {
+        "item": "viz_rp1",
+        "type": "block",
+        "position": { "x": 730, "y": 568, "w": 140, "h": 260 }
+      },
+
+      {
+        "item": "viz_data_label",
+        "type": "block",
+        "position": { "x": 898, "y": 546, "w": 200, "h": 22 }
+      },
+      {
+        "item": "viz_maxq",
+        "type": "block",
+        "position": { "x": 890, "y": 568, "w": 280, "h": 124 }
+      },
+      {
+        "item": "viz_speed",
+        "type": "block",
+        "position": { "x": 1180, "y": 568, "w": 280, "h": 124 }
+      },
+      {
+        "item": "viz_gforce",
+        "type": "block",
+        "position": { "x": 1470, "y": 568, "w": 290, "h": 124 }
+      },
+      {
+        "item": "viz_apogee",
+        "type": "block",
+        "position": { "x": 890, "y": 700, "w": 430, "h": 128 }
+      },
+      {
+        "item": "viz_duration",
+        "type": "block",
+        "position": { "x": 1330, "y": 700, "w": 430, "h": 128 }
+      },
+
+      {
+        "item": "viz_descent_label",
+        "type": "block",
+        "position": { "x": 48, "y": 846, "w": 300, "h": 22 }
+      },
+      {
+        "item": "viz_burn",
+        "type": "block",
+        "position": { "x": 40, "y": 868, "w": 920, "h": 200 }
+      },
+      {
+        "item": "viz_events_label",
+        "type": "block",
+        "position": { "x": 988, "y": 846, "w": 300, "h": 22 }
+      },
+      {
+        "item": "viz_events",
+        "type": "block",
+        "position": { "x": 980, "y": 868, "w": 900, "h": 200 }
+      }
+    ]
+  },
+  "title": "SpaceX Mission Control",
+  "description": "Falcon 9 launch telemetry — all 7 custom visualizations from the spacex_mission_control viz pack with makeresults demo data"
+}
+  ]]></definition>
+</dashboard>

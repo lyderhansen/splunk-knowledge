@@ -1,0 +1,61 @@
+<form class="splunk-formatter-section" section-label="Data Configuration">
+    <splunk-control-group label="Time Field" help="Field name for the x-axis time values">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.timeField" value="_time">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Value Field" help="Field name for the y-axis values">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.valueField" value="value">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Display Options">
+    <splunk-control-group label="Threshold Value" help="Horizontal threshold line value">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.thresholdValue" value="5">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Threshold Label" help="Label for the threshold line">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.thresholdLabel" value="SLA Limit">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Y-Axis Label" help="Label for the y-axis">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.yLabel" value="Failure %">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show Area Fill" help="Fill under the line with accent color">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showArea" value="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show Dots" help="Show data point dots on the line">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showDots" value="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Color and Style">
+    <splunk-control-group label="Theme" help="Auto detects dashboard theme">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto">
+            <option value="auto">Auto</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Line Color" help="Color of the trend line">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.lineColor" type="custom" value="0x635BFF">
+            <splunk-color>0x635BFF</splunk-color>
+            <splunk-color>0x0048E5</splunk-color>
+            <splunk-color>0x3ECF8E</splunk-color>
+            <splunk-color>0x80E9FF</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Threshold Color" help="Color of the threshold line">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.thresholdColor" type="custom" value="0xDF1B41">
+            <splunk-color>0xDF1B41</splunk-color>
+            <splunk-color>0xF5A623</splunk-color>
+            <splunk-color>0x635BFF</splunk-color>
+            <splunk-color>0x6B7C93</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+</form>

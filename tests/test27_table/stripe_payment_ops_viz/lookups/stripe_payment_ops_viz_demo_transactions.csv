@@ -1,0 +1,41 @@
+_time,transaction_id,amount,currency,status,merchant,payment_method,country
+2026-05-14 09:23:41,txn_3PqR8kL2xN,249.99,USD,succeeded,Acme Corp,card_visa,US
+2026-05-14 09:22:18,txn_7YmT4jH9wQ,89.00,EUR,succeeded,Berlin Bikes,card_mastercard,DE
+2026-05-14 09:21:55,txn_1KsN6pF3vB,1250.00,USD,succeeded,CloudHost Inc,card_amex,US
+2026-05-14 09:21:02,txn_8WxR2mD5tJ,34.50,GBP,failed,London Eats,card_visa,GB
+2026-05-14 09:20:44,txn_5CvB9nK7yH,599.00,USD,succeeded,TechFlow SaaS,card_visa,US
+2026-05-14 09:19:33,txn_2DfG4rL8mN,175.25,USD,succeeded,FreshMart,card_mastercard,US
+2026-05-14 09:18:21,txn_9HjK1sT6wP,42.00,EUR,disputed,Paris Cafe,card_visa,FR
+2026-05-14 09:17:05,txn_6NmQ3vX8bR,890.00,USD,succeeded,DataSync Pro,card_amex,US
+2026-05-14 09:16:42,txn_4FrT7wY2kJ,15.99,USD,failed,MusicStream,card_visa,US
+2026-05-14 09:15:18,txn_0BgH5xN9mL,2100.00,USD,succeeded,Enterprise AI,card_visa,US
+2026-05-14 09:14:33,txn_3KpR8dS1vQ,67.80,CAD,succeeded,MapleLeaf Co,card_mastercard,CA
+2026-05-14 09:13:11,txn_7TmW2fG4yN,445.00,USD,succeeded,SolarEdge,card_visa,US
+2026-05-14 09:12:47,txn_1RsC6jH9bK,29.99,USD,refunded,GameVault,card_visa,US
+2026-05-14 09:11:22,txn_5VxB3nL7tP,780.50,EUR,succeeded,Munich Motors,card_amex,DE
+2026-05-14 09:10:55,txn_8DfT4rK2wJ,125.00,USD,succeeded,DesignHub,card_mastercard,US
+2026-05-14 09:09:38,txn_2GhN6pX8mQ,3500.00,USD,succeeded,LegalTech Inc,card_amex,US
+2026-05-14 09:08:14,txn_9JkR1sY5vB,56.25,GBP,failed,BritBox,card_visa,GB
+2026-05-14 09:07:01,txn_4MmT7wD3yH,199.00,USD,succeeded,FitnessPro,card_visa,US
+2026-05-14 09:05:43,txn_6QvG2fL9bN,88.50,USD,succeeded,CoffeeRoast,card_mastercard,US
+2026-05-14 09:04:27,txn_0CxB5nK8tJ,1575.00,USD,succeeded,MedDevice Co,card_amex,US
+2026-05-14 09:03:12,txn_3FrH8dS1wP,41.99,EUR,succeeded,Roma Pizza,card_visa,IT
+2026-05-14 09:02:55,txn_7KpT4jX2yQ,950.00,USD,disputed,CryptoEx,card_visa,US
+2026-05-14 09:01:38,txn_1NmW6rG9bK,234.75,USD,succeeded,PetCare Plus,card_mastercard,US
+2026-05-14 09:00:14,txn_5RsC3fH7tN,67.00,AUD,succeeded,Sydney Surf,card_visa,AU
+2026-05-14 08:59:01,txn_8VxB2nL4wJ,4200.00,USD,succeeded,AeroTech,card_amex,US
+2026-05-14 08:57:43,txn_2DfT9pK6yP,19.99,USD,failed,QuickPrint,card_visa,US
+2026-05-14 08:56:27,txn_9GhN1sX8mQ,315.00,USD,succeeded,BookStore Co,card_mastercard,US
+2026-05-14 08:55:12,txn_4JkR7wY3vB,1890.00,GBP,succeeded,London Prop,card_amex,GB
+2026-05-14 08:53:55,txn_6MmT2fD5bH,73.25,USD,succeeded,SnackBox,card_visa,US
+2026-05-14 08:52:38,txn_0QvG5nL9tN,528.00,EUR,succeeded,Amsterdam IT,card_visa,NL
+2026-05-14 08:51:14,txn_3CxB8dK1wJ,149.99,USD,refunded,StyleShop,card_mastercard,US
+2026-05-14 08:50:01,txn_7FrH4jS2yP,2750.00,USD,succeeded,FinServ LLC,card_amex,US
+2026-05-14 08:48:43,txn_1KpT6rX9bQ,38.50,USD,succeeded,TacoFiesta,card_visa,US
+2026-05-14 08:47:27,txn_5NmW3fG7tK,680.00,USD,succeeded,AutoParts Co,card_visa,US
+2026-05-14 08:46:12,txn_8RsC2nH4wN,95.00,CAD,succeeded,Banff Lodge,card_mastercard,CA
+2026-05-14 08:44:55,txn_2VxB9pL6yJ,1125.00,USD,succeeded,WebDev Inc,card_amex,US
+2026-05-14 08:43:38,txn_9DfT1sK8mP,22.49,USD,failed,StreamAudio,card_visa,US
+2026-05-14 08:42:14,txn_4GhN7wX3vQ,456.00,EUR,succeeded,Vienna Tech,card_visa,AT
+2026-05-14 08:41:01,txn_6JkR2fY5bB,3100.00,USD,succeeded,PharmaCo,card_amex,US
+2026-05-14 08:39:43,txn_0MmT5nD9tH,187.50,USD,succeeded,GreenEnergy,card_mastercard,US

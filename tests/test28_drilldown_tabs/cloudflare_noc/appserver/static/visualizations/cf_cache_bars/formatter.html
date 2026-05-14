@@ -1,0 +1,53 @@
+<form class="splunk-formatter-section" section-label="Data Configuration">
+    <splunk-control-group label="Category Field" help="Field containing the content type or category name">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.categoryField" value="category">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Value Field" help="Field containing the ratio or percentage value">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.valueField" value="value">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Data Display">
+    <splunk-control-group label="Max Bars" help="Maximum number of bars to display">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.maxBars" value="8">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show Values" help="Display value labels on bars">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showValues" value="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Unit" help="Unit suffix for value labels">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.unit" value="%">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Max Value" help="Maximum value for bar scale (0 for auto)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.maxValue" value="100">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Color and Style">
+    <splunk-control-group label="Theme" help="Auto detects dashboard theme">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto">
+            <option value="auto">Auto</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Bar Color" help="Primary bar fill color">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.barColor" type="custom" value="#F6821F">
+            <splunk-color>#F6821F</splunk-color>
+            <splunk-color>#6ECBF5</splunk-color>
+            <splunk-color>#FBAD41</splunk-color>
+            <splunk-color>#A78BFA</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Show Gradient" help="Apply gradient fill on bars">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showGradient" value="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>

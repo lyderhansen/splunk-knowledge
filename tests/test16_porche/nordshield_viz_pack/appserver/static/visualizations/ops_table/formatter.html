@@ -1,0 +1,58 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+    <splunk-control-group label="Fields" help="Comma-separated SPL field names to display as columns">
+        <splunk-text-input name="nordshield_viz_pack.ops_table.fields" default="incident_id,status,severity,duration,affected_hosts,technique">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Field labels" help="Comma-separated display labels for each column (must match fields count)">
+        <splunk-text-input name="nordshield_viz_pack.ops_table.fieldLabels" default="ID,Status,Severity,Duration,Hosts,Technique">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Status field" help="Which field receives severity chip coloring">
+        <splunk-text-input name="nordshield_viz_pack.ops_table.statusField" default="status">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Chip color map" help="Comma-separated value:color pairs for status chips (e.g. P1:#FFB020,P2:#D946EF)">
+        <splunk-text-input name="nordshield_viz_pack.ops_table.chipColorMap" default="P1:#FFB020,P2:#D946EF,Investigating:#38BDF8,Contained:#00E5CC,Resolved:#475569,Closed:#475569">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Sort and pagination">
+    <splunk-control-group label="Default sort field" help="Field name to sort by on initial render">
+        <splunk-text-input name="nordshield_viz_pack.ops_table.defaultSort" default="severity">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Default sort direction" help="Initial sort order">
+        <splunk-radio-input name="nordshield_viz_pack.ops_table.defaultSortDir" default="desc">
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Page size" help="Number of rows displayed per page">
+        <splunk-text-input name="nordshield_viz_pack.ops_table.pageSize" default="10">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Page size options" help="Comma-separated list of page sizes shown in pagination bar">
+        <splunk-text-input name="nordshield_viz_pack.ops_table.pageSizes" default="10,25,50">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Layout and style">
+    <splunk-control-group label="Header background" help="Background color for the column header row">
+        <splunk-text-input name="nordshield_viz_pack.ops_table.headerBg" default="#0F1628">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Row height" help="Height in pixels for each data row (default 36)">
+        <splunk-text-input name="nordshield_viz_pack.ops_table.rowHeight" default="36">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Header height" help="Height in pixels for the column header row (default 40)">
+        <splunk-text-input name="nordshield_viz_pack.ops_table.headerHeight" default="40">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Accent intensity" help="Glow and accent effect strength 0-100 (default 50)">
+        <splunk-text-input name="nordshield_viz_pack.ops_table.accentIntensity" default="50">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>

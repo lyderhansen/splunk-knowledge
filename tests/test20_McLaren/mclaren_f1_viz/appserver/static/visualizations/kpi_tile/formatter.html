@@ -1,0 +1,86 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+
+    <splunk-control-group label="Value field" help="SPL field name for the main hero value (e.g. position, lap_time, gap)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.valueField" value="value">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Label field" help="SPL field name for the small uppercase label below the value">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.labelField" value="label">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Trend field" help="SPL field name for the numeric trend delta (positive = up, negative = down)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.trendField" value="trend">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Sparkline field" help="SPL field name containing comma-separated numeric values for the background sparkline area chart">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.sparklineField" value="sparkline">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Unit field" help="SPL field name for the unit suffix or prefix (e.g. s, km/h, %)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.unitField" value="unit">
+        </splunk-text-input>
+    </splunk-control-group>
+
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+
+    <splunk-control-group label="Unit position" help="Whether to show the unit before or after the value">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.unitPosition" value="after">
+            <option value="before">Before</option>
+            <option value="after">After</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Decimal places" help="Number of decimal places to display for numeric values. Use -1 for automatic formatting">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.decimals" value="-1">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Show trend" help="Show or hide the trend delta arrow below the label">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showTrend" value="true">
+            <option value="true">Show</option>
+            <option value="false">Hide</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Show sparkline" help="Show or hide the background area sparkline chart">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showSparkline" value="true">
+            <option value="true">Show</option>
+            <option value="false">Hide</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+
+    <splunk-control-group label="Theme" help="Color scheme — dark for pitwall/carbon aesthetic, light for presentation mode">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.theme" value="dark">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Accent color" help="Color of the left accent bar and glow effects — default is McLaren papaya orange">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.accentColor" type="custom" value="#FF8000">
+            <splunk-color>#FF8000</splunk-color>
+            <splunk-color>#47C7FC</splunk-color>
+            <splunk-color>#FF3333</splunk-color>
+            <splunk-color>#00D26A</splunk-color>
+            <splunk-color>#FFD700</splunk-color>
+            <splunk-color>#A855F7</splunk-color>
+            <splunk-color>#E8E8E8</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+
+    <splunk-control-group label="Accent intensity" help="Strength of glow and shadow effects around the accent bar and value text. Range 0 (off) to 100 (maximum)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.accentIntensity" value="50">
+        </splunk-text-input>
+    </splunk-control-group>
+
+</form>

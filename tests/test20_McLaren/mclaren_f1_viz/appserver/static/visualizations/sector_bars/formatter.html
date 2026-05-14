@@ -1,0 +1,83 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+
+    <splunk-control-group label="Driver field" help="SPL field name for the driver name">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.driverField" value="driver">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Sector 1 field" help="SPL field name for sector 1 time (e.g. 28.412)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.sector1Field" value="sector_1">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Sector 2 field" help="SPL field name for sector 2 time (e.g. 24.891)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.sector2Field" value="sector_2">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Sector 3 field" help="SPL field name for sector 3 time (e.g. 28.281)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.sector3Field" value="sector_3">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Lap time field" help="SPL field name for total lap time (e.g. 1:21.584). Optional — hides the right column if empty">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.lapTimeField" value="lap_time">
+        </splunk-text-input>
+    </splunk-control-group>
+
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+
+    <splunk-control-group label="Maximum rows" help="Maximum number of driver rows to display">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.maxRows" value="20">
+        </splunk-text-input>
+    </splunk-control-group>
+
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+
+    <splunk-control-group label="Theme" help="Color scheme — dark for pitwall/carbon aesthetic, light for presentation mode">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.theme" value="dark">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Sector 1 color" help="Fill color for the Sector 1 bar segment — default is McLaren papaya orange">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.sector1Color" type="custom" value="#FF8000">
+            <splunk-color>#FF8000</splunk-color>
+            <splunk-color>#FF3333</splunk-color>
+            <splunk-color>#FFD700</splunk-color>
+            <splunk-color>#00D26A</splunk-color>
+            <splunk-color>#E8E8E8</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+
+    <splunk-control-group label="Sector 2 color" help="Fill color for the Sector 2 bar segment — default is fluro blue">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.sector2Color" type="custom" value="#47C7FC">
+            <splunk-color>#47C7FC</splunk-color>
+            <splunk-color>#2196F3</splunk-color>
+            <splunk-color>#00D26A</splunk-color>
+            <splunk-color>#FFD700</splunk-color>
+            <splunk-color>#E8E8E8</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+
+    <splunk-control-group label="Sector 3 color" help="Fill color for the Sector 3 bar segment — default is purple">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.sector3Color" type="custom" value="#A855F7">
+            <splunk-color>#A855F7</splunk-color>
+            <splunk-color>#FF3333</splunk-color>
+            <splunk-color>#FF8000</splunk-color>
+            <splunk-color>#47C7FC</splunk-color>
+            <splunk-color>#E8E8E8</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+
+    <splunk-control-group label="Accent intensity" help="Strength of the fastest-sector glow effect. Range 0 (off) to 100 (maximum). Default 50">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.accentIntensity" value="50">
+        </splunk-text-input>
+    </splunk-control-group>
+
+</form>

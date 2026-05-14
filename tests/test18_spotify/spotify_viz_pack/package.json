@@ -1,0 +1,9 @@
+{
+  "name": "spotify_viz_pack",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "webpack": "^5.97.0",
+    "webpack-cli": "^6.0.0"
+  }
+}

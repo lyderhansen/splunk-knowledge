@@ -1,0 +1,89 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+
+    <splunk-control-group label="Time field" help="SPL field containing the event timestamp (ISO string or epoch)">
+        <splunk-text-input name="nordshield_viz_pack.threat_feed.timeField" default="_time">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Alert name field" help="SPL field containing the alert or threat name">
+        <splunk-text-input name="nordshield_viz_pack.threat_feed.nameField" default="alert_name">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Severity field" help="SPL field containing severity level: critical, high, medium, or low">
+        <splunk-text-input name="nordshield_viz_pack.threat_feed.severityField" default="severity">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Analyst field" help="SPL field containing the assigned analyst name">
+        <splunk-text-input name="nordshield_viz_pack.threat_feed.analystField" default="analyst_assigned">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Max visible entries" help="Maximum number of alert rows to load (1–500)">
+        <splunk-text-input name="nordshield_viz_pack.threat_feed.maxVisible" default="50">
+        </splunk-text-input>
+    </splunk-control-group>
+
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+
+    <splunk-control-group label="Show analyst" help="Display the analyst name column on the right side of each row">
+        <splunk-radio-input name="nordshield_viz_pack.threat_feed.showAnalyst" default="true">
+            <option value="true">Show</option>
+            <option value="false">Hide</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Scroll speed" help="Auto-scroll speed in pixels per second (0 = paused)">
+        <splunk-text-input name="nordshield_viz_pack.threat_feed.scrollSpeed" default="30">
+        </splunk-text-input>
+    </splunk-control-group>
+
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+
+    <splunk-control-group label="Accent intensity" help="Glow and hover effect intensity (0 = none, 100 = full)">
+        <splunk-range-input name="nordshield_viz_pack.threat_feed.accentIntensity" default="50" min="0" max="100" step="5">
+        </splunk-range-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Critical severity color" help="Left bar color for CRITICAL severity alerts">
+        <splunk-color-picker name="nordshield_viz_pack.threat_feed.colorCritical" default="#FFB020">
+            <splunk-color value="#FFB020" label="Amber"></splunk-color>
+            <splunk-color value="#FF6B35" label="Orange"></splunk-color>
+            <splunk-color value="#EF4444" label="Red"></splunk-color>
+            <splunk-color value="#F97316" label="Deep Orange"></splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+
+    <splunk-control-group label="High severity color" help="Left bar color for HIGH severity alerts">
+        <splunk-color-picker name="nordshield_viz_pack.threat_feed.colorHigh" default="#D946EF">
+            <splunk-color value="#D946EF" label="Fuchsia"></splunk-color>
+            <splunk-color value="#A855F7" label="Purple"></splunk-color>
+            <splunk-color value="#8B5CF6" label="Violet"></splunk-color>
+            <splunk-color value="#EC4899" label="Pink"></splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+
+    <splunk-control-group label="Medium severity color" help="Left bar color for MEDIUM severity alerts">
+        <splunk-color-picker name="nordshield_viz_pack.threat_feed.colorMedium" default="#38BDF8">
+            <splunk-color value="#38BDF8" label="Sky Blue"></splunk-color>
+            <splunk-color value="#00E5CC" label="Teal"></splunk-color>
+            <splunk-color value="#06B6D4" label="Cyan"></splunk-color>
+            <splunk-color value="#3B82F6" label="Blue"></splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+
+    <splunk-control-group label="Low severity color" help="Left bar color for LOW severity alerts">
+        <splunk-color-picker name="nordshield_viz_pack.threat_feed.colorLow" default="#475569">
+            <splunk-color value="#475569" label="Slate"></splunk-color>
+            <splunk-color value="#334155" label="Dark Slate"></splunk-color>
+            <splunk-color value="#64748B" label="Light Slate"></splunk-color>
+            <splunk-color value="#6B7280" label="Grey"></splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+
+</form>

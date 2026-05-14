@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 32" fill="none">
+  <path d="M2 28V4h4.8l7.2 16.8L21.2 4H26v24h-3.6V10.4L15.6 28h-3.2L5.6 10.4V28H2z" fill="#FF8000"/>
+  <path d="M30 28V4h3.6v20.8h10.8V28H30z" fill="#FF8000"/>
+  <path d="M48 28V4h3.6v24H48z" fill="#FF8000"/>
+  <text x="56" y="24" font-family="sans-serif" font-weight="700" font-size="18" letter-spacing="3" fill="#FF8000">McLAREN</text>
+</svg>

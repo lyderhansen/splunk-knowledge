@@ -1,0 +1,56 @@
+/* threat_feed — NordShield Arctic Power
+   IBM Plex Mono font declarations (5 weights)
+   Relative path from threat_feed/ → ../../fonts/
+   NOTE: These paths work for the Splunk static file server but NOT from
+   inside the iframe (null origin). For production, embed fonts as base64
+   data URIs in the source or inject via JavaScript FontFace API.
+   The visualization_source.js uses document.fonts.load() to gate rendering
+   until the font is available regardless of injection method.
+*/
+
+@font-face {
+    font-family: 'IBM Plex Mono';
+    src: url('../../fonts/IBMPlexMono-300.woff2') format('woff2');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'IBM Plex Mono';
+    src: url('../../fonts/IBMPlexMono-400.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'IBM Plex Mono';
+    src: url('../../fonts/IBMPlexMono-500.woff2') format('woff2');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'IBM Plex Mono';
+    src: url('../../fonts/IBMPlexMono-600.woff2') format('woff2');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'IBM Plex Mono';
+    src: url('../../fonts/IBMPlexMono-700.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Viz container baseline */
+.threat-feed-container {
+    position: relative;
+    overflow: hidden;
+    font-family: 'IBM Plex Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+}

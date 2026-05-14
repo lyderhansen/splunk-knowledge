@@ -1,0 +1,6 @@
+target_name,priority,estimated_hours,instrument,status,ra,dec
+Carina Nebula NGC 3372,1,4.5,NIRCam,in_progress,10h 45m 08s,-59d 52m 04s
+TRAPPIST-1e Transit,1,6.2,NIRSpec,queued,23h 06m 29s,-05d 02m 29s
+Stephan's Quintet,2,3.8,MIRI,queued,22h 35m 58s,+33d 57m 36s
+Jupiter Great Red Spot,3,2.1,NIRCam,queued,11h 04m 12s,+04d 28m 58s
+Sagittarius A*,2,8.0,NIRSpec,queued,17h 45m 40s,-29d 00m 28s

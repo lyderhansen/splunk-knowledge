@@ -1,0 +1,78 @@
+<form>
+  <!-- ═══════════════════════════════════════════════════════
+       Data configurations
+  ════════════════════════════════════════════════════════ -->
+  <splunk-control-group label="Value field" help="Field containing the numeric Kelvin reading (e.g. temperature).">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}valueField" default="temperature"></splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Category field" help="Field containing the sensor / row name (e.g. sensor).">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}categoryField" default="sensor"></splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Time field" help="Field containing the time bucket for each column (e.g. _time).">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}timeField" default="_time"></splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Min value" help="Minimum value for the color ramp. Leave as 'auto' to derive from data.">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}minValue" default="auto"></splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Max value" help="Maximum value for the color ramp. Leave as 'auto' to derive from data.">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}maxValue" default="auto"></splunk-text-input>
+  </splunk-control-group>
+
+  <!-- ═══════════════════════════════════════════════════════
+       Data display
+  ════════════════════════════════════════════════════════ -->
+  <splunk-control-group label="Cell shape" help="hexagon renders the JWST mirror motif; square renders a classic grid.">
+    <splunk-select name="{{VIZ_NAMESPACE}}cellShape" default="hexagon">
+      <option value="hexagon">Hexagon (JWST)</option>
+      <option value="square">Square</option>
+    </splunk-select>
+  </splunk-control-group>
+
+  <splunk-control-group label="Show cell values" help="Display the Kelvin reading inside each cell (only visible when cells are large enough).">
+    <splunk-select name="{{VIZ_NAMESPACE}}showValues" default="true">
+      <option value="true">On</option>
+      <option value="false">Off</option>
+    </splunk-select>
+  </splunk-control-group>
+
+  <splunk-control-group label="Show tooltip" help="Show a tooltip with exact sensor name, time bucket, and Kelvin reading on hover.">
+    <splunk-select name="{{VIZ_NAMESPACE}}showTooltip" default="true">
+      <option value="true">On</option>
+      <option value="false">Off</option>
+    </splunk-select>
+  </splunk-control-group>
+
+  <!-- ═══════════════════════════════════════════════════════
+       Color and style
+  ════════════════════════════════════════════════════════ -->
+  <splunk-control-group label="Color ramp — cool (low)" help="Hex color for the lowest values on the infrared ramp. Default: deep indigo #1B1464.">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}colorRampLow" default="#1B1464"></splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Color ramp — mid" help="Hex color for the mid-point of the ramp. Default: JWST cyan #00B4D8.">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}colorRampMid" default="#00B4D8"></splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Color ramp — warm (high)" help="Hex color for values approaching the critical threshold. Default: infrared gold #D4A537.">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}colorRampHigh" default="#D4A537"></splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Color ramp — critical" help="Hex color for values in the top 10% of the range. Cells glow and pulse. Default: alarm red #FF4D4D.">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}colorRampCritical" default="#FF4D4D"></splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Accent intensity" help="Glow and shadow intensity for critical cells (0 = none, 100 = maximum). Default: 50.">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}accentIntensity" default="50"></splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group label="Theme" help="dark for mission-ops black background; light for presentation/print mode.">
+    <splunk-select name="{{VIZ_NAMESPACE}}theme" default="dark">
+      <option value="dark">Dark (mission ops)</option>
+      <option value="light">Light (presentation)</option>
+    </splunk-select>
+  </splunk-control-group>
+</form>

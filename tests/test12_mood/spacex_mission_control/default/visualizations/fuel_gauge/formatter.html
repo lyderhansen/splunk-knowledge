@@ -1,0 +1,57 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+    <splunk-control-group label="Value field" help="SPL field containing the current level (numeric)">
+        <splunk-text-input name="display.visualizations.custom.spacex_mission_control.fuel_gauge.valueField" value="value">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Label field" help="SPL field containing the gauge label (e.g. LOX, RP-1)">
+        <splunk-text-input name="display.visualizations.custom.spacex_mission_control.fuel_gauge.labelField" value="label">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Max field" help="SPL field containing the maximum level (overrides Max value when present)">
+        <splunk-text-input name="display.visualizations.custom.spacex_mission_control.fuel_gauge.maxField" value="max">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Max value" help="Fixed maximum level when no max field is present in data">
+        <splunk-text-input name="display.visualizations.custom.spacex_mission_control.fuel_gauge.maxValue" value="100">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+    <splunk-control-group label="Decimals" help="Number of decimal places for the percentage readout (0, 1, 2)">
+        <splunk-radio-input name="display.visualizations.custom.spacex_mission_control.fuel_gauge.decimals" value="1">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show level marks" help="Display 0/25/50/75/100% tick marks and labels on the left side of the tube">
+        <splunk-radio-input name="display.visualizations.custom.spacex_mission_control.fuel_gauge.showLevelMarks" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Danger threshold" help="Percentage at or below which the gauge switches to danger red and pulses">
+        <splunk-text-input name="display.visualizations.custom.spacex_mission_control.fuel_gauge.dangerThreshold" value="15">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+    <splunk-control-group label="Theme" help="Panel color scheme — dark for mission control, light for day mode">
+        <splunk-radio-input name="display.visualizations.custom.spacex_mission_control.fuel_gauge.theme" value="dark">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Accent color" help="Primary liquid fill and glow color when level is above danger threshold">
+        <splunk-color-picker name="display.visualizations.custom.spacex_mission_control.fuel_gauge.accentColor"
+            type="custom" value="#0088CC">
+            <splunk-color>#0088CC</splunk-color>
+            <splunk-color>#00B8D4</splunk-color>
+            <splunk-color>#00C853</splunk-color>
+            <splunk-color>#FF6B35</splunk-color>
+            <splunk-color>#FFB300</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+</form>

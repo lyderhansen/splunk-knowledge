@@ -1,0 +1,200 @@
+_time,alert_name,severity,analyst_assigned
+2026-05-07T14:57:03Z,Brute Force SSH - prod-web-03,high,Chen, W.
+2026-05-07T14:54:41Z,Suspicious PowerShell Execution - dc-ad-04,critical,Okafor, A.
+2026-05-07T14:52:18Z,Anomalous DNS Query Volume - dns-resolver-02,medium,Petrov, N.
+2026-05-07T14:49:55Z,Lateral Movement Detected - T1021.002 - dc-sql-01,critical,Kim, S.
+2026-05-07T14:47:33Z,Failed Login Surge - vpn-gw-01,high,Müller, T.
+2026-05-07T14:45:11Z,Unauthorized Port Scan - 10.0.3.0/24,medium,Garcia, R.
+2026-05-07T14:42:49Z,Privilege Escalation Attempt - dc-sql-01,high,Chen, W.
+2026-05-07T14:40:27Z,Malware Signature Match - Cobalt Strike - prod-api-06,critical,Okafor, A.
+2026-05-07T14:38:05Z,Data Exfiltration Alert - 4.2GB outbound - edge-fw-02,critical,Kim, S.
+2026-05-07T14:35:43Z,Certificate Pinning Bypass Detected - prod-web-08,medium,Unassigned
+2026-05-07T14:33:21Z,Suspicious Scheduled Task Creation - T1053.005,medium,Petrov, N.
+2026-05-07T14:30:59Z,LSASS Memory Access - T1003.001 - dc-ad-02,critical,Okafor, A.
+2026-05-07T14:28:37Z,Unusual Outbound Traffic - prod-db-04,high,Chen, W.
+2026-05-07T14:26:15Z,WMI Lateral Movement - T1021.003 - dc-sql-02,high,Müller, T.
+2026-05-07T14:23:53Z,Kerberoasting Activity - T1558.003,critical,Kim, S.
+2026-05-07T14:21:31Z,Suspicious Registry Modification - dev-api-07,medium,Unassigned
+2026-05-07T14:19:09Z,HTTP Tunnel to External C2 - T1071.001,high,Garcia, R.
+2026-05-07T14:16:47Z,Ransomware Precursor Activity - T1486,critical,Okafor, A.
+2026-05-07T14:14:25Z,Golden Ticket Attempt - T1558.001 - dc-ad-01,critical,Chen, W.
+2026-05-07T14:12:03Z,Anomalous Process Injection - T1055 - prod-api-03,high,Petrov, N.
+2026-05-07T14:09:41Z,Brute Force RDP - dc-file-01,high,Müller, T.
+2026-05-07T14:07:19Z,DNS Exfiltration Attempt - T1048.003,medium,Unassigned
+2026-05-07T14:04:57Z,Suspicious Cron Job Added - T1053.003 - prod-web-05,medium,Garcia, R.
+2026-05-07T14:02:35Z,NTLM Pass-the-Hash - T1550.002,high,Kim, S.
+2026-05-07T14:00:13Z,Unauthorized SSH Key Added - prod-bastion-01,medium,Chen, W.
+2026-05-07T13:57:51Z,Spearphishing Email Opened - T1566.001,high,Okafor, A.
+2026-05-07T13:55:29Z,Mimikatz Activity Detected - dc-ad-03,critical,Petrov, N.
+2026-05-07T13:53:07Z,Anomalous S3 Access Pattern - prod-s3gw-01,medium,Unassigned
+2026-05-07T13:50:45Z,Port Knocking Sequence Detected - edge-fw-04,low,Garcia, R.
+2026-05-07T13:48:23Z,Failed MFA Surge - vpn-mfa-03,medium,Müller, T.
+2026-05-07T13:46:01Z,Suspicious curl to Pastebin - prod-api-04,medium,Kim, S.
+2026-05-07T13:43:39Z,Admin Share Access - T1021.002 - dc-sql-03,high,Chen, W.
+2026-05-07T13:41:17Z,Bitlocker Disable Attempt - T1562.001,high,Okafor, A.
+2026-05-07T13:38:55Z,Unusual Docker API Call - k8s-node-14,medium,Unassigned
+2026-05-07T13:36:33Z,Log Tampering Detected - T1070.001 - prod-db-03,high,Petrov, N.
+2026-05-07T13:34:11Z,Suspicious Base64 Encoded Payload - dev-build-01,medium,Garcia, R.
+2026-05-07T13:31:49Z,VPN Split-Tunnel Abuse - vpn-gw-03,low,Müller, T.
+2026-05-07T13:29:27Z,Bulk File Deletion - T1485 - prod-nfs-03,high,Kim, S.
+2026-05-07T13:27:05Z,SQL Injection Attempt - prod-db-01,medium,Chen, W.
+2026-05-07T13:24:43Z,CVE-2024-21413 Exploit Attempt - mail-exch-03,critical,Okafor, A.
+2026-05-07T13:22:21Z,Anonymous LDAP Bind Detected - dc-ldap-01,medium,Unassigned
+2026-05-07T13:19:59Z,Suspicious Kubernetes Exec - k8s-master-02,high,Petrov, N.
+2026-05-07T13:17:37Z,SMTP Relay Abuse - mail-relay-01,low,Garcia, R.
+2026-05-07T13:15:15Z,Reverse Shell Detected - T1059.004 - prod-web-06,critical,Kim, S.
+2026-05-07T13:12:53Z,Suspicious npm Package Install - dev-jenkins-01,low,Müller, T.
+2026-05-07T13:10:31Z,Password Spray Attack - T1110.003 - dc-radius-02,critical,Chen, W.
+2026-05-07T13:08:09Z,Unusual Outbound HTTPS Volume - stg-api-03,medium,Unassigned
+2026-05-07T13:05:47Z,Cloud Credential Theft Attempt - prod-vault-01,high,Okafor, A.
+2026-05-07T13:03:25Z,Beacon C2 Pattern - 45s interval - prod-api-05,high,Petrov, N.
+2026-05-07T13:01:03Z,PowerShell AMSI Bypass - T1562.001 - stg-db-02,high,Garcia, R.
+2026-05-07T12:58:41Z,Anomalous Login Time - dc-ad-01,low,Müller, T.
+2026-05-07T12:56:19Z,File Write to System32 - dc-sql-01,high,Kim, S.
+2026-05-07T12:53:57Z,Service Account Misuse - T1078.004,high,Chen, W.
+2026-05-07T12:51:35Z,Host Discovery Sweep - 10.0.1.0/24,medium,Unassigned
+2026-05-07T12:49:13Z,Suspicious TOR Exit Node Contact - prod-web-04,medium,Okafor, A.
+2026-05-07T12:46:51Z,Heap Spray Attempt - prod-api-01,medium,Petrov, N.
+2026-05-07T12:44:29Z,UAC Bypass - T1548.002 - stg-web-01,high,Garcia, R.
+2026-05-07T12:42:07Z,Mass Account Lockout - dc-ad-02,medium,Müller, T.
+2026-05-07T12:39:45Z,Suspicious DLL Load - T1574.001 - dc-sql-02,high,Kim, S.
+2026-05-07T12:37:23Z,Network Share Enumeration - T1135,low,Unassigned
+2026-05-07T12:35:01Z,Malicious Macro Executed - T1566.001 - mail-exch-01,high,Chen, W.
+2026-05-07T12:32:39Z,Anomalous API Rate - k8s-master-01,low,Okafor, A.
+2026-05-07T12:30:17Z,Suspicious Kubectl Context Switch - k8s-node-05,medium,Petrov, N.
+2026-05-07T12:27:55Z,Boot Record Modification Attempt - T1542.003,critical,Garcia, R.
+2026-05-07T12:25:33Z,RDP Logon from Unusual Country - vpn-gw-02,medium,Müller, T.
+2026-05-07T12:23:11Z,Token Impersonation - T1134.001 - dc-file-01,high,Kim, S.
+2026-05-07T12:20:49Z,Suspicious Python Script Execution - dev-api-11,low,Unassigned
+2026-05-07T12:18:27Z,Data Staged in Temp Directory - T1074.001,medium,Chen, W.
+2026-05-07T12:16:05Z,Oversized ICMP Packet - edge-ids-01,low,Okafor, A.
+2026-05-07T12:13:43Z,Suspicious Browser Extension Install - prod-ai-02,low,Petrov, N.
+2026-05-07T12:11:21Z,LDAP Enumeration - T1069.002,medium,Unassigned
+2026-05-07T12:08:59Z,Credential Dumping from Registry - T1003.002,critical,Garcia, R.
+2026-05-07T12:06:37Z,AppLocker Bypass Attempt - prod-api-06,high,Müller, T.
+2026-05-07T12:04:15Z,Suspicious Service Installation - T1543.003,high,Kim, S.
+2026-05-07T12:01:53Z,ARP Cache Poisoning Detected - edge-lb-01,medium,Chen, W.
+2026-05-07T11:59:31Z,Persistence via Startup Folder - T1547.001,medium,Okafor, A.
+2026-05-07T11:57:09Z,Kernel Exploit Attempt - T1068 - k8s-node-08,critical,Petrov, N.
+2026-05-07T11:54:47Z,Suspicious crontab Modification - prod-batch-02,low,Unassigned
+2026-05-07T11:52:25Z,Cleartext Password in Log - dev-sonar-01,medium,Garcia, R.
+2026-05-07T11:50:03Z,Unusual Child Process of IIS - prod-web-07,high,Müller, T.
+2026-05-07T11:47:41Z,Fileless Malware Indicator - T1059.001,high,Kim, S.
+2026-05-07T11:45:19Z,Outbound SMB Connection - edge-fw-01,medium,Chen, W.
+2026-05-07T11:42:57Z,Suspicious Volume Shadow Delete - T1490,critical,Okafor, A.
+2026-05-07T11:40:35Z,Anomalous Backup Access - prod-backup-01,medium,Unassigned
+2026-05-07T11:38:13Z,DNS Tunneling Detected - T1071.004,high,Petrov, N.
+2026-05-07T11:35:51Z,Suspicious MSHTA Execution - dc-ad-04,high,Garcia, R.
+2026-05-07T11:33:29Z,Buffer Overflow Attempt - prod-api-02,medium,Müller, T.
+2026-05-07T11:31:07Z,Suspicious Kubectl Exec to etcd - k8s-etcd-01,critical,Kim, S.
+2026-05-07T11:28:45Z,OAuth Token Theft Attempt - prod-vault-02,high,Chen, W.
+2026-05-07T11:26:23Z,Massive File Encryption Activity - T1486 - prod-nfs-01,critical,Okafor, A.
+2026-05-07T11:24:01Z,Nmap Scan from Internal Host - dev-api-08,low,Unassigned
+2026-05-07T11:21:39Z,Suspicious WScript Execution - dc-file-02,medium,Petrov, N.
+2026-05-07T11:19:17Z,Email Forwarding Rule Created - T1114.003,high,Garcia, R.
+2026-05-07T11:16:55Z,Suspicious netsh Command - dc-sql-03,medium,Müller, T.
+2026-05-07T11:14:33Z,Unusual CPU Spike - Crypto Miner Suspected - k8s-node-03,medium,Kim, S.
+2026-05-07T11:12:11Z,Account Created Outside ITSM - T1136.001,high,Chen, W.
+2026-05-07T11:09:49Z,Credential Phishing Page Detected - mail-spam-01,high,Unassigned
+2026-05-07T11:07:27Z,Directory Traversal Attempt - prod-web-02,medium,Okafor, A.
+2026-05-07T11:05:05Z,Suspicious Reg.exe Query - prod-api-04,low,Petrov, N.
+2026-05-07T11:02:43Z,Pass-the-Ticket Attack - T1550.003 - dc-ad-03,critical,Garcia, R.
+2026-05-07T11:00:21Z,IDS Evasion Technique Detected - edge-ids-02,medium,Müller, T.
+2026-05-07T10:57:59Z,Abnormal Logon Hours - dc-radius-01,low,Unassigned
+2026-05-07T10:55:37Z,Suspicious Schtasks Execution - prod-batch-03,medium,Kim, S.
+2026-05-07T10:53:15Z,SSL Certificate Mismatch - prod-web-01,low,Chen, W.
+2026-05-07T10:50:53Z,Brute Force SMTP Auth - mail-relay-02,medium,Okafor, A.
+2026-05-07T10:48:31Z,Suspicious Lnk File Created - T1547.009,low,Petrov, N.
+2026-05-07T10:46:09Z,Mass Email Delete - T1485 - mail-exch-02,high,Unassigned
+2026-05-07T10:43:47Z,Redis Unauthorized Access - prod-cache-02,high,Garcia, R.
+2026-05-07T10:41:25Z,DLL Hijacking Attempt - T1574.001,medium,Müller, T.
+2026-05-07T10:39:03Z,Suspicious IEX in PowerShell - T1059.001 - dc-ad-01,high,Kim, S.
+2026-05-07T10:36:41Z,Anomalous Kafka Consumer Group - prod-stream-01,low,Chen, W.
+2026-05-07T10:34:19Z,WAF Rule 941100 Triggered - SQL Injection,medium,Unassigned
+2026-05-07T10:31:57Z,Brute Force Kubernetes API - k8s-master-03,high,Okafor, A.
+2026-05-07T10:29:35Z,Suspicious Vault Policy Change - prod-vault-01,high,Petrov, N.
+2026-05-07T10:27:13Z,Rogue DHCP Server Detected - dc-dhcp-02,medium,Garcia, R.
+2026-05-07T10:24:51Z,Suspicious AWS CLI From Bastion - prod-bastion-02,medium,Müller, T.
+2026-05-07T10:22:29Z,PrintNightmare Exploit Attempt - T1068 - dc-print-01,critical,Kim, S.
+2026-05-07T10:20:07Z,Anomalous Redis KEYS Command - prod-cache-03,low,Unassigned
+2026-05-07T10:17:45Z,Suspicious MSIEXEC Execution,medium,Chen, W.
+2026-05-07T10:15:23Z,Lateral Tool Transfer - T1570 - stg-api-02,high,Okafor, A.
+2026-05-07T10:13:01Z,Host-Based Firewall Disabled - T1562.004,medium,Petrov, N.
+2026-05-07T10:10:39Z,Suspicious Find Command Across /etc,low,Garcia, R.
+2026-05-07T10:08:17Z,NFS Mount from Unauthorized Host - prod-nfs-02,medium,Unassigned
+2026-05-07T10:05:55Z,Active Directory Replication Request - T1003.006,critical,Müller, T.
+2026-05-07T10:03:33Z,Suspicious curl One-Liner in Bash History - dev-api-05,low,Kim, S.
+2026-05-07T10:01:11Z,CSRF Token Bypass Attempt - prod-web-03,low,Chen, W.
+2026-05-07T09:58:49Z,Unusually Large SQL Result Set - prod-db-02,medium,Okafor, A.
+2026-05-07T09:56:27Z,Suspicious File Written to /tmp - k8s-node-11,low,Unassigned
+2026-05-07T09:54:05Z,IPSEC IKEv1 Aggressive Mode - vpn-gw-04,medium,Petrov, N.
+2026-05-07T09:51:43Z,Abnormal Process Tree - chrome -> cmd -> powershell,high,Garcia, R.
+2026-05-07T09:49:21Z,DNS Rebinding Attack Attempt - dns-resolver-03,medium,Müller, T.
+2026-05-07T09:46:59Z,Suspicious Ansible Playbook Run - dev-build-03,low,Kim, S.
+2026-05-07T09:44:37Z,Hardcoded Secret in Pushed Commit - dev-gitlab-01,high,Unassigned
+2026-05-07T09:42:15Z,Exploit Kit Landing Page - prod-web-04,high,Chen, W.
+2026-05-07T09:39:53Z,Suspicious VBScript Execution - mail-exch-01,high,Okafor, A.
+2026-05-07T09:37:31Z,Mass User Password Reset - T1098,medium,Petrov, N.
+2026-05-07T09:35:09Z,Ransomware Note Dropped - T1486 - prod-db-04,critical,Garcia, R.
+2026-05-07T09:32:47Z,Suspicious GPO Modification - T1484.001 - dc-ad-02,critical,Müller, T.
+2026-05-07T09:30:25Z,Brute Force FTP - prod-web-07,low,Unassigned
+2026-05-07T09:28:03Z,Anomalous sudo -l Execution - prod-api-03,low,Kim, S.
+2026-05-07T09:25:41Z,Memory Scraping Attempt - POS Terminal,high,Chen, W.
+2026-05-07T09:23:19Z,Webhook Exfiltration Attempt - T1048 - dev-api-12,medium,Okafor, A.
+2026-05-07T09:20:57Z,Suspicious NTP Traffic Volume - dc-ntp-01,low,Petrov, N.
+2026-05-07T09:18:35Z,Privilege Group Added - T1098.003 - dc-ad-04,high,Unassigned
+2026-05-07T09:16:13Z,Syslog Forwarding Disabled - mon-logstash-02,medium,Garcia, R.
+2026-05-07T09:13:51Z,Suspicious wevtutil Command - dc-sql-01,medium,Müller, T.
+2026-05-07T09:11:29Z,Exploit Attempt CVE-2025-0282 - vpn-gw-01,critical,Kim, S.
+2026-05-07T09:09:07Z,Suspicious Useradd on Linux Host - prod-web-06,medium,Chen, W.
+2026-05-07T09:06:45Z,Packet Capture Tool Detected - edge-fw-03,medium,Unassigned
+2026-05-07T09:04:23Z,Unusual Azure AD Sign-in Risk,medium,Okafor, A.
+2026-05-07T09:02:01Z,Rootkit Indicator - Hidden Process - prod-api-06,critical,Petrov, N.
+2026-05-07T08:59:39Z,Suspicious Java Deserialization - prod-api-01,high,Garcia, R.
+2026-05-07T08:57:17Z,Anomalous TLS Certificate - edge-waf-01,low,Müller, T.
+2026-05-07T08:54:55Z,Credential Access - T1555 - Browser Credential Store,high,Unassigned
+2026-05-07T08:52:33Z,Suspicious Account Reuse After 6 Months,medium,Kim, S.
+2026-05-07T08:50:11Z,IMAP Credential Harvest - mail-exch-03,medium,Chen, W.
+2026-05-07T08:47:49Z,Suspicious sfc /scannow - dc-sql-04,low,Okafor, A.
+2026-05-07T08:45:27Z,Covert Channel via HTTP - T1071.001,medium,Petrov, N.
+2026-05-07T08:43:05Z,Unusual Splunk Forwarder Connection - mon-logstash-01,low,Unassigned
+2026-05-07T08:40:43Z,Zero-Day Probe Pattern - prod-web-01,medium,Garcia, R.
+2026-05-07T08:38:21Z,SMB Null Session - dc-file-02,medium,Müller, T.
+2026-05-07T08:35:59Z,Suspicious Metasploit Fingerprint - edge-ids-01,high,Kim, S.
+2026-05-07T08:33:37Z,Anomalous Git Clone Volume - dev-gitlab-02,low,Chen, W.
+2026-05-07T08:31:15Z,WAF Rate Limit Exceeded - 8400 req/min - edge-waf-02,high,Unassigned
+2026-05-07T08:28:53Z,Suspicious Token Refresh Loop - prod-vault-02,medium,Okafor, A.
+2026-05-07T08:26:31Z,S3 Bucket Policy Changed - prod-s3gw-02,high,Petrov, N.
+2026-05-07T08:24:09Z,Anomalous Terraform Apply - dev-vault-01,medium,Garcia, R.
+2026-05-07T08:21:47Z,Brute Force SNMP Community String - mon-prom-01,low,Müller, T.
+2026-05-07T08:19:25Z,Suspicious Exec in Container - k8s-node-09,medium,Unassigned
+2026-05-07T08:17:03Z,Malicious URL in Email Body - T1566.002,high,Kim, S.
+2026-05-07T08:14:41Z,Cleartext API Key Logged - dev-nexus-01,medium,Chen, W.
+2026-05-07T08:12:19Z,Anomalous Number of Secrets Read - prod-vault-01,high,Okafor, A.
+2026-05-07T08:09:57Z,Suspicious rsync to External IP,medium,Petrov, N.
+2026-05-07T08:07:35Z,Internal Host Scanning Dark Space - prod-ai-01,low,Unassigned
+2026-05-07T08:05:13Z,RDP Brute Force from TOR Exit Node,high,Garcia, R.
+2026-05-07T08:02:51Z,Suspicious Symlink Attack - /tmp to /etc - prod-web-05,medium,Müller, T.
+2026-05-07T08:00:29Z,Anomalous Ciphertext Block Size - enc traffic,low,Kim, S.
+2026-05-07T07:58:07Z,Unauthenticated API Access - k8s-certmgr-01,high,Chen, W.
+2026-05-07T07:55:45Z,Account Credential Reuse Across Systems,medium,Unassigned
+2026-05-07T07:53:23Z,Suspicious WPAD Abuse - T1557.001,medium,Okafor, A.
+2026-05-07T07:51:01Z,Exploit Attempt - Log4Shell CVE-2021-44228 - prod-api-05,high,Petrov, N.
+2026-05-07T07:48:39Z,Suspicious DNS MX Record Lookup - mail-spam-01,low,Garcia, R.
+2026-05-07T07:46:17Z,Unusual Cloud Storage Download - prod-cdn-01,medium,Müller, T.
+2026-05-07T07:43:55Z,Anomalous IPsec Rekey Rate - vpn-concentrator-01,low,Unassigned
+2026-05-07T07:41:33Z,EDR Tamper Attempt - T1562.001 - prod-web-03,critical,Kim, S.
+2026-05-07T07:39:11Z,Host-Side Firewall Rule Added - stg-web-03,low,Chen, W.
+2026-05-07T07:36:49Z,Exploit Attempt - EternalBlue - dc-sql-04,critical,Okafor, A.
+2026-05-07T07:34:27Z,Suspicious Backup Deletion - prod-backup-02,high,Petrov, N.
+2026-05-07T07:32:05Z,Anomalous Redis FLUSHALL Command - prod-cache-01,high,Unassigned
+2026-05-07T07:29:43Z,SYN Flood Detected - edge-ddos-01,medium,Garcia, R.
+2026-05-07T07:27:21Z,Suspicious Cloud Function Invocation - prod-ai-03,low,Müller, T.
+2026-05-07T07:24:59Z,Unauthorized Database Dump - prod-db-01,critical,Kim, S.
+2026-05-07T07:22:37Z,Suspicious chmod 777 on /etc/sudoers - dev-api-04,high,Chen, W.
+2026-05-07T07:20:15Z,Anomalous Web Scraping Pattern - prod-web-02,low,Okafor, A.
+2026-05-07T07:17:53Z,Remote Wipe Command Sent - T1485,medium,Petrov, N.
+2026-05-07T07:15:31Z,Suspicious HTTP TRACE Request - prod-web-06,low,Unassigned
+2026-05-07T07:13:09Z,Abnormal Elasticsearch Query - mon-elastic-03,medium,Garcia, R.
+2026-05-07T07:10:47Z,Suspicious conda install in Production - prod-ai-02,low,Müller, T.
+2026-05-07T07:08:25Z,Account Takeover - Impossible Travel - vpn-gw-03,high,Kim, S.

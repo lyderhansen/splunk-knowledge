@@ -1,0 +1,131 @@
+<!--
+  SpaceX Mission Control — Telemetry Gauge Formatter
+  Formatter options for the aerospace arc gauge viz.
+  Section labels must match Splunk formatter contract exactly.
+-->
+<form class="splunk-formatter">
+
+  <!-- ═══════════════════════════════════════════════════════
+       Data configurations
+  ══════════════════════════════════════════════════════════ -->
+  <splunk-control-group
+    label="Value field"
+    help="Field name that contains the gauge reading.">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.telemetry_gauge.valueField"
+      default="value">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Label field"
+    help="Field name for the instrument label text (e.g. 'Altitude').">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.telemetry_gauge.labelField"
+      default="label">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Unit field"
+    help="Field name for the unit string displayed below the value (e.g. 'km').">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.telemetry_gauge.unitField"
+      default="unit">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Min field"
+    help="Field name containing the dynamic minimum. Leave blank to use the static Min value below.">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.telemetry_gauge.minField"
+      default="min">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Max field"
+    help="Field name containing the dynamic maximum. Leave blank to use the static Max value below.">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.telemetry_gauge.maxField"
+      default="max">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <!-- ═══════════════════════════════════════════════════════
+       Data display
+  ══════════════════════════════════════════════════════════ -->
+  <splunk-control-group
+    label="Static min"
+    help="Fallback minimum value when no Min field is present in the data.">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.telemetry_gauge.minValue"
+      default="0">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Static max"
+    help="Fallback maximum value when no Max field is present in the data.">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.telemetry_gauge.maxValue"
+      default="100">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Decimal places"
+    help="Number of decimal places for the center value. Use -1 for auto (integers show no decimals).">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.telemetry_gauge.decimals"
+      default="-1">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Show tick marks"
+    help="Render aerospace-style tick marks along the outer arc edge.">
+    <splunk-radio-input
+      name="display.visualizations.custom.spacex_mission_control.telemetry_gauge.showTickMarks"
+      default="true">
+      <option value="true">On</option>
+      <option value="false">Off</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+
+  <!-- ═══════════════════════════════════════════════════════
+       Color and style
+  ══════════════════════════════════════════════════════════ -->
+  <splunk-control-group
+    label="Accent color"
+    help="Primary color for the filled arc and tick marks. Use a hex value (e.g. #0088CC).">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.telemetry_gauge.accentColor"
+      default="#0088CC">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Show accent lines"
+    help="Draw subtle background crosshair lines behind the gauge at 4% opacity.">
+    <splunk-radio-input
+      name="display.visualizations.custom.spacex_mission_control.telemetry_gauge.showAccentLines"
+      default="true">
+      <option value="true">On</option>
+      <option value="false">Off</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Theme"
+    help="Color palette. Use dark for mission control dashboards, light for bright environments.">
+    <splunk-radio-input
+      name="display.visualizations.custom.spacex_mission_control.telemetry_gauge.theme"
+      default="dark">
+      <option value="dark">Dark</option>
+      <option value="light">Light</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+
+</form>

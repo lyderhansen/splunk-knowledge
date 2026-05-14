@@ -1,0 +1,130 @@
+<form>
+
+  <!-- ============================================================ -->
+  <!-- Data configurations                                          -->
+  <!-- ============================================================ -->
+  <splunk-control-group
+    label="Data configurations"
+    help="Map Splunk result fields to the KPI tile data slots.">
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Value field"
+    help="Field name for the primary value displayed in the tile. Accepts numbers or strings (e.g. T+02:34, GO).">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.mission_kpi.valueField"
+      default="value">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Label field"
+    help="Field name for the metric label shown above the value (e.g. MAX DYNAMIC PRESSURE).">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.mission_kpi.labelField"
+      default="label">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Unit field"
+    help="Field name for the unit string shown below the value (e.g. kPa, km/s, %).">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.mission_kpi.unitField"
+      default="unit">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Trend field"
+    help="Field name for the trend percentage (positive = up, negative = down). Leave blank if no trend data.">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.mission_kpi.trendField"
+      default="trend">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <!-- ============================================================ -->
+  <!-- Data display                                                 -->
+  <!-- ============================================================ -->
+  <splunk-control-group
+    label="Data display"
+    help="Control how numeric values are formatted and which elements are visible.">
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Decimal places"
+    help="Number of decimal places for numeric values. Use -1 for auto compact formatting (e.g. 164.2M, 5.8B).">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.mission_kpi.decimals"
+      default="-1">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Show trend"
+    help="Show or hide the trend delta arrow and percentage below the value.">
+    <splunk-radio-input
+      name="display.visualizations.custom.spacex_mission_control.mission_kpi.showTrend"
+      default="true">
+      <option value="true">Show</option>
+      <option value="false">Hide</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+
+  <!-- ============================================================ -->
+  <!-- Color and style                                              -->
+  <!-- ============================================================ -->
+  <splunk-control-group
+    label="Color and style"
+    help="Adjust the panel accent color, threshold alerts, and overall theme.">
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Accent intensity"
+    help="Glow and accent effect strength (0=off, 50=default, 100=max)">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.mission_kpi.accentIntensity"
+      value="50">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Accent color"
+    help="Primary accent color used for the top-edge glow and value halo. Hex format (e.g. #0088CC).">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.mission_kpi.accentColor"
+      default="#0088CC">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Warn threshold"
+    help="Numeric value at which the accent shifts to engine orange. Leave empty to disable.">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.mission_kpi.warnThreshold"
+      default="">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Danger threshold"
+    help="Numeric value at which the accent shifts to danger red. Must be higher than the warn threshold.">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.mission_kpi.dangerThreshold"
+      default="">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Theme"
+    help="Choose dark for mission control console style, or light for bright room displays.">
+    <splunk-radio-input
+      name="display.visualizations.custom.spacex_mission_control.mission_kpi.theme"
+      default="dark">
+      <option value="dark">Dark</option>
+      <option value="light">Light</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+
+</form>

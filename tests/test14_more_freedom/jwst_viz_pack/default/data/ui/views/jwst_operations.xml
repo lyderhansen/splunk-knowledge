@@ -1,0 +1,437 @@
+<dashboard version="2" theme="dark">
+    <label>JWST Mission Operations</label>
+    <description>James Webb Space Telescope — Mission Operations Dashboard</description>
+    <definition>
+    <![CDATA[
+{
+    "dataSources": {
+        "ds_sensor_temps": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup sensor_temperatures.csv | eval _time=strptime(_time, \"%Y-%m-%dT%H:%M:%S\") | eval temperature=tonumber(temperature) | sort sensor _time",
+                "queryParameters": {
+                    "earliest": "-24h@h",
+                    "latest": "now"
+                }
+            },
+            "name": "Sensor Temperatures"
+        },
+        "ds_instruments": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup instrument_status.csv | eval uptime_pct=tonumber(uptime_pct)",
+                "queryParameters": {
+                    "earliest": "-24h@h",
+                    "latest": "now"
+                }
+            },
+            "name": "Instrument Status"
+        },
+        "ds_downloads": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup data_downloads.csv | eval transferred_gb=tonumber(transferred_gb) | eval planned_gb=tonumber(planned_gb) | eval rate_mbps=tonumber(rate_mbps)",
+                "queryParameters": {
+                    "earliest": "-24h@h",
+                    "latest": "now"
+                }
+            },
+            "name": "Data Downloads"
+        },
+        "ds_obs_queue": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup observation_queue.csv | eval priority=tonumber(priority) | eval estimated_hours=tonumber(estimated_hours) | sort priority",
+                "queryParameters": {
+                    "earliest": "-24h@h",
+                    "latest": "now"
+                }
+            },
+            "name": "Observation Queue"
+        },
+        "ds_power": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup power_balance.csv | eval _time=strptime(_time, \"%Y-%m-%dT%H:%M:%S\") | eval solar_watts=tonumber(solar_watts) | eval consumption_watts=tonumber(consumption_watts) | eval battery_pct=tonumber(battery_pct) | sort _time",
+                "queryParameters": {
+                    "earliest": "-24h@h",
+                    "latest": "now"
+                }
+            },
+            "name": "Power Balance"
+        },
+        "ds_kpi_temp": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup kpi_summary.csv | where label=\"NIRCam Temp\" | eval value=tonumber(value) | eval trend=tonumber(trend)",
+                "queryParameters": {
+                    "earliest": "-24h@h",
+                    "latest": "now"
+                }
+            },
+            "name": "KPI NIRCam Temp"
+        },
+        "ds_kpi_data": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup kpi_summary.csv | where label=\"Data Downloaded\" | eval value=tonumber(value) | eval trend=tonumber(trend)",
+                "queryParameters": {
+                    "earliest": "-24h@h",
+                    "latest": "now"
+                }
+            },
+            "name": "KPI Data Downloaded"
+        }
+    },
+    "defaults": {
+        "dataSources": {
+            "ds.search": {
+                "options": {
+                    "queryParameters": {
+                        "earliest": "-24h@h",
+                        "latest": "now"
+                    }
+                }
+            }
+        }
+    },
+    "visualizations": {
+        "viz_hero_image": {
+            "type": "splunk.image",
+            "options": {
+                "src": "/static/app/jwst_viz_pack/images/hero_jwst.jpg",
+                "preserveAspectRatio": false
+            }
+        },
+        "viz_hero_overlay": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "rgba(6,8,15,0.55)",
+                "strokeColor": "transparent"
+            }
+        },
+        "viz_hero_vignette": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "rgba(6,8,15,0.88)",
+                "strokeColor": "transparent"
+            }
+        },
+        "viz_title": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "## JWST MISSION OPERATIONS\nJames Webb Space Telescope — L2 Orbit Status",
+                "fontColor": "#E8ECF1",
+                "fontSize": "extraLarge",
+                "backgroundColor": "transparent"
+            }
+        },
+        "viz_section_telemetry": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "THERMAL TELEMETRY",
+                "fontColor": "rgba(232,236,241,0.30)",
+                "fontSize": "extraSmall",
+                "backgroundColor": "transparent"
+            }
+        },
+        "viz_section_power": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "POWER BALANCE",
+                "fontColor": "rgba(232,236,241,0.30)",
+                "fontSize": "extraSmall",
+                "backgroundColor": "transparent"
+            }
+        },
+        "viz_section_instruments": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "INSTRUMENT STATUS",
+                "fontColor": "rgba(232,236,241,0.30)",
+                "fontSize": "extraSmall",
+                "backgroundColor": "transparent"
+            }
+        },
+        "viz_section_downlink": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "DATA DOWNLINK",
+                "fontColor": "rgba(232,236,241,0.30)",
+                "fontSize": "extraSmall",
+                "backgroundColor": "transparent"
+            }
+        },
+        "viz_section_queue": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "OBSERVATION QUEUE",
+                "fontColor": "rgba(232,236,241,0.30)",
+                "fontSize": "extraSmall",
+                "backgroundColor": "transparent"
+            }
+        },
+        "viz_kpi_temp": {
+            "type": "jwst_viz_pack.jwst_kpi_tile",
+            "dataSources": {
+                "primary": "ds_kpi_temp"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "jwst_viz_pack.jwst_kpi_tile.valueField": "value",
+                "jwst_viz_pack.jwst_kpi_tile.labelField": "label",
+                "jwst_viz_pack.jwst_kpi_tile.unitField": "unit",
+                "jwst_viz_pack.jwst_kpi_tile.trendField": "trend",
+                "jwst_viz_pack.jwst_kpi_tile.sparklineField": "sparkline",
+                "jwst_viz_pack.jwst_kpi_tile.valueSize": "hero",
+                "jwst_viz_pack.jwst_kpi_tile.valueDecimals": "1",
+                "jwst_viz_pack.jwst_kpi_tile.warningThreshold": "41",
+                "jwst_viz_pack.jwst_kpi_tile.criticalThreshold": "45",
+                "jwst_viz_pack.jwst_kpi_tile.theme": "dark"
+            }
+        },
+        "viz_kpi_data": {
+            "type": "jwst_viz_pack.jwst_kpi_tile",
+            "dataSources": {
+                "primary": "ds_kpi_data"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "jwst_viz_pack.jwst_kpi_tile.valueField": "value",
+                "jwst_viz_pack.jwst_kpi_tile.labelField": "label",
+                "jwst_viz_pack.jwst_kpi_tile.unitField": "unit",
+                "jwst_viz_pack.jwst_kpi_tile.trendField": "trend",
+                "jwst_viz_pack.jwst_kpi_tile.sparklineField": "sparkline",
+                "jwst_viz_pack.jwst_kpi_tile.valueSize": "hero",
+                "jwst_viz_pack.jwst_kpi_tile.valueDecimals": "1",
+                "jwst_viz_pack.jwst_kpi_tile.theme": "dark"
+            }
+        },
+        "viz_kpi_panel": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "rgba(13,17,23,0.88)",
+                "strokeColor": "rgba(212,165,55,0.08)",
+                "rx": 0
+            }
+        },
+        "viz_heat_grid": {
+            "type": "jwst_viz_pack.jwst_heat_grid",
+            "dataSources": {
+                "primary": "ds_sensor_temps"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "jwst_viz_pack.jwst_heat_grid.valueField": "temperature",
+                "jwst_viz_pack.jwst_heat_grid.categoryField": "sensor",
+                "jwst_viz_pack.jwst_heat_grid.timeField": "_time",
+                "jwst_viz_pack.jwst_heat_grid.cellShape": "hexagon",
+                "jwst_viz_pack.jwst_heat_grid.showValues": "true",
+                "jwst_viz_pack.jwst_heat_grid.theme": "dark"
+            }
+        },
+        "viz_power": {
+            "type": "jwst_viz_pack.jwst_power_horizon",
+            "dataSources": {
+                "primary": "ds_power"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "jwst_viz_pack.jwst_power_horizon.timeField": "_time",
+                "jwst_viz_pack.jwst_power_horizon.generationField": "solar_watts",
+                "jwst_viz_pack.jwst_power_horizon.consumptionField": "consumption_watts",
+                "jwst_viz_pack.jwst_power_horizon.batteryField": "battery_pct",
+                "jwst_viz_pack.jwst_power_horizon.showBattery": "true",
+                "jwst_viz_pack.jwst_power_horizon.showBalance": "true",
+                "jwst_viz_pack.jwst_power_horizon.theme": "dark"
+            }
+        },
+        "viz_instruments": {
+            "type": "jwst_viz_pack.jwst_instrument_matrix",
+            "dataSources": {
+                "primary": "ds_instruments"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "jwst_viz_pack.jwst_instrument_matrix.instrumentField": "instrument",
+                "jwst_viz_pack.jwst_instrument_matrix.statusField": "status",
+                "jwst_viz_pack.jwst_instrument_matrix.modeField": "mode",
+                "jwst_viz_pack.jwst_instrument_matrix.uptimeField": "uptime_pct",
+                "jwst_viz_pack.jwst_instrument_matrix.enableDrilldown": "true",
+                "jwst_viz_pack.jwst_instrument_matrix.drilldownTokenName": "selected_instrument",
+                "jwst_viz_pack.jwst_instrument_matrix.theme": "dark"
+            },
+            "eventHandlers": [
+                {
+                    "type": "drilldown.setToken",
+                    "options": {
+                        "tokens": [
+                            {
+                                "token": "selected_instrument",
+                                "value": "$row.instrument.value$"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "viz_cascade": {
+            "type": "jwst_viz_pack.jwst_data_cascade",
+            "dataSources": {
+                "primary": "ds_downloads"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "jwst_viz_pack.jwst_data_cascade.bandField": "band",
+                "jwst_viz_pack.jwst_data_cascade.transferredField": "transferred_gb",
+                "jwst_viz_pack.jwst_data_cascade.plannedField": "planned_gb",
+                "jwst_viz_pack.jwst_data_cascade.rateField": "rate_mbps",
+                "jwst_viz_pack.jwst_data_cascade.showRate": "true",
+                "jwst_viz_pack.jwst_data_cascade.animateStreams": "true",
+                "jwst_viz_pack.jwst_data_cascade.theme": "dark"
+            }
+        },
+        "viz_queue": {
+            "type": "jwst_viz_pack.jwst_observation_queue",
+            "dataSources": {
+                "primary": "ds_obs_queue"
+            },
+            "options": {
+                "backgroundColor": "transparent",
+                "jwst_viz_pack.jwst_observation_queue.targetField": "target_name",
+                "jwst_viz_pack.jwst_observation_queue.priorityField": "priority",
+                "jwst_viz_pack.jwst_observation_queue.durationField": "estimated_hours",
+                "jwst_viz_pack.jwst_observation_queue.instrumentField": "instrument",
+                "jwst_viz_pack.jwst_observation_queue.statusField": "status",
+                "jwst_viz_pack.jwst_observation_queue.maxItems": "5",
+                "jwst_viz_pack.jwst_observation_queue.theme": "dark"
+            }
+        },
+        "viz_panel_left": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "rgba(13,17,23,0.85)",
+                "strokeColor": "rgba(232,236,241,0.04)",
+                "rx": 0
+            }
+        },
+        "viz_panel_right": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "rgba(13,17,23,0.85)",
+                "strokeColor": "rgba(232,236,241,0.04)",
+                "rx": 0
+            }
+        }
+    },
+    "inputs": {},
+    "layout": {
+        "type": "absolute",
+        "options": {
+            "width": 1440,
+            "height": 1100,
+            "backgroundColor": "#06080F",
+            "display": "auto-scale"
+        },
+        "structure": [
+            {
+                "item": "viz_hero_image",
+                "type": "block",
+                "position": { "x": 0, "y": 0, "w": 1440, "h": 430 }
+            },
+            {
+                "item": "viz_hero_overlay",
+                "type": "block",
+                "position": { "x": 0, "y": 0, "w": 1440, "h": 430 }
+            },
+            {
+                "item": "viz_hero_vignette",
+                "type": "block",
+                "position": { "x": 0, "y": 350, "w": 1440, "h": 80 }
+            },
+            {
+                "item": "viz_title",
+                "type": "block",
+                "position": { "x": 32, "y": 24, "w": 500, "h": 80 }
+            },
+            {
+                "item": "viz_kpi_panel",
+                "type": "block",
+                "position": { "x": 32, "y": 120, "w": 280, "h": 130 }
+            },
+            {
+                "item": "viz_kpi_temp",
+                "type": "block",
+                "position": { "x": 40, "y": 128, "w": 264, "h": 114 }
+            },
+            {
+                "item": "viz_kpi_data",
+                "type": "block",
+                "position": { "x": 340, "y": 128, "w": 264, "h": 114 }
+            },
+            {
+                "item": "viz_panel_left",
+                "type": "block",
+                "position": { "x": 16, "y": 440, "w": 988, "h": 640 }
+            },
+            {
+                "item": "viz_section_telemetry",
+                "type": "block",
+                "position": { "x": 32, "y": 452, "w": 200, "h": 20 }
+            },
+            {
+                "item": "viz_heat_grid",
+                "type": "block",
+                "position": { "x": 24, "y": 476, "w": 972, "h": 230 }
+            },
+            {
+                "item": "viz_section_power",
+                "type": "block",
+                "position": { "x": 32, "y": 764, "w": 200, "h": 20 }
+            },
+            {
+                "item": "viz_power",
+                "type": "block",
+                "position": { "x": 24, "y": 788, "w": 972, "h": 280 }
+            },
+            {
+                "item": "viz_panel_right",
+                "type": "block",
+                "position": { "x": 1020, "y": 440, "w": 404, "h": 640 }
+            },
+            {
+                "item": "viz_section_instruments",
+                "type": "block",
+                "position": { "x": 1036, "y": 452, "w": 200, "h": 20 }
+            },
+            {
+                "item": "viz_instruments",
+                "type": "block",
+                "position": { "x": 1028, "y": 476, "w": 388, "h": 220 }
+            },
+            {
+                "item": "viz_section_downlink",
+                "type": "block",
+                "position": { "x": 1036, "y": 708, "w": 200, "h": 20 }
+            },
+            {
+                "item": "viz_cascade",
+                "type": "block",
+                "position": { "x": 1028, "y": 732, "w": 388, "h": 160 }
+            },
+            {
+                "item": "viz_section_queue",
+                "type": "block",
+                "position": { "x": 1036, "y": 900, "w": 200, "h": 20 }
+            },
+            {
+                "item": "viz_queue",
+                "type": "block",
+                "position": { "x": 1028, "y": 924, "w": 388, "h": 148 }
+            }
+        ]
+    }
+}
+    ]]>
+    </definition>
+</dashboard>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 12px;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .section-header {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #666;
+            padding: 12px 12px 4px;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 4px;
+        }
+        .section-header:first-child {
+            border-top: none;
+            margin-top: 0;
+        }
+        .form-row {
+            padding: 4px 12px 8px;
+        }
+        label {
+            display: block;
+            margin-bottom: 3px;
+            font-size: 11px;
+            color: #555;
+        }
+        input[type="text"],
+        select {
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 2px;
+            padding: 4px 6px;
+            font-size: 12px;
+            outline: none;
+        }
+        input[type="text"]:focus,
+        select:focus {
+            border-color: #D5001C;
+        }
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px 8px;
+        }
+        .checkbox-row input[type="checkbox"] {
+            margin: 0;
+        }
+        .checkbox-row label {
+            margin: 0;
+            cursor: pointer;
+        }
+        input[type="range"] {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .range-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #888;
+            margin-top: 2px;
+        }
+        .swatch-row {
+            display: flex;
+            gap: 6px;
+            margin-top: 6px;
+            flex-wrap: wrap;
+        }
+        .swatch {
+            width: 22px;
+            height: 22px;
+            border-radius: 2px;
+            border: 1px solid rgba(0,0,0,0.15);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .swatch:hover {
+            border-color: #333;
+        }
+        .color-picker-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 4px;
+        }
+        input[type="color"] {
+            width: 40px;
+            height: 28px;
+            padding: 1px;
+            border: 1px solid #ccc;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+        .help-text {
+            font-size: 10px;
+            color: #888;
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ================================================================ -->
+    <!-- SECTION: Data Fields                                             -->
+    <!-- ================================================================ -->
+    <div class="section-header">Data Fields</div>
+
+    <div class="form-row">
+        <label for="valueField">Value field</label>
+        <input
+            type="text"
+            id="valueField"
+            name="display.visualizations.custom.porsche_motorsport_viz.kpi_tile.valueField"
+            value="value"
+            help="Name of the field containing the primary display value (e.g. '1:42.891', 'P1', '+3.2s')."
+        >
+        <div class="help-text">Primary metric — lap time, gap, position, etc.</div>
+    </div>
+
+    <div class="form-row">
+        <label for="labelField">Label field</label>
+        <input
+            type="text"
+            id="labelField"
+            name="display.visualizations.custom.porsche_motorsport_viz.kpi_tile.labelField"
+            value="label"
+            help="Name of the field containing the short metric label displayed above the value (e.g. 'LAP TIME', 'GAP', 'POS')."
+        >
+        <div class="help-text">Metric name shown in small uppercase above the value.</div>
+    </div>
+
+    <div class="form-row">
+        <label for="deltaField">Delta field <span style="color:#aaa;font-weight:400">(optional)</span></label>
+        <input
+            type="text"
+            id="deltaField"
+            name="display.visualizations.custom.porsche_motorsport_viz.kpi_tile.deltaField"
+            value="delta"
+            help="Name of the field containing the change indicator (e.g. '+0.342', '-1.1s'). Leave blank to hide."
+        >
+        <div class="help-text">Change indicator shown below the main value. Leave blank to hide.</div>
+    </div>
+
+    <div class="form-row">
+        <label for="deltaDirectionField">Delta direction field <span style="color:#aaa;font-weight:400">(optional)</span></label>
+        <input
+            type="text"
+            id="deltaDirectionField"
+            name="display.visualizations.custom.porsche_motorsport_viz.kpi_tile.deltaDirectionField"
+            value="deltaDirection"
+            help="Name of the field containing the delta direction: 'up' (slower/worse = red), 'down' (faster/better = green), or 'neutral' (silver)."
+        >
+        <div class="help-text">Values: <strong>up</strong> (red — slower), <strong>down</strong> (green — faster), <strong>neutral</strong> (silver).</div>
+    </div>
+
+    <div class="form-row">
+        <label for="unitField">Unit field <span style="color:#aaa;font-weight:400">(optional)</span></label>
+        <input
+            type="text"
+            id="unitField"
+            name="display.visualizations.custom.porsche_motorsport_viz.kpi_tile.unitField"
+            value="unit"
+            help="Name of the field containing a unit suffix appended to the value (e.g. 'km/h', 'rpm', '%'). Leave blank to hide."
+        >
+        <div class="help-text">Unit suffix appended to the value. Leave blank to hide.</div>
+    </div>
+
+    <!-- ================================================================ -->
+    <!-- SECTION: Display                                                 -->
+    <!-- ================================================================ -->
+    <div class="section-header">Display</div>
+
+    <div class="checkbox-row">
+        <input
+            type="checkbox"
+            id="heroMode"
+            name="display.visualizations.custom.porsche_motorsport_viz.kpi_tile.heroMode"
+            value="true"
+            help="Hero mode enlarges the value to 56px and adds a 2px Porsche red top border, emphasising the most critical KPI in a dashboard."
+        >
+        <label for="heroMode">Hero mode (large value + red accent border)</label>
+    </div>
+
+    <div class="form-row">
+        <label for="themeSelect">Theme</label>
+        <select
+            id="themeSelect"
+            name="display.visualizations.custom.porsche_motorsport_viz.kpi_tile.theme"
+            help="Select dark for black timing tower backgrounds or light for white/grey report backgrounds."
+        >
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </select>
+        <div class="help-text">Dark matches the standard Porsche timing tower; Light for reports.</div>
+    </div>
+
+    <!-- ================================================================ -->
+    <!-- SECTION: Color and Style                                         -->
+    <!-- ================================================================ -->
+    <div class="section-header">Color and Style</div>
+
+    <div class="form-row">
+        <label>Accent color</label>
+        <div class="color-picker-row">
+            <input
+                type="color"
+                id="accentColor"
+                name="display.visualizations.custom.porsche_motorsport_viz.kpi_tile.accentColor"
+                value="#D5001C"
+                help="Accent color used for the hero border. Pick from the Porsche palette swatches below or choose a custom color."
+            >
+            <span id="accentColorHex" style="font-size:11px;color:#666">#D5001C</span>
+        </div>
+        <div class="swatch-row">
+            <div class="swatch" style="background:#D5001C" title="Porsche Red"       data-color="#D5001C"></div>
+            <div class="swatch" style="background:#FFFFFF;border-color:#ccc" title="White" data-color="#FFFFFF"></div>
+            <div class="swatch" style="background:#8C8C8C" title="Silver"            data-color="#8C8C8C"></div>
+            <div class="swatch" style="background:#A7A8AA" title="Warm Grey"         data-color="#A7A8AA"></div>
+            <div class="swatch" style="background:#000000" title="Black"             data-color="#000000"></div>
+        </div>
+        <div class="help-text">Applies to the hero mode top border and future accent uses.</div>
+    </div>
+
+    <div class="form-row">
+        <label for="accentIntensity">Accent intensity: <span id="accentIntensityVal">50</span></label>
+        <input
+            type="range"
+            id="accentIntensity"
+            name="display.visualizations.custom.porsche_motorsport_viz.kpi_tile.accentIntensity"
+            min="0"
+            max="100"
+            value="50"
+            help="Controls how prominently the accent color appears in the visualization. 0 = invisible, 100 = full intensity."
+        >
+        <div class="range-labels"><span>0 — subtle</span><span>100 — full</span></div>
+    </div>
+
+    <script>
+        // Swatch click → update color input
+        var swatches = document.querySelectorAll('.swatch');
+        var colorInput = document.getElementById('accentColor');
+        var colorHexLabel = document.getElementById('accentColorHex');
+
+        for (var i = 0; i < swatches.length; i++) {
+            (function (swatch) {
+                swatch.addEventListener('click', function () {
+                    var c = swatch.getAttribute('data-color');
+                    colorInput.value = c;
+                    colorHexLabel.textContent = c;
+                    colorInput.dispatchEvent(new Event('change', { bubbles: true }));
+                });
+            })(swatches[i]);
+        }
+
+        colorInput.addEventListener('input', function () {
+            colorHexLabel.textContent = colorInput.value.toUpperCase();
+        });
+
+        // Range value display
+        var rangeInput = document.getElementById('accentIntensity');
+        var rangeLabel = document.getElementById('accentIntensityVal');
+        rangeInput.addEventListener('input', function () {
+            rangeLabel.textContent = rangeInput.value;
+        });
+    </script>
+
+</body>
+</html>

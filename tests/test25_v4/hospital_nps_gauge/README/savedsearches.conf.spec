@@ -1,0 +1,9 @@
+display.visualizations.custom.hospital_nps_gauge.nps_ring_gauge.scoreField = <string>
+display.visualizations.custom.hospital_nps_gauge.nps_ring_gauge.labelField = <string>
+display.visualizations.custom.hospital_nps_gauge.nps_ring_gauge.targetField = <string>
+display.visualizations.custom.hospital_nps_gauge.nps_ring_gauge.maxValue = <string>
+display.visualizations.custom.hospital_nps_gauge.nps_ring_gauge.showTarget = <boolean>
+display.visualizations.custom.hospital_nps_gauge.nps_ring_gauge.accentColor = <string>
+display.visualizations.custom.hospital_nps_gauge.nps_ring_gauge.themeMode = <string>
+display.visualizations.custom.hospital_nps_gauge.nps_ring_gauge.accentIntensity = <string>
+display.visualizations.custom.hospital_nps_gauge.nps_ring_gauge.showAnimation = <boolean>

@@ -1,0 +1,294 @@
+<dashboard version="2" theme="dark">
+  <label>Porsche Taycan Telemetry</label>
+  <description>Electric Vehicle telemetry dashboard — battery, range, charging, thermal, energy</description>
+  <definition><![CDATA[
+{
+    "dataSources": {
+        "ds_battery": {
+            "type": "ds.search",
+            "name": "Battery Status",
+            "options": {
+                "query": "| inputlookup porsche_taycan_battery.csv | sort - _time | head 1 | eval value=battery_level, trend=range_delta | table value trend"
+            }
+        },
+        "ds_range": {
+            "type": "ds.search",
+            "name": "Range KPI",
+            "options": {
+                "query": "| inputlookup porsche_taycan_battery.csv | sort _time | rename range_km as value, range_delta as trend | table value trend"
+            }
+        },
+        "ds_charge": {
+            "type": "ds.search",
+            "name": "Charging Power",
+            "options": {
+                "query": "| inputlookup porsche_taycan_battery.csv | sort - _time | head 1 | rename charge_rate_kw as value | table value"
+            }
+        },
+        "ds_thermal": {
+            "type": "ds.search",
+            "name": "Thermal Sensors",
+            "options": {
+                "query": "| inputlookup porsche_taycan_thermal.csv | table sensor temp maxTemp status"
+            }
+        },
+        "ds_energy": {
+            "type": "ds.search",
+            "name": "Energy Over Time",
+            "options": {
+                "query": "| inputlookup porsche_taycan_energy.csv | table _time consumption regeneration"
+            }
+        },
+        "ds_regen": {
+            "type": "ds.search",
+            "name": "Regen Split",
+            "options": {
+                "query": "| inputlookup porsche_taycan_regen.csv | table label value"
+            }
+        }
+    },
+    "inputs": {},
+    "layout": {
+        "type": "absolute",
+        "options": {
+            "width": 1440,
+            "height": 960,
+            "backgroundColor": "#080B11",
+            "display": "auto-scale"
+        },
+        "structure": [
+            {
+                "item": "viz_hero_image",
+                "type": "block",
+                "position": { "x": 0, "y": 0, "w": 1440, "h": 560 }
+            },
+            {
+                "item": "viz_hero_overlay",
+                "type": "block",
+                "position": { "x": 0, "y": 0, "w": 1440, "h": 560 }
+            },
+            {
+                "item": "viz_hero_vignette",
+                "type": "block",
+                "position": { "x": 0, "y": 440, "w": 1440, "h": 120 }
+            },
+            {
+                "item": "viz_title",
+                "type": "block",
+                "position": { "x": 40, "y": 24, "w": 400, "h": 32 }
+            },
+            {
+                "item": "viz_battery_panel",
+                "type": "block",
+                "position": { "x": 40, "y": 72, "w": 880, "h": 440 }
+            },
+            {
+                "item": "viz_battery",
+                "type": "block",
+                "position": { "x": 56, "y": 88, "w": 848, "h": 408 }
+            },
+            {
+                "item": "viz_right_panel",
+                "type": "block",
+                "position": { "x": 940, "y": 72, "w": 460, "h": 440 }
+            },
+            {
+                "item": "viz_range",
+                "type": "block",
+                "position": { "x": 956, "y": 88, "w": 428, "h": 128 }
+            },
+            {
+                "item": "viz_charge",
+                "type": "block",
+                "position": { "x": 956, "y": 228, "w": 428, "h": 128 }
+            },
+            {
+                "item": "viz_regen",
+                "type": "block",
+                "position": { "x": 956, "y": 368, "w": 428, "h": 136 }
+            },
+            {
+                "item": "viz_section_data",
+                "type": "block",
+                "position": { "x": 40, "y": 530, "w": 200, "h": 20 }
+            },
+            {
+                "item": "viz_energy_panel",
+                "type": "block",
+                "position": { "x": 40, "y": 560, "w": 920, "h": 374 }
+            },
+            {
+                "item": "viz_energy",
+                "type": "block",
+                "position": { "x": 56, "y": 576, "w": 888, "h": 342 }
+            },
+            {
+                "item": "viz_thermal_panel",
+                "type": "block",
+                "position": { "x": 980, "y": 560, "w": 420, "h": 374 }
+            },
+            {
+                "item": "viz_thermal",
+                "type": "block",
+                "position": { "x": 996, "y": 576, "w": 388, "h": 342 }
+            }
+        ]
+    },
+    "visualizations": {
+        "viz_hero_image": {
+            "type": "splunk.image",
+            "options": {
+                "src": "/static/app/porsche_taycan_viz/images/hero.jpg",
+                "preserveAspectRatio": false
+            }
+        },
+        "viz_hero_overlay": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "rgba(8, 11, 17, 0.35)"
+            }
+        },
+        "viz_hero_vignette": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#080B11",
+                "fillOpacity": 0.9
+            }
+        },
+        "viz_title": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "### PORSCHE TAYCAN",
+                "fontColor": "rgba(228, 232, 237, 0.30)",
+                "fontSize": "extraSmall",
+                "backgroundColor": "transparent"
+            }
+        },
+        "viz_battery_panel": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "rgba(14, 18, 26, 0.85)",
+                "strokeColor": "rgba(255, 255, 255, 0.06)",
+                "strokeWidth": 1,
+                "rx": 3
+            }
+        },
+        "viz_battery": {
+            "type": "porsche_taycan_viz.battery_gauge",
+            "dataSources": { "primary": "ds_battery" },
+            "options": {
+                "backgroundColor": "transparent",
+                "porsche_taycan_viz.battery_gauge.valueField": "value",
+                "porsche_taycan_viz.battery_gauge.accentIntensity": "50",
+                "porsche_taycan_viz.battery_gauge.theme": "dark",
+                "porsche_taycan_viz.battery_gauge.glowEnabled": "true"
+            }
+        },
+        "viz_right_panel": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "rgba(14, 18, 26, 0.85)",
+                "strokeColor": "rgba(255, 255, 255, 0.06)",
+                "strokeWidth": 1,
+                "rx": 3
+            }
+        },
+        "viz_range": {
+            "type": "porsche_taycan_viz.range_kpi",
+            "dataSources": { "primary": "ds_range" },
+            "options": {
+                "backgroundColor": "transparent",
+                "porsche_taycan_viz.range_kpi.valueField": "value",
+                "porsche_taycan_viz.range_kpi.trendField": "trend",
+                "porsche_taycan_viz.range_kpi.unit": "km",
+                "porsche_taycan_viz.range_kpi.theme": "dark",
+                "porsche_taycan_viz.range_kpi.showSparkline": "true"
+            }
+        },
+        "viz_charge": {
+            "type": "porsche_taycan_viz.charge_gauge",
+            "dataSources": { "primary": "ds_charge" },
+            "options": {
+                "backgroundColor": "transparent",
+                "porsche_taycan_viz.charge_gauge.valueField": "value",
+                "porsche_taycan_viz.charge_gauge.theme": "dark",
+                "porsche_taycan_viz.charge_gauge.accentColor": "#3B82F6"
+            }
+        },
+        "viz_regen": {
+            "type": "porsche_taycan_viz.regen_donut",
+            "dataSources": { "primary": "ds_regen" },
+            "options": {
+                "backgroundColor": "transparent",
+                "porsche_taycan_viz.regen_donut.labelField": "label",
+                "porsche_taycan_viz.regen_donut.valueField": "value",
+                "porsche_taycan_viz.regen_donut.theme": "dark"
+            }
+        },
+        "viz_section_data": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "DATA",
+                "fontColor": "rgba(228, 232, 237, 0.25)",
+                "fontSize": "extraSmall",
+                "backgroundColor": "transparent"
+            }
+        },
+        "viz_energy_panel": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "rgba(14, 18, 26, 0.88)",
+                "strokeColor": "rgba(255, 255, 255, 0.06)",
+                "strokeWidth": 1,
+                "rx": 3
+            }
+        },
+        "viz_energy": {
+            "type": "porsche_taycan_viz.energy_area",
+            "dataSources": { "primary": "ds_energy" },
+            "options": {
+                "backgroundColor": "transparent",
+                "porsche_taycan_viz.energy_area.timeField": "_time",
+                "porsche_taycan_viz.energy_area.consumptionField": "consumption",
+                "porsche_taycan_viz.energy_area.regenField": "regeneration",
+                "porsche_taycan_viz.energy_area.theme": "dark"
+            }
+        },
+        "viz_thermal_panel": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "rgba(14, 18, 26, 0.88)",
+                "strokeColor": "rgba(255, 255, 255, 0.06)",
+                "strokeWidth": 1,
+                "rx": 3
+            }
+        },
+        "viz_thermal": {
+            "type": "porsche_taycan_viz.thermal_table",
+            "dataSources": { "primary": "ds_thermal" },
+            "options": {
+                "backgroundColor": "transparent",
+                "porsche_taycan_viz.thermal_table.sensorField": "sensor",
+                "porsche_taycan_viz.thermal_table.tempField": "temp",
+                "porsche_taycan_viz.thermal_table.maxTempField": "maxTemp",
+                "porsche_taycan_viz.thermal_table.statusField": "status",
+                "porsche_taycan_viz.thermal_table.theme": "dark"
+            },
+            "eventHandlers": [
+                {
+                    "type": "drilldown.setToken",
+                    "options": {
+                        "tokens": [
+                            {
+                                "token": "selected_sensor",
+                                "value": "$row.sensor.value$"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+}
+  ]]></definition>
+</dashboard>

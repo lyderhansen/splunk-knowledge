@@ -1,0 +1,27 @@
+[]
+access = read : [ * ], write : [ admin, sc_admin ]
+export = system
+
+[visualizations/hero_kpi]
+export = system
+
+[visualizations/engagement_gauge]
+export = system
+
+[visualizations/content_table]
+export = system
+
+[visualizations/trend_area]
+export = system
+
+[visualizations/genre_bars]
+export = system
+
+[visualizations/region_board]
+export = system
+
+[visualizations/stat_strip]
+export = system
+
+[lookups]
+export = system

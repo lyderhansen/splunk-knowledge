@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+</head>
+<body>
+<form class="splunk-formatter">
+
+  <div class="section-label">Data configurations</div>
+
+  <div class="control-group"
+       help="Name of the field containing the segment label (e.g. Regeneration, Consumption).">
+    <label>Label field</label>
+    <splunk-text-input
+      name="{{VIZ_NAMESPACE}}.labelField"
+      default="label">
+    </splunk-text-input>
+  </div>
+
+  <div class="control-group"
+       help="Name of the field containing the segment value in energy units (kWh).">
+    <label>Value field</label>
+    <splunk-text-input
+      name="{{VIZ_NAMESPACE}}.valueField"
+      default="value">
+    </splunk-text-input>
+  </div>
+
+  <div class="section-label">Data display</div>
+
+  <div class="control-group"
+       help="Number of decimal places shown in the tooltip value.">
+    <label>Decimal places</label>
+    <splunk-text-input
+      name="{{VIZ_NAMESPACE}}.decimals"
+      default="1">
+    </splunk-text-input>
+  </div>
+
+  <div class="control-group"
+       help="Unit label appended to numeric values in the tooltip (e.g. kWh, MWh).">
+    <label>Unit</label>
+    <splunk-text-input
+      name="{{VIZ_NAMESPACE}}.unit"
+      default="kWh">
+    </splunk-text-input>
+  </div>
+
+  <div class="control-group"
+       help="Show the efficiency percentage and label in the center of the donut ring.">
+    <label>Show center</label>
+    <splunk-radio-input
+      name="{{VIZ_NAMESPACE}}.showCenter"
+      default="true">
+      <option value="true">Yes</option>
+      <option value="false">No</option>
+    </splunk-radio-input>
+  </div>
+
+  <div class="control-group"
+       help="Text label displayed below the efficiency percentage in the center of the ring.">
+    <label>Center label</label>
+    <splunk-text-input
+      name="{{VIZ_NAMESPACE}}.centerLabel"
+      default="EFFICIENCY">
+    </splunk-text-input>
+  </div>
+
+  <div class="control-group"
+       help="Stroke width of the donut ring in pixels. Increase for a bolder ring.">
+    <label>Ring width</label>
+    <splunk-text-input
+      name="{{VIZ_NAMESPACE}}.ringWidth"
+      default="24">
+    </splunk-text-input>
+  </div>
+
+  <div class="section-label">Color and style</div>
+
+  <div class="control-group"
+       help="Color used for the first segment (regeneration arc).">
+    <label>Regeneration color</label>
+    <splunk-color-picker
+      name="{{VIZ_NAMESPACE}}.regenColor"
+      default="#00C9A7">
+    </splunk-color-picker>
+  </div>
+
+  <div class="control-group"
+       help="Color used for the second segment (consumption arc).">
+    <label>Consumption color</label>
+    <splunk-color-picker
+      name="{{VIZ_NAMESPACE}}.consumptionColor"
+      default="#3B82F6">
+    </splunk-color-picker>
+  </div>
+
+  <div class="control-group"
+       help="Intensity of glow and ambient effects on hover (0–100). Higher values increase shadow blur.">
+    <label>Accent intensity</label>
+    <splunk-text-input
+      name="{{VIZ_NAMESPACE}}.accentIntensity"
+      default="50">
+    </splunk-text-input>
+  </div>
+
+  <div class="control-group"
+       help="Color theme for the panel background and text. Use dark for EV dashboards.">
+    <label>Theme</label>
+    <splunk-radio-input
+      name="{{VIZ_NAMESPACE}}.theme"
+      default="dark">
+      <option value="dark">Dark</option>
+      <option value="light">Light</option>
+    </splunk-radio-input>
+  </div>
+
+</form>
+</body>
+</html>

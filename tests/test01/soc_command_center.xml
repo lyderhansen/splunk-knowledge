@@ -1,0 +1,369 @@
+<dashboard version="2" theme="dark">
+  <label>SOC Command Center</label>
+  <description>Live cyber threat monitoring dashboard for big-screen SOC display. Uses makeresults dummy data -- no index required.</description>
+  <definition><![CDATA[
+{
+  "title": "SOC COMMAND CENTER",
+  "description": "Live cyber threat monitoring",
+  "dataSources": {
+    "ds_active_threats": {
+      "type": "ds.search",
+      "name": "Active Threats (timeseries)",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as i | eval _time=now() - (24-i)*900 | eval count=round(28 + 12*sin(i/2.5) + (i%5)*2) | table _time count",
+        "refresh": "30s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_blocked": {
+      "type": "ds.search",
+      "name": "Blocked Attacks (timeseries)",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as i | eval _time=now() - (24-i)*900 | eval count=round(1400 + 350*sin(i/3) + (i%7)*40) | table _time count",
+        "refresh": "30s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_systems": {
+      "type": "ds.search",
+      "name": "Systems Online (timeseries)",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as i | eval _time=now() - (24-i)*900 | eval count=2847 - (i%4) | table _time count",
+        "refresh": "30s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_mttr": {
+      "type": "ds.search",
+      "name": "Mean Time To Respond (minutes)",
+      "options": {
+        "query": "| makeresults count=24 | streamstats count as i | eval _time=now() - (24-i)*900 | eval count=round(3.8 + 0.6*sin(i/2) + (i%4)*0.1, 1) | table _time count",
+        "refresh": "30s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_geo": {
+      "type": "ds.search",
+      "name": "Global Attack Origins",
+      "options": {
+        "query": "| makeresults count=12 | streamstats count as i | eval src_country=case(i=1,\"Russia\", i=2,\"China\", i=3,\"North Korea\", i=4,\"Iran\", i=5,\"Brazil\", i=6,\"USA\", i=7,\"Germany\", i=8,\"Ukraine\", i=9,\"Vietnam\", i=10,\"India\", i=11,\"Turkey\", i=12,\"Nigeria\") | eval lat=case(i=1,55.75, i=2,39.90, i=3,39.03, i=4,35.68, i=5,-23.55, i=6,40.71, i=7,52.52, i=8,50.45, i=9,21.02, i=10,28.61, i=11,41.01, i=12,9.06) | eval lon=case(i=1,37.62, i=2,116.40, i=3,125.75, i=4,51.38, i=5,-46.63, i=6,-74.00, i=7,13.40, i=8,30.52, i=9,105.85, i=10,77.20, i=11,28.98, i=12,7.49) | eval src_ip=case(i=1,\"185.220.101.32\", i=2,\"124.225.100.57\", i=3,\"175.45.176.12\", i=4,\"31.184.236.47\", i=5,\"177.43.77.9\", i=6,\"64.227.111.4\", i=7,\"195.144.21.56\", i=8,\"91.219.236.112\", i=9,\"103.28.38.17\", i=10,\"49.36.218.5\", i=11,\"212.58.12.9\", i=12,\"41.203.72.21\") | eval count=case(i=1,4520, i=2,3870, i=3,2100, i=4,1980, i=5,1450, i=6,1200, i=7,890, i=8,750, i=9,620, i=10,480, i=11,320, i=12,180) | table lat lon src_ip src_country count",
+        "refresh": "60s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_threat_level": {
+      "type": "ds.search",
+      "name": "Current Threat Level (0-100)",
+      "options": {
+        "query": "| makeresults | eval threat_level=73 | table threat_level",
+        "refresh": "60s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_categories": {
+      "type": "ds.search",
+      "name": "Attack Categories (24h)",
+      "options": {
+        "query": "| makeresults count=7 | streamstats count as i | eval category=case(i=1,\"Phishing\", i=2,\"Malware\", i=3,\"Brute Force\", i=4,\"DDoS\", i=5,\"SQL Injection\", i=6,\"XSS\", i=7,\"Insider Threat\") | eval count=case(i=1,342, i=2,287, i=3,198, i=4,145, i=5,89, i=6,67, i=7,42) | table category count",
+        "refresh": "60s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_timeline": {
+      "type": "ds.search",
+      "name": "Attack Severity Timeline",
+      "options": {
+        "query": "| makeresults count=48 | streamstats count as i | eval _time=now() - (48-i)*300 | eval critical=round(3 + 2*sin(i/4) + (i%5)), high=round(12 + 6*sin(i/3) + (i%7)*2), medium=round(30 + 15*sin(i/5) + (i%11)*3), low=round(50 + 25*sin(i/6) + (i%13)*4) | table _time critical high medium low",
+        "refresh": "30s",
+        "refreshType": "delay"
+      }
+    },
+    "ds_alerts": {
+      "type": "ds.search",
+      "name": "Recent Critical Alerts",
+      "options": {
+        "query": "| makeresults count=10 | streamstats count as i | eval _time=now() - i*180 | eval severity=case(i=1,\"critical\", i=2,\"high\", i=3,\"critical\", i=4,\"medium\", i=5,\"high\", i=6,\"critical\", i=7,\"medium\", i=8,\"high\", i=9,\"low\", i=10,\"medium\") | eval _color_rank=case(severity==\"critical\",1, severity==\"high\",2, severity==\"medium\",3, 1=1,4) | eval host=case(i=1,\"web-prod-07\", i=2,\"db-prod-02\", i=3,\"auth-gw-01\", i=4,\"api-prod-04\", i=5,\"file-srv-11\", i=6,\"dns-prod-01\", i=7,\"mail-edge-03\", i=8,\"admin-jump-01\", i=9,\"dev-srv-15\", i=10,\"lb-prod-02\") | eval alert=case(i=1,\"Data exfiltration detected\", i=2,\"SQL injection blocked\", i=3,\"Multiple failed admin logins\", i=4,\"Anomalous API call volume\", i=5,\"Unauthorized file access\", i=6,\"DNS tunneling suspected\", i=7,\"Malware signature match\", i=8,\"Privilege escalation attempt\", i=9,\"Port scan detected\", i=10,\"SSL certificate expired\") | table _time severity host alert _color_rank",
+        "refresh": "30s",
+        "refreshType": "delay"
+      }
+    }
+  },
+  "visualizations": {
+    "viz_bg_header": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#0F1430",
+        "fillOpacity": 1,
+        "strokeColor": "#00E5FF",
+        "strokeWidth": 0,
+        "strokeOpacity": 0
+      }
+    },
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# 🛡  SOC COMMAND CENTER\n##### Live cyber threat operations -- auto refresh 30s",
+        "fontColor": "#00E5FF",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_live_indicator": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "### 🔴 LIVE\n#### TIER-1 WATCH",
+        "fontColor": "#FF3B5C",
+        "backgroundColor": "transparent"
+      }
+    },
+    "viz_sv_threats": {
+      "type": "splunk.singlevalue",
+      "title": "ACTIVE THREATS",
+      "dataSources": {"primary": "ds_active_threats"},
+      "options": {
+        "majorValue": "> primary | seriesByName('count') | lastPoint()",
+        "trendValue": "> primary | seriesByName('count') | delta(-6)",
+        "sparklineValues": "> primary | seriesByName('count')",
+        "sparklineDisplay": "below",
+        "sparklineStrokeColor": "#FF3B5C",
+        "showSparklineAreaGraph": true,
+        "trendDisplay": "absolute",
+        "unit": "live",
+        "unitPosition": "after",
+        "majorColor": "#FF3B5C",
+        "trendColor": "> trendValue | rangeValue(trendColorConfig)",
+        "backgroundColor": "#151B3A"
+      },
+      "context": {
+        "trendColorConfig": [
+          {"value": "#00FFA3", "to": 0},
+          {"value": "#FF3B5C", "from": 0}
+        ]
+      }
+    },
+    "viz_sv_blocked": {
+      "type": "splunk.singlevalue",
+      "title": "BLOCKED ATTACKS",
+      "dataSources": {"primary": "ds_blocked"},
+      "options": {
+        "majorValue": "> primary | seriesByName('count') | lastPoint()",
+        "trendValue": "> primary | seriesByName('count') | delta(-6)",
+        "sparklineValues": "> primary | seriesByName('count')",
+        "sparklineDisplay": "below",
+        "sparklineStrokeColor": "#FF8C38",
+        "showSparklineAreaGraph": true,
+        "trendDisplay": "absolute",
+        "unit": "last 15m",
+        "unitPosition": "after",
+        "majorColor": "#FF8C38",
+        "trendColor": "#C3CBD4",
+        "backgroundColor": "#151B3A"
+      }
+    },
+    "viz_sv_systems": {
+      "type": "splunk.singlevalue",
+      "title": "SYSTEMS ONLINE",
+      "dataSources": {"primary": "ds_systems"},
+      "options": {
+        "majorValue": "> primary | seriesByName('count') | lastPoint()",
+        "sparklineValues": "> primary | seriesByName('count')",
+        "sparklineDisplay": "below",
+        "sparklineStrokeColor": "#00FFA3",
+        "showSparklineAreaGraph": true,
+        "unit": "of 2850",
+        "unitPosition": "after",
+        "majorColor": "#00FFA3",
+        "backgroundColor": "#151B3A"
+      }
+    },
+    "viz_sv_mttr": {
+      "type": "splunk.singlevalue",
+      "title": "MEAN TIME TO RESPOND",
+      "dataSources": {"primary": "ds_mttr"},
+      "options": {
+        "majorValue": "> primary | seriesByName('count') | lastPoint()",
+        "trendValue": "> primary | seriesByName('count') | delta(-6)",
+        "sparklineValues": "> primary | seriesByName('count')",
+        "sparklineDisplay": "below",
+        "sparklineStrokeColor": "#00E5FF",
+        "showSparklineAreaGraph": true,
+        "trendDisplay": "absolute",
+        "unit": "min",
+        "unitPosition": "after",
+        "majorColor": "#00E5FF",
+        "trendColor": "> trendValue | rangeValue(trendColorConfig)",
+        "backgroundColor": "#151B3A"
+      },
+      "context": {
+        "trendColorConfig": [
+          {"value": "#00FFA3", "to": 0},
+          {"value": "#FF3B5C", "from": 0}
+        ]
+      }
+    },
+    "viz_map": {
+      "type": "splunk.map",
+      "title": "GLOBAL ATTACK ORIGINS -- last 24h",
+      "dataSources": {"primary": "ds_geo"},
+      "options": {
+        "center": [25, 10],
+        "zoom": 1.5,
+        "scaleUnit": "km",
+        "layers": [
+          {
+            "type": "marker",
+            "latitude": "> primary | seriesByName(\"lat\")",
+            "longitude": "> primary | seriesByName(\"lon\")",
+            "description": "> primary | seriesByName(\"src_country\")",
+            "dataColors": "> primary | seriesByName(\"count\") | rangeValue(markerColors)"
+          }
+        ],
+        "backgroundColor": "#151B3A"
+      },
+      "context": {
+        "markerColors": [
+          {"value": "#F8BE34", "to": 500},
+          {"value": "#FF8C38", "from": 500, "to": 2000},
+          {"value": "#FF3B5C", "from": 2000}
+        ]
+      }
+    },
+    "viz_gauge": {
+      "type": "splunk.markergauge",
+      "title": "OVERALL THREAT LEVEL",
+      "dataSources": {"primary": "ds_threat_level"},
+      "options": {
+        "majorValue": "> primary | seriesByName('threat_level') | lastPoint()",
+        "gaugeRanges": [
+          {"from": 0, "to": 30, "value": "#00FFA3"},
+          {"from": 30, "to": 60, "value": "#F8BE34"},
+          {"from": 60, "to": 85, "value": "#FF8C38"},
+          {"from": 85, "to": 100, "value": "#FF3B5C"}
+        ],
+        "orientation": "horizontal",
+        "valueDisplay": "auto",
+        "labelDisplay": "auto",
+        "backgroundColor": "#151B3A"
+      }
+    },
+    "viz_pie": {
+      "type": "splunk.pie",
+      "title": "ATTACK CATEGORIES",
+      "dataSources": {"primary": "ds_categories"},
+      "options": {
+        "labelDisplay": "valuesAndPercentage",
+        "showDonutHole": true,
+        "seriesColors": ["#FF3B5C", "#FF8C38", "#F8BE34", "#B66DFF", "#00E5FF", "#7B56DB", "#00FFA3"],
+        "legendDisplay": "right",
+        "backgroundColor": "#151B3A"
+      }
+    },
+    "viz_timeline": {
+      "type": "splunk.area",
+      "title": "INCIDENTS BY SEVERITY -- rolling 4h",
+      "dataSources": {"primary": "ds_timeline"},
+      "options": {
+        "stackMode": "stacked",
+        "seriesColorsByField": {
+          "critical": "#FF3B5C",
+          "high": "#FF8C38",
+          "medium": "#F8BE34",
+          "low": "#00FFA3"
+        },
+        "areaOpacity": 0.85,
+        "showLines": true,
+        "lineWidth": 2,
+        "legendDisplay": "bottom",
+        "nullValueDisplay": "connect",
+        "xAxisTitleText": "",
+        "yAxisTitleText": "events",
+        "yAxisAbbreviation": "auto",
+        "backgroundColor": "#151B3A"
+      }
+    },
+    "viz_alerts": {
+      "type": "splunk.table",
+      "title": "RECENT ALERTS",
+      "dataSources": {"primary": "ds_alerts"},
+      "options": {
+        "count": 10,
+        "showRowNumbers": false,
+        "showInternalFields": false,
+        "rowHeight": 34,
+        "headerVisibility": "fixed",
+        "backgroundColor": "#151B3A",
+        "tableFormat": {
+          "rowBackgroundColors": "> table | seriesByName(\"_color_rank\") | rangeValue(severityRowColors)"
+        }
+      },
+      "context": {
+        "severityRowColors": [
+          {"from": 0, "to": 1.5, "value": "#4a1722"},
+          {"from": 1.5, "to": 2.5, "value": "#4a2d17"},
+          {"from": 2.5, "to": 3.5, "value": "#45391a"},
+          {"from": 3.5, "to": 5, "value": "#173d2b"}
+        ]
+      }
+    }
+  },
+  "inputs": {
+    "input_global_trp": {
+      "type": "input.timerange",
+      "title": "Time Range",
+      "options": {
+        "token": "global_time",
+        "defaultValue": "-24h@h,now"
+      }
+    }
+  },
+  "defaults": {
+    "dataSources": {
+      "ds.search": {
+        "options": {
+          "queryParameters": {
+            "earliest": "$global_time.earliest$",
+            "latest": "$global_time.latest$"
+          }
+        }
+      }
+    }
+  },
+  "layout": {
+    "globalInputs": ["input_global_trp"],
+    "layoutDefinitions": {
+      "layout_main": {
+        "type": "absolute",
+        "options": {
+          "width": 1920,
+          "height": 1080,
+          "display": "auto-scale",
+          "backgroundColor": "#0A0E27"
+        },
+        "structure": [
+          {"item": "viz_bg_header", "type": "block", "position": {"x": 0, "y": 0, "w": 1920, "h": 85}},
+          {"item": "viz_title", "type": "block", "position": {"x": 24, "y": 10, "w": 900, "h": 75}},
+          {"item": "viz_live_indicator", "type": "block", "position": {"x": 1650, "y": 14, "w": 260, "h": 70}},
+
+          {"item": "viz_sv_threats",  "type": "block", "position": {"x": 20,   "y": 100, "w": 455, "h": 180}},
+          {"item": "viz_sv_blocked",  "type": "block", "position": {"x": 495,  "y": 100, "w": 455, "h": 180}},
+          {"item": "viz_sv_systems",  "type": "block", "position": {"x": 970,  "y": 100, "w": 455, "h": 180}},
+          {"item": "viz_sv_mttr",     "type": "block", "position": {"x": 1445, "y": 100, "w": 455, "h": 180}},
+
+          {"item": "viz_map",     "type": "block", "position": {"x": 20,   "y": 300, "w": 1200, "h": 380}},
+          {"item": "viz_gauge",   "type": "block", "position": {"x": 1240, "y": 300, "w": 660,  "h": 180}},
+          {"item": "viz_pie",     "type": "block", "position": {"x": 1240, "y": 500, "w": 660,  "h": 180}},
+
+          {"item": "viz_timeline", "type": "block", "position": {"x": 20,   "y": 700, "w": 1200, "h": 360}},
+          {"item": "viz_alerts",   "type": "block", "position": {"x": 1240, "y": 700, "w": 660,  "h": 360}}
+        ]
+      }
+    },
+    "options": {},
+    "tabs": {
+      "items": [
+        {"label": "Live Ops", "layoutId": "layout_main"}
+      ]
+    }
+  }
+}
+  ]]></definition>
+</dashboard>

@@ -1,0 +1,56 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+
+    <splunk-control-group label="Day field" help="SPL field containing the day name (Monday, Tuesday, etc.)">
+        <splunk-text-input name="spotify_viz_pack.listening_heatmap.dayField" default="day">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Hour field" help="SPL field containing the hour of day (0-23)">
+        <splunk-text-input name="spotify_viz_pack.listening_heatmap.hourField" default="hour">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Value field" help="SPL field containing the listener count per cell">
+        <splunk-text-input name="spotify_viz_pack.listening_heatmap.valueField" default="listeners">
+        </splunk-text-input>
+    </splunk-control-group>
+
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+
+    <splunk-control-group label="High color" help="Color used for cells with the highest listener count">
+        <splunk-color-picker name="spotify_viz_pack.listening_heatmap.highColor" default="#1DB954">
+            <splunk-color value="#1DB954" label="Spotify Green"></splunk-color>
+            <splunk-color value="#1ED760" label="Bright Green"></splunk-color>
+            <splunk-color value="#8B5CF6" label="Purple"></splunk-color>
+            <splunk-color value="#E91E8A" label="Pink"></splunk-color>
+            <splunk-color value="#3B82F6" label="Blue"></splunk-color>
+            <splunk-color value="#F59E0B" label="Amber"></splunk-color>
+            <splunk-color value="#14B8A6" label="Teal"></splunk-color>
+            <splunk-color value="#F97066" label="Coral"></splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+
+    <splunk-control-group label="Accent intensity" help="Controls glow and color saturation strength (0 = subtle, 100 = full)">
+        <splunk-text-input name="spotify_viz_pack.listening_heatmap.accentIntensity" default="50">
+        </splunk-text-input>
+    </splunk-control-group>
+
+    <splunk-control-group label="Cell corner radius" help="Rounded corner radius for each heatmap cell, in pixels (0-8)">
+        <splunk-text-input name="spotify_viz_pack.listening_heatmap.cellRadius" default="4">
+        </splunk-text-input>
+    </splunk-control-group>
+
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+
+    <splunk-control-group label="Show labels" help="Toggle day abbreviations and hour labels around the grid">
+        <splunk-radio-input name="spotify_viz_pack.listening_heatmap.showLabels" default="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+
+</form>

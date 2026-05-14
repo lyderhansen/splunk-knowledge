@@ -1,0 +1,67 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+    <splunk-control-group label="Value field" help="SPL field for the primary value">
+        <splunk-text-input name="netflix_viz_pack.hero_kpi.field" value="value">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Delta field" help="SPL field for trend delta percentage">
+        <splunk-text-input name="netflix_viz_pack.hero_kpi.deltaField" value="delta">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+    <splunk-control-group label="Label" help="Text shown above the value">
+        <splunk-text-input name="netflix_viz_pack.hero_kpi.label" value="">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Unit" help="Unit suffix or prefix (%, ms, $)">
+        <splunk-text-input name="netflix_viz_pack.hero_kpi.unit" value="">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Unit position" help="Show unit before or after the value">
+        <splunk-radio-input name="netflix_viz_pack.hero_kpi.unitPosition" value="after">
+            <option value="before">Before</option>
+            <option value="after">After</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Decimals" help="Fixed decimal places (-1 for auto)">
+        <splunk-text-input name="netflix_viz_pack.hero_kpi.decimals" value="-1">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show delta" help="Show trend arrow and percentage">
+        <splunk-radio-input name="netflix_viz_pack.hero_kpi.showDelta" value="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Alignment" help="Horizontal text alignment">
+        <splunk-radio-input name="netflix_viz_pack.hero_kpi.alignment" value="center">
+            <option value="left">Left</option>
+            <option value="center">Center</option>
+            <option value="right">Right</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+    <splunk-control-group label="Theme" help="Color scheme for the visualization">
+        <splunk-radio-input name="netflix_viz_pack.hero_kpi.theme" value="dark" default="">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Accent color" help="Primary highlight color">
+        <splunk-color-picker name="netflix_viz_pack.hero_kpi.accentColor"
+            type="custom" value="#E50914">
+            <splunk-color>#E50914</splunk-color>
+            <splunk-color>#B20710</splunk-color>
+            <splunk-color>#46D369</splunk-color>
+            <splunk-color>#F0B429</splunk-color>
+            <splunk-color>#F5F5F1</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Accent intensity" help="Glow and accent effect strength (0-100)">
+        <splunk-text-input name="netflix_viz_pack.hero_kpi.accentIntensity" value="50">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>

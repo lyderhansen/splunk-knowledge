@@ -1,0 +1,183 @@
+<dashboard version="2" theme="light">
+    <label>Stripe Payment Operations</label>
+    <description>Real-time payment health monitoring — volume, failures, disputes, and transaction detail</description>
+    <definition><![CDATA[
+{
+    "dataSources": {
+        "ds_kpi_volume": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup stripe_payment_ops_viz_demo_kpis.csv | where label=\"Total Volume\"",
+                "queryParameters": {
+                    "earliest": "-24h@h",
+                    "latest": "now"
+                }
+            },
+            "name": "KPI Volume"
+        },
+        "ds_kpi_success": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup stripe_payment_ops_viz_demo_kpis.csv | where label=\"Success Rate\"",
+                "queryParameters": {
+                    "earliest": "-24h@h",
+                    "latest": "now"
+                }
+            },
+            "name": "KPI Success Rate"
+        },
+        "ds_kpi_settlement": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup stripe_payment_ops_viz_demo_kpis.csv | where label=\"Avg Settlement\"",
+                "queryParameters": {
+                    "earliest": "-24h@h",
+                    "latest": "now"
+                }
+            },
+            "name": "KPI Settlement"
+        },
+        "ds_kpi_disputes": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup stripe_payment_ops_viz_demo_kpis.csv | where label=\"Active Disputes\"",
+                "queryParameters": {
+                    "earliest": "-24h@h",
+                    "latest": "now"
+                }
+            },
+            "name": "KPI Disputes"
+        },
+        "ds_transactions": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup stripe_payment_ops_viz_demo_transactions.csv | sort - _time",
+                "queryParameters": {
+                    "earliest": "-24h@h",
+                    "latest": "now"
+                }
+            },
+            "name": "Transactions"
+        },
+        "ds_trend": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup stripe_payment_ops_viz_demo_trend.csv | sort _time",
+                "queryParameters": {
+                    "earliest": "-24h@h",
+                    "latest": "now"
+                }
+            },
+            "name": "Failure Trend"
+        },
+        "ds_gauge": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup stripe_payment_ops_viz_demo_gauge.csv",
+                "queryParameters": {
+                    "earliest": "-24h@h",
+                    "latest": "now"
+                }
+            },
+            "name": "Dispute Gauge"
+        }
+    },
+    "visualizations": {
+        "viz_kpi_volume": {
+            "type": "stripe_payment_ops_viz.stripe_kpi",
+            "dataSources": { "primary": "ds_kpi_volume" },
+            "options": {}
+        },
+        "viz_kpi_success": {
+            "type": "stripe_payment_ops_viz.stripe_kpi",
+            "dataSources": { "primary": "ds_kpi_success" },
+            "options": {
+                "unitPosition": "suffix",
+                "decimals": "2",
+                "accentColor": "0x3ECF8E"
+            }
+        },
+        "viz_kpi_settlement": {
+            "type": "stripe_payment_ops_viz.stripe_kpi",
+            "dataSources": { "primary": "ds_kpi_settlement" },
+            "options": {
+                "unitPosition": "suffix",
+                "decimals": "1",
+                "accentColor": "0x0048E5"
+            }
+        },
+        "viz_kpi_disputes": {
+            "type": "stripe_payment_ops_viz.stripe_kpi",
+            "dataSources": { "primary": "ds_kpi_disputes" },
+            "options": {
+                "unitPosition": "suffix",
+                "decimals": "0",
+                "accentColor": "0xDF1B41"
+            }
+        },
+        "viz_transactions": {
+            "type": "stripe_payment_ops_viz.stripe_table",
+            "dataSources": { "primary": "ds_transactions" },
+            "options": {
+                "cw1": "_time:180",
+                "cw2": "transaction_id:160",
+                "cw3": "amount:100",
+                "cw4": "currency:80",
+                "cw5": "status:110",
+                "cw6": "merchant:160",
+                "cw7": "payment_method:140",
+                "cw8": "country:80"
+            }
+        },
+        "viz_trend": {
+            "type": "stripe_payment_ops_viz.stripe_trend",
+            "dataSources": { "primary": "ds_trend" },
+            "options": {}
+        },
+        "viz_gauge": {
+            "type": "stripe_payment_ops_viz.stripe_gauge",
+            "dataSources": { "primary": "ds_gauge" },
+            "options": {}
+        }
+    },
+    "layout": {
+        "type": "absolute",
+        "options": {
+            "width": 1920,
+            "height": 1200,
+            "display": "auto-scale"
+        },
+        "structure": [
+            {
+                "item": "viz_kpi_volume",
+                "position": { "x": 20, "y": 20, "w": 450, "h": 120 }
+            },
+            {
+                "item": "viz_kpi_success",
+                "position": { "x": 490, "y": 20, "w": 450, "h": 120 }
+            },
+            {
+                "item": "viz_kpi_settlement",
+                "position": { "x": 960, "y": 20, "w": 450, "h": 120 }
+            },
+            {
+                "item": "viz_kpi_disputes",
+                "position": { "x": 1430, "y": 20, "w": 470, "h": 120 }
+            },
+            {
+                "item": "viz_transactions",
+                "position": { "x": 20, "y": 160, "w": 1880, "h": 520 }
+            },
+            {
+                "item": "viz_trend",
+                "position": { "x": 20, "y": 700, "w": 1240, "h": 480 }
+            },
+            {
+                "item": "viz_gauge",
+                "position": { "x": 1280, "y": 700, "w": 620, "h": 480 }
+            }
+        ]
+    }
+}
+    ]]></definition>
+</dashboard>

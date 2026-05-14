@@ -1,0 +1,21 @@
+rank,route,trip_count,avg_fare,avg_duration,satisfaction
+1,Downtown - Airport,4821,39.80,27 min,98.2%
+2,Midtown - Financial,3954,16.50,14 min,97.8%
+3,Suburbs North - Downtown,3412,28.90,22 min,96.5%
+4,University - Tech Park,2987,13.20,11 min,98.9%
+5,Airport - Midtown,2843,36.40,30 min,95.1%
+6,Entertainment - Downtown,2654,21.70,18 min,97.3%
+7,Waterfront - Financial,2341,18.30,15 min,96.8%
+8,Tech Park - Airport,2198,34.60,25 min,94.7%
+9,Uptown - Midtown,1987,11.80,10 min,98.4%
+10,Downtown - University,1876,14.90,13 min,97.6%
+11,Financial - Airport,1743,32.10,24 min,95.9%
+12,Suburbs South - Midtown,1654,25.40,20 min,96.2%
+13,Industrial - Downtown,1523,19.60,17 min,95.4%
+14,Entertainment - Airport,1412,37.20,29 min,94.3%
+15,Midtown - Uptown,1298,9.40,8 min,98.7%
+16,Downtown - Waterfront,1187,15.70,12 min,97.1%
+17,Airport - Suburbs North,1076,33.50,26 min,95.6%
+18,University - Entertainment,987,17.80,16 min,97.9%
+19,Tech Park - Financial,876,12.60,11 min,98.1%
+20,Waterfront - Suburbs South,765,22.90,19 min,96.0%

@@ -1,0 +1,60 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+  <div class="control-group" label="Value Field" help="SPL field name containing the current charging power (kW)">
+    <splunk-text-input name="display.visualizations.custom.porsche_taycan_viz.charge_gauge.valueField"
+      default="value">
+    </splunk-text-input>
+  </div>
+  <div class="control-group" label="Max Value Field" help="Optional SPL field for dynamic maximum (falls back to Max Default)">
+    <splunk-text-input name="display.visualizations.custom.porsche_taycan_viz.charge_gauge.maxField"
+      default="maxValue">
+    </splunk-text-input>
+  </div>
+  <div class="control-group" label="Max Default" help="Static maximum charging power when no maxField is present (default 270)">
+    <splunk-text-input name="display.visualizations.custom.porsche_taycan_viz.charge_gauge.maxDefault"
+      default="270">
+    </splunk-text-input>
+  </div>
+</form>
+<form class="splunk-formatter-section" section-label="Data display">
+  <div class="control-group" label="Unit Label" help="Unit string shown after the max value (e.g. kW)">
+    <splunk-text-input name="display.visualizations.custom.porsche_taycan_viz.charge_gauge.unit"
+      default="kW">
+    </splunk-text-input>
+  </div>
+  <div class="control-group" label="Decimal Places" help="Number of decimal places for the displayed value">
+    <splunk-text-input name="display.visualizations.custom.porsche_taycan_viz.charge_gauge.decimals"
+      default="1">
+    </splunk-text-input>
+  </div>
+  <div class="control-group" label="Segment Count" help="Number of horizontal bar segments (default 20)">
+    <splunk-text-input name="display.visualizations.custom.porsche_taycan_viz.charge_gauge.segmentCount"
+      default="20">
+    </splunk-text-input>
+  </div>
+  <div class="control-group" label="Show Segments" help="Render as discrete segments (true) or a solid bar (false)">
+    <splunk-radio-input name="display.visualizations.custom.porsche_taycan_viz.charge_gauge.showSegments"
+      default="true">
+      <option value="true">Segments</option>
+      <option value="false">Solid Bar</option>
+    </splunk-radio-input>
+  </div>
+  <div class="control-group" label="Theme" help="Color theme — dark or light">
+    <splunk-radio-input name="display.visualizations.custom.porsche_taycan_viz.charge_gauge.theme"
+      default="dark">
+      <option value="dark">Dark</option>
+      <option value="light">Light</option>
+    </splunk-radio-input>
+  </div>
+</form>
+<form class="splunk-formatter-section" section-label="Color and style">
+  <div class="control-group" label="Accent Color" help="Fill color for charged segments (hex, default #3B82F6)">
+    <splunk-color-picker name="display.visualizations.custom.porsche_taycan_viz.charge_gauge.accentColor"
+      default="#3B82F6">
+    </splunk-color-picker>
+  </div>
+  <div class="control-group" label="Accent Intensity" help="Glow intensity 0–100 for the power-surge effect (default 50)">
+    <splunk-text-input name="display.visualizations.custom.porsche_taycan_viz.charge_gauge.accentIntensity"
+      default="50">
+    </splunk-text-input>
+  </div>
+</form>

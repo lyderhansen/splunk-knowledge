@@ -1,0 +1,5 @@
+metric,value,delta,unit,label
+cache_hit_pct,94.2,1.8,%,Cache Hit Rate
+bandwidth_saved,2.4,5.6,TB/hr,Bandwidth Saved
+origin_pulls,48293,-12.1,/hr,Origin Pulls
+purge_count,127,3.4,,Purge Count

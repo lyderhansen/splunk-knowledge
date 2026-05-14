@@ -20,6 +20,8 @@ docs/*.txt
 
 # Local sandbox / test scratch dirs
 /test[0-9]*/
+node_modules/
+*.tar.gz
 
 # Logo designer artifacts
 logos/
@@ -30,3 +32,4 @@ svgs/
 # Agent dashboard scratch
 .splunk-agent/
 docs/*.md
+.planning/

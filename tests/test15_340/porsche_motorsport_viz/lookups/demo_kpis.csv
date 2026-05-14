@@ -1,0 +1,5 @@
+value,label,delta,deltaDirection,unit
+P1,POSITION,,neutral,
+1:42.891,LAP TIME,-0.342,down,
++3.247,GAP TO LEADER,+0.891,up,s
+42,LAPS COMPLETED,,neutral,/62

@@ -1,0 +1,38 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+    <splunk-control-group label="Hour field" help="SPL field for the hour column (0-23)">
+        <splunk-text-input name="uber_ops_viz.surge_heatmap.hourField" value="hour">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Zone field" help="SPL field for the zone/area name">
+        <splunk-text-input name="uber_ops_viz.surge_heatmap.zoneField" value="zone">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Surge field" help="SPL field for the surge multiplier value">
+        <splunk-text-input name="uber_ops_viz.surge_heatmap.surgeField" value="surge">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Color and style">
+    <splunk-control-group label="Theme" help="Color theme">
+        <splunk-radio-input name="uber_ops_viz.surge_heatmap.theme" value="dark">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Low color" help="Color for baseline (1.0x) surge cells">
+        <splunk-color-picker name="uber_ops_viz.surge_heatmap.lowColor" value="#4A4A4A">
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Mid color" help="Color for medium surge cells">
+        <splunk-color-picker name="uber_ops_viz.surge_heatmap.midColor" value="#FF6937">
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="High color" help="Color for high surge cells">
+        <splunk-color-picker name="uber_ops_viz.surge_heatmap.highColor" value="#E11900">
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Accent intensity" help="Glow effect strength (0=off, 50=default, 100=max)">
+        <splunk-text-input name="uber_ops_viz.surge_heatmap.accentIntensity" value="50">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>

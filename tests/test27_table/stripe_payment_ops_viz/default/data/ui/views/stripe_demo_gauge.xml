@@ -1,0 +1,29 @@
+<dashboard version="2" theme="light">
+    <label>Stripe Gauge Demo</label>
+    <description>Demo of Stripe dispute gauge with gradient ring</description>
+    <definition><![CDATA[
+{
+    "dataSources": {
+        "ds_gauge": {
+            "type": "ds.search",
+            "options": { "query": "| inputlookup stripe_payment_ops_viz_demo_gauge.csv", "queryParameters": { "earliest": "-24h@h", "latest": "now" } },
+            "name": "Dispute Gauge"
+        }
+    },
+    "visualizations": {
+        "viz_gauge": {
+            "type": "stripe_payment_ops_viz.stripe_gauge",
+            "dataSources": { "primary": "ds_gauge" },
+            "options": {}
+        }
+    },
+    "layout": {
+        "type": "absolute",
+        "options": { "width": 1920, "height": 600, "display": "auto-scale" },
+        "structure": [
+            { "item": "viz_gauge", "position": { "x": 460, "y": 20, "w": 1000, "h": 560 } }
+        ]
+    }
+}
+    ]]></definition>
+</dashboard>

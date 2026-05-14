@@ -1,0 +1,6 @@
+<nav>
+    <default>
+        <view name="cloudflare_noc_overview" />
+    </default>
+    <view name="cloudflare_noc_overview" />
+</nav>

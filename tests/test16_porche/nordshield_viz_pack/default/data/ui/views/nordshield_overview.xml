@@ -1,0 +1,382 @@
+<dashboard version="2" theme="dark">
+    <label>NordShield Threat Operations Center</label>
+    <description>SOC wall dashboard for NordShield Cyber Defense</description>
+    <definition>
+    <![CDATA[
+{
+    "dataSources": {
+        "ds_threats": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup nordshield_threats.csv"
+            },
+            "name": "Threat Score"
+        },
+        "ds_attacks": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup nordshield_attacks.csv"
+            },
+            "name": "Attack Patterns"
+        },
+        "ds_endpoints": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup nordshield_endpoints.csv"
+            },
+            "name": "Endpoint Status"
+        },
+        "ds_alerts": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup nordshield_alerts.csv | sort - _time"
+            },
+            "name": "Alert Feed"
+        },
+        "ds_incidents": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup nordshield_incidents.csv"
+            },
+            "name": "Incident Operations"
+        },
+        "ds_services": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup nordshield_services.csv | sort - attack_count"
+            },
+            "name": "Service Defense"
+        }
+    },
+    "visualizations": {
+        "viz_canvas_bg": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#080C18",
+                "strokeColor": "transparent"
+            }
+        },
+        "viz_banner_bg": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#0F1628",
+                "strokeColor": "transparent"
+            }
+        },
+        "viz_aurora_line": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#00E5CC",
+                "strokeColor": "transparent"
+            }
+        },
+        "viz_banner_title": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "**NORDSHIELD** &nbsp;&nbsp; THREAT OPERATIONS CENTER",
+                "fontColor": "#C8D6E5",
+                "fontSize": "extraLarge",
+                "fontFamily": "Splunk Platform Mono",
+                "backgroundColor": "transparent"
+            }
+        },
+        "viz_card_beacon": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#0F1628",
+                "strokeColor": "rgba(0, 229, 204, 0.06)",
+                "strokeWidth": 1,
+                "rx": 2,
+                "ry": 2
+            }
+        },
+        "viz_card_heatmap": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#0F1628",
+                "strokeColor": "rgba(0, 229, 204, 0.06)",
+                "strokeWidth": 1,
+                "rx": 2,
+                "ry": 2
+            }
+        },
+        "viz_card_grid": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#0F1628",
+                "strokeColor": "rgba(0, 229, 204, 0.06)",
+                "strokeWidth": 1,
+                "rx": 2,
+                "ry": 2
+            }
+        },
+        "viz_card_feed": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#0F1628",
+                "strokeColor": "rgba(0, 229, 204, 0.06)",
+                "strokeWidth": 1,
+                "rx": 2,
+                "ry": 2
+            }
+        },
+        "viz_card_table": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#0F1628",
+                "strokeColor": "rgba(0, 229, 204, 0.06)",
+                "strokeWidth": 1,
+                "rx": 2,
+                "ry": 2
+            }
+        },
+        "viz_card_ranking": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#0F1628",
+                "strokeColor": "rgba(0, 229, 204, 0.06)",
+                "strokeWidth": 1,
+                "rx": 2,
+                "ry": 2
+            }
+        },
+        "viz_label_beacon": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "THREAT POSTURE",
+                "fontColor": "rgba(200, 214, 229, 0.35)",
+                "fontSize": "extraSmall",
+                "fontFamily": "Splunk Platform Mono",
+                "backgroundColor": "transparent"
+            }
+        },
+        "viz_label_heatmap": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "ATTACK PATTERNS",
+                "fontColor": "rgba(200, 214, 229, 0.35)",
+                "fontSize": "extraSmall",
+                "fontFamily": "Splunk Platform Mono",
+                "backgroundColor": "transparent"
+            }
+        },
+        "viz_label_grid": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "ENDPOINT STATUS",
+                "fontColor": "rgba(200, 214, 229, 0.35)",
+                "fontSize": "extraSmall",
+                "fontFamily": "Splunk Platform Mono",
+                "backgroundColor": "transparent"
+            }
+        },
+        "viz_label_feed": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "LIVE THREAT FEED",
+                "fontColor": "rgba(200, 214, 229, 0.35)",
+                "fontSize": "extraSmall",
+                "fontFamily": "Splunk Platform Mono",
+                "backgroundColor": "transparent"
+            }
+        },
+        "viz_label_table": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "INCIDENT OPERATIONS",
+                "fontColor": "rgba(200, 214, 229, 0.35)",
+                "fontSize": "extraSmall",
+                "fontFamily": "Splunk Platform Mono",
+                "backgroundColor": "transparent"
+            }
+        },
+        "viz_label_ranking": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "DEFENSE STATUS",
+                "fontColor": "rgba(200, 214, 229, 0.35)",
+                "fontSize": "extraSmall",
+                "fontFamily": "Splunk Platform Mono",
+                "backgroundColor": "transparent"
+            }
+        },
+        "viz_threat_beacon": {
+            "type": "nordshield_viz_pack.threat_beacon",
+            "dataSources": {
+                "primary": "ds_threats"
+            },
+            "options": {}
+        },
+        "viz_attack_heatmap": {
+            "type": "nordshield_viz_pack.attack_heatmap",
+            "dataSources": {
+                "primary": "ds_attacks"
+            },
+            "options": {}
+        },
+        "viz_host_shield_grid": {
+            "type": "nordshield_viz_pack.host_shield_grid",
+            "dataSources": {
+                "primary": "ds_endpoints"
+            },
+            "options": {}
+        },
+        "viz_threat_feed": {
+            "type": "nordshield_viz_pack.threat_feed",
+            "dataSources": {
+                "primary": "ds_alerts"
+            },
+            "options": {}
+        },
+        "viz_ops_table": {
+            "type": "nordshield_viz_pack.ops_table",
+            "dataSources": {
+                "primary": "ds_incidents"
+            },
+            "options": {
+                "nordshield_viz_pack.ops_table.fields": "incident_id,status,severity,duration,affected_hosts,technique",
+                "nordshield_viz_pack.ops_table.fieldLabels": "ID,Status,Severity,Duration,Hosts,Technique"
+            }
+        },
+        "viz_defense_ranking": {
+            "type": "nordshield_viz_pack.defense_ranking",
+            "dataSources": {
+                "primary": "ds_services"
+            },
+            "options": {}
+        }
+    },
+    "inputs": {},
+    "layout": {
+        "globalInputs": [],
+        "tabs": {
+            "items": [
+                { "layoutId": "layout_main", "label": "Threat Operations" }
+            ],
+            "options": { "barPosition": "top", "showTabBar": false }
+        },
+        "layoutDefinitions": {
+            "layout_main": {
+                "type": "absolute",
+                "options": { "width": 1920, "height": 1080 },
+                "structure": [
+                    {
+                        "item": "viz_canvas_bg",
+                        "type": "block",
+                        "position": { "x": 0, "y": 0, "w": 1920, "h": 1080 }
+                    },
+                    {
+                        "item": "viz_banner_bg",
+                        "type": "block",
+                        "position": { "x": 0, "y": 0, "w": 1920, "h": 56 }
+                    },
+                    {
+                        "item": "viz_aurora_line",
+                        "type": "block",
+                        "position": { "x": 0, "y": 56, "w": 1920, "h": 2 }
+                    },
+                    {
+                        "item": "viz_banner_title",
+                        "type": "block",
+                        "position": { "x": 28, "y": 10, "w": 600, "h": 36 }
+                    },
+                    {
+                        "item": "viz_card_beacon",
+                        "type": "block",
+                        "position": { "x": 20, "y": 74, "w": 462, "h": 437 }
+                    },
+                    {
+                        "item": "viz_card_heatmap",
+                        "type": "block",
+                        "position": { "x": 498, "y": 74, "w": 832, "h": 437 }
+                    },
+                    {
+                        "item": "viz_card_grid",
+                        "type": "block",
+                        "position": { "x": 1346, "y": 74, "w": 554, "h": 437 }
+                    },
+                    {
+                        "item": "viz_card_feed",
+                        "type": "block",
+                        "position": { "x": 20, "y": 527, "w": 462, "h": 533 }
+                    },
+                    {
+                        "item": "viz_card_table",
+                        "type": "block",
+                        "position": { "x": 498, "y": 527, "w": 832, "h": 533 }
+                    },
+                    {
+                        "item": "viz_card_ranking",
+                        "type": "block",
+                        "position": { "x": 1346, "y": 527, "w": 554, "h": 533 }
+                    },
+                    {
+                        "item": "viz_label_beacon",
+                        "type": "block",
+                        "position": { "x": 32, "y": 78, "w": 200, "h": 20 }
+                    },
+                    {
+                        "item": "viz_label_heatmap",
+                        "type": "block",
+                        "position": { "x": 510, "y": 78, "w": 200, "h": 20 }
+                    },
+                    {
+                        "item": "viz_label_grid",
+                        "type": "block",
+                        "position": { "x": 1358, "y": 78, "w": 200, "h": 20 }
+                    },
+                    {
+                        "item": "viz_label_feed",
+                        "type": "block",
+                        "position": { "x": 32, "y": 531, "w": 200, "h": 20 }
+                    },
+                    {
+                        "item": "viz_label_table",
+                        "type": "block",
+                        "position": { "x": 510, "y": 531, "w": 200, "h": 20 }
+                    },
+                    {
+                        "item": "viz_label_ranking",
+                        "type": "block",
+                        "position": { "x": 1358, "y": 531, "w": 200, "h": 20 }
+                    },
+                    {
+                        "item": "viz_threat_beacon",
+                        "type": "block",
+                        "position": { "x": 24, "y": 98, "w": 454, "h": 409 }
+                    },
+                    {
+                        "item": "viz_attack_heatmap",
+                        "type": "block",
+                        "position": { "x": 502, "y": 98, "w": 824, "h": 409 }
+                    },
+                    {
+                        "item": "viz_host_shield_grid",
+                        "type": "block",
+                        "position": { "x": 1350, "y": 98, "w": 546, "h": 409 }
+                    },
+                    {
+                        "item": "viz_threat_feed",
+                        "type": "block",
+                        "position": { "x": 24, "y": 551, "w": 454, "h": 505 }
+                    },
+                    {
+                        "item": "viz_ops_table",
+                        "type": "block",
+                        "position": { "x": 502, "y": 551, "w": 824, "h": 505 }
+                    },
+                    {
+                        "item": "viz_defense_ranking",
+                        "type": "block",
+                        "position": { "x": 1350, "y": 551, "w": 546, "h": 505 }
+                    }
+                ]
+            }
+        }
+    },
+    "title": "NordShield Threat Operations Center",
+    "description": "SOC wall dashboard for NordShield Cyber Defense"
+}
+    ]]>
+    </definition>
+</dashboard>

@@ -1,0 +1,16 @@
+service_name,attack_count,blocked_count,success_rate
+External Web Portal,89412,87801,99.2%
+VPN Gateway,74831,73306,98.0%
+Exchange Online,61204,60602,99.0%
+Active Directory,52877,52613,99.5%
+DNS Resolver,48339,48146,99.6%
+Kubernetes API,41758,41550,99.5%
+S3 Storage Gateway,37614,37428,99.5%
+SMTP Relay,29847,29251,98.0%
+PostgreSQL Primary,24103,24006,99.6%
+Redis Cache,19742,19644,99.5%
+Kafka Broker,16384,16286,99.4%
+Jenkins CI,14827,14562,98.2%
+Grafana Monitoring,13519,13478,99.7%
+LDAP Auth,12891,12762,99.0%
+File Share NAS,12244,12025,97.2%

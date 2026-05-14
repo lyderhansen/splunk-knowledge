@@ -1,0 +1,92 @@
+<form>
+  <splunk-section-header label="Data configurations"></splunk-section-header>
+
+  <splunk-control-group
+    label="Stage field"
+    help="Name of the field that contains the stage label (e.g. 'Max-Q', 'MECO').">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.stage_tracker.stageField"
+      default="stage">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Status field"
+    help="Name of the field that contains the status value: complete | active | pending | failed.">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.stage_tracker.statusField"
+      default="status">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Order field"
+    help="Name of the numeric field used to sort stages left to right.">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.stage_tracker.orderField"
+      default="order">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-section-header label="Data display"></splunk-section-header>
+
+  <splunk-control-group
+    label="Show pulse animation"
+    help="Enables the expanding ring animation on the active stage node.">
+    <splunk-radio-input
+      name="display.visualizations.custom.spacex_mission_control.stage_tracker.showPulse"
+      default="true">
+      <option value="true">On</option>
+      <option value="false">Off</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+
+  <splunk-section-header label="Color and style"></splunk-section-header>
+
+  <splunk-control-group
+    label="Theme"
+    help="Choose dark (default SpaceX dark panel) or light for bright backgrounds.">
+    <splunk-radio-input
+      name="display.visualizations.custom.spacex_mission_control.stage_tracker.theme"
+      default="dark">
+      <option value="dark">Dark</option>
+      <option value="light">Light</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Accent intensity"
+    help="Glow and accent effect strength (0=off, 50=default, 100=max)">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.stage_tracker.accentIntensity"
+      value="50">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Active / accent color"
+    help="Fill color for the active stage node and its pulse ring. Hex format, e.g. #0088CC.">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.stage_tracker.accentColor"
+      default="#0088CC">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Complete color"
+    help="Fill color for completed stage nodes and their connecting lines. Hex format, e.g. #00C853.">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.stage_tracker.completeColor"
+      default="#00C853">
+    </splunk-text-input>
+  </splunk-control-group>
+
+  <splunk-control-group
+    label="Failed color"
+    help="Fill color for failed stage nodes. Hex format, e.g. #FF1744.">
+    <splunk-text-input
+      name="display.visualizations.custom.spacex_mission_control.stage_tracker.failColor"
+      default="#FF1744">
+    </splunk-text-input>
+  </splunk-control-group>
+</form>

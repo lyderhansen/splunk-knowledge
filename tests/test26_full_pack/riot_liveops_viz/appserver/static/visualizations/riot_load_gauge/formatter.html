@@ -1,0 +1,55 @@
+<form class="splunk-formatter-section" section-label="Data Configuration">
+    <splunk-control-group label="Value Field" help="Field containing the current value">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.valueField" value="value">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Max Field" help="Field containing the maximum capacity">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.maxField" value="max">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Label Field" help="Field containing the gauge label">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.labelField" value="label">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Display">
+    <splunk-control-group label="Warning Threshold" help="Percentage for warning state (0-100)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.warningThreshold" value="70">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Critical Threshold" help="Percentage for critical state (0-100)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.criticalThreshold" value="90">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show Percentage" help="Display percentage in center">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showPercentage" value="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Ring Width" help="Width of the gauge ring (10-60)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.ringWidth" value="24">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Color and Style">
+    <splunk-control-group label="Theme" help="Auto detects dashboard theme">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto">
+            <option value="auto">Auto</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Accent Color" help="Primary ring color (healthy state)">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.accentColor" type="custom" value="0x0AC8B9">
+            <splunk-color>0x0AC8B9</splunk-color>
+            <splunk-color>0xC89B3C</splunk-color>
+            <splunk-color>0x0397AB</splunk-color>
+            <splunk-color>0xF0B232</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Glow Intensity" help="0-100, controls ring glow brightness">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.glowIntensity" value="70">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; padding: 0; font: 11px "Helvetica Neue", Helvetica, Arial, sans-serif; color: #333; }
+  .section-title {
+    padding: 8px 12px 4px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #888;
+    border-bottom: 1px solid #e5e5e5;
+    margin-bottom: 4px;
+  }
+  .control-row {
+    display: flex;
+    align-items: center;
+    padding: 4px 12px;
+    gap: 8px;
+    min-height: 28px;
+  }
+  .control-row label {
+    flex: 0 0 130px;
+    font-size: 11px;
+    color: #555;
+  }
+  .control-row input[type="text"],
+  .control-row select {
+    flex: 1;
+    font-size: 11px;
+    padding: 2px 4px;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    background: #fff;
+    height: 22px;
+  }
+  .control-row input[type="color"] {
+    flex: 0 0 40px;
+    height: 22px;
+    padding: 1px 2px;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    cursor: pointer;
+  }
+  .control-row input[type="range"] {
+    flex: 1;
+  }
+  .range-value {
+    flex: 0 0 30px;
+    text-align: right;
+    font-size: 11px;
+    color: #555;
+  }
+  .section-spacer { height: 8px; }
+</style>
+</head>
+<body>
+
+<div class="section-title">Data Fields</div>
+
+<div class="control-row">
+  <label>Driver field</label>
+  <input type="text"
+    name="display.visualizations.custom.porsche_motorsport_viz.tire_timeline.driverField"
+    data-default="driver" placeholder="driver" />
+</div>
+
+<div class="control-row">
+  <label>Stint field</label>
+  <input type="text"
+    name="display.visualizations.custom.porsche_motorsport_viz.tire_timeline.stintField"
+    data-default="stint" placeholder="stint" />
+</div>
+
+<div class="control-row">
+  <label>Compound field</label>
+  <input type="text"
+    name="display.visualizations.custom.porsche_motorsport_viz.tire_timeline.compoundField"
+    data-default="compound" placeholder="compound" />
+</div>
+
+<div class="control-row">
+  <label>Start lap field</label>
+  <input type="text"
+    name="display.visualizations.custom.porsche_motorsport_viz.tire_timeline.startLapField"
+    data-default="startLap" placeholder="startLap" />
+</div>
+
+<div class="control-row">
+  <label>End lap field</label>
+  <input type="text"
+    name="display.visualizations.custom.porsche_motorsport_viz.tire_timeline.endLapField"
+    data-default="endLap" placeholder="endLap" />
+</div>
+
+<div class="control-row">
+  <label>Total laps field</label>
+  <input type="text"
+    name="display.visualizations.custom.porsche_motorsport_viz.tire_timeline.totalLapsField"
+    data-default="totalLaps" placeholder="totalLaps (auto-detected)" />
+</div>
+
+<div class="section-spacer"></div>
+<div class="section-title">Display</div>
+
+<div class="control-row">
+  <label>Theme</label>
+  <select
+    name="display.visualizations.custom.porsche_motorsport_viz.tire_timeline.theme">
+    <option value="dark">Dark</option>
+    <option value="light">Light</option>
+  </select>
+</div>
+
+<div class="section-spacer"></div>
+<div class="section-title">Color and Style</div>
+
+<div class="control-row">
+  <label>Soft color</label>
+  <input type="color"
+    name="display.visualizations.custom.porsche_motorsport_viz.tire_timeline.softColor"
+    data-default="#D5001C" value="#D5001C" />
+</div>
+
+<div class="control-row">
+  <label>Medium color</label>
+  <input type="color"
+    name="display.visualizations.custom.porsche_motorsport_viz.tire_timeline.mediumColor"
+    data-default="#FFC907" value="#FFC907" />
+</div>
+
+<div class="control-row">
+  <label>Hard color</label>
+  <input type="color"
+    name="display.visualizations.custom.porsche_motorsport_viz.tire_timeline.hardColor"
+    data-default="#FFFFFF" value="#FFFFFF" />
+</div>
+
+<div class="control-row">
+  <label>Inter color</label>
+  <input type="color"
+    name="display.visualizations.custom.porsche_motorsport_viz.tire_timeline.interColor"
+    data-default="#39B54A" value="#39B54A" />
+</div>
+
+<div class="control-row">
+  <label>Wet color</label>
+  <input type="color"
+    name="display.visualizations.custom.porsche_motorsport_viz.tire_timeline.wetColor"
+    data-default="#0072C6" value="#0072C6" />
+</div>
+
+<div class="control-row">
+  <label>Accent intensity</label>
+  <input type="range"
+    name="display.visualizations.custom.porsche_motorsport_viz.tire_timeline.accentIntensity"
+    min="0" max="100" step="1" data-default="50" value="50"
+    oninput="this.nextElementSibling.textContent = this.value" />
+  <span class="range-value">50</span>
+</div>
+
+</body>
+</html>

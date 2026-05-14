@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="{{SPLUNKWEB_URL_PREFIX}}/static/css/bootstrap-enterprise.css" />
+    <link rel="stylesheet" type="text/css" href="{{SPLUNKWEB_URL_PREFIX}}/static/css/splunkformatter.css" />
+    <script src="{{SPLUNKWEB_URL_PREFIX}}/static/js/i18n.js"></script>
+    <script src="{{SPLUNKWEB_URL_PREFIX}}/static/js/splunk_formatter.js"></script>
+</head>
+<body class="splunk-formatter-body">
+
+<form class="splunk-formatter-form">
+
+    <div class="section-label">Data configurations</div>
+
+    <div class="control-group" help="Field name containing the range value for all rows (used for sparkline and current KPI value)">
+        <label class="control-label">Value field</label>
+        <div class="controls">
+            <splunk-text-input name="display.visualizations.custom.porsche_taycan_viz.range_kpi.valueField"
+                defaultValue="value">
+            </splunk-text-input>
+        </div>
+    </div>
+
+    <div class="control-group" help="Optional field name containing the trend delta value (positive = increase, negative = decrease)">
+        <label class="control-label">Trend field</label>
+        <div class="controls">
+            <splunk-text-input name="display.visualizations.custom.porsche_taycan_viz.range_kpi.trendField"
+                defaultValue="trend">
+            </splunk-text-input>
+        </div>
+    </div>
+
+    <div class="control-group" help="Number of decimal places for the displayed value and trend delta">
+        <label class="control-label">Decimal places</label>
+        <div class="controls">
+            <splunk-text-input name="display.visualizations.custom.porsche_taycan_viz.range_kpi.decimals"
+                defaultValue="0">
+            </splunk-text-input>
+        </div>
+    </div>
+
+    <div class="section-label">Data display</div>
+
+    <div class="control-group" help="Unit label shown next to the value (e.g. km, mi, %)">
+        <label class="control-label">Unit</label>
+        <div class="controls">
+            <splunk-text-input name="display.visualizations.custom.porsche_taycan_viz.range_kpi.unit"
+                defaultValue="km">
+            </splunk-text-input>
+        </div>
+    </div>
+
+    <div class="control-group" help="Whether the unit label appears before or after the value">
+        <label class="control-label">Unit position</label>
+        <div class="controls">
+            <splunk-radio-input name="display.visualizations.custom.porsche_taycan_viz.range_kpi.unitPosition"
+                defaultValue="after">
+                <opt value="after" label="After"></opt>
+                <opt value="before" label="Before"></opt>
+            </splunk-radio-input>
+        </div>
+    </div>
+
+    <div class="control-group" help="Show or hide the trend delta arrow and value below the KPI number">
+        <label class="control-label">Show trend</label>
+        <div class="controls">
+            <splunk-radio-input name="display.visualizations.custom.porsche_taycan_viz.range_kpi.showTrend"
+                defaultValue="true">
+                <opt value="true" label="Yes"></opt>
+                <opt value="false" label="No"></opt>
+            </splunk-radio-input>
+        </div>
+    </div>
+
+    <div class="control-group" help="Show or hide the sparkline at the bottom of the panel">
+        <label class="control-label">Show sparkline</label>
+        <div class="controls">
+            <splunk-radio-input name="display.visualizations.custom.porsche_taycan_viz.range_kpi.showSparkline"
+                defaultValue="true">
+                <opt value="true" label="Yes"></opt>
+                <opt value="false" label="No"></opt>
+            </splunk-radio-input>
+        </div>
+    </div>
+
+    <div class="section-label">Color and style</div>
+
+    <div class="control-group" help="Accent color for the sparkline stroke and gradient fill">
+        <label class="control-label">Accent color</label>
+        <div class="controls">
+            <splunk-color-picker name="display.visualizations.custom.porsche_taycan_viz.range_kpi.accentColor"
+                defaultValue="#00C9A7">
+            </splunk-color-picker>
+        </div>
+    </div>
+
+    <div class="control-group" help="Color of the trend arrow and delta when the value is increasing">
+        <label class="control-label">Trend up color</label>
+        <div class="controls">
+            <splunk-color-picker name="display.visualizations.custom.porsche_taycan_viz.range_kpi.trendUpColor"
+                defaultValue="#10B981">
+            </splunk-color-picker>
+        </div>
+    </div>
+
+    <div class="control-group" help="Color of the trend arrow and delta when the value is decreasing">
+        <label class="control-label">Trend down color</label>
+        <div class="controls">
+            <splunk-color-picker name="display.visualizations.custom.porsche_taycan_viz.range_kpi.trendDownColor"
+                defaultValue="#EF4444">
+            </splunk-color-picker>
+        </div>
+    </div>
+
+    <div class="control-group" help="Glow intensity 0–100 for sparkline shadow and glass panel ambient glow">
+        <label class="control-label">Accent intensity</label>
+        <div class="controls">
+            <splunk-text-input name="display.visualizations.custom.porsche_taycan_viz.range_kpi.accentIntensity"
+                defaultValue="50">
+            </splunk-text-input>
+        </div>
+    </div>
+
+    <div class="control-group" help="Color theme for the panel background and text tokens">
+        <label class="control-label">Theme</label>
+        <div class="controls">
+            <splunk-radio-input name="display.visualizations.custom.porsche_taycan_viz.range_kpi.theme"
+                defaultValue="dark">
+                <opt value="dark" label="Dark"></opt>
+                <opt value="light" label="Light"></opt>
+            </splunk-radio-input>
+        </div>
+    </div>
+
+</form>
+
+</body>
+</html>

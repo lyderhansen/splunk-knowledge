@@ -1,0 +1,64 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+    <splunk-control-group label="Value field" help="SPL field containing the gauge value">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.valueField" value="value">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Max value field" help="SPL field for the maximum gauge value">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.maxValueField" value="maxValue">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Label field" help="SPL field for the metric label">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.labelField" value="metric">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Unit" help="Unit symbol shown after the value">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.unit" value="">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+    <splunk-control-group label="Max value" help="Maximum gauge value (override if no field)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.maxValue" value="100">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Low threshold" help="Below this value shows danger color">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.thresholdLow" value="50">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="High threshold" help="Above this value shows success color">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.thresholdHigh" value="70">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Decimal places" help="Number of decimal places for the value">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.decimals" value="0">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+    <splunk-control-group label="Accent color" help="Primary accent color for the gauge">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.accentColor" type="custom" value="#007AFF">
+            <splunk-color>#007AFF</splunk-color>
+            <splunk-color>#0A84FF</splunk-color>
+            <splunk-color>#5856D6</splunk-color>
+            <splunk-color>#34C759</splunk-color>
+            <splunk-color>#FF9500</splunk-color>
+            <splunk-color>#FF3B30</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Accent intensity" help="Strength of glow effect (0-100)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.accentIntensity" value="50">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Theme" help="Auto detects dashboard theme">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto">
+            <option value="auto">Auto</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>

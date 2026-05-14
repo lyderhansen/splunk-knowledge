@@ -1,0 +1,59 @@
+<form class="splunk-formatter-section" section-label="Data Configuration">
+    <splunk-control-group label="Region Field" help="Field containing region name (NA, EUW, KR)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.regionField" value="region">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Latency Field" help="Field containing latency value in ms">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.latencyField" value="latency">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Threshold Field" help="Field containing threshold value (optional)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.thresholdField" value="threshold">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Display">
+    <splunk-control-group label="Max Latency" help="Maximum value for bar scale (auto if empty)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.maxLatency" value="">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Warning Threshold" help="Latency value for warning color">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.warningThreshold" value="60">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Critical Threshold" help="Latency value for critical color">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.criticalThreshold" value="80">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show Values" help="Display latency value at bar end">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showValues" value="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Bar Height" help="Height of each bar in pixels (0 for auto)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.barHeight" value="0">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Color and Style">
+    <splunk-control-group label="Theme" help="Auto detects dashboard theme">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto">
+            <option value="auto">Auto</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Bar Color" help="Primary bar fill color">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.barColor" type="custom" value="0x0AC8B9">
+            <splunk-color>0x0AC8B9</splunk-color>
+            <splunk-color>0xC89B3C</splunk-color>
+            <splunk-color>0x0397AB</splunk-color>
+            <splunk-color>0xF0B232</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Glow Intensity" help="0-100, controls bar glow brightness">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.glowIntensity" value="50">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>

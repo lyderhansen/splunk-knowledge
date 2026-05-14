@@ -1,0 +1,38 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+    <splunk-control-group label="Available field" help="SPL field for available driver count">
+        <splunk-text-input name="uber_ops_viz.supply_gauge.availableField" value="available">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Demanded field" help="SPL field for demanded driver count">
+        <splunk-text-input name="uber_ops_viz.supply_gauge.demandedField" value="demanded">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Ratio field" help="SPL field for pre-computed supply ratio (optional)">
+        <splunk-text-input name="uber_ops_viz.supply_gauge.ratioField" value="ratio">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Max value" help="Maximum gauge value (100 for percentage)">
+        <splunk-text-input name="uber_ops_viz.supply_gauge.maxValue" value="100">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Red zone start" help="Percentage below which supply is critical">
+        <splunk-text-input name="uber_ops_viz.supply_gauge.redZoneStart" value="70">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Color and style">
+    <splunk-control-group label="Theme" help="Color theme">
+        <splunk-radio-input name="uber_ops_viz.supply_gauge.theme" value="dark">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Accent color" help="Primary accent color">
+        <splunk-color-picker name="uber_ops_viz.supply_gauge.accentColor" value="#06C167">
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Accent intensity" help="Glow effect strength (0=off, 50=default, 100=max)">
+        <splunk-text-input name="uber_ops_viz.supply_gauge.accentIntensity" value="50">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>

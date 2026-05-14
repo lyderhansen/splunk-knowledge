@@ -1,0 +1,29 @@
+<dashboard version="2" theme="light">
+    <label>Stripe Table Demo</label>
+    <description>Demo of Stripe transaction table with sort, pagination, column hide, and width control</description>
+    <definition><![CDATA[
+{
+    "dataSources": {
+        "ds_transactions": {
+            "type": "ds.search",
+            "options": { "query": "| inputlookup stripe_payment_ops_viz_demo_transactions.csv | sort - _time", "queryParameters": { "earliest": "-24h@h", "latest": "now" } },
+            "name": "Transactions"
+        }
+    },
+    "visualizations": {
+        "viz_table": {
+            "type": "stripe_payment_ops_viz.stripe_table",
+            "dataSources": { "primary": "ds_transactions" },
+            "options": { "cw1": "_time:180", "cw2": "transaction_id:160", "cw3": "amount:100", "cw4": "currency:80", "cw5": "status:110", "cw6": "merchant:160", "cw7": "payment_method:140", "cw8": "country:80" }
+        }
+    },
+    "layout": {
+        "type": "absolute",
+        "options": { "width": 1920, "height": 800, "display": "auto-scale" },
+        "structure": [
+            { "item": "viz_table", "position": { "x": 20, "y": 20, "w": 1880, "h": 760 } }
+        ]
+    }
+}
+    ]]></definition>
+</dashboard>

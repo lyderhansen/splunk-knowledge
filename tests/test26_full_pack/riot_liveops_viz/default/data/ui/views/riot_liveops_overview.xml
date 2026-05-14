@@ -1,0 +1,368 @@
+<dashboard version="2" theme="dark">
+    <label>Riot Games Live Ops</label>
+    <description>League of Legends game operations monitoring — server health, match quality, player experience across 12 regions</description>
+    <definition><![CDATA[
+{
+    "dataSources": {
+        "ds_kpi_players": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup riot_liveops_viz_demo_kpis.csv | where label=\"Active Players\"",
+                "queryParameters": {
+                    "earliest": "-24h@h",
+                    "latest": "now"
+                }
+            },
+            "name": "KPI Active Players"
+        },
+        "ds_kpi_latency": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup riot_liveops_viz_demo_kpis.csv | where label=\"Avg Match Latency\"",
+                "queryParameters": {
+                    "earliest": "-24h@h",
+                    "latest": "now"
+                }
+            },
+            "name": "KPI Avg Latency"
+        },
+        "ds_kpi_queue": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup riot_liveops_viz_demo_kpis.csv | where label=\"Queue Time\"",
+                "queryParameters": {
+                    "earliest": "-24h@h",
+                    "latest": "now"
+                }
+            },
+            "name": "KPI Queue Time"
+        },
+        "ds_kpi_incidents": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup riot_liveops_viz_demo_kpis.csv | where label=\"Active Incidents\"",
+                "queryParameters": {
+                    "earliest": "-24h@h",
+                    "latest": "now"
+                }
+            },
+            "name": "KPI Active Incidents"
+        },
+        "ds_latency": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup riot_liveops_viz_demo_latency.csv | sort latency",
+                "queryParameters": {
+                    "earliest": "-24h@h",
+                    "latest": "now"
+                }
+            },
+            "name": "Regional Latency"
+        },
+        "ds_trend": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup riot_liveops_viz_demo_trend.csv",
+                "queryParameters": {
+                    "earliest": "-24h@h",
+                    "latest": "now"
+                }
+            },
+            "name": "Match Quality Trend"
+        },
+        "ds_gauge": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup riot_liveops_viz_demo_gauge.csv",
+                "queryParameters": {
+                    "earliest": "-24h@h",
+                    "latest": "now"
+                }
+            },
+            "name": "Player Load"
+        },
+        "ds_incidents": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup riot_liveops_viz_demo_incidents.csv | sort - _time",
+                "queryParameters": {
+                    "earliest": "-24h@h",
+                    "latest": "now"
+                }
+            },
+            "name": "Incidents Feed"
+        }
+    },
+    "visualizations": {
+        "viz_bg": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#010A13",
+                "strokeColor": "transparent"
+            }
+        },
+        "viz_header_bar": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#0A1628",
+                "strokeColor": "#1E2328",
+                "strokeWidth": 1
+            }
+        },
+        "viz_title": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "# RIOT GAMES LIVE OPS\n**League of Legends** — Global Server Operations",
+                "fontColor": "#F0E6D2"
+            }
+        },
+        "viz_kpi_players": {
+            "type": "riot_liveops_viz.riot_kpi_tile",
+            "options": {
+                "riot_liveops_viz.riot_kpi_tile.valueField": "value",
+                "riot_liveops_viz.riot_kpi_tile.labelField": "label",
+                "riot_liveops_viz.riot_kpi_tile.unitField": "unit",
+                "riot_liveops_viz.riot_kpi_tile.trendField": "trend",
+                "riot_liveops_viz.riot_kpi_tile.sparklineField": "sparkline",
+                "riot_liveops_viz.riot_kpi_tile.accentColor": "0x0AC8B9",
+                "riot_liveops_viz.riot_kpi_tile.glowIntensity": "60",
+                "riot_liveops_viz.riot_kpi_tile.themeMode": "dark"
+            },
+            "dataSources": {
+                "primary": "ds_kpi_players"
+            }
+        },
+        "viz_kpi_latency": {
+            "type": "riot_liveops_viz.riot_kpi_tile",
+            "options": {
+                "riot_liveops_viz.riot_kpi_tile.valueField": "value",
+                "riot_liveops_viz.riot_kpi_tile.labelField": "label",
+                "riot_liveops_viz.riot_kpi_tile.unitField": "unit",
+                "riot_liveops_viz.riot_kpi_tile.trendField": "trend",
+                "riot_liveops_viz.riot_kpi_tile.sparklineField": "sparkline",
+                "riot_liveops_viz.riot_kpi_tile.accentColor": "0x0AC8B9",
+                "riot_liveops_viz.riot_kpi_tile.glowIntensity": "60",
+                "riot_liveops_viz.riot_kpi_tile.themeMode": "dark"
+            },
+            "dataSources": {
+                "primary": "ds_kpi_latency"
+            }
+        },
+        "viz_kpi_queue": {
+            "type": "riot_liveops_viz.riot_kpi_tile",
+            "options": {
+                "riot_liveops_viz.riot_kpi_tile.valueField": "value",
+                "riot_liveops_viz.riot_kpi_tile.labelField": "label",
+                "riot_liveops_viz.riot_kpi_tile.unitField": "unit",
+                "riot_liveops_viz.riot_kpi_tile.trendField": "trend",
+                "riot_liveops_viz.riot_kpi_tile.sparklineField": "sparkline",
+                "riot_liveops_viz.riot_kpi_tile.accentColor": "0xC89B3C",
+                "riot_liveops_viz.riot_kpi_tile.glowIntensity": "60",
+                "riot_liveops_viz.riot_kpi_tile.themeMode": "dark"
+            },
+            "dataSources": {
+                "primary": "ds_kpi_queue"
+            }
+        },
+        "viz_kpi_incidents_count": {
+            "type": "riot_liveops_viz.riot_kpi_tile",
+            "options": {
+                "riot_liveops_viz.riot_kpi_tile.valueField": "value",
+                "riot_liveops_viz.riot_kpi_tile.labelField": "label",
+                "riot_liveops_viz.riot_kpi_tile.unitField": "unit",
+                "riot_liveops_viz.riot_kpi_tile.trendField": "trend",
+                "riot_liveops_viz.riot_kpi_tile.sparklineField": "sparkline",
+                "riot_liveops_viz.riot_kpi_tile.accentColor": "0xE84057",
+                "riot_liveops_viz.riot_kpi_tile.glowIntensity": "70",
+                "riot_liveops_viz.riot_kpi_tile.themeMode": "dark"
+            },
+            "dataSources": {
+                "primary": "ds_kpi_incidents"
+            }
+        },
+        "viz_latency_bars": {
+            "type": "riot_liveops_viz.riot_latency_bars",
+            "options": {
+                "riot_liveops_viz.riot_latency_bars.regionField": "region",
+                "riot_liveops_viz.riot_latency_bars.latencyField": "latency",
+                "riot_liveops_viz.riot_latency_bars.thresholdField": "threshold",
+                "riot_liveops_viz.riot_latency_bars.warningThreshold": "60",
+                "riot_liveops_viz.riot_latency_bars.criticalThreshold": "80",
+                "riot_liveops_viz.riot_latency_bars.showValues": "true",
+                "riot_liveops_viz.riot_latency_bars.barColor": "0x0AC8B9",
+                "riot_liveops_viz.riot_latency_bars.glowIntensity": "50",
+                "riot_liveops_viz.riot_latency_bars.themeMode": "dark"
+            },
+            "dataSources": {
+                "primary": "ds_latency"
+            }
+        },
+        "viz_section_latency": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "### REGIONAL LATENCY",
+                "fontColor": "#A09B8C"
+            }
+        },
+        "viz_trend_line": {
+            "type": "splunk.line",
+            "options": {
+                "seriesColors": ["#0AC8B9"],
+                "xAxisTitleVisibility": "hide",
+                "yAxisTitleVisibility": "hide",
+                "legendDisplay": "off",
+                "backgroundColor": "transparent",
+                "foregroundColor": "#F0E6D2",
+                "seriesSpacing": 0,
+                "dataValuesDisplay": "off"
+            },
+            "dataSources": {
+                "primary": "ds_trend"
+            }
+        },
+        "viz_section_trend": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "### MATCH QUALITY — 24H TREND",
+                "fontColor": "#A09B8C"
+            }
+        },
+        "viz_load_gauge": {
+            "type": "riot_liveops_viz.riot_load_gauge",
+            "options": {
+                "riot_liveops_viz.riot_load_gauge.valueField": "value",
+                "riot_liveops_viz.riot_load_gauge.maxField": "max",
+                "riot_liveops_viz.riot_load_gauge.labelField": "label",
+                "riot_liveops_viz.riot_load_gauge.warningThreshold": "70",
+                "riot_liveops_viz.riot_load_gauge.criticalThreshold": "90",
+                "riot_liveops_viz.riot_load_gauge.ringWidth": "24",
+                "riot_liveops_viz.riot_load_gauge.accentColor": "0x0AC8B9",
+                "riot_liveops_viz.riot_load_gauge.glowIntensity": "70",
+                "riot_liveops_viz.riot_load_gauge.themeMode": "dark"
+            },
+            "dataSources": {
+                "primary": "ds_gauge"
+            }
+        },
+        "viz_section_gauge": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "### PLAYER LOAD",
+                "fontColor": "#A09B8C"
+            }
+        },
+        "viz_incident_feed": {
+            "type": "riot_liveops_viz.riot_incident_feed",
+            "options": {
+                "riot_liveops_viz.riot_incident_feed.timeField": "_time",
+                "riot_liveops_viz.riot_incident_feed.severityField": "severity",
+                "riot_liveops_viz.riot_incident_feed.regionField": "region",
+                "riot_liveops_viz.riot_incident_feed.messageField": "message",
+                "riot_liveops_viz.riot_incident_feed.serviceField": "service",
+                "riot_liveops_viz.riot_incident_feed.maxRows": "50",
+                "riot_liveops_viz.riot_incident_feed.showTimestamp": "true",
+                "riot_liveops_viz.riot_incident_feed.accentColor": "0x0AC8B9",
+                "riot_liveops_viz.riot_incident_feed.glowIntensity": "50",
+                "riot_liveops_viz.riot_incident_feed.themeMode": "dark"
+            },
+            "dataSources": {
+                "primary": "ds_incidents"
+            }
+        },
+        "viz_section_incidents": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "### SERVICE INCIDENTS",
+                "fontColor": "#A09B8C"
+            }
+        }
+    },
+    "inputs": {},
+    "layout": {
+        "type": "absolute",
+        "options": {
+            "width": 1920,
+            "height": 1200,
+            "display": "auto-scale"
+        },
+        "structure": [
+            {
+                "item": "viz_bg",
+                "type": "block",
+                "position": { "x": 0, "y": 0, "w": 1920, "h": 1200 }
+            },
+            {
+                "item": "viz_header_bar",
+                "type": "block",
+                "position": { "x": 0, "y": 0, "w": 1920, "h": 70 }
+            },
+            {
+                "item": "viz_title",
+                "type": "block",
+                "position": { "x": 20, "y": 10, "w": 600, "h": 50 }
+            },
+            {
+                "item": "viz_kpi_players",
+                "type": "block",
+                "position": { "x": 20, "y": 90, "w": 460, "h": 160 }
+            },
+            {
+                "item": "viz_kpi_latency",
+                "type": "block",
+                "position": { "x": 495, "y": 90, "w": 460, "h": 160 }
+            },
+            {
+                "item": "viz_kpi_queue",
+                "type": "block",
+                "position": { "x": 970, "y": 90, "w": 460, "h": 160 }
+            },
+            {
+                "item": "viz_kpi_incidents_count",
+                "type": "block",
+                "position": { "x": 1445, "y": 90, "w": 455, "h": 160 }
+            },
+            {
+                "item": "viz_section_latency",
+                "type": "block",
+                "position": { "x": 20, "y": 270, "w": 400, "h": 30 }
+            },
+            {
+                "item": "viz_latency_bars",
+                "type": "block",
+                "position": { "x": 20, "y": 300, "w": 920, "h": 500 }
+            },
+            {
+                "item": "viz_section_gauge",
+                "type": "block",
+                "position": { "x": 960, "y": 270, "w": 400, "h": 30 }
+            },
+            {
+                "item": "viz_load_gauge",
+                "type": "block",
+                "position": { "x": 960, "y": 300, "w": 440, "h": 380 }
+            },
+            {
+                "item": "viz_section_trend",
+                "type": "block",
+                "position": { "x": 1420, "y": 270, "w": 480, "h": 30 }
+            },
+            {
+                "item": "viz_trend_line",
+                "type": "block",
+                "position": { "x": 1420, "y": 300, "w": 480, "h": 380 }
+            },
+            {
+                "item": "viz_section_incidents",
+                "type": "block",
+                "position": { "x": 960, "y": 700, "w": 400, "h": 30 }
+            },
+            {
+                "item": "viz_incident_feed",
+                "type": "block",
+                "position": { "x": 960, "y": 730, "w": 940, "h": 440 }
+            }
+        ]
+    }
+}
+    ]]></definition>
+</dashboard>

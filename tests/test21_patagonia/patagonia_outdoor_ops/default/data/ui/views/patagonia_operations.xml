@@ -1,0 +1,415 @@
+<dashboard version="2" theme="dark">
+  <label>Patagonia Outdoor Operations</label>
+  <description>Regional operations overview — supply chain, sustainability, and retail performance</description>
+  <definition><![CDATA[
+{
+    "title": "Patagonia Outdoor Operations",
+    "description": "Regional operations overview",
+    "theme": "dark",
+    "dataSources": {
+        "ds_kpi_base": {
+            "type": "ds.search",
+            "name": "KPI Base Data",
+            "options": {
+                "query": "| inputlookup patagonia_kpi_data.csv"
+            }
+        },
+        "ds_kpi_revenue": {
+            "type": "ds.chain",
+            "name": "KPI Revenue",
+            "options": {
+                "extend": "ds_kpi_base",
+                "query": "| where metric=\"Total Revenue\""
+            }
+        },
+        "ds_kpi_units": {
+            "type": "ds.chain",
+            "name": "KPI Units Sold",
+            "options": {
+                "extend": "ds_kpi_base",
+                "query": "| where metric=\"Units Sold\""
+            }
+        },
+        "ds_kpi_returns": {
+            "type": "ds.chain",
+            "name": "KPI Return Rate",
+            "options": {
+                "extend": "ds_kpi_base",
+                "query": "| where metric=\"Return Rate\""
+            }
+        },
+        "ds_kpi_carbon": {
+            "type": "ds.chain",
+            "name": "KPI Carbon Score",
+            "options": {
+                "extend": "ds_kpi_base",
+                "query": "| where metric=\"Carbon Offset Score\""
+            }
+        },
+        "ds_sustainability_gauge": {
+            "type": "ds.search",
+            "name": "Sustainability Gauge",
+            "options": {
+                "query": "| inputlookup patagonia_sustainability_trend.csv | stats sum(carbon_offset_tons) as value | eval target=12000, label=\"Annual Carbon Offset\""
+            }
+        },
+        "ds_regional": {
+            "type": "ds.search",
+            "name": "Regional Scores",
+            "options": {
+                "query": "| inputlookup patagonia_regional_scores.csv | sort - composite_score"
+            }
+        },
+        "ds_sustainability_trend": {
+            "type": "ds.search",
+            "name": "Sustainability Trend",
+            "options": {
+                "query": "| inputlookup patagonia_sustainability_trend.csv | sort month"
+            }
+        },
+        "ds_inventory": {
+            "type": "ds.search",
+            "name": "Inventory Health",
+            "options": {
+                "query": "| inputlookup patagonia_inventory.csv"
+            }
+        },
+        "ds_alerts": {
+            "type": "ds.search",
+            "name": "Recent Alerts",
+            "options": {
+                "query": "| inputlookup patagonia_alerts.csv | sort - _time"
+            }
+        }
+    },
+    "visualizations": {
+        "viz_banner_bg": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#242220",
+                "strokeColor": "transparent",
+                "strokeWidth": 0
+            }
+        },
+        "viz_banner_ridge": {
+            "type": "splunk.image",
+            "options": {
+                "src": "/static/app/patagonia_outdoor_ops/images/ridgeline.svg"
+            }
+        },
+        "viz_banner_accent": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "rgba(94,143,92,0.25)",
+                "strokeColor": "transparent",
+                "strokeWidth": 0
+            }
+        },
+        "viz_banner_title": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "**PATAGONIA**&nbsp;&nbsp;&nbsp;OUTDOOR OPERATIONS",
+                "fontColor": "rgba(230,225,217,0.85)",
+                "backgroundColor": "transparent",
+                "fontSize": "large"
+            }
+        },
+        "viz_card_kpi": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#242220",
+                "strokeColor": "rgba(230,225,217,0.04)",
+                "strokeWidth": 1,
+                "rx": 6,
+                "ry": 6
+            }
+        },
+        "viz_kpi_revenue": {
+            "type": "patagonia_outdoor_ops.patagonia_kpi",
+            "dataSources": { "primary": "ds_kpi_revenue" },
+            "options": {
+                "backgroundColor": "transparent",
+                "patagonia_outdoor_ops.patagonia_kpi.accentColor": "#5E8F5C",
+                "patagonia_outdoor_ops.patagonia_kpi.unitPosition": "before",
+                "patagonia_outdoor_ops.patagonia_kpi.compact": "true"
+            }
+        },
+        "viz_kpi_units": {
+            "type": "patagonia_outdoor_ops.patagonia_kpi",
+            "dataSources": { "primary": "ds_kpi_units" },
+            "options": {
+                "backgroundColor": "transparent",
+                "patagonia_outdoor_ops.patagonia_kpi.accentColor": "#6899A9",
+                "patagonia_outdoor_ops.patagonia_kpi.compact": "true"
+            }
+        },
+        "viz_kpi_returns": {
+            "type": "patagonia_outdoor_ops.patagonia_kpi",
+            "dataSources": { "primary": "ds_kpi_returns" },
+            "options": {
+                "backgroundColor": "transparent",
+                "patagonia_outdoor_ops.patagonia_kpi.accentColor": "#C9956B"
+            }
+        },
+        "viz_kpi_carbon": {
+            "type": "patagonia_outdoor_ops.patagonia_kpi",
+            "dataSources": { "primary": "ds_kpi_carbon" },
+            "options": {
+                "backgroundColor": "transparent",
+                "patagonia_outdoor_ops.patagonia_kpi.accentColor": "#5E8F5C",
+                "patagonia_outdoor_ops.patagonia_kpi.compact": "false"
+            }
+        },
+        "viz_label_sustainability": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "SUSTAINABILITY METRICS",
+                "fontColor": "rgba(230,225,217,0.25)",
+                "backgroundColor": "transparent",
+                "fontSize": "extraSmall"
+            }
+        },
+        "viz_label_regional": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "REGIONAL PERFORMANCE",
+                "fontColor": "rgba(230,225,217,0.25)",
+                "backgroundColor": "transparent",
+                "fontSize": "extraSmall"
+            }
+        },
+        "viz_label_trend": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "CARBON OFFSET TREND",
+                "fontColor": "rgba(230,225,217,0.25)",
+                "backgroundColor": "transparent",
+                "fontSize": "extraSmall"
+            }
+        },
+        "viz_label_inventory": {
+            "type": "splunk.markdown",
+            "options": {
+                "markdown": "INVENTORY HEALTH",
+                "fontColor": "rgba(230,225,217,0.25)",
+                "backgroundColor": "transparent",
+                "fontSize": "extraSmall"
+            }
+        },
+        "viz_card_sustainability": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#242220",
+                "strokeColor": "rgba(230,225,217,0.04)",
+                "strokeWidth": 1,
+                "rx": 6,
+                "ry": 6
+            }
+        },
+        "viz_card_regional": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#242220",
+                "strokeColor": "rgba(230,225,217,0.04)",
+                "strokeWidth": 1,
+                "rx": 6,
+                "ry": 6
+            }
+        },
+        "viz_card_trend": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#242220",
+                "strokeColor": "rgba(230,225,217,0.04)",
+                "strokeWidth": 1,
+                "rx": 6,
+                "ry": 6
+            }
+        },
+        "viz_card_inventory": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#242220",
+                "strokeColor": "rgba(230,225,217,0.04)",
+                "strokeWidth": 1,
+                "rx": 6,
+                "ry": 6
+            }
+        },
+        "viz_card_alerts": {
+            "type": "splunk.rectangle",
+            "options": {
+                "fillColor": "#242220",
+                "strokeColor": "rgba(230,225,217,0.04)",
+                "strokeWidth": 1,
+                "rx": 6,
+                "ry": 6
+            }
+        },
+        "viz_sustainability_gauge": {
+            "type": "patagonia_outdoor_ops.sustainability_gauge",
+            "dataSources": { "primary": "ds_sustainability_gauge" },
+            "options": {
+                "backgroundColor": "transparent",
+                "patagonia_outdoor_ops.sustainability_gauge.accentIntensity": "60"
+            }
+        },
+        "viz_regional_bars": {
+            "type": "patagonia_outdoor_ops.regional_bars",
+            "dataSources": { "primary": "ds_regional" },
+            "options": {
+                "backgroundColor": "transparent"
+            }
+        },
+        "viz_trend_area": {
+            "type": "patagonia_outdoor_ops.trend_area",
+            "dataSources": { "primary": "ds_sustainability_trend" },
+            "options": {
+                "backgroundColor": "transparent"
+            }
+        },
+        "viz_inventory_bars": {
+            "type": "patagonia_outdoor_ops.inventory_bars",
+            "dataSources": { "primary": "ds_inventory" },
+            "options": {
+                "backgroundColor": "transparent"
+            }
+        },
+        "viz_alert_feed": {
+            "type": "patagonia_outdoor_ops.alert_feed",
+            "dataSources": { "primary": "ds_alerts" },
+            "options": {
+                "backgroundColor": "transparent",
+                "patagonia_outdoor_ops.alert_feed.maxRows": "8"
+            }
+        }
+    },
+    "inputs": {},
+    "layout": {
+        "type": "absolute",
+        "options": {
+            "width": 1920,
+            "height": 1080,
+            "backgroundColor": "#1C1A17"
+        },
+        "structure": [
+            {
+                "item": "viz_banner_bg",
+                "type": "block",
+                "position": { "x": 0, "y": 0, "w": 1920, "h": 72 }
+            },
+            {
+                "item": "viz_banner_ridge",
+                "type": "block",
+                "position": { "x": 0, "y": 0, "w": 1920, "h": 72 }
+            },
+            {
+                "item": "viz_banner_accent",
+                "type": "block",
+                "position": { "x": 0, "y": 71, "w": 1920, "h": 2 }
+            },
+            {
+                "item": "viz_banner_title",
+                "type": "block",
+                "position": { "x": 32, "y": 10, "w": 500, "h": 56 }
+            },
+            {
+                "item": "viz_card_kpi",
+                "type": "block",
+                "position": { "x": 14, "y": 84, "w": 1892, "h": 112 }
+            },
+            {
+                "item": "viz_kpi_revenue",
+                "type": "block",
+                "position": { "x": 20, "y": 90, "w": 458, "h": 100 }
+            },
+            {
+                "item": "viz_kpi_units",
+                "type": "block",
+                "position": { "x": 494, "y": 90, "w": 458, "h": 100 }
+            },
+            {
+                "item": "viz_kpi_returns",
+                "type": "block",
+                "position": { "x": 968, "y": 90, "w": 458, "h": 100 }
+            },
+            {
+                "item": "viz_kpi_carbon",
+                "type": "block",
+                "position": { "x": 1442, "y": 90, "w": 458, "h": 100 }
+            },
+            {
+                "item": "viz_label_sustainability",
+                "type": "block",
+                "position": { "x": 22, "y": 210, "w": 250, "h": 18 }
+            },
+            {
+                "item": "viz_label_regional",
+                "type": "block",
+                "position": { "x": 948, "y": 210, "w": 250, "h": 18 }
+            },
+            {
+                "item": "viz_card_sustainability",
+                "type": "block",
+                "position": { "x": 14, "y": 230, "w": 916, "h": 330 }
+            },
+            {
+                "item": "viz_card_regional",
+                "type": "block",
+                "position": { "x": 940, "y": 230, "w": 966, "h": 330 }
+            },
+            {
+                "item": "viz_sustainability_gauge",
+                "type": "block",
+                "position": { "x": 20, "y": 236, "w": 904, "h": 318 }
+            },
+            {
+                "item": "viz_regional_bars",
+                "type": "block",
+                "position": { "x": 946, "y": 236, "w": 954, "h": 318 }
+            },
+            {
+                "item": "viz_label_trend",
+                "type": "block",
+                "position": { "x": 22, "y": 574, "w": 250, "h": 18 }
+            },
+            {
+                "item": "viz_label_inventory",
+                "type": "block",
+                "position": { "x": 978, "y": 574, "w": 250, "h": 18 }
+            },
+            {
+                "item": "viz_card_trend",
+                "type": "block",
+                "position": { "x": 14, "y": 594, "w": 946, "h": 270 }
+            },
+            {
+                "item": "viz_card_inventory",
+                "type": "block",
+                "position": { "x": 970, "y": 594, "w": 936, "h": 270 }
+            },
+            {
+                "item": "viz_trend_area",
+                "type": "block",
+                "position": { "x": 20, "y": 600, "w": 934, "h": 258 }
+            },
+            {
+                "item": "viz_inventory_bars",
+                "type": "block",
+                "position": { "x": 976, "y": 600, "w": 924, "h": 258 }
+            },
+            {
+                "item": "viz_card_alerts",
+                "type": "block",
+                "position": { "x": 14, "y": 878, "w": 1892, "h": 188 }
+            },
+            {
+                "item": "viz_alert_feed",
+                "type": "block",
+                "position": { "x": 20, "y": 884, "w": 1880, "h": 176 }
+            }
+        ]
+    }
+}
+  ]]></definition>
+</dashboard>

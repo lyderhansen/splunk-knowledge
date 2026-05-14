@@ -1,0 +1,72 @@
+<form class="splunk-formatter-section" section-label="Theme">
+  <splunk-control-group label="Theme" help="Auto detects the Splunk UI theme; Dark or Light override it manually.">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" default="auto">
+      <option value="auto">Auto</option>
+      <option value="dark">Dark</option>
+      <option value="light">Light</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Data configurations">
+  <splunk-control-group label="Category field" help="SPL field containing the product category name.">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.categoryField" default="category"></splunk-text-input>
+  </splunk-control-group>
+  <splunk-control-group label="In-stock field" help="SPL field with in-stock unit counts.">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.inStockField" default="in_stock"></splunk-text-input>
+  </splunk-control-group>
+  <splunk-control-group label="Low-stock field" help="SPL field with low-stock unit counts.">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.lowStockField" default="low_stock"></splunk-text-input>
+  </splunk-control-group>
+  <splunk-control-group label="Critical field" help="SPL field with critically low unit counts.">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.criticalField" default="critical"></splunk-text-input>
+  </splunk-control-group>
+  <splunk-control-group label="Total units field" help="SPL field with total inventory units. If absent, totals are summed from the three stock fields.">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.totalField" default="total_units"></splunk-text-input>
+  </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+  <splunk-control-group label="Show total units" help="Display total unit count to the right of each bar.">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.showTotals" default="true">
+      <option value="true">On</option>
+      <option value="false">Off</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+  <splunk-control-group label="Show legend" help="Display the color legend at the bottom of the visualization.">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.showLegend" default="true">
+      <option value="true">On</option>
+      <option value="false">Off</option>
+    </splunk-radio-input>
+  </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+  <splunk-control-group label="In-stock color" help="Fill color for the in-stock segment of each bar.">
+    <splunk-color-picker name="{{VIZ_NAMESPACE}}.colorInStock" default="#5E8F5C" type="custom">
+      <splunk-color token="#5E8F5C"></splunk-color>
+      <splunk-color token="#4CAF50"></splunk-color>
+      <splunk-color token="#81C784"></splunk-color>
+      <splunk-color token="#2E7D32"></splunk-color>
+    </splunk-color-picker>
+  </splunk-control-group>
+  <splunk-control-group label="Low-stock color" help="Fill color for the low-stock segment of each bar.">
+    <splunk-color-picker name="{{VIZ_NAMESPACE}}.colorLowStock" default="#C9956B" type="custom">
+      <splunk-color token="#C9956B"></splunk-color>
+      <splunk-color token="#FFB74D"></splunk-color>
+      <splunk-color token="#FF9800"></splunk-color>
+      <splunk-color token="#E65100"></splunk-color>
+    </splunk-color-picker>
+  </splunk-control-group>
+  <splunk-control-group label="Critical color" help="Fill color for the critical stock segment of each bar.">
+    <splunk-color-picker name="{{VIZ_NAMESPACE}}.colorCritical" default="#B86B52" type="custom">
+      <splunk-color token="#B86B52"></splunk-color>
+      <splunk-color token="#EF5350"></splunk-color>
+      <splunk-color token="#B71C1C"></splunk-color>
+      <splunk-color token="#FF5252"></splunk-color>
+    </splunk-color-picker>
+  </splunk-control-group>
+  <splunk-control-group label="Accent intensity (0–100)" help="Controls segment saturation and hover glow strength. 0 = muted earth tones; 100 = fully saturated.">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.accentIntensity" default="50"></splunk-text-input>
+  </splunk-control-group>
+</form>

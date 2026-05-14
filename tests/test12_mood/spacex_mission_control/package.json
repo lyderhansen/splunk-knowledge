@@ -1,0 +1,12 @@
+{
+  "name": "spacex_mission_control",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node build.js"
+  },
+  "devDependencies": {
+    "webpack": "^5.90.0",
+    "webpack-cli": "^5.1.0"
+  }
+}

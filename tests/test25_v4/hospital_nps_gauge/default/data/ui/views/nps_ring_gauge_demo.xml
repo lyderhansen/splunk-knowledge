@@ -1,0 +1,50 @@
+<dashboard version="2" theme="light">
+    <label>NPS Ring Gauge</label>
+    <description>Patient satisfaction ring gauge for hospital Net Promoter Score</description>
+    <definition><![CDATA[
+{
+    "dataSources": {
+        "ds_demo": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup hospital_nps_gauge_demo.csv"
+            },
+            "name": "NPS Demo Data"
+        }
+    },
+    "visualizations": {
+        "viz_nps": {
+            "type": "hospital_nps_gauge.nps_ring_gauge",
+            "dataSources": { "primary": "ds_demo" },
+            "options": {
+                "hospital_nps_gauge.nps_ring_gauge.scoreField": "score",
+                "hospital_nps_gauge.nps_ring_gauge.labelField": "label",
+                "hospital_nps_gauge.nps_ring_gauge.targetField": "target",
+                "hospital_nps_gauge.nps_ring_gauge.maxValue": "100",
+                "hospital_nps_gauge.nps_ring_gauge.showTarget": "true",
+                "hospital_nps_gauge.nps_ring_gauge.accentColor": "#0077B6",
+                "hospital_nps_gauge.nps_ring_gauge.themeMode": "auto",
+                "hospital_nps_gauge.nps_ring_gauge.accentIntensity": "50",
+                "hospital_nps_gauge.nps_ring_gauge.showAnimation": "true",
+                "hospital_nps_gauge.nps_ring_gauge.zoneLow": "30",
+                "hospital_nps_gauge.nps_ring_gauge.zoneHigh": "60",
+                "hospital_nps_gauge.nps_ring_gauge.detractorColor": "0xE63946",
+                "hospital_nps_gauge.nps_ring_gauge.passiveColor": "0xF4A261",
+                "hospital_nps_gauge.nps_ring_gauge.promoterColor": "0x2DC653"
+            }
+        }
+    },
+    "layout": {
+        "type": "absolute",
+        "options": { "width": 1920, "height": 600 },
+        "structure": [
+            {
+                "item": "viz_nps",
+                "type": "block",
+                "position": { "x": 20, "y": 20, "w": 1880, "h": 560 }
+            }
+        ]
+    }
+}
+    ]]></definition>
+</dashboard>

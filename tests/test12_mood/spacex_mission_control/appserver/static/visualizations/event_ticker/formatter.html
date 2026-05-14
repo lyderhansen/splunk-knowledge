@@ -1,0 +1,49 @@
+<form class="splunk-formatter-section" section-label="Data configurations">
+    <splunk-control-group label="Time field" help="SPL field containing the T+ timestamp string (e.g. T+00:02:34)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.timeField" value="time">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Event field" help="SPL field containing the mission event name (e.g. Max-Q, MECO)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.eventField" value="event">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Status field" help="SPL field containing status string: nominal, go, warning, caution, abort, anomaly, failed">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.statusField" value="status">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Max rows" help="Maximum number of events to fetch and display (1–500)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.maxRows" value="20">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Data display">
+    <splunk-control-group label="Show header" help="Display the MISSION EVENTS header label above the feed">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showHeader" value="true">
+            <option value="true">Show</option>
+            <option value="false">Hide</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+    <splunk-control-group label="Theme" help="Color scheme — dark for mission control, light for day ops">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.theme" value="dark">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Accent intensity" help="Glow and accent effect strength (0=off, 50=default, 100=max)">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.accentIntensity" value="50"></splunk-text-input>
+</splunk-control-group>
+<splunk-control-group label="Accent color" help="Color for unknown status events and UI highlights">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.accentColor"
+            type="custom" value="#0088CC">
+            <splunk-color>#0088CC</splunk-color>
+            <splunk-color>#00B8D4</splunk-color>
+            <splunk-color>#FF6B35</splunk-color>
+            <splunk-color>#7B2FBE</splunk-color>
+            <splunk-color>#E2E8F0</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+</form>

@@ -1,0 +1,10 @@
+genre,title_count,avg_rating,total_views,share_pct
+Drama,142,7.8,1840000000,28.4
+Thriller,89,7.2,1120000000,17.3
+Comedy,76,6.9,980000000,15.1
+Action,68,6.7,870000000,13.4
+Sci-Fi,34,7.9,620000000,9.6
+Crime,45,7.4,440000000,6.8
+Romance,52,6.5,320000000,4.9
+Documentary,38,8.1,180000000,2.8
+Horror,29,6.3,110000000,1.7

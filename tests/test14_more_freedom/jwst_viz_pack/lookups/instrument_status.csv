@@ -1,0 +1,5 @@
+instrument,status,mode,uptime_pct
+NIRCam,active,Wide Field Imaging,99.7
+NIRSpec,calibration,Multi-Object Spectroscopy,97.2
+MIRI,active,Medium-Resolution Spectroscopy,98.9
+FGS,idle,Fine Guidance,99.1

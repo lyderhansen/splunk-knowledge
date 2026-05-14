@@ -1,0 +1,62 @@
+<form class="splunk-formatter-section" section-label="Data Configuration">
+    <splunk-control-group label="Location Field" help="Field containing the edge location name">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.locationField" value="location">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Status Field" help="Field with health status (green/amber/red or healthy/degraded/down)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.statusField" value="status">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Latency Field" help="Optional field showing latency per location">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.latencyField" value="latency">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Data Display">
+    <splunk-control-group label="Columns" help="Number of columns in the grid">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.columns" value="5">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show Latency" help="Display latency value inside each cell">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showLatency" value="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show Labels" help="Display location name inside each cell">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showLabels" value="true">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Color and Style">
+    <splunk-control-group label="Theme" help="Auto detects dashboard theme">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto">
+            <option value="auto">Auto</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Healthy Color" help="Color for healthy edge locations">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.healthyColor" type="custom" value="#34D399">
+            <splunk-color>#34D399</splunk-color>
+            <splunk-color>#059669</splunk-color>
+            <splunk-color>#10B981</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Degraded Color" help="Color for degraded edge locations">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.degradedColor" type="custom" value="#FBBF24">
+            <splunk-color>#FBBF24</splunk-color>
+            <splunk-color>#F59E0B</splunk-color>
+            <splunk-color>#D97706</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Down Color" help="Color for down edge locations">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.downColor" type="custom" value="#EF4444">
+            <splunk-color>#EF4444</splunk-color>
+            <splunk-color>#DC2626</splunk-color>
+            <splunk-color>#F87171</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+</form>

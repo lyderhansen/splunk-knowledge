@@ -1,0 +1,46 @@
+display.visualizations.custom.riot_liveops_viz.riot_kpi_tile.valueField = <string>
+display.visualizations.custom.riot_liveops_viz.riot_kpi_tile.labelField = <string>
+display.visualizations.custom.riot_liveops_viz.riot_kpi_tile.unitField = <string>
+display.visualizations.custom.riot_liveops_viz.riot_kpi_tile.trendField = <string>
+display.visualizations.custom.riot_liveops_viz.riot_kpi_tile.sparklineField = <string>
+display.visualizations.custom.riot_liveops_viz.riot_kpi_tile.showTrend = <boolean>
+display.visualizations.custom.riot_liveops_viz.riot_kpi_tile.showSparkline = <boolean>
+display.visualizations.custom.riot_liveops_viz.riot_kpi_tile.decimals = <integer>
+display.visualizations.custom.riot_liveops_viz.riot_kpi_tile.accentColor = <string>
+display.visualizations.custom.riot_liveops_viz.riot_kpi_tile.glowIntensity = <integer>
+display.visualizations.custom.riot_liveops_viz.riot_kpi_tile.themeMode = <string>
+
+display.visualizations.custom.riot_liveops_viz.riot_latency_bars.regionField = <string>
+display.visualizations.custom.riot_liveops_viz.riot_latency_bars.latencyField = <string>
+display.visualizations.custom.riot_liveops_viz.riot_latency_bars.thresholdField = <string>
+display.visualizations.custom.riot_liveops_viz.riot_latency_bars.maxLatency = <float>
+display.visualizations.custom.riot_liveops_viz.riot_latency_bars.warningThreshold = <float>
+display.visualizations.custom.riot_liveops_viz.riot_latency_bars.criticalThreshold = <float>
+display.visualizations.custom.riot_liveops_viz.riot_latency_bars.showValues = <boolean>
+display.visualizations.custom.riot_liveops_viz.riot_latency_bars.barHeight = <integer>
+display.visualizations.custom.riot_liveops_viz.riot_latency_bars.barColor = <string>
+display.visualizations.custom.riot_liveops_viz.riot_latency_bars.glowIntensity = <integer>
+display.visualizations.custom.riot_liveops_viz.riot_latency_bars.themeMode = <string>
+
+display.visualizations.custom.riot_liveops_viz.riot_load_gauge.valueField = <string>
+display.visualizations.custom.riot_liveops_viz.riot_load_gauge.maxField = <string>
+display.visualizations.custom.riot_liveops_viz.riot_load_gauge.labelField = <string>
+display.visualizations.custom.riot_liveops_viz.riot_load_gauge.warningThreshold = <integer>
+display.visualizations.custom.riot_liveops_viz.riot_load_gauge.criticalThreshold = <integer>
+display.visualizations.custom.riot_liveops_viz.riot_load_gauge.showPercentage = <boolean>
+display.visualizations.custom.riot_liveops_viz.riot_load_gauge.ringWidth = <integer>
+display.visualizations.custom.riot_liveops_viz.riot_load_gauge.accentColor = <string>
+display.visualizations.custom.riot_liveops_viz.riot_load_gauge.glowIntensity = <integer>
+display.visualizations.custom.riot_liveops_viz.riot_load_gauge.themeMode = <string>
+
+display.visualizations.custom.riot_liveops_viz.riot_incident_feed.timeField = <string>
+display.visualizations.custom.riot_liveops_viz.riot_incident_feed.severityField = <string>
+display.visualizations.custom.riot_liveops_viz.riot_incident_feed.regionField = <string>
+display.visualizations.custom.riot_liveops_viz.riot_incident_feed.messageField = <string>
+display.visualizations.custom.riot_liveops_viz.riot_incident_feed.serviceField = <string>
+display.visualizations.custom.riot_liveops_viz.riot_incident_feed.maxRows = <integer>
+display.visualizations.custom.riot_liveops_viz.riot_incident_feed.showTimestamp = <boolean>
+display.visualizations.custom.riot_liveops_viz.riot_incident_feed.rowHeight = <integer>
+display.visualizations.custom.riot_liveops_viz.riot_incident_feed.accentColor = <string>
+display.visualizations.custom.riot_liveops_viz.riot_incident_feed.glowIntensity = <integer>
+display.visualizations.custom.riot_liveops_viz.riot_incident_feed.themeMode = <string>

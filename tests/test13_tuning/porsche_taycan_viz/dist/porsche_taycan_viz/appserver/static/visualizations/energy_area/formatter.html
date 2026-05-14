@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+</head>
+<body>
+<form class="splunk-formatter">
+
+  <div class="section-label">Data configurations</div>
+
+  <div class="control-group"
+       help="Name of the field containing the time axis values. Defaults to _time.">
+    <label>Time field</label>
+    <splunk-text-input
+      name="{{VIZ_NAMESPACE}}.timeField"
+      default="_time">
+    </splunk-text-input>
+  </div>
+
+  <div class="control-group"
+       help="Name of the field containing energy consumption values (kWh).">
+    <label>Consumption field</label>
+    <splunk-text-input
+      name="{{VIZ_NAMESPACE}}.consumptionField"
+      default="consumption">
+    </splunk-text-input>
+  </div>
+
+  <div class="control-group"
+       help="Name of the field containing energy regeneration values (kWh).">
+    <label>Regeneration field</label>
+    <splunk-text-input
+      name="{{VIZ_NAMESPACE}}.regenField"
+      default="regeneration">
+    </splunk-text-input>
+  </div>
+
+  <div class="section-label">Data display</div>
+
+  <div class="control-group"
+       help="Number of decimal places shown in axis labels and tooltip values.">
+    <label>Decimal places</label>
+    <splunk-text-input
+      name="{{VIZ_NAMESPACE}}.decimals"
+      default="1">
+    </splunk-text-input>
+  </div>
+
+  <div class="control-group"
+       help="Unit label appended to numeric values in the tooltip (e.g. kWh, MWh).">
+    <label>Unit</label>
+    <splunk-text-input
+      name="{{VIZ_NAMESPACE}}.unit"
+      default="kWh">
+    </splunk-text-input>
+  </div>
+
+  <div class="control-group"
+       help="Show horizontal grid lines across the chart area.">
+    <label>Show grid</label>
+    <splunk-radio-input
+      name="{{VIZ_NAMESPACE}}.showGrid"
+      default="true">
+      <option value="true">Yes</option>
+      <option value="false">No</option>
+    </splunk-radio-input>
+  </div>
+
+  <div class="control-group"
+       help="Show a vertical crosshair line when hovering over the chart.">
+    <label>Show crosshair</label>
+    <splunk-radio-input
+      name="{{VIZ_NAMESPACE}}.showCrosshair"
+      default="true">
+      <option value="true">Yes</option>
+      <option value="false">No</option>
+    </splunk-radio-input>
+  </div>
+
+  <div class="control-group"
+       help="Opacity of the filled area gradient under each series (0.0–1.0). Default is 0.25.">
+    <label>Area opacity</label>
+    <splunk-text-input
+      name="{{VIZ_NAMESPACE}}.areaOpacity"
+      default="0.25">
+    </splunk-text-input>
+  </div>
+
+  <div class="section-label">Color and style</div>
+
+  <div class="control-group"
+       help="Fill and line color for the energy consumption series.">
+    <label>Consumption color</label>
+    <splunk-color-picker
+      name="{{VIZ_NAMESPACE}}.consumptionColor"
+      default="#3B82F6">
+    </splunk-color-picker>
+  </div>
+
+  <div class="control-group"
+       help="Fill and line color for the energy regeneration series.">
+    <label>Regeneration color</label>
+    <splunk-color-picker
+      name="{{VIZ_NAMESPACE}}.regenColor"
+      default="#00C9A7">
+    </splunk-color-picker>
+  </div>
+
+  <div class="control-group"
+       help="Intensity of glow and ambient effects (0–100). Higher values increase ambient light bleed.">
+    <label>Accent intensity</label>
+    <splunk-text-input
+      name="{{VIZ_NAMESPACE}}.accentIntensity"
+      default="50">
+    </splunk-text-input>
+  </div>
+
+  <div class="control-group"
+       help="Color theme for the panel background and text. Use dark for EV dashboards.">
+    <label>Theme</label>
+    <splunk-radio-input
+      name="{{VIZ_NAMESPACE}}.theme"
+      default="dark">
+      <option value="dark">Dark</option>
+      <option value="light">Light</option>
+    </splunk-radio-input>
+  </div>
+
+</form>
+</body>
+</html>

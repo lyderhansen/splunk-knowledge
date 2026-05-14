@@ -1,0 +1,11 @@
+severity,store,message,_time
+critical,Aventura,Revenue 12% below weekly target,2026-05-13T14:22:00
+warning,Northpark Dallas,Genius Bar wait time exceeded 15 min threshold,2026-05-13T13:45:00
+warning,Michigan Avenue,NPS dropped 8 points week-over-week,2026-05-13T12:30:00
+critical,Aventura,Foot traffic down 18% vs last week,2026-05-13T11:15:00
+info,Fifth Avenue,iPhone 16 Pro Max stock below reorder point,2026-05-13T10:42:00
+warning,King of Prussia,Watch Ultra inventory imbalance across SKUs,2026-05-13T09:30:00
+info,Stanford,MacBook Air M4 selling 2x forecast,2026-05-12T16:20:00
+info,Union Square SF,Genius Bar satisfaction score hit 92 this week,2026-05-12T14:10:00
+warning,Lincoln Park,iPad Pro demo units need replacement,2026-05-12T11:45:00
+critical,Northpark Dallas,Revenue trailing 3-week average by 15%,2026-05-12T09:00:00
