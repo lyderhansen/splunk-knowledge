@@ -68,7 +68,7 @@ _If yes, what should clicking do? e.g., "Click a sensor → show detail panel"_
 1. Copy this template
 2. Fill in sections 1-2 (required) and 3-5 (optional)
 3. Paste into Claude Code or Cursor with: "Build this viz pack using the splunk-viz-packs plugin"
-4. The AI will invoke vp-couture → vp-create → vp-viz and deliver a .tar.gz
+4. The AI will invoke vp-design → vp-viz → vp-create and deliver a .tar.gz
 
 **Minimal version** — if you just want to get started fast:
 

@@ -1,6 +1,6 @@
 ---
 name: vp-init
-description: "Starts a Splunk custom visualization pack build. Gathers app name, brand context, data source, and viz count, then routes to the right workflow."
+description: "Starts a Splunk custom visualization pack build. Gathers app name, brand context, tone, font strategy, data source, viz inventory, then routes to the right workflow."
 when_to_use: "Use when starting a new viz pack from scratch. Triggers on 'new viz pack', 'start viz project', 'build splunk vizs', 'custom visualization app', 'themed viz suite'."
 disable-model-invocation: true
 arguments: [app-name, brand]
@@ -12,18 +12,27 @@ argument-hint: "[app-name] [brand-description]"
 ## Quick start
 
 If arguments provided: `/vp-init my_pack "Nike - bold, kinetic"`
+Fill in what was given, then ask the remaining questions.
 
-Otherwise, ask these 4 questions:
+Otherwise, ask ALL 7 questions below. These feed directly into vp-design's design context — skipping any means the user gets asked twice.
 
 ### 1. App name
 Lowercase with underscores. Used as Splunk app ID and directory name.
 Example: `nike_training_club`, `hospital_ops_viz`
 
 ### 2. Brand / domain
-Short description. Drives palette, fonts, and viz selection.
-Example: "Nike Training Club — bold, kinetic, volt on black"
+Short description of brand identity AND industry/use case.
+Example: "Nike Training Club — bold, kinetic, volt on black, fitness domain"
 
-### 3. Data source
+### 3. Tone — 3 committable words
+NOT "modern" or "clean" — those are dead categories. Push for specificity.
+Example: "kinetic, defiant, electric" or "clinical, precise, reassuring"
+
+### 4. Font strategy
+1-2 fonts max. Base64 embedded in viz CSS. System fonts = zero overhead.
+Example: "Barlow Condensed for display, monospace for values" or "system sans-serif only"
+
+### 5. Data source
 
 **Demo CSV (recommended, default):**
 - Fastest path — viz works immediately after install
@@ -35,28 +44,49 @@ Example: "Nike Training Club — bold, kinetic, volt on black"
 - Load `spl-gotchas` from splunk-spl before writing queries
 - Recommended only if you already know your data schema
 
-### 4. Viz count
-- **1 viz:** skip vp-couture, load vp-viz directly
-- **2-8 vizs:** load vp-couture for design brief first
-- Recommended: 3-5 for a balanced suite
+### 6. Viz inventory
+Which vizs does this pack need? Can be specific names or general categories.
+Example: "KPI hero, severity strip, trend chart, data table, geo map"
+Recommended: 3-5 for a balanced suite, max 8.
+
+### 7. Dashboard included?
+- **Yes:** a Dashboard Studio JSON dashboard will be built alongside the vizs
+- **No:** viz pack only, user creates dashboards manually
 
 ## Routing
 
 ```
-Single viz (count = 1):
+Single viz (inventory = 1):
   → vp-viz (code) → vp-create (package)
 
-Multi-viz pack (count > 1):
-  → vp-couture (design) → vp-viz (code per viz) → vp-create (package)
+Multi-viz pack (inventory > 1):
+  → vp-design (design) → vp-viz (code per viz) → vp-create (package)
 
 Production data (any count):
   → Add: spl-gotchas before savedsearches.conf
 
-Dashboard included:
+Dashboard included (question 7 = yes):
   → Add: ds-create from splunk-dashboard-studio
+  → If tabs: also add ds-int-tabs
+  → If drilldowns: also add ds-int-drilldowns
 ```
 
 Write all viz code INLINE (same context). Do NOT dispatch subagents for code generation.
+
+## Hand-off to vp-design
+
+When routing to vp-design, pass ALL collected context so it does NOT re-ask:
+
+```
+Design context (from vp-init):
+  Brand:     {answer to Q2}
+  Tone:      {answer to Q3}
+  Fonts:     {answer to Q4}
+  Inventory: {answer to Q6}
+  Dashboard: {answer to Q7}
+```
+
+vp-design should verify these 5 fields are present and skip its own Q&A if they are.
 
 ## Cross-plugin dependencies
 

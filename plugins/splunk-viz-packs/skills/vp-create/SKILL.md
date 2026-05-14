@@ -48,6 +48,57 @@ Common fixes:
 
 After fixing, re-run build (step 1) then validate (step 2).
 
+## Step 3b: Generate app icons (MANDATORY)
+
+Without app icons, Splunk shows a generic grey placeholder in the app list.
+Run this BEFORE packaging — it takes 2 seconds.
+
+```python
+python3 -c "
+from PIL import Image, ImageDraw, ImageFont
+import os, sys
+app_dir = sys.argv[1]
+accent = sys.argv[2]  # e.g. '#635BFF'
+initial = sys.argv[3] # e.g. 'S'
+os.makedirs(os.path.join(app_dir, 'static'), exist_ok=True)
+for size, name in [(36,'appIcon.png'),(72,'appIcon_2x.png'),(36,'appIconAlt.png'),(72,'appIconAlt_2x.png')]:
+    img = Image.new('RGB', (size, size), accent)
+    draw = ImageDraw.Draw(img)
+    fs = size // 2
+    try: font = ImageFont.truetype('/System/Library/Fonts/Helvetica.ttc', fs)
+    except: font = ImageFont.load_default()
+    draw.text((size//2, size//2), initial, fill='#FFFFFF', font=font, anchor='mm')
+    img.save(os.path.join(app_dir, 'static', name))
+print('OK — 4 icons generated in static/')
+" /path/to/app "#ACCENT" "X"
+```
+
+Replace `/path/to/app`, `#ACCENT` (brand accent hex), and `X` (first letter of app name).
+
+## Step 3c: Generate preview.png per viz (MANDATORY)
+
+Each viz needs `preview.png` at 250x150. Shown in Splunk viz picker. Without it, the viz appears as a black box.
+
+```python
+python3 -c "
+from PIL import Image, ImageDraw
+import sys
+out = sys.argv[1]    # e.g. /path/to/app/appserver/static/visualizations/my_viz/preview.png
+accent = sys.argv[2] # e.g. '#635BFF'
+bg = sys.argv[3]     # e.g. '#1A1A2E'
+img = Image.new('RGB', (250, 150), bg)
+draw = ImageDraw.Draw(img)
+# Draw a simplified viz silhouette — bars, arcs, or chart shape
+for i in range(5):
+    bh = 30 + (i * 15) % 80
+    draw.rectangle([30 + i*42, 150 - bh, 30 + i*42 + 32, 150], fill=accent)
+img.save(out)
+print('OK — ' + out)
+" /path/to/viz/preview.png "#ACCENT" "#BG"
+```
+
+Adapt the silhouette shape to match the viz type (bars for bar charts, arc for gauges, grid for tables, etc.).
+
 ## Step 4: Package
 
 ```bash
@@ -113,51 +164,12 @@ Restart: Required for static images to be served
 
 Save to `default/data/ui/nav/default.xml`.
 
-## App icons
-
-MUST generate for every app. Without them, Splunk shows a generic placeholder.
-
-```python
-from PIL import Image, ImageDraw, ImageFont
-for size, name in [(36, 'appIcon.png'), (72, 'appIcon_2x.png'),
-                   (36, 'appIconAlt.png'), (72, 'appIconAlt_2x.png')]:
-    img = Image.new('RGB', (size, size), '{{ACCENT_HEX}}')
-    draw = ImageDraw.Draw(img)
-    fs = size // 2
-    try:
-        font = ImageFont.truetype('/System/Library/Fonts/Helvetica.ttc', fs)
-    except:
-        font = ImageFont.load_default()
-    draw.text((size//2, size//2), '{{INITIAL}}', fill='#FFFFFF',
-              font=font, anchor='mm')
-    img.save('static/' + name)
-```
-
-Save to `static/` (NOT `appserver/static/`):
-- `static/appIcon.png` — 36x36
-- `static/appIcon_2x.png` — 72x72
-- `static/appIconAlt.png` — 36x36
-- `static/appIconAlt_2x.png` — 72x72
-
-## Preview.png per viz
-
-Each viz needs `preview.png` at 250x150 (or 500x300 @2x). Shown in Splunk viz picker.
-
-MUST be real PNG binary — SVG renamed to .png shows as black box.
-
-Generate with Pillow:
-```python
-from PIL import Image, ImageDraw
-img = Image.new('RGB', (250, 150), '#1A1A2E')
-draw = ImageDraw.Draw(img)
-# Draw simplified viz silhouette
-img.save('preview.png')
-```
-
 ## Packaging checklist
 
 ```
 - [ ] validate_viz.sh passed (zero FAIL)
+- [ ] App icons generated (step 3b — static/appIcon.png exists)
+- [ ] Preview.png generated per viz (step 3c — each viz dir has preview.png)
 - [ ] Tarball > 1KB
 - [ ] No nested .tar.gz in archive
 - [ ] Top-level dir matches app name
@@ -165,6 +177,5 @@ img.save('preview.png')
 - [ ] No src/ or node_modules/ in archive
 - [ ] No .DS_Store or ._* files
 - [ ] Nav bar exists (default.xml)
-- [ ] App icons exist (static/appIcon.png)
-- [ ] Preview.png in every viz directory
+- [ ] Light theme tested (themeMode=light in formatter, verify text is readable)
 ```

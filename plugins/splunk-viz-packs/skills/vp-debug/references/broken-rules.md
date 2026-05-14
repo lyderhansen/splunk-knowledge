@@ -22,6 +22,8 @@
 - B19: new Date() fails in sandboxed iframe
 - B20: Theme MUST default to 'auto' with detectTheme()
 - B21: Always null-guard before String() conversion
+- B22: hexFromSplunk — color picker returns integers not hex
+- B23: Light theme needs independent design, not dark inversion
 
 ### B1. Canvas font rendering requires explicit wait
 
@@ -706,4 +708,44 @@ var label = safeStr(row[labelIdx]);
 Apply this pattern to EVERY field read from row data, not just
 unit fields. Label, category, region, and any optional field can
 be `null`. Use a `safeStr()` helper to avoid repeating the check.
+
+### B22. hexFromSplunk — color picker returns integers, not hex
+
+Splunk's `splunk-color-picker` stores values as integers in some
+contexts. In Dashboard Studio dashboards, `config[ns + 'accentColor']`
+may return `"6511615"` instead of `"#635BFF"`.
+
+```javascript
+// WRONG — breaks when Splunk sends integer
+var color = config[ns + 'accentColor'] || '#635BFF';
+
+// CORRECT — handles both hex and integer formats
+var color = hexFromSplunk(config[ns + 'accentColor'], '#635BFF');
+```
+
+The `hexFromSplunk()` function (included in the vp-viz JS template)
+handles `#hex`, `0xHex`, and integer formats.
+
+**Known limitation (ad-hoc search):** When a viz is used in ad-hoc
+search (not a saved dashboard), the color picker value delivery can
+differ. In test27 (Stripe), `accentColor` did not work correctly on
+`splunk.table` in ad-hoc. If a user reports color settings being
+ignored in ad-hoc mode, this is the likely cause. Workaround: ensure
+the viz has sensible hardcoded fallback colors that don't depend on
+the color picker value.
+
+### B23. Light theme needs independent design, not dark inversion
+
+Light theme is not `s/dark/light/`. Common failures:
+
+- `textDim`/`textFaint` on white bg → ~4% visible, text disappears
+- Saturated accents that pop on `#0F0F1A` wash out on `#F5F5F5`
+- `withAlpha(color, 0.1)` grid lines invisible on white
+- Dark-mode glow (`shadowBlur: 20`) overpowers on light backgrounds
+
+**Rules:**
+- Hero values MUST use full `t.text` (never textDim/textFaint)
+- Reduce `shadowBlur` by 50% in light theme
+- Use `withAlpha(color, 0.15)` minimum for grid lines on light
+- Test BOTH themes before shipping — set `themeMode=light` in formatter
 

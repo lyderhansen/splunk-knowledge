@@ -1,13 +1,13 @@
 ---
-name: vp-ref-gotchas
-description: "Diagnostic reference for Splunk custom viz failures — 52 rules organized by severity (fatal, broken, rejected, cosmetic) plus error diagnosis flowchart. Loaded automatically when editing viz source files."
+name: vp-debug
+description: "Diagnostic reference for Splunk custom viz failures — 54 rules organized by severity (fatal, broken, rejected, cosmetic) plus error diagnosis flowchart. Loaded automatically when editing viz source files."
 when_to_use: "Use when a viz fails to load, renders incorrectly, or validate_viz.sh reports errors. Triggers on 'viz broken', 'script error', 'debug viz', 'why does my viz', 'formatter not working', 'blank panel'."
 paths: "*/visualizations/*/visualization_source.js, */visualizations/*/formatter.html"
 ---
 
-# vp-ref-gotchas — diagnostic reference for viz failures
+# vp-debug — diagnostic reference for viz failures
 
-These 52 rules were learned from real bugs across 30+ shipped viz apps. They explain WHY things fail and HOW to fix them.
+These 54 rules were learned from real bugs across 30+ shipped viz apps. They explain WHY things fail and HOW to fix them.
 
 **For code GENERATION, use vp-viz** — it has all rules baked into the templates. This skill explains the reasoning behind those rules.
 
@@ -54,7 +54,7 @@ Viz shows placeholder icon (bar chart in grey box)
 - `Content Security Policy directive 'img-src'` — Splunk CSP
 - `502 Connection refused` on `orchestrator/v1/spl2/enabled`
 
-## Rule index — 52 rules by severity
+## Rule index — 54 rules by severity
 
 ### FATAL — viz won't load (F1-F12)
 See [references/fatal-rules.md](references/fatal-rules.md)
@@ -100,6 +100,8 @@ See [references/broken-rules.md](references/broken-rules.md)
 | B19 | new Date() fails in sandboxed iframe |
 | B20 | Theme MUST default to 'auto' with detectTheme() |
 | B21 | Always null-guard before String() conversion |
+| B22 | hexFromSplunk — color picker returns integers not hex |
+| B23 | Light theme needs independent design, not dark inversion |
 
 ### REJECTED — fails AppInspect (R1-R8)
 See [references/rejected-rules.md](references/rejected-rules.md)
@@ -114,7 +116,9 @@ See [references/interactive-cosmetic.md](references/interactive-cosmetic.md)
 | Script error on load | F9, F6, F11 |
 | Blank panel, no errors | B17, B15 |
 | Settings don't save | B10, B7 |
-| Wrong colors in light mode | B20, B18 |
+| Wrong colors in light mode | B20, B18, B23 |
+| Color picker ignored in ad-hoc | B22 |
+| Text invisible in light theme | B23 |
 | "null" visible in text | B21 |
 | Gauge overflows panel | B8 |
 | Timestamps wrong | B19 |

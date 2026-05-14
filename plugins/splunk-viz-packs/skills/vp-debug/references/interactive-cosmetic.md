@@ -83,8 +83,8 @@ Store hit regions during `_render` and re-use in `_hitTest`.
 ## COSMETIC — works but looks wrong
 
 > COSMETIC rules prevent visual bugs. For design quality guidelines
-> (color choices, typography, spacing), see `vp-couture` and
-> `vp-ref-patterns`.
+> (color choices, typography, spacing), see `vp-design` and
+> `vp-recipes`.
 
 ### C1. Panel backgroundColor must be transparent
 

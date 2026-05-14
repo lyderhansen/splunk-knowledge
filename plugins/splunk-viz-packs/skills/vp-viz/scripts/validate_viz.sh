@@ -100,12 +100,24 @@ done
 echo ""
 echo "--- Structure ---"
 
-# preview.png
+# preview.png (FAIL — viz picker shows black box without it)
 for d in "$APP_DIR"/appserver/static/visualizations/*/; do
   [ -d "$d" ] || continue
   VIZ=$(basename "$d")
-  [ ! -f "$d/preview.png" ] && { echo "  WARN R8: $VIZ missing preview.png"; }
+  if [ ! -f "$d/preview.png" ]; then
+    echo "  FAIL R8: $VIZ missing preview.png — run step 3c in vp-create"
+    TOTAL_FAIL=1
+  else
+    SIZE=$(wc -c < "$d/preview.png")
+    [ "$SIZE" -lt 100 ] && { echo "  FAIL R8: $VIZ preview.png too small ($SIZE bytes)"; TOTAL_FAIL=1; }
+  fi
 done
+
+# appIcon.png (FAIL — Splunk shows grey placeholder without it)
+if [ ! -f "$APP_DIR/static/appIcon.png" ]; then
+  echo "  FAIL: missing static/appIcon.png — run step 3b in vp-create"
+  TOTAL_FAIL=1
+fi
 
 # visualizations.conf
 [ -f "$APP_DIR/default/visualizations.conf" ] || { echo "  FAIL: missing visualizations.conf"; TOTAL_FAIL=1; }

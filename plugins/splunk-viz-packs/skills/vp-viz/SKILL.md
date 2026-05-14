@@ -8,7 +8,7 @@ allowed-tools: Read Bash(node *) Bash(head *) Bash(grep *) Bash(chmod *)
 
 # vp-viz — build one Splunk custom visualization
 
-> **Prerequisite:** If building a multi-viz pack, load vp-couture first for the design brief. For debugging failed vizs, load vp-ref-gotchas instead.
+> **Prerequisite:** If building a multi-viz pack, load vp-design first for the design brief. For debugging failed vizs, load vp-debug instead.
 
 ## STOP — read this first (failed in every test)
 
@@ -409,6 +409,24 @@ CRITICAL: Run validation after every build. Do not skip. Fix all failures before
 - **[Canvas recipes](references/canvas-recipes.md)** — tooltip, drilldown, animation, color math, grid layout
 - **[Conf templates](references/conf-templates.md)** — app.conf, visualizations.conf, default.meta, transforms.conf
 - **[Theme template](references/theme-template.md)** — complete theme.js with all function implementations
+
+## Light theme verification
+
+Every viz MUST be tested in both dark and light theme. Light theme is NOT dark-inverted — it needs independent design.
+
+**How to verify:**
+1. In formatter panel: set themeMode to "light"
+2. Check: hero values use full `t.text` (never textDim/textFaint — they ghost on white)
+3. Check: panel backgrounds use `t.panel` (light grey, not white-on-white)
+4. Check: accents still have ≥4.5:1 contrast against light bg
+5. Check: glows and shadows are reduced (dark-mode glow overpowers on light)
+
+**Common light-theme bugs:**
+- Text disappears (textDim on white bg = ~4% visible)
+- Accent too bright (saturated colors that work on dark wash out on light)
+- Grid lines invisible (using withAlpha at 0.1 on white)
+
+If the viz only looks good in dark, the light theme tokens in theme.js need adjustment.
 
 ## Unique rendering per brand
 

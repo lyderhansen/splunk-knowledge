@@ -2,7 +2,7 @@
 
 A Claude Code / Cursor plugin for building themed Splunk custom visualization apps — branded Canvas 2D viz suites with shared design tokens, webpack bundling, and AppInspect-ready packaging.
 
-**Version:** 2.2.0
+**Version:** 4.1.0
 
 ## What it does
 
@@ -15,25 +15,24 @@ Takes brand context (palette, fonts, tone) and a domain (F1, SOC, healthcare, re
 
 ```
 skills/
-  vp-init              entry point · routes to the right skill based on intent
-  vp-couture           design orchestrator · brand research → palette → viz inventory → build
-  vp-create            scaffolding · app structure, theme.js, webpack, conf files, packaging
-  vp-viz               per-viz builder · Canvas 2D source, formatter, CSS, harness
-  vp-ref-gotchas       hard rules · FATAL/BROKEN/REJECTED/COSMETIC severity, tiered checklist
-  vp-ref-patterns      Canvas recipes · shapes, effects, mood recipes, data rendering principles
+  vp-init              entry point · gathers all context, routes to the right workflow
+  vp-design            design orchestrator · brand research → palette → viz inventory → brief
+  vp-viz               per-viz builder · Canvas 2D source, formatter, CSS, theme
+  vp-create            build + package · flat AMD compilation, validation, tarball
+  vp-debug             diagnostic reference · 54 rules (FATAL/BROKEN/REJECTED/COSMETIC)
+  vp-recipes           Canvas recipes · shapes, effects, mood recipes, typography
 ```
 
 ## Quick start
 
 ```
-vp-init → vp-couture → vp-create → vp-viz (×N) → vp-create (build + package)
+vp-init → vp-design → vp-viz (×N) → vp-create (build + package)
 ```
 
-1. **vp-init** — identifies intent, routes to couture or create
-2. **vp-couture** — design brief (brand research, palette, viz inventory, quality gate)
-3. **vp-create** — scaffolds app directory, theme.js, webpack config, conf files
-4. **vp-viz** — writes each visualization_source.js with Canvas 2D rendering
-5. **vp-create** — builds webpack, packages tarball, prints install path
+1. **vp-init** — gathers all context (7 questions), routes to design or viz
+2. **vp-design** — design brief (brand research, palette, viz inventory, quality gate)
+3. **vp-viz** — writes each visualization_source.js with Canvas 2D rendering
+4. **vp-create** — builds flat AMD, validates, generates icons/previews, packages tarball
 
 ## Model selection
 
