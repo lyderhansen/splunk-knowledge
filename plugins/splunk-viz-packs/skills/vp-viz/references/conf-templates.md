@@ -124,6 +124,12 @@ RIGHT — namespaced keys + bare type:
 "options": { "{{PACK_ID}}.{{VIZ_NAME}}.scoreField": "score" }
 ```
 
+Dashboard data sources MUST have a `"name"` field:
+```json
+WRONG: { "type": "ds.search", "options": { "query": "..." } }
+RIGHT: { "type": "ds.search", "options": { "query": "..." }, "name": "NPS Demo Data" }
+```
+
 ## README/savedsearches.conf.spec
 
 Document every custom setting:

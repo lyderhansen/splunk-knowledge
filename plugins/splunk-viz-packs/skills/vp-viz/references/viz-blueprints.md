@@ -71,7 +71,9 @@
 - Cap style (round, butt, arrow tip)
 - Whether arc has drop shadow, glow, or bevel
 
-**Settings:** `field`, `maxValue`, `unit`, `label`, `colorScheme`, `showTicks`, `showGlow`, `displayMode`, `themeMode`
+**Settings:** `field`, `maxValue`, `unit`, `label`, `showTicks`, `showGlow`, `displayMode`, `themeMode`, `accentColor`, `accentIntensity`, `zoneLow` (threshold where red→amber), `zoneHigh` (threshold where amber→green), `detractorColor`, `passiveColor`, `promoterColor`
+
+Zone thresholds and zone colors MUST be independently configurable — never hardcode boundaries like 0-30/31-60/61-100 or use only theme severity colors.
 
 **Data contract:** configurable numeric field (default: `value`). Reads last row.
 

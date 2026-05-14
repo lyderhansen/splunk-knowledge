@@ -44,6 +44,7 @@ allowed-tools: Read Bash(node *) Bash(head *) Bash(grep *) Bash(chmod *)
 □ JS: pure ES5 — no const/let/arrow/template literals
 □ Dashboard JSON type: {app_id}.{viz_name} — NEVER custom.* or splunk.custom.*
 □ Dashboard JSON options: {app_id}.{viz_name}.key — NEVER bare key names
+□ Dashboard data sources: every ds.search has "name" field
 □ Tarball: ONE top-level directory only — package from parent dir
 ```
 
