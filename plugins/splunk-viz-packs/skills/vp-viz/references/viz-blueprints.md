@@ -233,9 +233,30 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 
 **When NOT to use:** Don't use when only 1-2 fields needed (use KPI).
 
-**MUST-HAVE features:** Sort (click header, toggle asc/desc), pagination (page N of M with nav), columns fill panel width proportionally.
+**MUST-HAVE features (non-negotiable):**
 
-**Settings:** `columns` (CSV), `defaultSortColumn`, `defaultSortDirection`, `rowsPerPage`, `showPosition`, `themeMode`
+1. **Sort ALL columns** — click any column header to sort asc/desc. Draw sort indicator (triangle) next to active column. Store `_sortCol` and `_sortDir` on `this`.
+
+2. **Pagination** — calculate visible rows from panel height. Draw page nav at bottom: "Page 1 of N  < >" with click handlers. Store `_currentPage`. Formatter setting `maxRows` controls rows per page (default: auto-fit to panel height).
+
+3. **Hide columns** — formatter setting `hiddenColumns` (CSV of column names to hide). Hidden columns are excluded from rendering but data is still available for sort/drilldown.
+
+4. **Column widths** — formatter setting `columnWidths` (CSV of proportional widths, e.g. "2,1,1,3"). Default: distribute equally. Columns always fill full panel width — never fixed pixel widths.
+
+5. **Header row** — always visible (sticky at top during scroll within page). Clickable for sort. Optional: `showHeader` toggle to hide entirely.
+
+```javascript
+// Pagination calculation
+var headerH = Math.round(h * 0.08);
+var footerH = 28;
+var rowH = Math.max(20, Math.round((h - headerH - footerH) / 12));
+var maxRows = parseInt(opt('maxRows', '0'), 10);
+var rowsPerPage = maxRows > 0 ? maxRows : Math.floor((h - headerH - footerH) / rowH);
+var totalPages = Math.ceil(rows.length / rowsPerPage);
+var pageRows = rows.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+```
+
+**Settings:** `columns` (CSV field names), `hiddenColumns` (CSV), `columnWidths` (CSV proportional), `defaultSortColumn`, `defaultSortDirection`, `maxRows` (0=auto), `showHeader` (true/false), `showPosition`, `themeMode`
 
 **Data contract:** multi-column, multi-row. Field names from formatter.
 

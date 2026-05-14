@@ -66,6 +66,7 @@ RIGHT: "options": { "myapp.myviz.scoreField": "score" }
 □ Dashboard JSON type: {app_id}.{viz_name} — NEVER custom.* or splunk.custom.*
 □ Dashboard JSON options: {app_id}.{viz_name}.key — NEVER bare key names
 □ Dashboard data sources: every ds.search has "name" field
+□ Tables: sort ALL columns, pagination with maxRows, hiddenColumns, columnWidths
 □ Tarball: ONE top-level directory only — package from parent dir
 ```
 
