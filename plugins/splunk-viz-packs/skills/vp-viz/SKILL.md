@@ -8,6 +8,27 @@ allowed-tools: Read Bash(node *) Bash(head *) Bash(grep *) Bash(chmod *)
 
 # vp-viz — build one Splunk custom visualization
 
+## STOP — read this first (failed in every test)
+
+**Dashboard Studio viz type is `{app_id}.{viz_name}` — nothing else.**
+
+```
+WRONG: "type": "custom"                              ← Classic XML, not DS v2
+WRONG: "type": "custom.myapp.myviz"                  ← No custom. prefix
+WRONG: "type": "splunk.custom.myapp.myviz"           ← No splunk.custom. prefix
+WRONG: "type": "custom", "customVizId": "myapp.myviz" ← Not a thing in DS v2
+
+RIGHT: "type": "myapp.myviz"                         ← Just app_id.viz_name
+```
+
+This has failed in test25 AND test26. Splunk's training data uses the old `"type": "custom"` format from Classic Simple XML. Dashboard Studio v2 uses `"type": "{app_id}.{viz_name}"` directly.
+
+**Dashboard JSON option keys must also be namespaced:**
+```
+WRONG: "options": { "scoreField": "score" }
+RIGHT: "options": { "myapp.myviz.scoreField": "score" }
+```
+
 ## Workflow
 
 ```
