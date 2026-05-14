@@ -32,7 +32,7 @@ RIGHT: "options": { "myapp.myviz.scoreField": "score" }
 ## Workflow
 
 ```
-1. Read conf templates    → !`cat` injected below, or references/conf-templates.md
+1. Read conf templates    → references/conf-templates.md
 2. Read theme template    → references/theme-template.md
 3. Write formatter.html   → use EXACT templates in this file
 4. Write source JS        → use EXACT template in this file
@@ -369,7 +369,7 @@ RIGHT — namespaced options (settings delivered to updateView):
 }
 ```
 
-## Quick rules — the 12 that matter most
+## Quick rules — the 17 that matter most
 
 1. **ES5 only** — no const, let, arrow, template literals, destructuring
 2. **require()/module.exports** — NEVER define(). build_flat.js adds the AMD wrapper.

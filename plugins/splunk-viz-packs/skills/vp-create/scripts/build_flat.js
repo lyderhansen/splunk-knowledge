@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /*
  * build_flat.js — Flat AMD builder for Splunk custom vizs.
+ * Canonical source: vp-viz/scripts/build_flat.js (edit there first, copy here)
  * Inlines theme.js into each viz and wraps as AMD module.
  *
  * Usage: node build_flat.js [app_dir]

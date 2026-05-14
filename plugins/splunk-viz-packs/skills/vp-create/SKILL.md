@@ -115,13 +115,29 @@ Save to `default/data/ui/nav/default.xml`.
 
 ## App icons
 
-Generate via Pillow or save as static PNG:
+MUST generate for every app. Without them, Splunk shows a generic placeholder.
+
+```python
+from PIL import Image, ImageDraw, ImageFont
+for size, name in [(36, 'appIcon.png'), (72, 'appIcon_2x.png'),
+                   (36, 'appIconAlt.png'), (72, 'appIconAlt_2x.png')]:
+    img = Image.new('RGB', (size, size), '{{ACCENT_HEX}}')
+    draw = ImageDraw.Draw(img)
+    fs = size // 2
+    try:
+        font = ImageFont.truetype('/System/Library/Fonts/Helvetica.ttc', fs)
+    except:
+        font = ImageFont.load_default()
+    draw.text((size//2, size//2), '{{INITIAL}}', fill='#FFFFFF',
+              font=font, anchor='mm')
+    img.save('static/' + name)
+```
+
+Save to `static/` (NOT `appserver/static/`):
 - `static/appIcon.png` — 36x36
 - `static/appIcon_2x.png` — 72x72
 - `static/appIconAlt.png` — 36x36
 - `static/appIconAlt_2x.png` — 72x72
-
-Brand-colored background with white glyph or initial.
 
 ## Preview.png per viz
 

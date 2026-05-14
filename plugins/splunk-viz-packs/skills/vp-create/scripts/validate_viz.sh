@@ -1,5 +1,6 @@
 #!/bin/bash
 # validate_viz.sh — post-build validator for Splunk custom viz apps
+# Canonical source: vp-viz/scripts/validate_viz.sh (edit there first, copy here)
 # Usage: bash validate_viz.sh /path/to/app_dir
 # Exit code: 0 = all pass, 1 = failures found
 

@@ -1,5 +1,19 @@
 ## FATAL — viz won't load at all
 
+### Contents
+- F1: Webpack must target ES5
+- F2: Fonts must be base64 data URIs
+- F3: Source must be pure ES5
+- F4: getInitialDataParams must use ROW_MAJOR_OUTPUT_MODE
+- F5: Only externalize what you import
+- F6: Source MUST use require(), NEVER define()
+- F7: MUST use extend({...}) object literal
+- F8: Images must be bundled, never external URLs
+- F9: Vizs in appserver/static/visualizations/
+- F10: No jQuery
+- F11: Webpack 5 IIFE may fail — flat AMD alternative
+- F12: Formatter must use Splunk components
+
 ### F1. Webpack must target ES5
 
 Splunk's AMD loader requires ES5. Webpack 5+ defaults to ES2015+.

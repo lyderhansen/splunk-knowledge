@@ -156,6 +156,28 @@ WRONG: { "type": "ds.search", "options": { "query": "..." } }
 RIGHT: { "type": "ds.search", "options": { "query": "..." }, "name": "NPS Demo Data" }
 ```
 
+## Dashboard Studio XML wrapper
+
+Dashboard JSON is embedded in XML CDATA. Save to `default/data/ui/views/`:
+
+```xml
+<dashboard version="2" theme="dark">
+  <label>{{DASHBOARD_TITLE}}</label>
+  <description>{{DESCRIPTION}}</description>
+  <definition><![CDATA[
+{
+  "dataSources": { ... },
+  "visualizations": { ... },
+  "defaults": { ... },
+  "inputs": { ... },
+  "layout": { ... }
+}
+  ]]></definition>
+</dashboard>
+```
+
+Use `theme="dark"` or `theme="light"`. The JSON inside CDATA is the full Dashboard Studio v2 definition.
+
 ## README/savedsearches.conf.spec
 
 Document every custom setting:

@@ -1,5 +1,28 @@
 ## BROKEN — renders but wrong
 
+### Contents
+- B1: Canvas font rendering requires explicit wait
+- B2: HiDPI canvas scaling is mandatory
+- B3: getOption helper is mandatory
+- B4: Never read config in formatData
+- B5: Formatter section labels + type="custom" on color picker
+- B6: Canvas shadow state leaks
+- B7: JS defaults must match formatter value= (NEVER default=)
+- B8: Auto-scale + gauge arc constraint + no upper font cap
+- B9: Dashboard Studio type format ({app}.{viz})
+- B10: Option namespace — three formats for three contexts
+- B11: parseFloat truncates string values
+- B12: Gauge colors must match brand
+- B13: Canvas background must use clearRect
+- B14: Variables in _draw() not accessible from sub-methods
+- B15: Always include formatData in extend object
+- B16: Every visual property configurable via formatter
+- B17: setupCanvas MUST use this.el with clientWidth
+- B18: Theme auto-detect via getCurrentTheme()
+- B19: new Date() fails in sandboxed iframe
+- B20: Theme MUST default to 'auto' with detectTheme()
+- B21: Always null-guard before String() conversion
+
 ### B1. Canvas font rendering requires explicit wait
 
 CSS `@font-face` registers the font but Canvas 2D does NOT auto-swap

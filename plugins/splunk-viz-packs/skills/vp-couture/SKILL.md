@@ -47,10 +47,14 @@ Write all viz code INLINE (same context). Do NOT dispatch subagents for code gen
 
 When design brief is complete, hand off:
 
-1. **Load vp-viz** — it has all templates and code patterns
+1. **Load vp-viz** — all code templates and patterns
 2. **Load vp-create** — for packaging after all vizs are built
-3. If production data (not demo CSV): load **spl-gotchas** from splunk-spl
-4. If dashboard uses tabs: load **ds-int-tabs** from splunk-dashboard-studio
+3. **Load ds-create** from splunk-dashboard-studio — dashboard JSON has strict rules: fontFamily is an enum (only Splunk Platform Sans, Arial, Helvetica, etc.), fontSize is an enum (extraSmall/small/default/large/extraLarge), canvas min 1920px wide
+4. If production data: load **spl-gotchas** from splunk-spl
+5. If dashboard uses tabs: load **ds-int-tabs** from splunk-dashboard-studio
+6. If dashboard uses drilldowns: load **ds-int-drilldowns** from splunk-dashboard-studio
+
+**Important for color pickers:** Splunk may return color values as integers (e.g. `6511615`) instead of hex strings. vp-viz includes `hexFromSplunk()` to handle this — ensure it's used on all color picker reads.
 
 Hand-off message: "Design brief complete. Now load vp-viz and write code for each viz, using the brief for palette, fonts, and per-viz specs."
 
