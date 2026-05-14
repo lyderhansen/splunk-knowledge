@@ -26,7 +26,7 @@ Without context, you produce generic output. You need ALL five:
 4. **Tone** — 3 committable words (not "modern" or "clean")
 5. **Font strategy** — 1-2 fonts max, base64 embedded
 
-**If routed from vp-init:** these 5 fields should already be provided in the hand-off message. Verify all 5 are present — only ask for any that are missing or vague. Do NOT re-ask questions the user already answered.
+**If routed from vp-init:** these 5 fields should already be provided in the hand-off message. vp-init's "Brand / domain" field (Q2) contains both brand identity AND domain — extract both from it. Verify all 5 are present — only ask for any that are missing or vague. Do NOT re-ask questions the user already answered.
 
 **If invoked directly:** ask for all missing fields. Do not guess.
 
