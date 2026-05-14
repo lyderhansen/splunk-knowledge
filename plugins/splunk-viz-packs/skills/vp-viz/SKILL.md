@@ -67,6 +67,8 @@ RIGHT: "options": { "myapp.myviz.scoreField": "score" }
 □ Dashboard JSON options: {app_id}.{viz_name}.key — NEVER bare key names
 □ Dashboard data sources: every ds.search has "name" field
 □ Tables: sort ALL columns, pagination with maxRows, hiddenColumns, columnWidths
+□ Event handlers: field names from config properties, NEVER hardcoded strings
+□ Drilldown tokens: setToken → search consumes it → default value set
 □ Tarball: ONE top-level directory only — package from parent dir
 ```
 
@@ -383,7 +385,9 @@ RIGHT — namespaced options (settings delivered to updateView):
 12. **Tarball = ONE top-level directory** — `tar tzf app.tar.gz | head -1` must show `app_name/`. Package from the PARENT directory with the app dir as the only argument.
 13. **Color picker values can be integers** — Splunk returns `6511615` not `"#635BFF"`. Use `hexFromSplunk(val, fallback)` on ALL color picker reads.
 14. **Dashboard options = only overrides** — never duplicate formatter defaults in dashboard JSON `"options"`. If a value matches the formatter `value=`, omit it.
-15. **preview.png in every viz** — 250x150 real PNG. Without it, Splunk viz picker shows a generic placeholder. Generate via Pillow after build.
+15. **preview.png in every viz** — 250x150 real PNG with a simplified viz silhouette (not solid color, not 1x1). Generate via Pillow after build.
+16. **Event handler fields from config** — `_onClick` and `_onMouseMove` MUST read field names from instance properties set in `updateView`, NEVER hardcode string literals like `'location'` or `'attack_id'`.
+17. **Drilldown tokens must be consumed** — if you setToken, a search MUST reference it. Always set a default token value (e.g. `"*"`) so the dashboard works before any click.
 
 ## Build and validate
 
