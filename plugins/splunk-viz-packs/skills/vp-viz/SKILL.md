@@ -1,843 +1,102 @@
 ---
 name: vp-viz
-description: "Build a single custom Splunk visualization within a themed viz pack. Generates visualization_source.js (Canvas 2D), formatter.html (settings UI), visualization.css, harness.json, and preview.png specification. MUST load vp-ref-gotchas before writing any code. Every viz imports shared/theme.js for design tokens. Use when vp-couture has planned the viz suite and vp-create has scaffolded the app — this skill writes the per-viz source files."
+description: "Generates Splunk custom visualization code — formatter HTML, Canvas 2D source, and app config. Includes copy-paste templates with correct Splunk-specific syntax for ad-hoc search compatibility."
+when_to_use: "Use when building or writing code for custom Splunk vizs. Triggers on 'build viz', 'write visualization', 'create custom viz', 'scaffold viz app', 'formatter template', 'visualization source'."
+effort: high
+allowed-tools: Read Bash(node *) Bash(head *) Bash(grep *) Bash(chmod *)
 ---
 
-# vp-viz — build one visualization
+# vp-viz — build one Splunk custom visualization
 
-> **Cross-plugin rules apply:** Viz files go in `appserver/static/
-> visualizations/` (F9). Dashboard JSON follows `ds-create` hard
-> defaults. Load `vp-ref-gotchas` before writing ANY code.
-
-## Critical: unique rendering per brand
-
-**Do NOT copy viz source code between brands and swap colors.** Each
-brand gets unique `_render()` code. A Red Bull speed gauge draws
-segmented arcs with red zone markings and shift lights. A Disney+
-subscriber gauge draws a smooth gradient ring with soft glow. They
-share `theme.js` for color tokens but nothing else in the render path.
-
-The blueprints below are STARTING POINTS for inspiration — not
-templates to copy verbatim. Study the brand's real-world design
-language, then write Canvas code that matches THAT, using theme tokens
-for colors only.
-
-**`drawPanel()` is optional.** Some brands want panel chrome (rounded
-rects with borders). Others want panels flush with the background
-(no chrome, no border). Define this in the design brief.
-
-## CRITICAL: File paths — WRONG vs RIGHT
-
-Viz files MUST be in `appserver/static/visualizations/`, NOT in
-`default/visualizations/`. The wrong path causes REQUIREJS_ERROR_MESSAGE
-for every viz with zero explanation in the console.
+## Workflow
 
 ```
-WRONG — viz won't load, REQUIREJS Script error:
-  {pack}/default/visualizations/{viz_name}/visualization.js
-
-RIGHT — Splunk finds and loads the viz:
-  {pack}/appserver/static/visualizations/{viz_name}/visualization.js
+1. Read conf templates    → !`cat` injected below, or references/conf-templates.md
+2. Read theme template    → references/theme-template.md
+3. Write formatter.html   → use EXACT templates in this file
+4. Write source JS        → use EXACT template in this file
+5. Build (flat AMD)       → node ${CLAUDE_SKILL_DIR}/scripts/build_flat.js
+6. Validate               → bash ${CLAUDE_SKILL_DIR}/scripts/validate_viz.sh
+7. Fix any failures       → re-run steps 3-6
+8. Package                → see vp-create
 ```
 
-Complete correct path for each file:
+## Pre-code checklist — verify EVERY item before writing code
+
 ```
-{pack}/appserver/static/visualizations/{viz_name}/
-  src/visualization_source.js    ← source (excluded from tarball)
-  visualization.js               ← webpack output (AMD bundle)
-  formatter.html                 ← settings UI
-  visualization.css              ← styles + optional base64 fonts
-```
-
-The `shared/theme.js` lives at `{pack}/shared/theme.js` (dev only —
-webpack bundles it into each visualization.js via resolve alias).
-
-## When to use
-
-After `vp-create` has scaffolded the app directory and `shared/theme.js`
-exists. This skill writes the files that make one viz work:
-
-1. `appserver/static/visualizations/{viz}/src/visualization_source.js`
-2. `appserver/static/visualizations/{viz}/formatter.html`
-3. `appserver/static/visualizations/{viz}/visualization.css`
-
-## Prerequisites
-
-- **MUST load `vp-ref-gotchas`** before writing any code
-- App directory exists at `examples/{pack_name}/`
-- `shared/theme.js` exists with design tokens
-- `_build/webpack.config.js` has this viz as an entry point
-
-## Source file skeleton
-
-Every `visualization_source.js` follows this exact structure. Do not
-deviate from the lifecycle method signatures.
-
-**CRITICAL:** Use `require()`/`module.exports`. NEVER use `define()` —
-webpack's `libraryTarget:'amd'` adds the AMD wrapper automatically.
-Using `define()` in source creates a double-wrapper that breaks
-RequireJS (see vp-ref-gotchas F6).
-
-**CRITICAL:** Use `SplunkVisualizationBase.extend({...})` object
-literal. NEVER use prototypal constructor pattern — it silently
-fails to register methods (see vp-ref-gotchas F7).
-
-**CRITICAL:** NEVER hardcode font names in viz source code. All fonts
-come from `theme.FONTS.data` (numbers, KPIs) and `theme.FONTS.ui`
-(labels, headers). The font choice is a DESIGN decision driven by
-brand mood — not a coding default. Use `theme.FONTS.*` everywhere:
-`ctx.font`, tooltip styling, CSS strings.
-
-```javascript
-var SplunkVisualizationBase = require('api/SplunkVisualizationBase');
-var theme = require('shared/theme');
-
-// ── Viz-specific helpers ────────────────────────────────────
-// (import from theme.js or define here as top-level functions)
-
-module.exports = SplunkVisualizationBase.extend({
-    initialize: function() {
-        SplunkVisualizationBase.prototype.initialize.apply(
-            this, arguments
-        );
-        this.el.style.overflow = 'hidden';
-        this.el.style.position = 'relative';
-
-        var canvas = document.createElement('canvas');
-        canvas.style.display = 'block';
-        canvas.style.width = '100%';
-        canvas.style.height = '100%';
-        this.el.appendChild(canvas);
-        this.canvas = canvas;
-
-        this._lastData = null;
-        this._lastConfig = null;
-        this._lastGoodData = null;
-
-        // Tooltip (mandatory for data vizs — see vp-ref-gotchas I1)
-        this._tooltip = document.createElement('div');
-        this._tooltip.style.cssText =
-            'position:absolute;display:none;padding:6px 10px;' +
-            'border-radius:2px;pointer-events:none;white-space:nowrap;' +
-            'z-index:100;';
-        // NO hardcoded font-family or font-size here — set in _render()
-        // from theme tokens so the tooltip matches the pack's brand
-        this.el.appendChild(this._tooltip);
-
-        this._hoverIdx = -1;
-        this._hitRegions = [];
-
-        var self = this;
-        this.canvas.addEventListener('mousemove', function(e) {
-            self._onMouseMove(e);
-        });
-        this.canvas.addEventListener('mouseleave', function() {
-            self._tooltip.style.display = 'none';
-            self.canvas.style.cursor = 'default';
-            if (self._hoverIdx !== -1) {
-                self._hoverIdx = -1;
-                self._render(self._lastData, self._lastConfig);
-            }
-        });
-    },
-
-    getInitialDataParams: function() {
-        return {
-            outputMode: SplunkVisualizationBase.ROW_MAJOR_OUTPUT_MODE,
-            count: 10000
-        };
-    },
-
-    formatData: function(data) {
-        if (!data || !data.rows || data.rows.length === 0) {
-            if (this._lastGoodData) return this._lastGoodData;
-            return data;
-        }
-        var fields = data.fields;
-        var colIdx = {};
-        for (var i = 0; i < fields.length; i++) {
-            colIdx[fields[i].name] = i;
-        }
-        var result = { colIdx: colIdx, rows: data.rows };
-        this._lastGoodData = result;
-        return result;
-    },
-
-    updateView: function(data, config) {
-        if (!data) return;
-        this._lastData = data;
-        this._lastConfig = config;
-
-        var self = this;
-        theme.loadFonts(function() {
-            self._render(data, config);
-        });
-    },
-
-    // CRITICAL: Theme detection for ad-hoc search compatibility
-    // In Dashboard Studio, theme comes from config (set by formatter).
-    // In ad-hoc search (Classic UI), config has NO theme setting —
-    // the viz must detect Splunk's page theme via getCurrentTheme().
-    // Without this, dark-themed vizs render invisible on light backgrounds.
-    _render: function(data, config) {
-        var el = this.el;
-        var w = el.offsetWidth;
-        var h = el.offsetHeight;
-        if (w <= 0 || h <= 0) return;
-
-        var dpr = window.devicePixelRatio || 1;
-        var canvas = this.canvas;
-        canvas.width = w * dpr;
-        canvas.height = h * dpr;
-        canvas.style.width = w + 'px';
-        canvas.style.height = h + 'px';
-
-        var ctx = canvas.getContext('2d');
-        if (!ctx) return;
-        ctx.scale(dpr, dpr);
-        ctx.clearRect(0, 0, w, h);  // NEVER fillRect with t.bg (B13)
-
-        var ns = theme.getNS(this);
-        // Auto-detect theme — no formatter setting needed (B18)
-        var isDark = true;
-        try { isDark = SplunkVisualizationUtils.getCurrentTheme() !== 'light'; } catch(e) {}
-        var t = theme.getTheme(isDark ? 'dark' : 'light');
-        var accentColor = theme.getOption(config, ns, 'accentColor', '#0088CC');
-        var gi = theme.parseNum(
-            theme.getOption(config, ns, 'accentIntensity', '50'), 50
-        ) / 50;
-        this._gi = gi; // accessible from sub-methods (B14)
-
-        // Style tooltip from theme tokens (not hardcoded)
-        this._tooltip.style.background = t.panelHi;
-        this._tooltip.style.color = t.text;
-        this._tooltip.style.border = '1px solid ' + t.edgeStrong;
-        this._tooltip.style.fontFamily = theme.FONTS.data;
-        this._tooltip.style.fontSize = '11px';
-
-        // ── DRAW HERE ───────────────────────────────────────
-        // All coordinates use w, h (CSS pixels)
-        // All colors from t (theme tokens)
-        // All fonts from theme.FONTS.data / theme.FONTS.ui
-        // All settings via theme.getOption(config, ns, 'key', 'default')
-        // All glow/accent effects multiplied by gi
-    },
-
-    _onMouseMove: function(e) {
-        var rect = this.canvas.getBoundingClientRect();
-        var mx = e.clientX - rect.left;
-        var my = e.clientY - rect.top;
-        var hit = this._hitTest(mx, my);
-        if (hit !== null) {
-            var region = this._hitRegions[hit];
-            this._tooltip.innerHTML = region.tip;
-            this._tooltip.style.display = 'block';
-            var tx = mx + 14;
-            var ty = my - 10;
-            if (tx + 180 > this.el.offsetWidth) tx = mx - 180;
-            if (ty < 0) ty = my + 20;
-            this._tooltip.style.left = tx + 'px';
-            this._tooltip.style.top = ty + 'px';
-            this.canvas.style.cursor = 'pointer';
-            if (this._hoverIdx !== hit) {
-                this._hoverIdx = hit;
-                this._render(this._lastData, this._lastConfig);
-            }
-        } else {
-            this._tooltip.style.display = 'none';
-            this.canvas.style.cursor = 'default';
-            if (this._hoverIdx !== -1) {
-                this._hoverIdx = -1;
-                this._render(this._lastData, this._lastConfig);
-            }
-        }
-    },
-
-    _hitTest: function(mx, my) {
-        for (var i = 0; i < this._hitRegions.length; i++) {
-            var r = this._hitRegions[i];
-            if (mx >= r.x && mx <= r.x + r.w &&
-                my >= r.y && my <= r.y + r.h) {
-                return i;
-            }
-        }
-        return null;
-    },
-
-    reflow: function() {
-        if (this._lastConfig) {
-            this._render(this._lastData, this._lastConfig);
-        }
-    },
-
-    destroy: function() {
-        if (this._tooltip && this._tooltip.parentNode) {
-            this._tooltip.parentNode.removeChild(this._tooltip);
-        }
-        SplunkVisualizationBase.prototype.destroy.apply(
-            this, arguments
-        );
-    }
-});
+□ Viz files in appserver/static/visualizations/{viz}/ — NEVER default/visualizations/
+□ Formatter: {{VIZ_NAMESPACE}}.key in ALL name= attributes
+□ Formatter: value= on all inputs (NEVER default=)
+□ Formatter: type="custom" on every <splunk-color-picker>
+□ Formatter: class="splunk-formatter-section" section-label="..." on every <form>
+□ Formatter: themeMode defaults to "auto" (NEVER "dark")
+□ Formatter: minimum 7 controls
+□ JS: require()/module.exports — NEVER define()
+□ JS: SplunkVisualizationBase.extend({...}) object literal
+□ JS: safeStr()/safeNum() on all row field reads
+□ JS: detectTheme() for auto theme detection
+□ JS: clientWidth/clientHeight — NEVER getBoundingClientRect for sizing
+□ JS: clearRect for background — NEVER fillRect
+□ JS: ctx.globalAlpha = 1 before drawing text (reset after glow effects)
+□ JS: measureText() before positioning text (prevent overflow)
+□ JS: Math.max(floor, h * ratio) for font sizes — NO upper pixel cap
+□ JS: ROW_MAJOR_OUTPUT_MODE in getInitialDataParams
+□ JS: pure ES5 — no const/let/arrow/template literals
 ```
 
-## Viz type blueprints — inspiration, not templates
+## Conf templates
 
-> 🔒 = Non-negotiable technical rule (breaks if violated)
-> 🎨 = Creative starting point (adapt, reimagine, surprise)
+Read the complete templates in [references/conf-templates.md](references/conf-templates.md) before writing any conf file. Key rules:
 
-These blueprints show WHAT each viz type expresses and what settings
-to expose. They are NOT templates to copy verbatim. Study the brand's
-real-world design language, then write Canvas code that matches THAT.
+- `app.conf`: 5 stanzas, `is_configured = 0`
+- `visualizations.conf`: MUST have `allow_user_selection = true` + `disabled = 0`
+- `inputlookup` uses FILENAME, not transforms.conf stanza. Prefix with pack ID.
 
-**The agent's job:** take the data contract + expression intent below,
-then design a rendering that looks like a graphic designer made it for
-THIS specific brand. Two KPI tiles for different brands should look
-completely different — same data, different soul.
+## Theme template
 
-### Single Value Tile (KPI)
+Read [references/theme-template.md](references/theme-template.md) for the complete theme.js with all function bodies implemented.
 
-**Expresses:** the single most important number. Hero metric. At-a-glance status.
+Light theme is NOT an inversion of dark — design independently. Hero values MUST use full `t.text` color (never textDim/textFaint).
 
-**Accessibility:** AAA — single number, inherently accessible. Add aria-label on canvas with the value.
+## Formatter HTML — COPY THESE EXACTLY
 
-**When NOT to use:** Don't use for values that need comparison context
-(use bar/column), for time-series trends (use area/line), or when you
-have more than 1 value to show per panel (use table or multi-KPI layout).
-If the number alone doesn't tell the story, a KPI tile is hiding information.
+These templates have the exact syntax Splunk requires. Copy them and fill in only the `{FILL}` parts. Getting ANY attribute wrong causes silent failures.
 
-**🔒 Technical rules:**
-- String passthrough for non-numeric values like `"1:21.584"`, `"+3.2s"`, `"DNS"` (B11)
-- Use additive Y positioning for label→value→trend stack, not percentage-of-height
-- All sizes scale from container: `Math.max(floor, h * ratio)` (B8)
-
-**🎨 Creative decisions YOU make:**
-- Value font weight and whether it's condensed, expanded, or standard
-- Whether the label sits above, below, or beside the value
-- Trend indicator style: arrow, colored dot, sparkline, percentage badge, or nothing
-- Background treatment: flat, subtle gradient, accent glow behind value, carbon texture
-- Whether there's a thin accent line, border, or divider element
-- How the unit is styled relative to the value (smaller? dimmer? superscript?)
-- Whether hero mode blows up the number to fill 80% of the panel or keeps it centered
-
-**Visual references beyond Splunk:** Bloomberg terminal tiles, Tesla dashboard readouts,
-F1 timing tower cells, Apple Health cards, Stripe dashboard KPIs.
-
-**Settings:** `field`, `label`, `unit`, `unitPosition`, `decimals`,
-`showDelta`, `deltaField`, `accentColor`, `theme`
-
-**Data contract:** configurable field (default: `value`). Reads last
-row. Optional: `delta` field for trend arrow.
-
-### Ring Gauge
-
-**Expresses:** progress toward a target, fill level, health percentage.
-
-**Accessibility:** AA — arc encoding needs numeric readout in center. Colorblind-safe if value text is always visible.
-
-**When NOT to use:** Don't use for values without a known max (use KPI
-tile). Don't use for multi-category comparison (use bar). Don't use 5
-identical gauges in a row — that's AI-lazy. Mix gauge types or combine
-with other vizs for rhythm.
-
-**🔒 Technical rules:**
-- Arc angles are radians: full circle = 0→2π, 270° sweep = 0.75π→2.25π
-- Brand-colored segments, NOT default green→yellow→red (B12)
-- All sizes relative to `Math.min(w, h)` (B8)
-
-**🎨 Creative decisions YOU make:**
-- Sweep angle: 180° (half), 270° (classic), 360° (full donut), or asymmetric
-- Track style: thin hairline, thick band, dashed, dotted, or invisible
-- Fill style: solid color, gradient along arc, segmented blocks, or neon glow
-- Center content: big number, label + number, icon, mini chart, or empty
-- Tick marks: none, every 10%, major+minor, or just endpoints
-- Cap style: round, butt, or arrow tip
-- Whether the arc has a drop shadow, outer glow, or inner bevel
-- Whether zones pulse, animate, or stay static
-- Needle vs fill: some gauges work better with a physical needle than a filled arc
-
-**Visual references:** car speedometer, aircraft altimeter, Nest thermostat,
-Apple Watch activity rings, industrial pressure gauge, gaming health bar.
-
-**Settings:** `field`, `maxValue`, `unit`, `label`, `colorScheme`,
-`showTicks`, `showGlow`, `displayMode` (arc/donut/bar), `theme`
-
-**Data contract:** configurable numeric field (default: `value`). Reads last row.
-
-### Status Chip / Badge
-
-**Expresses:** categorical status at a glance — OK/warning/critical, active/inactive.
-
-**Accessibility:** AA — text label provides meaning beyond color. Ensure 4.5:1 contrast on chip fill.
-
-**When NOT to use:** Don't use for continuous values (use gauge). Don't
-use when there are more than 6-8 statuses — the colors become meaningless.
-If the status needs explanation, pair with a tooltip or legend.
-
-**🎨 Creative decisions YOU make:**
-- Shape: pill (full radius), rounded rect, circle, diamond, hexagon
-- Fill: solid, gradient, semi-transparent with border, or outline-only
-- Text: centered label, icon + label, icon only, or abbreviated code
-- Size: fixed or proportional to label length
-- Animation: subtle pulse on critical, breathing glow, or static
-- Whether the chip has a shadow, border, or sits flush
-
-**Settings:** `field`, `labelField`, `theme`
-
-**Data contract:** requires severity-like field (critical/warning/ok)
-and label field. Reads last row.
-
-### Live Ticker
-
-**Expresses:** real-time event feed, breaking news feel, continuous activity stream.
-
-**Accessibility:** B — scrolling content is hard for screen readers. Provide pause button and aria-live region.
-
-**When NOT to use:** Don't use for historical analysis (use table or
-timeline). Don't use when the user needs to click/interact with entries
-(scrolling defeats interaction). Don't use on print/PDF dashboards.
-
-**🔒 Technical rules:**
-- Animation timers MUST be cleaned up in `destroy()` (C5)
-- Edge fade gradients prevent text from clipping at panel edges
-
-**🎨 Creative decisions YOU make:**
-- Scroll direction: left-to-right, right-to-left, or vertical upward
-- Entry style: cards, pills, inline text with separators, or LED-board characters
-- Speed: configurable via formatter, adaptive to entry count
-- Edge treatment: gradient fade, hard clip, or parallax depth blur
-- LIVE badge: pulsing dot, blinking text, animated ring, or none
-- Time display: relative ("2m ago"), absolute, or countdown
-- Whether entries have category icons, severity colors, or priority markers
-
-**Visual references:** stock ticker, CNN breaking news crawl, airport
-departure board, Twitch chat overlay, F1 live timing feed.
-
-**Settings:** `title`, `scrollSpeed`, `field1`–`field4`, `label1`–`label4`,
-`bgColor`, `textColor`, `accentColor`, `theme`
-
-**Data contract:** requires `_time` + 1-4 configurable fields. Multi-row.
-
-### Leaderboard
-
-**Expresses:** ranked competition, top-N, performance standings, gamification.
-
-**Accessibility:** AA — text-based, inherently readable. Use position numbers, not color-only ranking.
-
-**When NOT to use:** Don't use for unranked data (use table). Don't use
-for time-series (use chart). If there are only 2-3 entries, a KPI strip
-is more impactful than a short leaderboard.
-
-**🎨 Creative decisions YOU make:**
-- Position badges: gold/silver/bronze medals, numbered circles, flag icons, or plain text
-- Row treatment: alternating opacity, hover highlight, selected glow
-- Score display: leading zeros (007), decimal precision, bar fill, or sparkline
-- Whether top 3 have special treatment (larger, glowing, different background)
-- Table chrome: gridlines, row separators, none, or just header underline
-- Visual effects: CRT scanlines, neon glow, holographic sheen, or clean flat
-- Whether there's a "you are here" marker for the user's own entry
-
-**Visual references:** F1 timing tower, gaming leaderboards, Strava segments,
-GitHub contributor graphs, arcade high-score screens.
-
-**Settings:** `title`, `maxRows`, `scoreDigits`, `rankField`, `nameField`,
-`scoreField`, `titleColor`, `showScanlines`, `showGlow`, `theme`
-
-**Data contract:** requires rank, name, score fields (configurable). Multi-row.
-
-### Process Flow / Pipeline
-
-**Expresses:** sequential workflow, pipeline stages, connected process steps.
-
-**Accessibility:** B — spatial layout hard to linearize. Provide text summary of flow state.
-
-**When NOT to use:** Don't use for non-sequential data (use heat grid
-or radar). Don't use for more than 8-10 steps — it becomes unreadable.
-If steps don't have a clear order, use a status matrix instead.
-
-**🎨 Creative decisions YOU make:**
-- Node shape: circles, rounded rects, hexagons, chevrons, or custom icons
-- Connection style: straight lines, curved bezier, arrows, animated dashes, or gradient flow
-- Layout: horizontal left-to-right, vertical top-to-bottom, or circular
-- Status encoding: fill color, border color, icon overlay, or pulsing animation
-- Whether nodes have embedded sparklines, progress bars, or mini values
-- Spacing: uniform, proportional to duration, or clustered by phase
-- Whether failed/blocked nodes have a distinct visual treatment (crossed out, red border, dimmed)
-
-**Visual references:** CI/CD pipeline views (GitHub Actions, GitLab),
-JIRA workflow boards, subway maps, network topology diagrams.
-
-**Settings:** `labelField`, `valueField`, `statusField`, `sparklineField`,
-`palette`, `showArrows`, `nodeRadius`, `theme`
-
-**Data contract:** requires label + value fields, optional status and sparkline. Multi-row.
-
-### Donut / Ring
-
-**Draws:** part-to-whole donut with right-side legend. Center label
-shows total. Segments colored from theme palette.
-
-**Accessibility:** C — color-only segment differentiation. MUST show legend with values + percentage labels on segments.
-
-**When NOT to use:** Don't use for more than 6 segments (use bar chart).
-Don't use for time-series (use area). Don't use for comparison across
-groups (use grouped bars). Don't default to donut when unsure — it's the
-most overused AI viz choice. Ask: "does part-of-whole actually matter here?"
-
-**Settings:** `categoryField`, `valueField`, `innerRadius`,
-`showLegend`, `showTotal`, `colors` (comma-separated), `theme`
-
-**Data contract:** requires category + value fields. Multi-row input.
-
-### Heat Grid / Matrix
-
-**Draws:** rows × columns grid where each cell is colored by value
-intensity. Time × category, host × metric, hour × day-of-week.
-Like a GitHub contribution graph or a security incident heatmap.
-
-**Key elements:** cell rectangles with lerpColor from low→high,
-row/column labels, hover tooltip per cell, optional cell value text.
-
-**Accessibility:** B — color intensity encoding. Show cell values on hover AND optionally as text overlay. Use sequential (not diverging) palette for colorblind safety.
-
-**When NOT to use:** Don't use for single-dimension data (use bar). Don't
-use when exact values matter more than patterns (use table). Works best
-with 5+ rows AND 5+ columns — below that, use individual KPI tiles.
-
-**Settings:** `rowField`, `colField`, `valueField`, `lowColor`,
-`highColor`, `showValues`, `cellRadius`, `theme`
-
-**Data contract:** row label, column label, numeric value. Multi-row.
-
-### Spark Strip
-
-**Draws:** horizontal row of mini sparkline areas, one per metric.
-Each spark has a label, current value, and micro trend line. Compact
-way to show 4-8 metrics with trend in a small vertical space.
-
-**Key elements:** per-metric: label (whisper), value (body), tiny
-area fill below a polyline. All sparks same height, stacked vertically
-or in a row.
-
-**Accessibility:** B — tiny trend lines are decorative for screen readers. Pair with numeric current value.
-
-**When NOT to use:** Don't use when the user needs to read exact values
-(use table with sparkline columns). Don't use for more than 8 metrics
-— it becomes a wall of squiggles. If trends don't matter, use KPI tiles.
-
-**Settings:** `metrics` (CSV field names), `labels` (CSV), `sparkHeight`,
-`showValue`, `colors`, `theme`
-
-**Data contract:** time series with multiple value columns. Multi-row.
-
-### Radar / Spider Chart
-
-**Draws:** multi-axis polygon on a radial grid. Each axis represents
-a dimension (performance, security, reliability, etc). The filled
-polygon shows how the entity scores on each. Great for comparing
-profiles (e.g., server health across 5 dimensions).
-
-**Key elements:** radial grid lines, axis labels at each point,
-filled polygon with semi-transparent fill, optional second polygon
-for comparison, center origin at 0.
-
-**Accessibility:** C — complex spatial encoding. Provide tabular fallback or summary text. Low priority for accessibility.
-
-**When NOT to use:** Don't use for more than 8 axes (becomes unreadable).
-Don't use for time-series data. Don't use when one dimension dominates
-— the polygon collapses to a spike. Best for comparing profiles across
-3-7 balanced dimensions.
-
-**Settings:** `fields` (CSV of dimension fields), `labels` (CSV),
-`maxValue`, `fillOpacity`, `showGrid`, `showComparison`, `colors`, `theme`
-
-**Data contract:** one row per entity, one column per dimension.
-
-### Needle Gauge (Speedometer)
-
-**Draws:** semicircular dial with a physical needle pointing to the
-current value. Tick marks around the arc, colored zones (blue→gold→red).
-More dramatic than ring gauge — feels like a real instrument.
-
-**Key elements:** arc background with zone coloring, tick marks with
-numbers, needle drawn as a triangle from center, center cap circle,
-value text below.
-
-**Accessibility:** AA — physical metaphor is intuitive. Numeric value in center provides text fallback.
-
-**When NOT to use:** Don't use for values without physical-instrument
-metaphor (use ring gauge or KPI). Don't use 3+ needle gauges in a row
-— one dramatic gauge is impactful, three is a car dashboard cliché.
-
-**Settings:** `field`, `maxValue`, `zones` (CSV of zone boundaries),
-`zoneColors` (CSV), `label`, `unit`, `theme`
-
-**Data contract:** single numeric value.
-
-### Status Matrix / Health Grid
-
-**Draws:** grid of colored squares/dots, each representing a service
-or host. Color = status (green/amber/red/grey). Compact way to show
-50-200 entities at a glance. Like a datacenter floor LED board.
-
-**Key elements:** grid of rounded squares with status color, label
-below each (truncated), hover tooltip with details, optional grouping
-headers.
-
-**Accessibility:** B — dense color grid. Provide summary counts (X critical, Y warning, Z ok) and per-entity tooltip.
-
-**When NOT to use:** Don't use for less than 10 entities (use status
-chips). Don't use when individual entity details matter (use table).
-Best for bird's-eye-view of 20-200 entities where pattern matters more
-than individual values.
-
-**Settings:** `nameField`, `statusField`, `columns`, `cellSize`,
-`showLabels`, `statusColors` (CSV), `theme`
-
-**Data contract:** name + status field. Multi-row (one per entity).
-
-### Waterfall Chart
-
-**Draws:** bars that show how an initial value is increased or
-decreased by successive categories — visualizes the "bridge" between
-start and end. Positive deltas go up (green), negative go down (red),
-totals are neutral.
-
-**Key elements:** floating bars connected by thin lines, positive
-bars above the running total, negative bars below, total bar at end,
-value labels on each bar.
-
-**Accessibility:** AA — bar-based, value labels on each bar provide text fallback. Use distinct patterns for positive/negative.
-
-**When NOT to use:** Don't use when there's no additive/subtractive
-relationship between values (use bar). Don't use for time-series (use
-area). Best for budget/P&L walkthroughs where you need to see how each
-category contributes to the total change.
-
-**Settings:** `categoryField`, `valueField`, `positiveColor`,
-`negativeColor`, `totalColor`, `showConnectors`, `showValues`, `theme`
-
-**Data contract:** category + value. Multi-row. First and last row
-can be totals.
-
-### Horizontal Bar List
-
-**Draws:** simple ranked horizontal bars with labels left, values
-right, bar fill proportional to value. Clean alternative to
-splunk.bar when you want minimal chrome and brand-specific styling.
-
-**Key elements:** label (left-aligned), bar fill (proportional width),
-value text (right-aligned), optional delta indicator, hover highlight.
-
-**Accessibility:** AAA — linear, text-heavy, inherently accessible. Value labels always visible.
-
-**When NOT to use:** Don't use for time-series (use line/area). Don't use
-when exact ranking position matters (use leaderboard). Best for top-N with
-long category labels that would clip in a column chart.
-
-**Settings:** `labelField`, `valueField`, `maxBars`, `barColor`,
-`showValues`, `unit`, `theme`
-
-**Data contract:** label + value. Multi-row sorted by value.
-
-### Data Table (Canvas)
-
-**Draws:** sortable, paginated rows with configurable columns, header
-row with sort indicators, colored deltas, position badges. Unlike
-splunk.table, this is fully branded via Canvas 2D.
-
-**Accessibility:** AA — tabular data with headers. Ensure keyboard navigation for sort. Consider aria-label on canvas summarizing row count.
-
-**MUST-HAVE features (not optional):**
-
-**When NOT to use:** Don't use when only 1-2 fields are needed (use KPI
-tile or leaderboard). Don't use for aggregated single-value data. Tables
-are for detail data — if you're showing `| stats count by src`, a bar
-chart tells the story faster.
-
-**Sort:** Click column header → sort rows by that column (toggle asc/desc).
-Draw sort indicator (▲/▼) next to active column. Store `this._sortCol`
-and `this._sortDir`. Hit-test header row in `_onMouseDown`.
-```javascript
-// In initialize():
-this._sortCol = null;
-this._sortDir = 'asc';
-this.canvas.addEventListener('mousedown', function(e) { self._onMouseDown(e); });
-
-// In _onMouseDown: hit-test header cells
-_onMouseDown: function(e) {
-    var rect = this.canvas.getBoundingClientRect();
-    var mx = e.clientX - rect.left;
-    var my = e.clientY - rect.top;
-    if (my < this._headerH) {
-        var col = this._hitTestHeader(mx);
-        if (col !== null) {
-            if (this._sortCol === col) {
-                this._sortDir = this._sortDir === 'asc' ? 'desc' : 'asc';
-            } else {
-                this._sortCol = col;
-                this._sortDir = 'asc';
-            }
-            this._render(this._lastData, this._lastConfig);
-        }
-    }
-},
-```
-
-**Pagination:** Calculate visible rows from panel height. Draw page
-navigation at bottom: "Page 1 of N  ‹ ›". Store `this._currentPage`.
-```javascript
-var headerH = Math.round(h * 0.08);
-var footerH = 28;
-var rowH = Math.max(20, Math.round((h - headerH - footerH) / 12));
-var rowsPerPage = Math.floor((h - headerH - footerH) / rowH);
-var totalPages = Math.ceil(rows.length / rowsPerPage);
-var pageRows = rows.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
-```
-
-**Fill panel width:** columns distribute proportionally across the full
-panel width. Last column gets remaining space. Never fixed-pixel widths.
-
-**Settings:** `columns` (CSV field names), `defaultSortColumn`,
-`defaultSortDirection`, `rowsPerPage` (auto or number), `showPosition`,
-`bestColor`, `improvedColor`, `slowerColor`, `theme`
-
-**Data contract:** multi-column, multi-row. Field names from formatter
-settings.
-
----
-
-**Viz variety rule:** a dashboard with 5 vizs of the same type (all
-donuts, all gauges) lacks visual rhythm. Aim for 3+ distinct viz
-types per dashboard. The taxonomy above gives you options beyond the
-usual KPI/gauge/donut/table set.
-
-## Formatter HTML template
-
-**CRITICAL: Splunk components ONLY — no raw HTML (F12)**
-
-Splunk's viz framework ignores raw HTML. NEVER use `<div>`, `<input>`,
-`<select>`, `<label>`, `<h3>`, or `<style>`. ONLY use:
-- `<form class="splunk-formatter-section">` as wrapper
-- `<splunk-control-group>` for each setting
-- `<splunk-text-input>`, `<splunk-radio-input>`, `<splunk-color-picker>` as controls
-
-No `<html>`, `<body>`, or `<head>` wrappers. No CSS. No JavaScript.
-
-**CRITICAL: Use `value=`, NEVER `default=`.** Splunk formatter
-components use `value` for the initial setting. `default` is wrong —
-settings appear empty in the Format panel and nothing happens.
-
-**CRITICAL: `name=` attribute MUST use `{{VIZ_NAMESPACE}}.settingKey`.
-NEVER hardcode the namespace (e.g., `myapp.myviz.settingKey`).
-Hardcoded names silently break — settings show in Format panel but
-changes don't save and don't reach the viz.**
-
-**CRITICAL: Every `value="..."` MUST be non-empty and match the JS
-`getOption()` default (B7).** In ad-hoc search, empty `value=""` means
-the viz gets no field names and renders blank. Field settings default
-to the demo CSV column names. Color settings default to theme accent.
+### Text input
 
 ```html
-<form class="splunk-formatter-section" section-label="Data configurations">
-    <splunk-control-group label="Value field" help="SPL field for the primary value">
-        <splunk-text-input name="{{VIZ_NAMESPACE}}.field" value="value">
-        </splunk-text-input>
-    </splunk-control-group>
-</form>
-
-<form class="splunk-formatter-section" section-label="Data display">
-    <splunk-control-group label="Label" help="Text shown below the value (free-text, can be empty)">
-        <splunk-text-input name="{{VIZ_NAMESPACE}}.label" value="Label">
-        </splunk-text-input>
-    </splunk-control-group>
-    <splunk-control-group label="Unit" help="Unit suffix (%, ms, $) — leave empty for no unit">
-        <splunk-text-input name="{{VIZ_NAMESPACE}}.unit" value="">
-        </splunk-text-input>
-    </splunk-control-group>
-</form>
-
-<form class="splunk-formatter-section" section-label="Color and style">
-    <!-- Theme is auto-detected via getCurrentTheme() (B18).
-         No theme radio needed — viz adapts to Dashboard Studio
-         and ad-hoc search automatically. -->
-    <splunk-control-group label="Accent color" help="Primary highlight color">
-        <!-- CRITICAL: type="custom" is REQUIRED on color-picker.
-             Without it, Splunk ignores value= and uses its own default palette.
-             Settings won't take effect in ad-hoc search. -->
-        <splunk-color-picker name="{{VIZ_NAMESPACE}}.accentColor"
-            type="custom" value="#0088CC">
-            <splunk-color>#0088CC</splunk-color>
-            <splunk-color>#2bbfb8</splunk-color>
-            <splunk-color>#ff6600</splunk-color>
-            <splunk-color>#f73873</splunk-color>
-            <splunk-color>#a78bfa</splunk-color>
-        </splunk-color-picker>
-    </splunk-control-group>
-</form>
-```
-
-**Rules:**
-- Section labels MUST be exact (see vp-ref-gotchas B5)
-- Every control-group MUST have `help="..."` attribute
-- JS defaults MUST match `value="..."` attributes (B7)
-- Color picker swatches should come from the pack's theme palette
-
-## Formatter copy-paste templates — USE THESE EXACTLY
-
-**DO NOT write formatter HTML from memory.** Copy the exact pattern
-below and fill in only the parts marked `{FILL}`. Every attribute,
-every quote, every `{{VIZ_NAMESPACE}}` is load-bearing.
-
-### Text input (field names, labels, units)
-
-```html
-<splunk-control-group label="{FILL: Label}" help="{FILL: help text}">
-    <splunk-text-input name="{{VIZ_NAMESPACE}}.{FILL: settingName}" value="{FILL: default}">
+<splunk-control-group label="{FILL}" help="{FILL}">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.{FILL}" value="{FILL}">
     </splunk-text-input>
 </splunk-control-group>
 ```
 
-### Radio toggle (show/hide, on/off)
+### Radio toggle
 
 ```html
-<splunk-control-group label="{FILL: Label}" help="{FILL: help text}">
-    <splunk-radio-input name="{{VIZ_NAMESPACE}}.{FILL: settingName}" value="{FILL: default}">
-        <option value="true">{FILL: On label}</option>
-        <option value="false">{FILL: Off label}</option>
+<splunk-control-group label="{FILL}" help="{FILL}">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.{FILL}" value="{FILL}">
+        <option value="true">{FILL}</option>
+        <option value="false">{FILL}</option>
     </splunk-radio-input>
-</splunk-control-group>
-```
-
-### Dropdown (multi-option)
-
-```html
-<splunk-control-group label="{FILL: Label}" help="{FILL: help text}">
-    <splunk-select name="{{VIZ_NAMESPACE}}.{FILL: settingName}" value="{FILL: default}">
-        <option value="{FILL}">{FILL: label}</option>
-        <option value="{FILL}">{FILL: label}</option>
-    </splunk-select>
 </splunk-control-group>
 ```
 
 ### Color picker (MUST have type="custom")
 
 ```html
-<splunk-control-group label="{FILL: Label}" help="{FILL: help text}">
-    <splunk-color-picker name="{{VIZ_NAMESPACE}}.{FILL: settingName}" type="custom" value="{FILL: #hex}">
-        <splunk-color>{FILL: #hex1}</splunk-color>
-        <splunk-color>{FILL: #hex2}</splunk-color>
-        <splunk-color>{FILL: #hex3}</splunk-color>
-        <splunk-color>{FILL: #hex4}</splunk-color>
-        <splunk-color>{FILL: #hex5}</splunk-color>
+<splunk-control-group label="{FILL}" help="{FILL}">
+    <splunk-color-picker name="{{VIZ_NAMESPACE}}.{FILL}" type="custom" value="{FILL}">
+        <splunk-color>{FILL}</splunk-color>
+        <splunk-color>{FILL}</splunk-color>
     </splunk-color-picker>
 </splunk-control-group>
 ```
 
-### Theme selector (MUST default to auto)
+### Theme selector (MUST default to "auto")
 
 ```html
-<splunk-control-group label="Theme" help="Auto detects Dashboard Studio theme. Override for testing.">
+<splunk-control-group label="Theme" help="Auto detects dashboard theme">
     <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto">
         <option value="auto">Auto</option>
         <option value="dark">Dark</option>
@@ -846,68 +105,42 @@ every quote, every `{{VIZ_NAMESPACE}}` is load-bearing.
 </splunk-control-group>
 ```
 
-### Section wrapper (MUST have class + section-label)
+### Section wrapper
 
 ```html
-<form class="splunk-formatter-section" section-label="{FILL: Section Name}">
-    <!-- controls go here -->
+<form class="splunk-formatter-section" section-label="{FILL}">
+    <!-- controls here -->
 </form>
 ```
 
-### WRONG patterns — if you see these, the formatter is broken
+### WRONG patterns — broken if you see these
 
-```html
-<!-- WRONG: hardcoded namespace (settings silently fail) -->
-name="myapp.myviz.field"
-
-<!-- WRONG: default= instead of value= (settings appear empty) -->
-<splunk-text-input name="{{VIZ_NAMESPACE}}.field" default="value">
-
-<!-- WRONG: color picker without type="custom" (ignores value=) -->
-<splunk-color-picker name="{{VIZ_NAMESPACE}}.color" value="#ff0000">
-
-<!-- WRONG: bare <form> without class and section-label (invisible) -->
-<form>
-
-<!-- WRONG: theme defaults to "dark" (breaks light mode) -->
-<splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="dark">
+```
+WRONG: name="myapp.myviz.field"       → MUST be name="{{VIZ_NAMESPACE}}.field"
+WRONG: default="value"                 → MUST be value="value"
+WRONG: <splunk-color-picker value=     → MUST add type="custom"
+WRONG: <form>                          → MUST add class="splunk-formatter-section" section-label="..."
+WRONG: themeMode value="dark"          → MUST be value="auto"
 ```
 
-## Formatter section structure
+### Formatter structure
 
-Every viz gets sections 1-3. Add section 4 only for gauges.
+Every viz gets 3 sections:
+1. **Data configurations** — field name mappings (text inputs)
+2. **Data display** — labels, units, toggles, decimals
+3. **Color and style** — themeMode, accentColor, series colors, accentIntensity
 
-**Section 1: Data configurations** — field name mappings (text inputs)
-**Section 2: Data display** — labels, units, toggles, alignment
-**Section 3: Color and style** — theme, accent color, series colors, intensity
+Minimum 7 controls for simple vizs, 10+ for complex.
 
-**Minimum formatter control counts:**
+## visualization_source.js — COMPLETE TEMPLATE
 
-| Viz complexity | Min controls | Example |
-|---|---|---|
-| Simple (KPI tile, status chip) | 10 | 3 fields + 4 display + 3 color |
-| Medium (gauge, bar chart) | 12 | 3 fields + 5 display + 4 color |
-| Complex (table, timeline, flow) | 14 | 5 fields + 5 display + 4 color |
-
-**Mandatory field configurability:** Every field name used in
-`updateView()` MUST have a corresponding formatter text-input.
-NEVER hardcode field names like `"value"` or `"_time"`.
-
-If a subagent produces fewer than 10 controls, it has almost
-certainly hardcoded values that should be configurable.
-
-## visualization_source.js — complete template
-
-**This is the most important file.** Copy this entire template and
-fill in the `{FILL}` markers. Every pattern here (clientWidth, safeStr,
-detectTheme, null guards, no getBoundingClientRect) is load-bearing.
+Copy this entire template. Fill in `{FILL}` markers. Every pattern is load-bearing.
 
 ```javascript
 var SplunkVisualizationBase = require('api/SplunkVisualizationBase');
 var SplunkVisualizationUtils = require('api/SplunkVisualizationUtils');
 var theme = require('shared/theme');
 
-// ── Null-safe helpers (B21) ─────────────────────────────
 function safeStr(val) {
     return (val != null && val !== '') ? String(val) : '';
 }
@@ -918,7 +151,6 @@ function safeNum(val, fallback) {
     return isNaN(n) ? fallback : n;
 }
 
-// ── Theme auto-detection (B20) ──────────────────────────
 function detectTheme() {
     try {
         if (typeof SplunkVisualizationUtils !== 'undefined' &&
@@ -938,29 +170,25 @@ function detectTheme() {
         var bg = window.getComputedStyle(document.body).backgroundColor;
         var m = bg.match(/\d+/g);
         if (m && m.length >= 3) {
-            return (parseInt(m[0]) + parseInt(m[1]) + parseInt(m[2])) / 3 < 128
+            return (parseInt(m[0])+parseInt(m[1])+parseInt(m[2]))/3 < 128
                    ? 'dark' : 'light';
         }
     } catch (e) {}
     return 'dark';
 }
 
-// ── Viz ─────────────────────────────────────────────────
 module.exports = SplunkVisualizationBase.extend({
 
     initialize: function() {
         SplunkVisualizationBase.prototype.initialize.apply(this, arguments);
         this.el.classList.add('{FILL: app-name}-viz');
-
-        // Canvas — position absolute so it doesn't affect el sizing (B17)
-        this._canvas = document.createElement('canvas');
-        this._canvas.style.cssText = 'position:absolute;top:0;left:0;';
         this.el.style.position = 'relative';
         this.el.style.overflow = 'hidden';
-        // DO NOT set width/height on this.el — Splunk manages these (B17)
+
+        this._canvas = document.createElement('canvas');
+        this._canvas.style.cssText = 'position:absolute;top:0;left:0;';
         this.el.appendChild(this._canvas);
 
-        // Tooltip (I1)
         this._tooltip = document.createElement('div');
         this._tooltip.style.cssText =
             'position:absolute;display:none;padding:6px 10px;' +
@@ -986,22 +214,16 @@ module.exports = SplunkVisualizationBase.extend({
     },
 
     formatData: function(data) {
-        // Keep lightweight — no config reads here (B4)
         if (!data || !data.rows || data.rows.length === 0) {
             if (this._lastGoodData) return this._lastGoodData;
             return null;
         }
-
         var fields = data.fields;
         var colIdx = {};
         for (var i = 0; i < fields.length; i++) {
             colIdx[fields[i].name] = i;
         }
-
-        var result = {
-            colIdx: colIdx,
-            rows: data.rows
-        };
+        var result = { colIdx: colIdx, rows: data.rows };
         this._lastGoodData = result;
         return result;
     },
@@ -1012,23 +234,20 @@ module.exports = SplunkVisualizationBase.extend({
             else return;
         }
 
-        // ── Read settings (B3/B7 — defaults MUST match formatter value=) ──
         var ns = this.getPropertyNamespaceInfo().propertyNamespace;
         function opt(key, fallback) {
             var v = config[ns + key];
             return (v != null && v !== '') ? v : fallback;
         }
 
-        var valueField = opt('{FILL: settingName}', '{FILL: default}');
-        // {FILL: add more settings}
+        // {FILL: read settings — defaults MUST match formatter value= attrs}
+        var valueField = opt('{FILL}', '{FILL}');
 
-        // ── Theme (B20) ──
         var themeMode = opt('themeMode', 'auto');
         var isDark = themeMode === 'auto' ? detectTheme() === 'dark'
                    : themeMode === 'dark';
         var t = theme.getTheme(isDark ? 'dark' : 'light');
 
-        // ── Canvas sizing (B17 — clientWidth, NEVER getBoundingClientRect) ──
         var w = this.el.clientWidth || this.el.offsetWidth || window.innerWidth || 300;
         var h = this.el.clientHeight || this.el.offsetHeight || window.innerHeight || 200;
         if (w < 10) w = window.innerWidth || 300;
@@ -1042,29 +261,22 @@ module.exports = SplunkVisualizationBase.extend({
         var ctx = this._canvas.getContext('2d');
         if (!ctx) return;
         ctx.scale(dpr, dpr);
-
-        // ── Clear (B13 — clearRect, never fillRect) ──
         ctx.clearRect(0, 0, w, h);
 
-        // ── Style tooltip for current theme ──
         this._tooltip.style.background = t.panelHi || t.panel;
         this._tooltip.style.color = t.text;
         this._tooltip.style.fontFamily = theme.FONTS.ui;
-        this._tooltip.style.fontSize = '11px';
 
-        // ── Read data (B21 — null-guard everything) ──
-        var colIdx = data.colIdx;
-        var rows = data.rows;
-        // var val = safeNum(rows[0][colIdx[valueField]], 0);
-        // var label = safeStr(rows[0][colIdx[labelField]]);
-
-        // ── Font scaling (B8 — floor only, NO upper cap) ──
-        // var fontSize = Math.max(14, h * 0.30);
-
-        // {FILL: all Canvas 2D drawing code here}
+        // {FILL: read data with safeStr/safeNum}
+        // {FILL: Canvas 2D drawing code}
+        // Remember: ctx.globalAlpha = 1 before drawing text
+        // Remember: measureText() before positioning
+        // Remember: Math.max(floor, h * ratio) for font sizes
     },
 
     _onMouseMove: function(e) {
+        var mx = e.offsetX;
+        var my = e.offsetY;
         // {FILL: hit-test logic + tooltip positioning}
     },
 
@@ -1073,401 +285,66 @@ module.exports = SplunkVisualizationBase.extend({
     },
 
     destroy: function() {
+        // {FILL: clear any setInterval/setTimeout timers}
         SplunkVisualizationBase.prototype.destroy.apply(this, arguments);
     }
 });
 ```
 
-**What this template bakes in:**
-- `safeStr()` / `safeNum()` — B21 null guards
-- `detectTheme()` — B20 DOM fallback + B18 getCurrentTheme
-- `clientWidth`/`clientHeight` — B17, no getBoundingClientRect
-- `position:absolute` canvas — B17, doesn't affect el sizing
-- `clearRect` — B13, transparent background
-- `ROW_MAJOR_OUTPUT_MODE` — F4
-- `require()`/`module.exports` — F6, webpack adds AMD wrapper
-- `extend({...})` object literal — F7
-- Tooltip scaffold — I1
-- No config in formatData — B4
-- `opt()` helper with fallback — B3/B7
+## Demo data — CSV lookups
 
-## visualization.css template
+Use lookups, NOT `makeresults` with `random()`.
+
+```spl
+| inputlookup {{PACK_ID}}_demo_kpis.csv
+```
+
+Prefix ALL filenames with pack ID. The `inputlookup` command uses the FILENAME, not the transforms.conf stanza name.
+
+## visualization.css
 
 ```css
-.splunk-viz-container,
-.splunk-viz-container > div {
-    width: 100% !important;
-    height: 100% !important;
-    overflow: hidden;
+.{FILL: app-name}-viz {
+    background: transparent;
 }
 ```
 
-If the viz needs its own font (beyond what theme.js provides), add
-base64 `@font-face` in this file. See vp-ref-gotchas F2.
+## Quick rules — the 10 that matter most
 
-## harness.json template
+1. **ES5 only** — no const, let, arrow, template literals, destructuring
+2. **require()/module.exports** — NEVER define(). build_flat.js adds the AMD wrapper.
+3. **extend({...}) object literal** — NEVER prototypal constructors
+4. **ROW_MAJOR_OUTPUT_MODE** — in getInitialDataParams as a METHOD
+5. **clearRect** — NEVER fillRect with background color
+6. **clientWidth/clientHeight** — NEVER getBoundingClientRect for canvas sizing
+7. **{{VIZ_NAMESPACE}}** — NEVER hardcode app.viz namespace in formatter
+8. **value=** — NEVER default= on formatter inputs
+9. **type="custom"** — REQUIRED on every splunk-color-picker
+10. **No jQuery** — this.$el doesn't exist in Dashboard Studio v2
 
-```json
-{
-    "fields": [
-        {"name": "field1", "type": "string"},
-        {"name": "field2", "type": "number"}
-    ],
-    "rows": [
-        ["label", 42],
-        ["label2", 78]
-    ],
-    "formatter": {
-        "field": "field2",
-        "label": "Demo",
-        "theme": "dark"
-    }
-}
+## Build and validate
+
+```bash
+# Build all vizs (flat AMD — inlines theme.js)
+node ${CLAUDE_SKILL_DIR}/scripts/build_flat.js /path/to/app
+
+# Validate (MUST pass before packaging)
+bash ${CLAUDE_SKILL_DIR}/scripts/validate_viz.sh /path/to/app
 ```
 
-## Data flow
+CRITICAL: Run validation after every build. Do not skip. Fix all failures before packaging.
 
-```
-SPL → formatData (data only) → updateView (data + config)
-                                    ↓
-                               _render(data, config)
-                                    ↓
-                            Canvas 2D drawing
-```
+## References — read on demand
 
-1. `formatData`: build column index, cache last good data, throw
-   VisualizationError if no data
-2. `updateView`: cache data+config, call `_render`
-3. `_render`: measure container, setup HiDPI canvas, read config via
-   getOption, get theme tokens, draw
+- **[Viz blueprints](references/viz-blueprints.md)** — 15 viz types with creative direction + data contracts
+- **[Canvas recipes](references/canvas-recipes.md)** — tooltip, drilldown, animation, color math, grid layout
+- **[Conf templates](references/conf-templates.md)** — app.conf, visualizations.conf, default.meta, transforms.conf
+- **[Theme template](references/theme-template.md)** — complete theme.js with all function implementations
 
-## Writing a new viz — step by step
+## Unique rendering per brand
 
-1. **Define the data contract** — which SPL fields, required vs optional
-2. **Sketch the Canvas layout** — what goes where at different sizes
-3. **Write `_render` body** — use theme tokens for all colors, auto-scale
-   all sizes, read all settings via getOption
-4. **Write `formatter.html`** — 3 sections, all defaults matching JS
-5. **Write `harness.json`** — sample data that renders a representative
-   state
-6. **Test in browser** — open test-harness.html, verify resize, dark/light
-7. **Build** — webpack, verify ES5, check bundle format
-8. **Test in Splunk** — install app, verify in Studio + ad-hoc search
+Do NOT copy viz source between brands and swap colors. Each brand gets unique `_render()` code. The blueprints above are STARTING POINTS — study the brand's design language, then write Canvas code that matches THAT.
 
-## Hover tooltip — mandatory on every data-displaying viz
+Inside `_render()`, you have a Canvas 2D context with zero constraints. You can draw anything a browser can render.
 
-See `vp-ref-gotchas` I1 and I2. Every viz that displays data MUST implement:
-
-1. **DOM tooltip element** — created in `initialize`, positioned on
-   `mousemove`, hidden on `mouseleave`
-2. **Hit-test function** — `_hitTest(mx, my)` returns `{label, value}`
-   or null
-3. **Visual highlight** — hover state changes appearance (brighter row,
-   crosshair line, segment stroke)
-4. **Cleanup in destroy** — remove tooltip element, remove event
-   listeners
-
-The tooltip is a `<div>` appended to `this.el`, NOT drawn on Canvas
-(Canvas can't do pointer-events:none or z-index above Studio chrome).
-
-## Drilldown — click navigation from Canvas vizs
-
-Custom vizs can fire drilldown events when the user clicks on a
-data element (table row, gauge segment, chart point).
-
-**In the viz source:**
-```javascript
-// In initialize():
-this.canvas.addEventListener('click', function(e) {
-    self._onClick(e);
-});
-
-// Click handler:
-_onClick: function(e) {
-    var rect = this.canvas.getBoundingClientRect();
-    var mx = e.clientX - rect.left;
-    var my = e.clientY - rect.top;
-    var hit = this._hitTest(mx, my);
-    if (hit === null) return;
-    var region = this._hitRegions[hit];
-    try {
-        this.drilldownToPayload({
-            action: SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN,
-            data: region.drilldownData
-        });
-    } catch (e) { /* parent frame may block */ }
-},
-```
-
-**Hit region data format:**
-```javascript
-this._hitRegions.push({
-    x: rx, y: ry, w: rw, h: rh,
-    tip: 'Driver: Verstappen',
-    drilldownData: { 'click.name': 'Driver', 'click.value': 'Verstappen' }
-});
-```
-
-**In dashboard JSON — wire the event handler:**
-```json
-"viz_table": {
-    "type": "mypack.data_table",
-    "options": { ... },
-    "eventHandlers": [
-        {
-            "type": "drilldown.setToken",
-            "options": {
-                "tokens": [
-                    { "token": "selected", "value": "$click.value$" }
-                ]
-            }
-        }
-    ]
-}
-```
-
-**Or navigate to another dashboard:**
-```json
-"eventHandlers": [
-    {
-        "type": "drilldown.linkToDashboard",
-        "options": { "app": "search", "dashboard": "detail_view" }
-    }
-]
-```
-
-## Decimals setting — standard on all KPI/value vizs
-
-Every viz that displays a formatted number MUST expose a `decimals`
-formatter option:
-- `-1` (default) = auto-compact via fmtNum
-- `0` = integer
-- `1`, `2`, `3` = fixed decimal places
-
-```javascript
-var decimals = parseInt(getOption(config, ns, 'decimals', '-1'), 10);
-var displayValue;
-if (isNaN(rawValue)) {
-    displayValue = '—';
-} else if (decimals >= 0) {
-    displayValue = rawValue.toFixed(decimals);
-} else {
-    displayValue = theme.fmtNum(rawValue, { compact: true });
-}
-```
-
-Without this, small values like 7.27 round to 7 and percentages like
-3.8 round to 4.
-
-## Common mistakes
-
-| Mistake | Consequence | Fix |
-|---|---|---|
-| Hardcoded field names | Viz only works with exact SPL | Make configurable via formatter |
-| Hardcoded pixel sizes | Breaks on resize | Auto-scale from container dimensions |
-| Colors not from theme | Light mode broken | Use `t.text`, `t.bg`, etc. |
-| Missing `count` in getInitialDataParams | Only 10 rows | Set `count: 50` (single) or `count: 10000` (multi) |
-| `formatData` reads config | Stale cached values | Move to `updateView` |
-| Font drawn before ready | Tofu glyphs forever | Poll with loadFont() |
-| No `destroy()` cleanup | Memory leaks on nav | Clear timers, disconnect observers |
-
-## Creative freedom — what the rules DON'T constrain
-
-The rules in `vp-ref-gotchas` protect against TECHNICAL failure:
-ES5 syntax, webpack config, outputMode, font CORS, AppInspect.
-Those are NON-NEGOTIABLE.
-
-**Everything else is yours.**
-
-Inside `_render()`, you have a Canvas 2D context with zero
-constraints. You can draw anything a browser can render. The
-gotchas tell you HOW to ship code that works. They say NOTHING
-about what that code should look like.
-
-**You are not limited to the blueprints above.** The KPI tile,
-ring gauge, area chart, donut, and table blueprints are STARTING
-POINTS. If the brand calls for a viz that doesn't match any
-blueprint — a radar chart, a particle field, a speedometer with
-a physical needle, a heat map with cell animations — BUILD IT.
-
-**Consult `vp-ref-patterns` mood recipes** for Canvas techniques
-that create atmosphere: ambient light, glass panels, noise
-texture, data glow, cinematic typography, gradient mesh, accent
-lines, animated pulse rings. These are the tools that make the
-difference between "a Splunk dashboard" and "something someone
-screenshots and shares."
-
-**The only creative constraint:** if a visual effect competes
-with the DATA for attention, it's too much. The data is the
-story. Effects are the stage lighting. A spotlight draws the
-eye TO the actor — it doesn't become the show.
-
-**Default stance:** be AMBITIOUS. A safe, generic viz that
-nobody notices is worse than a bold viz that makes one person
-say "wait, that's Splunk?" Ship something with a point of view.
-
-## Subagent dispatch rules — MUST include in every viz build prompt
-
-When dispatching subagents (one per viz), include ALL of these rules
-in the subagent prompt. Missing any one causes a build that silently
-fails.
-
-**File paths:**
-1. Runtime files go in `appserver/static/visualizations/{viz}/` — NEVER
-   in `default/visualizations/` (F9)
-
-**Data pipeline:**
-2. MUST include `getInitialDataParams` as a METHOD with
-   `ROW_MAJOR_OUTPUT_MODE` — never as a property on the extend object (F4)
-
-**DOM rules:**
-3. Use `this.el` (plain DOM element), NEVER `this.$el` (jQuery) — jQuery
-   is not available in Dashboard Studio v2 sandboxed iframes (F10)
-
-**Canvas setup:**
-4. Pass `this.el` (container div) to `theme.setupCanvas()`, NEVER
-   `this._canvas` — setupCanvas internally creates/finds the canvas (B17)
-
-**Render method:**
-5. The `reflow` method must call the SAME method used for rendering —
-   verify the actual name (`_render`, `_draw`, `updateView`) before
-   writing `reflow` (C6)
-
-**Build format:**
-6. If webpack builds cause Script errors, use flat AMD build instead (F11).
-   Source files use `require()`/`module.exports`; `build_flat.js` converts
-   to `define()` wrapper.
-
-**Formatter (CRITICAL):**
-7. Formatter.html uses ONLY Splunk components (`<splunk-control-group>`,
-   `<splunk-text-input>`, etc.) — NEVER raw HTML (`<div>`, `<input>`,
-   `<select>`) (F12). No `<html>`/`<body>` wrappers. No CSS/JS.
-
-**Theme detection:**
-8. Theme MUST auto-detect via `getCurrentTheme()` fallback — never
-   hardcode `'dark'` as default. Vizs must work in both Dashboard
-   Studio AND ad-hoc search light theme (B18)
-
-**Formatter namespace:**
-9. ALL formatter `name=` attributes MUST use `{{VIZ_NAMESPACE}}.key` —
-   NEVER hardcode the app.viz namespace. Hardcoded names silently fail (B10)
-
-**Checklist for subagent to verify before reporting DONE:**
-- [ ] `getInitialDataParams` is a method (not a property)
-- [ ] No `this.$el` or jQuery anywhere
-- [ ] `reflow` calls the correct render method
-- [ ] `theme.setupCanvas(this.el)` not `theme.setupCanvas(this._canvas)`
-- [ ] Source uses `require()`/`module.exports`, NOT `define()`
-- [ ] All code is ES5 (no const/let/arrow/template literals)
-- [ ] Formatter uses Splunk components only, no raw HTML (F12)
-- [ ] All formatter name= attributes use {{VIZ_NAMESPACE}}, not hardcoded names
-- [ ] All sizes scale from container dimensions, no hardcoded pixels (B8)
-- [ ] Tables have sort + pagination
-- [ ] Theme defaults to '' (empty), falls back to getCurrentTheme() (B18)
-
-## Splunk API reference — things agents forget
-
-### SplunkVisualizationUtils helpers
-
-Available via `require('api/SplunkVisualizationUtils')`:
-
-```javascript
-var Utils = require('api/SplunkVisualizationUtils');
-
-Utils.escapeHtml(str)      // XSS prevention for DOM insertion
-Utils.makeSafeUrl(url)     // strip javascript: and unsafe schemes
-Utils.getCurrentTheme()    // returns 'dark' or 'light'
-Utils.normalizeBoolean(v)  // coerce string/int to boolean
-```
-
-Only import Utils if you use it — add to webpack externals:
-```javascript
-externals: ['api/SplunkVisualizationBase', 'api/SplunkVisualizationUtils']
-```
-
-### Lifecycle methods beyond the basics
-
-```javascript
-module.exports = SplunkVisualizationBase.extend({
-    initialize: function() { ... },         // one-time setup
-    setupView: function() { ... },          // called once before first updateView
-    getInitialDataParams: function() { ... },
-    formatData: function(data) { ... },
-    updateView: function(data, config) { ... },
-    onConfigChange: function(changes, prev) { ... }, // formatter setting changed
-    reflow: function() {                    // container resized
-        this.invalidateUpdateView();
-    },
-    destroy: function() { ... }             // cleanup timers, listeners
-});
-```
-
-### Invalidation methods (call, don't override)
-
-```javascript
-this.invalidateFormatData()   // re-run formatData next cycle
-this.invalidateUpdateView()   // re-run updateView next cycle
-this.invalidateReflow()       // re-run reflow next cycle
-```
-
-### Real-time search handling
-
-Real-time searches (`rt-1m` to `rt`) accumulate rows over time.
-`data.rows` is ordered oldest-first.
-
-```javascript
-// Single-value vizs: ALWAYS read last row (most recent)
-var row = data.rows[data.rows.length - 1];
-
-// Chart/table vizs: iterate all rows
-for (var i = 0; i < data.rows.length; i++) { ... }
-```
-
-Size `count` in getInitialDataParams:
-- Single-value / gauge: `count: 50` (small buffer, snappy updates)
-- Chart / table: `count: 10000` (needs history)
-
-### Cache in BOTH formatData AND updateView
-
-Splunk can pass `data = false` to updateView even when formatData
-returned cached data. Without both caches, the viz flashes blank:
-
-```javascript
-formatData: function(data) {
-    if (!data || !data.rows || data.rows.length === 0) {
-        if (this._lastGoodData) return this._lastGoodData;
-        return data;
-    }
-    // ... build result ...
-    this._lastGoodData = result;
-    return result;
-},
-
-updateView: function(data, config) {
-    if (!data) {
-        if (this._lastGoodData) data = this._lastGoodData;
-        else return;
-    }
-    // ... draw ...
-}
-```
-
-### Reload viz without restarting Splunk
-
-Navigate to `http://<splunk>:8000/en-US/_bump` and click "Bump
-version", then hard-refresh browser (Cmd+Shift+R). This clears
-Splunk's static file cache. Only conf file changes need a restart.
-
-### Font quoting in ctx.font strings
-
-```javascript
-// WRONG — nested quotes break
-ctx.font = '700 ' + size + 'px \'CustomFont\', sans-serif';
-
-// RIGHT — escaped double quotes inside single-quoted string
-ctx.font = '700 ' + size + 'px "CustomFont", sans-serif';
-
-// SAFEST — variable avoids all quoting issues
-var fontFamily = '"CustomFont", sans-serif';
-ctx.font = '700 ' + size + 'px ' + fontFamily;
-```
+**Default stance:** be AMBITIOUS. A safe, generic viz is worse than a bold viz that makes someone say "wait, that's Splunk?"
