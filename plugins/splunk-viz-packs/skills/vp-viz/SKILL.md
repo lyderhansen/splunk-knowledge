@@ -42,6 +42,8 @@ allowed-tools: Read Bash(node *) Bash(head *) Bash(grep *) Bash(chmod *)
 □ JS: Math.max(floor, h * ratio) for font sizes — NO upper pixel cap
 □ JS: ROW_MAJOR_OUTPUT_MODE in getInitialDataParams
 □ JS: pure ES5 — no const/let/arrow/template literals
+□ Dashboard JSON type: {app_id}.{viz_name} — NEVER custom.* or splunk.custom.*
+□ Tarball: ONE top-level directory only — package from parent dir
 ```
 
 ## Conf templates
@@ -309,7 +311,7 @@ Prefix ALL filenames with pack ID. The `inputlookup` command uses the FILENAME, 
 }
 ```
 
-## Quick rules — the 10 that matter most
+## Quick rules — the 12 that matter most
 
 1. **ES5 only** — no const, let, arrow, template literals, destructuring
 2. **require()/module.exports** — NEVER define(). build_flat.js adds the AMD wrapper.
@@ -321,6 +323,8 @@ Prefix ALL filenames with pack ID. The `inputlookup` command uses the FILENAME, 
 8. **value=** — NEVER default= on formatter inputs
 9. **type="custom"** — REQUIRED on every splunk-color-picker
 10. **No jQuery** — this.$el doesn't exist in Dashboard Studio v2
+11. **Dashboard type = `{app_id}.{viz_name}`** — NEVER `custom.{app_id}.{viz_name}` or `splunk.custom.*`. The format is EXACTLY `app_id.viz_name`, nothing else.
+12. **Tarball = ONE top-level directory** — `tar tzf app.tar.gz | head -1` must show `app_name/`. Package from the PARENT directory with the app dir as the only argument.
 
 ## Build and validate
 

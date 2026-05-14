@@ -123,6 +123,14 @@ if [ -f "$APP_DIR/default/app.conf" ]; then
   [ "$STANZAS" -lt 5 ] && { echo "  FAIL R1: app.conf has $STANZAS stanzas (need 5)"; TOTAL_FAIL=1; }
 fi
 
+# B9: Dashboard type format — check for "custom." prefix in dashboard XML
+for xml in "$APP_DIR"/default/data/ui/views/*.xml; do
+  [ -f "$xml" ] || continue
+  XMLNAME=$(basename "$xml")
+  CUSTOM_PREFIX=$(grep -c '"custom\.' "$xml" 2>/dev/null || true)
+  [ "$CUSTOM_PREFIX" -gt 0 ] && { echo "  FAIL B9: $XMLNAME has 'custom.' prefix in viz type — use '{app}.{viz}' format"; TOTAL_FAIL=1; }
+done
+
 echo ""
 echo "============================================"
 if [ "$TOTAL_FAIL" -eq 0 ]; then

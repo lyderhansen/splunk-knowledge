@@ -78,6 +78,20 @@ dispatch.latest_time = now
 display.general.type = visualizations
 display.visualizations.type = custom
 display.visualizations.custom.type = {{PACK_ID}}.{{VIZ_NAME}}
+```
+
+**CRITICAL: Dashboard/saved search type format:**
+```
+WRONG: custom.myapp.myviz
+WRONG: splunk.custom.myapp.myviz
+WRONG: visualizations.custom.myapp.myviz
+RIGHT: myapp.myviz
+```
+
+The format is EXACTLY `{app_id}.{viz_name}`. No prefix.
+
+```ini
+display.visualizations.custom.type = {{PACK_ID}}.{{VIZ_NAME}}
 display.visualizations.custom.{{PACK_ID}}.{{VIZ_NAME}}.{{SETTING}} = {{DEFAULT}}
 ```
 
