@@ -11,6 +11,9 @@ TEST28="$SCRIPT_DIR/../../../../../tests/test28_drilldown_tabs/cloudflare_noc"
 TEST21="$SCRIPT_DIR/../../../../../tests/test21_patagonia/patagonia_outdoor_ops"
 TEST25="$SCRIPT_DIR/../../../../../tests/test25_v4/hospital_nps_gauge"
 
+TMPDIR_INT=$(mktemp -d /tmp/test_validate_int_XXXXXX)
+trap 'rm -rf "$TMPDIR_INT"' EXIT INT TERM
+
 PASS=0
 FAIL=0
 
@@ -131,7 +134,7 @@ fi
 
 # Also verify test21 exits 1 (html violations detected)
 if [ -d "$TEST21" ]; then
-  bash "$VVS" "$TEST21" > /tmp/test21_out.txt 2>&1; EXIT_CODE=$?
+  bash "$VVS" "$TEST21" > "$TMPDIR_INT/test21_out.txt" 2>&1; EXIT_CODE=$?
   if [ "$EXIT_CODE" -eq 1 ]; then
     pass "validate_viz.sh on test21 exits 1 (violations detected)"
   else
@@ -172,14 +175,14 @@ if [ -f "$VPC_VVS" ] && [ -d "$TEST28" ]; then
   CANON_CODE="${CANON_EXIT##*$'\n'}"
   SHIM_CODE="${SHIM_EXIT##*$'\n'}"
   # Re-run cleanly
-  bash "$VVS" "$TEST28" > /tmp/canon_out.txt 2>&1; CANON_CODE=$?
-  bash "$VPC_VVS" "$TEST28" > /tmp/shim_out.txt 2>&1; SHIM_CODE=$?
+  bash "$VVS" "$TEST28" > $TMPDIR_INT/canon_out.txt 2>&1; CANON_CODE=$?
+  bash "$VPC_VVS" "$TEST28" > $TMPDIR_INT/shim_out.txt 2>&1; SHIM_CODE=$?
   if [ "$CANON_CODE" -eq "$SHIM_CODE" ]; then
     pass "vp-create shim exit code ($SHIM_CODE) matches canonical ($CANON_CODE)"
   else
     fail "vp-create shim exit code $SHIM_CODE != canonical $CANON_CODE"
   fi
-  DIFF=$(diff /tmp/canon_out.txt /tmp/shim_out.txt)
+  DIFF=$(diff $TMPDIR_INT/canon_out.txt $TMPDIR_INT/shim_out.txt)
   if [ -z "$DIFF" ]; then
     pass "vp-create shim output matches canonical exactly"
   else
@@ -192,11 +195,11 @@ fi
 echo "--- T12: grep fallback when vendor unavailable ---"
 VENDOR_BAK="$SCRIPT_DIR/vendor/node_modules.bak"
 if [ -d "$SCRIPT_DIR/vendor/node_modules" ]; then
-  trap 'mv "$VENDOR_BAK" "$SCRIPT_DIR/vendor/node_modules" 2>/dev/null; trap - EXIT INT TERM' EXIT INT TERM
+  trap 'mv "$VENDOR_BAK" "$SCRIPT_DIR/vendor/node_modules" 2>/dev/null; rm -rf "$TMPDIR_INT"; trap - EXIT INT TERM' EXIT INT TERM
   mv "$SCRIPT_DIR/vendor/node_modules" "$VENDOR_BAK"
   OUTPUT=$(bash "$VVS" "$TEST28" 2>&1)
   mv "$VENDOR_BAK" "$SCRIPT_DIR/vendor/node_modules"
-  trap - EXIT INT TERM
+  trap 'rm -rf "$TMPDIR_INT"' EXIT INT TERM
   if echo "$OUTPUT" | grep -q 'WARN.*fallback'; then
     pass "grep fallback exercised when vendor unavailable"
   else
