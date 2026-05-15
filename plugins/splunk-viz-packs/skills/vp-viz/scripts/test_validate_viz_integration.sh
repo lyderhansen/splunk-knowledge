@@ -131,7 +131,6 @@ fi
 
 # Also verify test21 exits 1 (html violations detected)
 if [ -d "$TEST21" ]; then
-  EXIT_CODE=$(bash "$VVS" "$TEST21" 2>&1; echo $?)
   bash "$VVS" "$TEST21" > /tmp/test21_out.txt 2>&1; EXIT_CODE=$?
   if [ "$EXIT_CODE" -eq 1 ]; then
     pass "validate_viz.sh on test21 exits 1 (violations detected)"
