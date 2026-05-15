@@ -1,646 +1,803 @@
 <dashboard version="2" theme="dark">
     <label>Cloudflare NOC</label>
     <description>Edge health, security, and cache performance</description>
-    <definition>
-    <![CDATA[
-{
-    "dataSources": {
-        "ds_edge_kpi_requests": {
-            "type": "ds.search",
-            "options": {
-                "query": "| inputlookup cloudflare_noc_edge_kpis.csv | where metric=\"requests_sec\"",
-                "queryParameters": {
-                    "earliest": "$global_time.earliest$",
-                    "latest": "$global_time.latest$"
-                }
-            }
-        },
-        "ds_edge_kpi_latency": {
-            "type": "ds.search",
-            "options": {
-                "query": "| inputlookup cloudflare_noc_edge_kpis.csv | where metric=\"avg_latency\"",
-                "queryParameters": {
-                    "earliest": "$global_time.earliest$",
-                    "latest": "$global_time.latest$"
-                }
-            }
-        },
-        "ds_edge_kpi_cache": {
-            "type": "ds.search",
-            "options": {
-                "query": "| inputlookup cloudflare_noc_edge_kpis.csv | where metric=\"cache_hit_ratio\"",
-                "queryParameters": {
-                    "earliest": "$global_time.earliest$",
-                    "latest": "$global_time.latest$"
-                }
-            }
-        },
-        "ds_edge_kpi_errors": {
-            "type": "ds.search",
-            "options": {
-                "query": "| inputlookup cloudflare_noc_edge_kpis.csv | where metric=\"error_rate\"",
-                "queryParameters": {
-                    "earliest": "$global_time.earliest$",
-                    "latest": "$global_time.latest$"
-                }
-            }
-        },
-        "ds_edge_locations": {
-            "type": "ds.search",
-            "options": {
-                "query": "| inputlookup cloudflare_noc_edge_locations.csv | sort location",
-                "queryParameters": {
-                    "earliest": "$global_time.earliest$",
-                    "latest": "$global_time.latest$"
-                }
-            }
-        },
-        "ds_latency_trend": {
-            "type": "ds.search",
-            "options": {
-                "query": "| inputlookup cloudflare_noc_latency_trend.csv | where location=\"$selected_edge$\" OR \"$selected_edge$\"=\"*\" | stats avg(value) as value by _time | sort _time",
-                "queryParameters": {
-                    "earliest": "$global_time.earliest$",
-                    "latest": "$global_time.latest$"
-                }
-            }
-        },
-        "ds_sec_kpi_blocked": {
-            "type": "ds.search",
-            "options": {
-                "query": "| inputlookup cloudflare_noc_security_kpis.csv | where metric=\"blocked_requests\"",
-                "queryParameters": {
-                    "earliest": "$global_time.earliest$",
-                    "latest": "$global_time.latest$"
-                }
-            }
-        },
-        "ds_sec_kpi_mitigations": {
-            "type": "ds.search",
-            "options": {
-                "query": "| inputlookup cloudflare_noc_security_kpis.csv | where metric=\"active_mitigations\"",
-                "queryParameters": {
-                    "earliest": "$global_time.earliest$",
-                    "latest": "$global_time.latest$"
-                }
-            }
-        },
-        "ds_sec_kpi_waf": {
-            "type": "ds.search",
-            "options": {
-                "query": "| inputlookup cloudflare_noc_security_kpis.csv | where metric=\"waf_triggers\"",
-                "queryParameters": {
-                    "earliest": "$global_time.earliest$",
-                    "latest": "$global_time.latest$"
-                }
-            }
-        },
-        "ds_sec_kpi_bot": {
-            "type": "ds.search",
-            "options": {
-                "query": "| inputlookup cloudflare_noc_security_kpis.csv | where metric=\"bot_score_avg\"",
-                "queryParameters": {
-                    "earliest": "$global_time.earliest$",
-                    "latest": "$global_time.latest$"
-                }
-            }
-        },
-        "ds_attack_events": {
-            "type": "ds.search",
-            "options": {
-                "query": "| inputlookup cloudflare_noc_attack_events.csv | sort - _time",
-                "queryParameters": {
-                    "earliest": "$global_time.earliest$",
-                    "latest": "$global_time.latest$"
-                }
-            }
-        },
-        "ds_mitigation_gauge": {
-            "type": "ds.search",
-            "options": {
-                "query": "| inputlookup cloudflare_noc_security_kpis.csv | where metric=\"blocked_requests\" | eval ratio=round(value/20000*100,1) | table ratio",
-                "queryParameters": {
-                    "earliest": "$global_time.earliest$",
-                    "latest": "$global_time.latest$"
-                }
-            }
-        },
-        "ds_cache_kpi_hit": {
-            "type": "ds.search",
-            "options": {
-                "query": "| inputlookup cloudflare_noc_cache_kpis.csv | where metric=\"cache_hit_pct\"",
-                "queryParameters": {
-                    "earliest": "$global_time.earliest$",
-                    "latest": "$global_time.latest$"
-                }
-            }
-        },
-        "ds_cache_kpi_bw": {
-            "type": "ds.search",
-            "options": {
-                "query": "| inputlookup cloudflare_noc_cache_kpis.csv | where metric=\"bandwidth_saved\"",
-                "queryParameters": {
-                    "earliest": "$global_time.earliest$",
-                    "latest": "$global_time.latest$"
-                }
-            }
-        },
-        "ds_cache_kpi_origin": {
-            "type": "ds.search",
-            "options": {
-                "query": "| inputlookup cloudflare_noc_cache_kpis.csv | where metric=\"origin_pulls\"",
-                "queryParameters": {
-                    "earliest": "$global_time.earliest$",
-                    "latest": "$global_time.latest$"
-                }
-            }
-        },
-        "ds_cache_kpi_purge": {
-            "type": "ds.search",
-            "options": {
-                "query": "| inputlookup cloudflare_noc_cache_kpis.csv | where metric=\"purge_count\"",
-                "queryParameters": {
-                    "earliest": "$global_time.earliest$",
-                    "latest": "$global_time.latest$"
-                }
-            }
-        },
-        "ds_cache_by_type": {
-            "type": "ds.search",
-            "options": {
-                "query": "| inputlookup cloudflare_noc_cache_by_type.csv | sort - value",
-                "queryParameters": {
-                    "earliest": "$global_time.earliest$",
-                    "latest": "$global_time.latest$"
-                }
-            }
-        },
-        "ds_origin_trend": {
-            "type": "ds.search",
-            "options": {
-                "query": "| inputlookup cloudflare_noc_origin_trend.csv | sort _time",
-                "queryParameters": {
-                    "earliest": "$global_time.earliest$",
-                    "latest": "$global_time.latest$"
-                }
-            }
+    <definition><![CDATA[{
+  "dataSources": {
+    "ds_edge_kpi_requests": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup cloudflare_noc_edge_kpis.csv | where metric=\"requests_sec\"",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
         }
+      },
+      "name": "Edge Requests/sec"
     },
-
-    "defaults": {
-        "dataSources": {
-            "ds.search": {
-                "options": {
-                    "queryParameters": {
-                        "earliest": "-24h@h",
-                        "latest": "now"
-                    }
-                }
-            }
-        },
-        "tokens": {
-            "default": {
-                "selected_edge": "*"
-            }
+    "ds_edge_kpi_latency": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup cloudflare_noc_edge_kpis.csv | where metric=\"avg_latency\"",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
         }
+      },
+      "name": "Edge Avg Latency"
     },
-
-    "inputs": {
-        "input_global_time": {
-            "type": "input.timerange",
-            "options": {
-                "token": "global_time",
-                "defaultValue": "-24h@h,now"
-            },
-            "title": "Time Range"
+    "ds_edge_kpi_cache": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup cloudflare_noc_edge_kpis.csv | where metric=\"cache_hit_ratio\"",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
         }
+      },
+      "name": "Edge Cache Hit Ratio"
     },
-
-    "visualizations": {
-        "viz_edge_kpi_requests": {
-            "type": "cloudflare_noc.cf_kpi_tile",
-            "dataSources": { "primary": "ds_edge_kpi_requests" },
-            "options": {
-                "valueField": "value",
-                "deltaField": "delta",
-                "label": "REQUESTS/SEC",
-                "unit": "",
-                "decimals": "0",
-                "showDelta": "true",
-                "accentColor": "#F6821F",
-                "showGlow": "true",
-                "themeMode": "auto"
-            }
-        },
-        "viz_edge_kpi_latency": {
-            "type": "cloudflare_noc.cf_kpi_tile",
-            "dataSources": { "primary": "ds_edge_kpi_latency" },
-            "options": {
-                "valueField": "value",
-                "deltaField": "delta",
-                "label": "AVG LATENCY",
-                "unit": "ms",
-                "unitPosition": "after",
-                "decimals": "1",
-                "showDelta": "true",
-                "accentColor": "#6ECBF5",
-                "showGlow": "true",
-                "themeMode": "auto"
-            }
-        },
-        "viz_edge_kpi_cache": {
-            "type": "cloudflare_noc.cf_kpi_tile",
-            "dataSources": { "primary": "ds_edge_kpi_cache" },
-            "options": {
-                "valueField": "value",
-                "deltaField": "delta",
-                "label": "CACHE HIT RATIO",
-                "unit": "%",
-                "unitPosition": "after",
-                "decimals": "1",
-                "showDelta": "true",
-                "accentColor": "#34D399",
-                "showGlow": "true",
-                "themeMode": "auto"
-            }
-        },
-        "viz_edge_kpi_errors": {
-            "type": "cloudflare_noc.cf_kpi_tile",
-            "dataSources": { "primary": "ds_edge_kpi_errors" },
-            "options": {
-                "valueField": "value",
-                "deltaField": "delta",
-                "label": "ERROR RATE",
-                "unit": "%",
-                "unitPosition": "after",
-                "decimals": "2",
-                "showDelta": "true",
-                "accentColor": "#EF4444",
-                "showGlow": "true",
-                "themeMode": "auto"
-            }
-        },
-        "viz_edge_locations": {
-            "type": "cloudflare_noc.cf_edge_grid",
-            "dataSources": { "primary": "ds_edge_locations" },
-            "options": {
-                "locationField": "location",
-                "statusField": "status",
-                "latencyField": "latency",
-                "columns": "6",
-                "showLatency": "true",
-                "showLabels": "true",
-                "themeMode": "auto",
-                "drilldown": "all"
-            },
-            "eventHandlers": [
-                {
-                    "type": "drilldown.setToken",
-                    "options": {
-                        "tokens": [
-                            { "token": "selected_edge", "key": "click.value" }
-                        ]
-                    }
-                }
-            ]
-        },
-        "viz_latency_trend": {
-            "type": "cloudflare_noc.cf_trend_line",
-            "dataSources": { "primary": "ds_latency_trend" },
-            "options": {
-                "timeField": "_time",
-                "valueField": "value",
-                "label": "Latency",
-                "unit": "ms",
-                "threshold": "30",
-                "showFill": "true",
-                "showDots": "false",
-                "lineColor": "#F6821F",
-                "thresholdColor": "#EF4444",
-                "themeMode": "auto"
-            }
-        },
-
-        "viz_sec_kpi_blocked": {
-            "type": "cloudflare_noc.cf_kpi_tile",
-            "dataSources": { "primary": "ds_sec_kpi_blocked" },
-            "options": {
-                "valueField": "value",
-                "deltaField": "delta",
-                "label": "BLOCKED REQUESTS",
-                "unit": "/hr",
-                "decimals": "0",
-                "showDelta": "true",
-                "accentColor": "#EF4444",
-                "showGlow": "true",
-                "themeMode": "auto"
-            }
-        },
-        "viz_sec_kpi_mitigations": {
-            "type": "cloudflare_noc.cf_kpi_tile",
-            "dataSources": { "primary": "ds_sec_kpi_mitigations" },
-            "options": {
-                "valueField": "value",
-                "deltaField": "delta",
-                "label": "ACTIVE MITIGATIONS",
-                "unit": "",
-                "decimals": "0",
-                "showDelta": "false",
-                "accentColor": "#F6821F",
-                "showGlow": "true",
-                "themeMode": "auto"
-            }
-        },
-        "viz_sec_kpi_waf": {
-            "type": "cloudflare_noc.cf_kpi_tile",
-            "dataSources": { "primary": "ds_sec_kpi_waf" },
-            "options": {
-                "valueField": "value",
-                "deltaField": "delta",
-                "label": "WAF TRIGGERS",
-                "unit": "/hr",
-                "decimals": "0",
-                "showDelta": "true",
-                "accentColor": "#FBBF24",
-                "showGlow": "true",
-                "themeMode": "auto"
-            }
-        },
-        "viz_sec_kpi_bot": {
-            "type": "cloudflare_noc.cf_kpi_tile",
-            "dataSources": { "primary": "ds_sec_kpi_bot" },
-            "options": {
-                "valueField": "value",
-                "deltaField": "delta",
-                "label": "BOT SCORE AVG",
-                "unit": "",
-                "decimals": "1",
-                "showDelta": "true",
-                "accentColor": "#A78BFA",
-                "showGlow": "true",
-                "themeMode": "auto"
-            }
-        },
-        "viz_attack_timeline": {
-            "type": "cloudflare_noc.cf_attack_timeline",
-            "dataSources": { "primary": "ds_attack_events" },
-            "options": {
-                "timeField": "_time",
-                "attackField": "attack_type",
-                "severityField": "severity",
-                "targetField": "target",
-                "attackIdField": "attack_id",
-                "maxRows": "20",
-                "showBadge": "true",
-                "accentColor": "#F6821F",
-                "themeMode": "auto",
-                "drilldown": "all"
-            },
-            "eventHandlers": [
-                {
-                    "type": "drilldown.linkToSearch",
-                    "options": {
-                        "query": "index=* attack_id=\"$click.value$\" | table _time, attack_type, severity, target, src_ip, action",
-                        "earliest": "$global_time.earliest$",
-                        "latest": "$global_time.latest$",
-                        "newTab": true
-                    }
-                }
-            ]
-        },
-        "viz_mitigation_gauge": {
-            "type": "cloudflare_noc.cf_kpi_tile",
-            "dataSources": { "primary": "ds_mitigation_gauge" },
-            "options": {
-                "valueField": "ratio",
-                "label": "MITIGATION CAPACITY",
-                "unit": "%",
-                "decimals": "1",
-                "showDelta": "false",
-                "accentColor": "#34D399",
-                "showGlow": "true",
-                "themeMode": "auto"
-            }
-        },
-
-        "viz_cache_kpi_hit": {
-            "type": "cloudflare_noc.cf_kpi_tile",
-            "dataSources": { "primary": "ds_cache_kpi_hit" },
-            "options": {
-                "valueField": "value",
-                "deltaField": "delta",
-                "label": "CACHE HIT RATE",
-                "unit": "%",
-                "decimals": "1",
-                "showDelta": "true",
-                "accentColor": "#34D399",
-                "showGlow": "true",
-                "themeMode": "auto"
-            }
-        },
-        "viz_cache_kpi_bw": {
-            "type": "cloudflare_noc.cf_kpi_tile",
-            "dataSources": { "primary": "ds_cache_kpi_bw" },
-            "options": {
-                "valueField": "value",
-                "deltaField": "delta",
-                "label": "BANDWIDTH SAVED",
-                "unit": " TB/hr",
-                "unitPosition": "after",
-                "decimals": "1",
-                "showDelta": "true",
-                "accentColor": "#F6821F",
-                "showGlow": "true",
-                "themeMode": "auto"
-            }
-        },
-        "viz_cache_kpi_origin": {
-            "type": "cloudflare_noc.cf_kpi_tile",
-            "dataSources": { "primary": "ds_cache_kpi_origin" },
-            "options": {
-                "valueField": "value",
-                "deltaField": "delta",
-                "label": "ORIGIN PULLS",
-                "unit": "/hr",
-                "decimals": "0",
-                "showDelta": "true",
-                "accentColor": "#6ECBF5",
-                "showGlow": "true",
-                "themeMode": "auto"
-            }
-        },
-        "viz_cache_kpi_purge": {
-            "type": "cloudflare_noc.cf_kpi_tile",
-            "dataSources": { "primary": "ds_cache_kpi_purge" },
-            "options": {
-                "valueField": "value",
-                "deltaField": "delta",
-                "label": "PURGE COUNT",
-                "unit": "",
-                "decimals": "0",
-                "showDelta": "true",
-                "accentColor": "#A78BFA",
-                "showGlow": "true",
-                "themeMode": "auto"
-            }
-        },
-        "viz_cache_by_type": {
-            "type": "cloudflare_noc.cf_cache_bars",
-            "dataSources": { "primary": "ds_cache_by_type" },
-            "options": {
-                "categoryField": "category",
-                "valueField": "value",
-                "maxBars": "8",
-                "showValues": "true",
-                "unit": "%",
-                "maxValue": "100",
-                "barColor": "#F6821F",
-                "showGradient": "true",
-                "themeMode": "auto"
-            }
-        },
-        "viz_origin_trend": {
-            "type": "cloudflare_noc.cf_trend_line",
-            "dataSources": { "primary": "ds_origin_trend" },
-            "options": {
-                "timeField": "_time",
-                "valueField": "value",
-                "label": "Origin Pulls",
-                "unit": "",
-                "threshold": "-1",
-                "showFill": "true",
-                "showDots": "false",
-                "lineColor": "#6ECBF5",
-                "themeMode": "auto"
-            }
+    "ds_edge_kpi_errors": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup cloudflare_noc_edge_kpis.csv | where metric=\"error_rate\"",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
         }
+      },
+      "name": "Edge Error Rate"
     },
-
-    "layout": {
-        "globalInputs": ["input_global_time"],
-        "tabs": {
-            "items": [
-                { "layoutId": "tab_edge_health", "label": "Edge Health" },
-                { "layoutId": "tab_security", "label": "Security" },
-                { "layoutId": "tab_cache", "label": "Cache Performance" }
-            ],
-            "options": {
-                "barPosition": "top",
-                "showTabBar": true
-            }
-        },
-        "layoutDefinitions": {
-            "tab_edge_health": {
-                "type": "absolute",
-                "options": { "width": 1920, "height": 1000 },
-                "structure": [
-                    {
-                        "item": "viz_edge_kpi_requests",
-                        "type": "block",
-                        "position": { "x": 20, "y": 10, "w": 450, "h": 120 }
-                    },
-                    {
-                        "item": "viz_edge_kpi_latency",
-                        "type": "block",
-                        "position": { "x": 490, "y": 10, "w": 450, "h": 120 }
-                    },
-                    {
-                        "item": "viz_edge_kpi_cache",
-                        "type": "block",
-                        "position": { "x": 960, "y": 10, "w": 450, "h": 120 }
-                    },
-                    {
-                        "item": "viz_edge_kpi_errors",
-                        "type": "block",
-                        "position": { "x": 1430, "y": 10, "w": 470, "h": 120 }
-                    },
-                    {
-                        "item": "viz_edge_locations",
-                        "type": "block",
-                        "position": { "x": 20, "y": 150, "w": 1880, "h": 480 }
-                    },
-                    {
-                        "item": "viz_latency_trend",
-                        "type": "block",
-                        "position": { "x": 20, "y": 650, "w": 1880, "h": 330 }
-                    }
-                ]
-            },
-            "tab_security": {
-                "type": "absolute",
-                "options": { "width": 1920, "height": 1000 },
-                "structure": [
-                    {
-                        "item": "viz_sec_kpi_blocked",
-                        "type": "block",
-                        "position": { "x": 20, "y": 10, "w": 450, "h": 120 }
-                    },
-                    {
-                        "item": "viz_sec_kpi_mitigations",
-                        "type": "block",
-                        "position": { "x": 490, "y": 10, "w": 450, "h": 120 }
-                    },
-                    {
-                        "item": "viz_sec_kpi_waf",
-                        "type": "block",
-                        "position": { "x": 960, "y": 10, "w": 450, "h": 120 }
-                    },
-                    {
-                        "item": "viz_sec_kpi_bot",
-                        "type": "block",
-                        "position": { "x": 1430, "y": 10, "w": 470, "h": 120 }
-                    },
-                    {
-                        "item": "viz_attack_timeline",
-                        "type": "block",
-                        "position": { "x": 20, "y": 150, "w": 1400, "h": 830 }
-                    },
-                    {
-                        "item": "viz_mitigation_gauge",
-                        "type": "block",
-                        "position": { "x": 1440, "y": 150, "w": 460, "h": 120 }
-                    }
-                ]
-            },
-            "tab_cache": {
-                "type": "absolute",
-                "options": { "width": 1920, "height": 1000 },
-                "structure": [
-                    {
-                        "item": "viz_cache_kpi_hit",
-                        "type": "block",
-                        "position": { "x": 20, "y": 10, "w": 450, "h": 120 }
-                    },
-                    {
-                        "item": "viz_cache_kpi_bw",
-                        "type": "block",
-                        "position": { "x": 490, "y": 10, "w": 450, "h": 120 }
-                    },
-                    {
-                        "item": "viz_cache_kpi_origin",
-                        "type": "block",
-                        "position": { "x": 960, "y": 10, "w": 450, "h": 120 }
-                    },
-                    {
-                        "item": "viz_cache_kpi_purge",
-                        "type": "block",
-                        "position": { "x": 1430, "y": 10, "w": 470, "h": 120 }
-                    },
-                    {
-                        "item": "viz_cache_by_type",
-                        "type": "block",
-                        "position": { "x": 20, "y": 150, "w": 940, "h": 830 }
-                    },
-                    {
-                        "item": "viz_origin_trend",
-                        "type": "block",
-                        "position": { "x": 980, "y": 150, "w": 920, "h": 830 }
-                    }
-                ]
-            }
+    "ds_edge_locations": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup cloudflare_noc_edge_locations.csv | sort location",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
         }
+      },
+      "name": "Edge Locations"
+    },
+    "ds_latency_trend": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup cloudflare_noc_latency_trend.csv | where location=\"$selected_edge$\" OR \"$selected_edge$\"=\"*\" | stats avg(value) as value by _time | sort _time",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        }
+      },
+      "name": "Latency Trend"
+    },
+    "ds_sec_kpi_blocked": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup cloudflare_noc_security_kpis.csv | where metric=\"blocked_requests\"",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        }
+      },
+      "name": "Blocked Requests"
+    },
+    "ds_sec_kpi_mitigations": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup cloudflare_noc_security_kpis.csv | where metric=\"active_mitigations\"",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        }
+      },
+      "name": "Active Mitigations"
+    },
+    "ds_sec_kpi_waf": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup cloudflare_noc_security_kpis.csv | where metric=\"waf_triggers\"",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        }
+      },
+      "name": "WAF Triggers"
+    },
+    "ds_sec_kpi_bot": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup cloudflare_noc_security_kpis.csv | where metric=\"bot_score_avg\"",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        }
+      },
+      "name": "Bot Score Avg"
+    },
+    "ds_attack_events": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup cloudflare_noc_attack_events.csv | sort - _time",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        }
+      },
+      "name": "Attack Events"
+    },
+    "ds_mitigation_gauge": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup cloudflare_noc_security_kpis.csv | where metric=\"blocked_requests\" | eval ratio=round(value/20000*100,1) | table ratio",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        }
+      },
+      "name": "Mitigation Capacity"
+    },
+    "ds_cache_kpi_hit": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup cloudflare_noc_cache_kpis.csv | where metric=\"cache_hit_pct\"",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        }
+      },
+      "name": "Cache Hit Rate"
+    },
+    "ds_cache_kpi_bw": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup cloudflare_noc_cache_kpis.csv | where metric=\"bandwidth_saved\"",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        }
+      },
+      "name": "Bandwidth Saved"
+    },
+    "ds_cache_kpi_origin": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup cloudflare_noc_cache_kpis.csv | where metric=\"origin_pulls\"",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        }
+      },
+      "name": "Origin Pulls"
+    },
+    "ds_cache_kpi_purge": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup cloudflare_noc_cache_kpis.csv | where metric=\"purge_count\"",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        }
+      },
+      "name": "Purge Count"
+    },
+    "ds_cache_by_type": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup cloudflare_noc_cache_by_type.csv | sort - value",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        }
+      },
+      "name": "Cache by Content Type"
+    },
+    "ds_origin_trend": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup cloudflare_noc_origin_trend.csv | sort _time",
+        "queryParameters": {
+          "earliest": "$global_time.earliest$",
+          "latest": "$global_time.latest$"
+        }
+      },
+      "name": "Origin Pull Trend"
     }
-}
-    ]]>
-    </definition>
+  },
+  "defaults": {
+    "dataSources": {
+      "ds.search": {
+        "options": {
+          "queryParameters": {
+            "earliest": "-24h@h",
+            "latest": "now"
+          }
+        }
+      }
+    },
+    "tokens": {
+      "default": {
+        "selected_edge": "*"
+      }
+    }
+  },
+  "inputs": {
+    "input_global_time": {
+      "type": "input.timerange",
+      "options": {
+        "token": "global_time",
+        "defaultValue": "-24h@h,now"
+      },
+      "title": "Time Range"
+    }
+  },
+  "visualizations": {
+    "viz_edge_kpi_requests": {
+      "type": "cloudflare_noc.cf_kpi_tile",
+      "dataSources": {
+        "primary": "ds_edge_kpi_requests"
+      },
+      "options": {
+        "cloudflare_noc.cf_kpi_tile.valueField": "value",
+        "cloudflare_noc.cf_kpi_tile.deltaField": "delta",
+        "cloudflare_noc.cf_kpi_tile.label": "REQUESTS/SEC",
+        "cloudflare_noc.cf_kpi_tile.unit": "",
+        "cloudflare_noc.cf_kpi_tile.decimals": "0",
+        "cloudflare_noc.cf_kpi_tile.showDelta": "true",
+        "cloudflare_noc.cf_kpi_tile.accentColor": "#F6821F",
+        "cloudflare_noc.cf_kpi_tile.showGlow": "true",
+        "cloudflare_noc.cf_kpi_tile.themeMode": "auto"
+      }
+    },
+    "viz_edge_kpi_latency": {
+      "type": "cloudflare_noc.cf_kpi_tile",
+      "dataSources": {
+        "primary": "ds_edge_kpi_latency"
+      },
+      "options": {
+        "cloudflare_noc.cf_kpi_tile.valueField": "value",
+        "cloudflare_noc.cf_kpi_tile.deltaField": "delta",
+        "cloudflare_noc.cf_kpi_tile.label": "AVG LATENCY",
+        "cloudflare_noc.cf_kpi_tile.unit": "ms",
+        "cloudflare_noc.cf_kpi_tile.unitPosition": "after",
+        "cloudflare_noc.cf_kpi_tile.decimals": "1",
+        "cloudflare_noc.cf_kpi_tile.showDelta": "true",
+        "cloudflare_noc.cf_kpi_tile.accentColor": "#6ECBF5",
+        "cloudflare_noc.cf_kpi_tile.showGlow": "true",
+        "cloudflare_noc.cf_kpi_tile.themeMode": "auto"
+      }
+    },
+    "viz_edge_kpi_cache": {
+      "type": "cloudflare_noc.cf_kpi_tile",
+      "dataSources": {
+        "primary": "ds_edge_kpi_cache"
+      },
+      "options": {
+        "cloudflare_noc.cf_kpi_tile.valueField": "value",
+        "cloudflare_noc.cf_kpi_tile.deltaField": "delta",
+        "cloudflare_noc.cf_kpi_tile.label": "CACHE HIT RATIO",
+        "cloudflare_noc.cf_kpi_tile.unit": "%",
+        "cloudflare_noc.cf_kpi_tile.unitPosition": "after",
+        "cloudflare_noc.cf_kpi_tile.decimals": "1",
+        "cloudflare_noc.cf_kpi_tile.showDelta": "true",
+        "cloudflare_noc.cf_kpi_tile.accentColor": "#34D399",
+        "cloudflare_noc.cf_kpi_tile.showGlow": "true",
+        "cloudflare_noc.cf_kpi_tile.themeMode": "auto"
+      }
+    },
+    "viz_edge_kpi_errors": {
+      "type": "cloudflare_noc.cf_kpi_tile",
+      "dataSources": {
+        "primary": "ds_edge_kpi_errors"
+      },
+      "options": {
+        "cloudflare_noc.cf_kpi_tile.valueField": "value",
+        "cloudflare_noc.cf_kpi_tile.deltaField": "delta",
+        "cloudflare_noc.cf_kpi_tile.label": "ERROR RATE",
+        "cloudflare_noc.cf_kpi_tile.unit": "%",
+        "cloudflare_noc.cf_kpi_tile.unitPosition": "after",
+        "cloudflare_noc.cf_kpi_tile.decimals": "2",
+        "cloudflare_noc.cf_kpi_tile.showDelta": "true",
+        "cloudflare_noc.cf_kpi_tile.accentColor": "#EF4444",
+        "cloudflare_noc.cf_kpi_tile.showGlow": "true",
+        "cloudflare_noc.cf_kpi_tile.themeMode": "auto"
+      }
+    },
+    "viz_edge_locations": {
+      "type": "cloudflare_noc.cf_edge_grid",
+      "dataSources": {
+        "primary": "ds_edge_locations"
+      },
+      "options": {
+        "cloudflare_noc.cf_edge_grid.locationField": "location",
+        "cloudflare_noc.cf_edge_grid.statusField": "status",
+        "cloudflare_noc.cf_edge_grid.latencyField": "latency",
+        "cloudflare_noc.cf_edge_grid.columns": "6",
+        "cloudflare_noc.cf_edge_grid.showLatency": "true",
+        "cloudflare_noc.cf_edge_grid.showLabels": "true",
+        "cloudflare_noc.cf_edge_grid.themeMode": "auto",
+        "cloudflare_noc.cf_edge_grid.drilldown": "all"
+      },
+      "eventHandlers": [
+        {
+          "type": "drilldown.setToken",
+          "options": {
+            "tokens": [
+              {
+                "token": "selected_edge",
+                "key": "row.location.value"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "viz_latency_trend": {
+      "type": "cloudflare_noc.cf_trend_line",
+      "dataSources": {
+        "primary": "ds_latency_trend"
+      },
+      "options": {
+        "cloudflare_noc.cf_trend_line.timeField": "_time",
+        "cloudflare_noc.cf_trend_line.valueField": "value",
+        "cloudflare_noc.cf_trend_line.label": "Latency",
+        "cloudflare_noc.cf_trend_line.unit": "ms",
+        "cloudflare_noc.cf_trend_line.threshold": "30",
+        "cloudflare_noc.cf_trend_line.showFill": "true",
+        "cloudflare_noc.cf_trend_line.showDots": "false",
+        "cloudflare_noc.cf_trend_line.lineColor": "#F6821F",
+        "cloudflare_noc.cf_trend_line.thresholdColor": "#EF4444",
+        "cloudflare_noc.cf_trend_line.themeMode": "auto"
+      }
+    },
+    "viz_sec_kpi_blocked": {
+      "type": "cloudflare_noc.cf_kpi_tile",
+      "dataSources": {
+        "primary": "ds_sec_kpi_blocked"
+      },
+      "options": {
+        "cloudflare_noc.cf_kpi_tile.valueField": "value",
+        "cloudflare_noc.cf_kpi_tile.deltaField": "delta",
+        "cloudflare_noc.cf_kpi_tile.label": "BLOCKED REQUESTS",
+        "cloudflare_noc.cf_kpi_tile.unit": "/hr",
+        "cloudflare_noc.cf_kpi_tile.decimals": "0",
+        "cloudflare_noc.cf_kpi_tile.showDelta": "true",
+        "cloudflare_noc.cf_kpi_tile.accentColor": "#EF4444",
+        "cloudflare_noc.cf_kpi_tile.showGlow": "true",
+        "cloudflare_noc.cf_kpi_tile.themeMode": "auto"
+      }
+    },
+    "viz_sec_kpi_mitigations": {
+      "type": "cloudflare_noc.cf_kpi_tile",
+      "dataSources": {
+        "primary": "ds_sec_kpi_mitigations"
+      },
+      "options": {
+        "cloudflare_noc.cf_kpi_tile.valueField": "value",
+        "cloudflare_noc.cf_kpi_tile.deltaField": "delta",
+        "cloudflare_noc.cf_kpi_tile.label": "ACTIVE MITIGATIONS",
+        "cloudflare_noc.cf_kpi_tile.unit": "",
+        "cloudflare_noc.cf_kpi_tile.decimals": "0",
+        "cloudflare_noc.cf_kpi_tile.showDelta": "false",
+        "cloudflare_noc.cf_kpi_tile.accentColor": "#F6821F",
+        "cloudflare_noc.cf_kpi_tile.showGlow": "true",
+        "cloudflare_noc.cf_kpi_tile.themeMode": "auto"
+      }
+    },
+    "viz_sec_kpi_waf": {
+      "type": "cloudflare_noc.cf_kpi_tile",
+      "dataSources": {
+        "primary": "ds_sec_kpi_waf"
+      },
+      "options": {
+        "cloudflare_noc.cf_kpi_tile.valueField": "value",
+        "cloudflare_noc.cf_kpi_tile.deltaField": "delta",
+        "cloudflare_noc.cf_kpi_tile.label": "WAF TRIGGERS",
+        "cloudflare_noc.cf_kpi_tile.unit": "/hr",
+        "cloudflare_noc.cf_kpi_tile.decimals": "0",
+        "cloudflare_noc.cf_kpi_tile.showDelta": "true",
+        "cloudflare_noc.cf_kpi_tile.accentColor": "#FBBF24",
+        "cloudflare_noc.cf_kpi_tile.showGlow": "true",
+        "cloudflare_noc.cf_kpi_tile.themeMode": "auto"
+      }
+    },
+    "viz_sec_kpi_bot": {
+      "type": "cloudflare_noc.cf_kpi_tile",
+      "dataSources": {
+        "primary": "ds_sec_kpi_bot"
+      },
+      "options": {
+        "cloudflare_noc.cf_kpi_tile.valueField": "value",
+        "cloudflare_noc.cf_kpi_tile.deltaField": "delta",
+        "cloudflare_noc.cf_kpi_tile.label": "BOT SCORE AVG",
+        "cloudflare_noc.cf_kpi_tile.unit": "",
+        "cloudflare_noc.cf_kpi_tile.decimals": "1",
+        "cloudflare_noc.cf_kpi_tile.showDelta": "true",
+        "cloudflare_noc.cf_kpi_tile.accentColor": "#A78BFA",
+        "cloudflare_noc.cf_kpi_tile.showGlow": "true",
+        "cloudflare_noc.cf_kpi_tile.themeMode": "auto"
+      }
+    },
+    "viz_attack_timeline": {
+      "type": "cloudflare_noc.cf_attack_timeline",
+      "dataSources": {
+        "primary": "ds_attack_events"
+      },
+      "options": {
+        "cloudflare_noc.cf_attack_timeline.timeField": "_time",
+        "cloudflare_noc.cf_attack_timeline.attackField": "attack_type",
+        "cloudflare_noc.cf_attack_timeline.severityField": "severity",
+        "cloudflare_noc.cf_attack_timeline.targetField": "target",
+        "cloudflare_noc.cf_attack_timeline.attackIdField": "attack_id",
+        "cloudflare_noc.cf_attack_timeline.maxRows": "20",
+        "cloudflare_noc.cf_attack_timeline.showBadge": "true",
+        "cloudflare_noc.cf_attack_timeline.accentColor": "#F6821F",
+        "cloudflare_noc.cf_attack_timeline.themeMode": "auto",
+        "cloudflare_noc.cf_attack_timeline.drilldown": "all"
+      },
+      "eventHandlers": [
+        {
+          "type": "drilldown.linkToSearch",
+          "options": {
+            "query": "index=* attack_id=\"$click.value$\" | table _time, attack_type, severity, target, src_ip, action",
+            "earliest": "$global_time.earliest$",
+            "latest": "$global_time.latest$",
+            "newTab": true
+          }
+        }
+      ]
+    },
+    "viz_mitigation_gauge": {
+      "type": "cloudflare_noc.cf_kpi_tile",
+      "dataSources": {
+        "primary": "ds_mitigation_gauge"
+      },
+      "options": {
+        "cloudflare_noc.cf_kpi_tile.valueField": "ratio",
+        "cloudflare_noc.cf_kpi_tile.label": "MITIGATION CAPACITY",
+        "cloudflare_noc.cf_kpi_tile.unit": "%",
+        "cloudflare_noc.cf_kpi_tile.decimals": "1",
+        "cloudflare_noc.cf_kpi_tile.showDelta": "false",
+        "cloudflare_noc.cf_kpi_tile.accentColor": "#34D399",
+        "cloudflare_noc.cf_kpi_tile.showGlow": "true",
+        "cloudflare_noc.cf_kpi_tile.themeMode": "auto"
+      }
+    },
+    "viz_cache_kpi_hit": {
+      "type": "cloudflare_noc.cf_kpi_tile",
+      "dataSources": {
+        "primary": "ds_cache_kpi_hit"
+      },
+      "options": {
+        "cloudflare_noc.cf_kpi_tile.valueField": "value",
+        "cloudflare_noc.cf_kpi_tile.deltaField": "delta",
+        "cloudflare_noc.cf_kpi_tile.label": "CACHE HIT RATE",
+        "cloudflare_noc.cf_kpi_tile.unit": "%",
+        "cloudflare_noc.cf_kpi_tile.decimals": "1",
+        "cloudflare_noc.cf_kpi_tile.showDelta": "true",
+        "cloudflare_noc.cf_kpi_tile.accentColor": "#34D399",
+        "cloudflare_noc.cf_kpi_tile.showGlow": "true",
+        "cloudflare_noc.cf_kpi_tile.themeMode": "auto"
+      }
+    },
+    "viz_cache_kpi_bw": {
+      "type": "cloudflare_noc.cf_kpi_tile",
+      "dataSources": {
+        "primary": "ds_cache_kpi_bw"
+      },
+      "options": {
+        "cloudflare_noc.cf_kpi_tile.valueField": "value",
+        "cloudflare_noc.cf_kpi_tile.deltaField": "delta",
+        "cloudflare_noc.cf_kpi_tile.label": "BANDWIDTH SAVED",
+        "cloudflare_noc.cf_kpi_tile.unit": " TB/hr",
+        "cloudflare_noc.cf_kpi_tile.unitPosition": "after",
+        "cloudflare_noc.cf_kpi_tile.decimals": "1",
+        "cloudflare_noc.cf_kpi_tile.showDelta": "true",
+        "cloudflare_noc.cf_kpi_tile.accentColor": "#F6821F",
+        "cloudflare_noc.cf_kpi_tile.showGlow": "true",
+        "cloudflare_noc.cf_kpi_tile.themeMode": "auto"
+      }
+    },
+    "viz_cache_kpi_origin": {
+      "type": "cloudflare_noc.cf_kpi_tile",
+      "dataSources": {
+        "primary": "ds_cache_kpi_origin"
+      },
+      "options": {
+        "cloudflare_noc.cf_kpi_tile.valueField": "value",
+        "cloudflare_noc.cf_kpi_tile.deltaField": "delta",
+        "cloudflare_noc.cf_kpi_tile.label": "ORIGIN PULLS",
+        "cloudflare_noc.cf_kpi_tile.unit": "/hr",
+        "cloudflare_noc.cf_kpi_tile.decimals": "0",
+        "cloudflare_noc.cf_kpi_tile.showDelta": "true",
+        "cloudflare_noc.cf_kpi_tile.accentColor": "#6ECBF5",
+        "cloudflare_noc.cf_kpi_tile.showGlow": "true",
+        "cloudflare_noc.cf_kpi_tile.themeMode": "auto"
+      }
+    },
+    "viz_cache_kpi_purge": {
+      "type": "cloudflare_noc.cf_kpi_tile",
+      "dataSources": {
+        "primary": "ds_cache_kpi_purge"
+      },
+      "options": {
+        "cloudflare_noc.cf_kpi_tile.valueField": "value",
+        "cloudflare_noc.cf_kpi_tile.deltaField": "delta",
+        "cloudflare_noc.cf_kpi_tile.label": "PURGE COUNT",
+        "cloudflare_noc.cf_kpi_tile.unit": "",
+        "cloudflare_noc.cf_kpi_tile.decimals": "0",
+        "cloudflare_noc.cf_kpi_tile.showDelta": "true",
+        "cloudflare_noc.cf_kpi_tile.accentColor": "#A78BFA",
+        "cloudflare_noc.cf_kpi_tile.showGlow": "true",
+        "cloudflare_noc.cf_kpi_tile.themeMode": "auto"
+      }
+    },
+    "viz_cache_by_type": {
+      "type": "cloudflare_noc.cf_cache_bars",
+      "dataSources": {
+        "primary": "ds_cache_by_type"
+      },
+      "options": {
+        "cloudflare_noc.cf_cache_bars.categoryField": "category",
+        "cloudflare_noc.cf_cache_bars.valueField": "value",
+        "cloudflare_noc.cf_cache_bars.maxBars": "8",
+        "cloudflare_noc.cf_cache_bars.showValues": "true",
+        "cloudflare_noc.cf_cache_bars.unit": "%",
+        "cloudflare_noc.cf_cache_bars.maxValue": "100",
+        "cloudflare_noc.cf_cache_bars.barColor": "#F6821F",
+        "cloudflare_noc.cf_cache_bars.showGradient": "true",
+        "cloudflare_noc.cf_cache_bars.themeMode": "auto"
+      }
+    },
+    "viz_origin_trend": {
+      "type": "cloudflare_noc.cf_trend_line",
+      "dataSources": {
+        "primary": "ds_origin_trend"
+      },
+      "options": {
+        "cloudflare_noc.cf_trend_line.timeField": "_time",
+        "cloudflare_noc.cf_trend_line.valueField": "value",
+        "cloudflare_noc.cf_trend_line.label": "Origin Pulls",
+        "cloudflare_noc.cf_trend_line.unit": "",
+        "cloudflare_noc.cf_trend_line.threshold": "-1",
+        "cloudflare_noc.cf_trend_line.showFill": "true",
+        "cloudflare_noc.cf_trend_line.showDots": "false",
+        "cloudflare_noc.cf_trend_line.lineColor": "#6ECBF5",
+        "cloudflare_noc.cf_trend_line.themeMode": "auto"
+      }
+    }
+  },
+  "layout": {
+    "globalInputs": [
+      "input_global_time"
+    ],
+    "tabs": {
+      "items": [
+        {
+          "layoutId": "tab_edge_health",
+          "label": "Edge Health"
+        },
+        {
+          "layoutId": "tab_security",
+          "label": "Security"
+        },
+        {
+          "layoutId": "tab_cache",
+          "label": "Cache Performance"
+        }
+      ],
+      "options": {
+        "barPosition": "top",
+        "showTabBar": true
+      }
+    },
+    "layoutDefinitions": {
+      "tab_edge_health": {
+        "type": "absolute",
+        "options": {
+          "width": 1920,
+          "height": 1000
+        },
+        "structure": [
+          {
+            "item": "viz_edge_kpi_requests",
+            "type": "block",
+            "position": {
+              "x": 20,
+              "y": 10,
+              "w": 450,
+              "h": 120
+            }
+          },
+          {
+            "item": "viz_edge_kpi_latency",
+            "type": "block",
+            "position": {
+              "x": 490,
+              "y": 10,
+              "w": 450,
+              "h": 120
+            }
+          },
+          {
+            "item": "viz_edge_kpi_cache",
+            "type": "block",
+            "position": {
+              "x": 960,
+              "y": 10,
+              "w": 450,
+              "h": 120
+            }
+          },
+          {
+            "item": "viz_edge_kpi_errors",
+            "type": "block",
+            "position": {
+              "x": 1430,
+              "y": 10,
+              "w": 470,
+              "h": 120
+            }
+          },
+          {
+            "item": "viz_edge_locations",
+            "type": "block",
+            "position": {
+              "x": 20,
+              "y": 150,
+              "w": 1880,
+              "h": 480
+            }
+          },
+          {
+            "item": "viz_latency_trend",
+            "type": "block",
+            "position": {
+              "x": 20,
+              "y": 650,
+              "w": 1880,
+              "h": 330
+            }
+          }
+        ]
+      },
+      "tab_security": {
+        "type": "absolute",
+        "options": {
+          "width": 1920,
+          "height": 1000
+        },
+        "structure": [
+          {
+            "item": "viz_sec_kpi_blocked",
+            "type": "block",
+            "position": {
+              "x": 20,
+              "y": 10,
+              "w": 450,
+              "h": 120
+            }
+          },
+          {
+            "item": "viz_sec_kpi_mitigations",
+            "type": "block",
+            "position": {
+              "x": 490,
+              "y": 10,
+              "w": 450,
+              "h": 120
+            }
+          },
+          {
+            "item": "viz_sec_kpi_waf",
+            "type": "block",
+            "position": {
+              "x": 960,
+              "y": 10,
+              "w": 450,
+              "h": 120
+            }
+          },
+          {
+            "item": "viz_sec_kpi_bot",
+            "type": "block",
+            "position": {
+              "x": 1430,
+              "y": 10,
+              "w": 470,
+              "h": 120
+            }
+          },
+          {
+            "item": "viz_attack_timeline",
+            "type": "block",
+            "position": {
+              "x": 20,
+              "y": 150,
+              "w": 1400,
+              "h": 830
+            }
+          },
+          {
+            "item": "viz_mitigation_gauge",
+            "type": "block",
+            "position": {
+              "x": 1440,
+              "y": 150,
+              "w": 460,
+              "h": 120
+            }
+          }
+        ]
+      },
+      "tab_cache": {
+        "type": "absolute",
+        "options": {
+          "width": 1920,
+          "height": 1000
+        },
+        "structure": [
+          {
+            "item": "viz_cache_kpi_hit",
+            "type": "block",
+            "position": {
+              "x": 20,
+              "y": 10,
+              "w": 450,
+              "h": 120
+            }
+          },
+          {
+            "item": "viz_cache_kpi_bw",
+            "type": "block",
+            "position": {
+              "x": 490,
+              "y": 10,
+              "w": 450,
+              "h": 120
+            }
+          },
+          {
+            "item": "viz_cache_kpi_origin",
+            "type": "block",
+            "position": {
+              "x": 960,
+              "y": 10,
+              "w": 450,
+              "h": 120
+            }
+          },
+          {
+            "item": "viz_cache_kpi_purge",
+            "type": "block",
+            "position": {
+              "x": 1430,
+              "y": 10,
+              "w": 470,
+              "h": 120
+            }
+          },
+          {
+            "item": "viz_cache_by_type",
+            "type": "block",
+            "position": {
+              "x": 20,
+              "y": 150,
+              "w": 940,
+              "h": 830
+            }
+          },
+          {
+            "item": "viz_origin_trend",
+            "type": "block",
+            "position": {
+              "x": 980,
+              "y": 150,
+              "w": 920,
+              "h": 830
+            }
+          }
+        ]
+      }
+    }
+  }
+}]]></definition>
 </dashboard>

@@ -265,9 +265,11 @@ module.exports = SplunkVisualizationBase.extend({
                 var row = this._lastGoodData.rows[c.idx];
                 var loc = safeStr(row[this._lastGoodData.colIdx[locF]]);
                 try {
+                    var payload = {};
+                    payload[locF] = { value: loc, name: locF };
                     this.drilldown({
                         action: SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN,
-                        data: { 'click.value': loc, 'click.name': locF }
+                        data: payload
                     }, e);
                 } catch (ex) {}
                 break;
