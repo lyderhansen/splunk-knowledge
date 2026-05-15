@@ -271,10 +271,16 @@ if [ "$TOTAL_FAIL" -ne 0 ] && [ "$REPAIR_MODE" -eq 1 ] && [ "$HAS_NODE" -eq 1 ] 
     ATTEMPT=$((ATTEMPT+1))
     echo ""
     echo "--- Repair attempt $ATTEMPT ---"
-    node "$REPAIR_FINDINGS" "$FINDINGS_FILE" "$APP_DIR" "$REPAIR_LOG" "$ATTEMPT"
+    REPAIR_OUT=$(node "$REPAIR_FINDINGS" "$FINDINGS_FILE" "$APP_DIR" "$REPAIR_LOG" "$ATTEMPT")
     REPAIR_EXIT=$?
+    [ -n "$REPAIR_OUT" ] && echo "$REPAIR_OUT"
     if [ "$REPAIR_EXIT" -ne 0 ]; then
       echo "  repair_findings.js exited $REPAIR_EXIT — stopping repair loop"
+      break
+    fi
+    # If repair_findings produced no output, no repairs were applied — stop early
+    if [ -z "$REPAIR_OUT" ]; then
+      echo "  No repairs applied — remaining failures are not auto-fixable"
       break
     fi
     if [ -f "$BUILD_FLAT" ]; then
