@@ -93,6 +93,11 @@ try {
     process.exit(1);
 }
 
+if (typeof themeModule.getTheme !== 'function') {
+    process.stderr.write('Error: theme.js does not export getTheme(name): ' + themeJsPath + '\n');
+    process.exit(1);
+}
+
 var dark  = themeModule.getTheme('dark');
 var light = themeModule.getTheme('light');
 
