@@ -34,8 +34,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 Plans:
 **Wave 1**
-- [ ] 01-01-PLAN.md — Bundle vendor deps (acorn + cheerio) and write validate_ast.js AST/DOM validator
-- [ ] 01-03-PLAN.md — Retroactively score FISR for tests 21-28 and produce FISR-BASELINE.md
+- [x] 01-01-PLAN.md — Bundle vendor deps (acorn + cheerio) and write validate_ast.js AST/DOM validator
+- [x] 01-03-PLAN.md — Retroactively score FISR for tests 21-28 and produce FISR-BASELINE.md
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 01-02-PLAN.md — Wire validate_ast.js into validate_viz.sh and replace vp-create duplicate with delegation shim
