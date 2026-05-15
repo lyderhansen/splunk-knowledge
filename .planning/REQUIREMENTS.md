@@ -1,0 +1,92 @@
+# Requirements: splunk-knowledge
+
+**Defined:** 2026-05-15
+**Core Value:** Zero-fix first builds AND wow-factor dashboards — reliable + beautiful every time
+
+## Constraint: Zero User Dependencies
+
+Plugins must work with **zero external dependencies for end users**. Users run `/install-plugin` and start building — no npm, no Python, no Node.js required on their machine. All validation tooling (acorn, cheerio, ajv) runs inside skill scripts executed by Claude Code during builds. If a user's system doesn't have Node.js, validators fall back gracefully (warn instead of fail).
+
+## v1 Requirements
+
+### Validation
+
+- [ ] **VAL-01**: validate_viz.sh uses acorn AST parsing in ES5 mode to enforce pure ES5 compliance — replaces fragile grep-based detection
+- [ ] **VAL-02**: validate_viz.sh uses cheerio DOM parsing for formatter.html — catches structural HTML bugs (unclosed tags, malformed nesting, missing attributes)
+- [ ] **VAL-03**: Dashboard Studio JSON validated against ajv schema — catches B9 type format, B10 bare option keys, missing data sources
+- [ ] **VAL-04**: Automated repair loop — on validation failure, auto-fix common issues (namespace, value= vs default=, theme default), rebuild, re-validate up to 3 times
+- [ ] **VAL-05**: Cross-file consistency check — formatter option names match JS config reads (namespace mismatch detection)
+- [ ] **VAL-06**: WCAG AA contrast checker on theme.js tokens — catches "text disappears on light theme" before install
+
+### Design Quality
+
+- [ ] **DES-01**: Light theme works by default — every viz tested in both dark and light, hero values use full t.text
+- [ ] **DES-02**: appIcon.png generated automatically with brand accent color and initial letter for every build
+- [ ] **DES-03**: preview.png generated automatically per viz with brand-colored silhouette (not solid color, not 1x1)
+- [ ] **DES-04**: Creative viz selection guidance — anti-donut rules, bold viz choices, anti-AI generic output checklist enforced in vp-design
+- [ ] **DES-05**: Brand-specific rendering enforced — no copy-paste-recolor between packs, unique _render() code per brand
+
+### Skill Architecture
+
+- [ ] **SKL-01**: Rule consolidation — reduce 54 rules to <30 high-impact rules, merge overlapping rules, reframe NEVER/ALWAYS as positive patterns
+- [ ] **SKL-02**: Split oversized references — all-patterns.md (<500 lines), broken-rules.md (<500 lines), classify rules as universal vs contextual
+- [ ] **SKL-03**: FISR baseline — retroactively score First-Install Success Rate for tests 21-28 to measure improvement
+
+## v2 Requirements
+
+### Validation (Advanced)
+
+- **VAL-07**: Cross-plugin MUST-LOAD enforcement via validation — verify ds-create, spl-gotchas loaded when needed
+- **VAL-08**: Splunk AppInspect pre-check — validate against AppInspect rules before packaging
+- **VAL-09**: node:test snapshot regression suite for validators — prevent validator regressions
+
+### Design Quality (Advanced)
+
+- **DES-06**: Visual quality scoring (hierarchy, whitespace, brand, emotion) — 4-dimension scoring
+- **DES-07**: Automated visual diff — compare generated dashboard screenshots across iterations
+
+### Secondary Plugins
+
+- **PLG-01**: Harden splunk-dashboard-studio (ds-* skills) — apply lessons learned from vp-*
+- **PLG-02**: Harden splunk-spl — expand spl-gotchas coverage
+- **PLG-03**: Harden splunk-admin — conf file validation
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| Dynamic template engine (Handlebars) | Risk of conflicting with SKILL.md code generation — needs prototyping first |
+| Subagent code generation | Proven 100% failure rate in test22a/b — inline execution only |
+| ESLint integration | Too heavy for this context — acorn AST + custom walks is lighter and more targeted |
+| Real-time streaming vizs | Standard Splunk polling is sufficient |
+| Mobile-responsive viz rendering | Splunk dashboards are desktop/wall-display |
+| Multi-tenant viz sharing | Each pack is a standalone Splunk app |
+| User-facing npm/Python deps | Users must not need to install Node.js, Python, or any package manager — plugins work via /install-plugin only |
+
+## Traceability
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| VAL-01 | Phase 1 | Pending |
+| VAL-02 | Phase 1 | Pending |
+| VAL-03 | Phase 2 | Pending |
+| VAL-04 | Phase 3 | Pending |
+| VAL-05 | Phase 2 | Pending |
+| VAL-06 | Phase 3 | Pending |
+| DES-01 | Phase 3 | Pending |
+| DES-02 | Phase 4 | Pending |
+| DES-03 | Phase 4 | Pending |
+| DES-04 | Phase 4 | Pending |
+| DES-05 | Phase 4 | Pending |
+| SKL-01 | Phase 5 | Pending |
+| SKL-02 | Phase 5 | Pending |
+| SKL-03 | Phase 1 | Pending |
+
+**Coverage:**
+- v1 requirements: 14 total
+- Mapped to phases: 14
+- Unmapped: 0
+
+---
+*Requirements defined: 2026-05-15*
+*Last updated: 2026-05-15 after roadmap creation*
