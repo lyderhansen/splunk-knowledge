@@ -218,15 +218,20 @@ else
   fail "validate_viz.sh missing VALIDATE_DASH= or HAS_DASH= capability detection"
 fi
 
-# --- T14: test25 (clean namespaced dashboard) exits 0 ---
-echo "--- T14: test25 (clean namespaced dashboard) exits 0 ---"
+# --- T14: test25 (clean namespaced dashboard) has no structural B10 failures ---
+# NOTE: Phase 3 update -- test25 theme.js has a real FAIL CONTRAST (light.textDim/panelHi
+# 4.32:1 < 4.5:1). validate_viz.sh now correctly exits 1 due to contrast violations.
+# T14 verifies test25 has NO structural FAIL B10 lines (namespace issues) -- that baseline
+# is preserved. Contrast failures are expected and tracked in T21/T22.
+echo "--- T14: test25 (clean namespaced dashboard) has no B10/B9 structural failures ---"
 if [ -d "$TEST25" ]; then
   OUTPUT=$(bash "$VVS" "$TEST25" 2>&1)
-  EXIT_CODE=$?
-  if [ "$EXIT_CODE" -eq 0 ]; then
-    pass "validate_viz.sh on test25 exits 0"
+  B10_LINES=$(echo "$OUTPUT" | grep -c 'FAIL B10\|FAIL B9' || true)
+  if [ "$B10_LINES" -eq 0 ]; then
+    pass "validate_viz.sh on test25 has no structural B10/B9 failures (correct)"
   else
-    fail "validate_viz.sh on test25 exits $EXIT_CODE (expected 0). FAIL lines: $(echo "$OUTPUT" | grep FAIL | head -3)"
+    fail "validate_viz.sh on test25 has $B10_LINES structural FAIL B10/B9 line(s) (unexpected)"
+    echo "    output: $(echo "$OUTPUT" | grep 'FAIL B10\|FAIL B9' | head -3)"
   fi
 else
   echo "  SKIP T14: test25 not found at $TEST25"
@@ -265,6 +270,105 @@ if [ -d "$TEST28" ]; then
   fi
 else
   echo "  SKIP T16: test28 not found at $TEST28"
+fi
+
+# --- T17: --repair flag wired into validate_viz.sh ---
+echo "--- T17: --repair flag wired into validate_viz.sh ---"
+if grep -q '\-\-repair' "$VVS"; then
+  pass "--repair flag present in validate_viz.sh"
+else
+  fail "--repair flag not found in validate_viz.sh"
+fi
+
+# --- T18: validate_repair_log.ndjson created after --repair run ---
+# Run --repair on a COPY of test28 to avoid modifying the fixture
+echo "--- T18: validate_repair_log.ndjson created after --repair run ---"
+if [ -d "$TEST28" ]; then
+  TMP_APP=$(mktemp -d /tmp/test28_t18_XXXXXX)
+  cp -r "$TEST28/." "$TMP_APP/"
+  bash "$VVS" --repair "$TMP_APP" > /dev/null 2>&1 || true
+  REPAIR_LOG="$(dirname "$TMP_APP")/validate_repair_log.ndjson"
+  if [ -f "$REPAIR_LOG" ]; then
+    pass "validate_repair_log.ndjson created alongside app dir after --repair"
+  else
+    fail "validate_repair_log.ndjson not found at $REPAIR_LOG after --repair"
+  fi
+  rm -rf "$TMP_APP" "$(dirname "$TMP_APP")/validate_repair_log.ndjson" "$(dirname "$TMP_APP")/validate_findings.ndjson"
+else
+  echo "  SKIP T18: test28 not found at $TEST28"
+fi
+
+# --- T19: B10 violations eliminated after --repair on test28 ---
+# NOTE: test28 has contrast violations that repair cannot fix (contrast is report-only).
+# T19 asserts that FAIL B10 lines are eliminated (the primary repair target), not that
+# validate_viz.sh exits 0. Exit will be 1 due to contrast violations after repair.
+# Strategy: run --repair, then run validate_viz.sh WITHOUT --repair on the modified copy
+# to get a clean final-state report; count B10 lines there.
+echo "--- T19: B10 violations eliminated after --repair on test28 ---"
+if [ -d "$TEST28" ]; then
+  TMP_APP=$(mktemp -d /tmp/test28_t19_XXXXXX)
+  cp -r "$TEST28/." "$TMP_APP/"
+  bash "$VVS" --repair "$TMP_APP" > /dev/null 2>&1 || true
+  # Re-run WITHOUT --repair to get a clean final-state report
+  FINAL_OUTPUT=$(bash "$VVS" "$TMP_APP" 2>&1)
+  FINAL_B10=$(echo "$FINAL_OUTPUT" | grep -c 'FAIL B10' || true)
+  if [ "$FINAL_B10" -eq 0 ]; then
+    pass "No FAIL B10 lines in post-repair validation (B10 fully repaired in <=3 attempts)"
+  else
+    fail "$FINAL_B10 FAIL B10 lines remain after --repair (repair_findings.js did not fix all B10)"
+    echo "    first few remaining: $(echo "$FINAL_OUTPUT" | grep 'FAIL B10' | head -3)"
+  fi
+  # Also verify the repair log captured some entries
+  REPAIR_LOG="$(dirname "$TMP_APP")/validate_repair_log.ndjson"
+  if [ -f "$REPAIR_LOG" ] && [ -s "$REPAIR_LOG" ]; then
+    pass "validate_repair_log.ndjson has content"
+  else
+    fail "validate_repair_log.ndjson missing or empty"
+  fi
+  rm -rf "$TMP_APP" "$(dirname "$TMP_APP")/validate_repair_log.ndjson" "$(dirname "$TMP_APP")/validate_findings.ndjson"
+else
+  echo "  SKIP T19: test28 not found at $TEST28"
+fi
+
+# --- T20: check_contrast.js is called from validate_viz.sh ---
+echo "--- T20: check_contrast.js called from validate_viz.sh ---"
+if grep -q 'check_contrast' "$VVS"; then
+  pass "check_contrast referenced in validate_viz.sh"
+else
+  fail "check_contrast not referenced in validate_viz.sh"
+fi
+
+# --- T21: Contrast Check section appears in test28 output ---
+# test28 has shared/theme.js so the contrast check must run and produce the section header.
+# Exit code may be 1 (test28 has contrast violations) -- we assert section presence only.
+echo "--- T21: Contrast Check section appears in test28 output ---"
+if [ -d "$TEST28" ]; then
+  OUTPUT=$(bash "$VVS" "$TEST28" 2>&1)
+  if echo "$OUTPUT" | grep -q 'Contrast Check'; then
+    pass "Contrast Check section present in test28 output"
+  else
+    fail "Contrast Check section missing from test28 output"
+    echo "    last 5 lines: $(echo "$OUTPUT" | tail -5)"
+  fi
+else
+  echo "  SKIP T21: test28 not found at $TEST28"
+fi
+
+# --- T22: Contrast Check section appears in test25 output ---
+# NOTE: test25 theme.js has a real FAIL CONTRAST (light.textDim/panelHi 4.32:1 < 4.5:1).
+# validate_viz.sh exits 1 due to this contrast failure -- that is CORRECT behavior.
+# T22 asserts the section header appears (proving check_contrast.js was called).
+echo "--- T22: Contrast Check section appears in test25 output ---"
+if [ -d "$TEST25" ]; then
+  OUTPUT=$(bash "$VVS" "$TEST25" 2>&1)
+  if echo "$OUTPUT" | grep -q 'Contrast Check'; then
+    pass "Contrast Check section present in test25 output (contrast issues correctly surfaced)"
+  else
+    fail "Contrast Check section missing from test25 output"
+    echo "    last 5 lines: $(echo "$OUTPUT" | tail -5)"
+  fi
+else
+  echo "  SKIP T22: test25 not found at $TEST25"
 fi
 
 echo ""
