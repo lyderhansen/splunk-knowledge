@@ -77,7 +77,7 @@ var validateSchema = ajv.compile(dashSchema);
 // ---- CDATA extraction ----
 
 function extractFromXml(xmlContent) {
-    var match = xmlContent.match(/<!\[CDATA\[([\s\S]*?)\]\]>/);
+    var match = xmlContent.match(/<definition>\s*<!\[CDATA\[([\s\S]*?)\]\]>\s*<\/definition>/);
     if (!match) {
         return null;
     }
