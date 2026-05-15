@@ -90,7 +90,7 @@ for f in "$APP_DIR"/appserver/static/visualizations/*/formatter.html; do
     # Fallback: grep-based checks
 
     # VIZ_NAMESPACE required, no hardcoded namespace
-    HARDCODED=$(grep -cE 'name="[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+\.' "$f" 2>/dev/null || true)
+    HARDCODED=$(grep -E 'name="[a-zA-Z0-9_]+\.[a-zA-Z0-9_]' "$f" 2>/dev/null | grep -cv '{{VIZ_NAMESPACE}}' || true)
     TEMPLATE=$(grep -c '{{VIZ_NAMESPACE}}' "$f" 2>/dev/null || true)
     [ "$HARDCODED" -gt 0 ] && { echo "  FAIL B10: $HARDCODED hardcoded namespace(s)"; FAIL=1; }
     [ "$TEMPLATE" -eq 0 ] && { echo "  FAIL B10: no {{VIZ_NAMESPACE}} found"; FAIL=1; }
