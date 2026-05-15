@@ -93,11 +93,11 @@ Plans:
 
 Plans:
 **Wave 1** *(parallel -- no file overlap)*
-- [ ] 04-01-PLAN.md — Write generate_assets.js (pure Node.js PNG generator for appIcon + per-viz preview silhouettes) + test_generate_assets.js
-- [ ] 04-02-PLAN.md — Update vp-design SKILL.md (Visual Language schema + novelty scoring), create viz-novelty-scores.md, update vp-viz SKILL.md (interactivity mandate)
+- [x] 04-01-PLAN.md — Write generate_assets.js (pure Node.js PNG generator for appIcon + per-viz preview silhouettes) + test_generate_assets.js
+- [x] 04-02-PLAN.md — Update vp-design SKILL.md (Visual Language schema + novelty scoring), create viz-novelty-scores.md, update vp-viz SKILL.md (interactivity mandate)
 
 **Wave 2** *(blocked on 04-01)*
-- [ ] 04-03-PLAN.md — Update validate_viz.sh (FAIL A01-A04 asset checks) and vp-create SKILL.md (replace Pillow steps with generate_assets.js)
+- [x] 04-03-PLAN.md — Update validate_viz.sh (FAIL A01-A04 asset checks) and vp-create SKILL.md (replace Pillow steps with generate_assets.js)
 
 ### Phase 5: Rule Consolidation
 **Goal**: Skills carry fewer, higher-impact rules that the LLM actually follows consistently
@@ -109,7 +109,15 @@ Plans:
   2. all-patterns.md is under 500 lines (down from 911), with rules classified as universal vs contextual
   3. broken-rules.md is under 500 lines (down from 751), with rules reframed as positive patterns rather than NEVER/ALWAYS prohibitions
   4. A rebuild of a previously-tested brand (from tests 21-28) with the consolidated rules produces equal or better FISR compared to the Phase 1 baseline
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+**Wave 1** *(parallel -- no file overlap)*
+- [ ] 05-01-PLAN.md — Restructure all-patterns.md (911→~200 index), extend canvas-recipes.md with moved Canvas content, create formatter-patterns.md
+- [ ] 05-02-PLAN.md — Restructure broken-rules.md (751→<500 diagnostic table) with code preservation for B1/B14/B19
+
+**Wave 2** *(blocked on both Wave 1 plans)*
+- [ ] 05-03-PLAN.md — Deduplicate vp-viz/vp-create/vp-design/vp-recipes SKILL.md files, rule count audit, FISR regression test
 
 ## Progress
 
@@ -123,4 +131,4 @@ Note: Phase 4 depends only on Phase 1, so it could theoretically run after Phase
 | 2. Schema & Cross-file Validation | 0/3 | Not started | - |
 | 3. Repair Loop & Light Theme Safety | 0/3 | Not started | - |
 | 4. Visual Identity & Assets | 0/3 | Not started | - |
-| 5. Rule Consolidation | 0/? | Not started | - |
+| 5. Rule Consolidation | 0/3 | Not started | - |
