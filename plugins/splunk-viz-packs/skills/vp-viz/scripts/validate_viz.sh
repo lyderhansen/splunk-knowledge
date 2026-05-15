@@ -6,6 +6,25 @@
 APP_DIR="${1:-.}"
 TOTAL_FAIL=0
 
+# --- NODE CAPABILITY DETECTION ---
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+VALIDATE_AST="$SCRIPT_DIR/validate_ast.js"
+VENDOR_DIR="$SCRIPT_DIR/vendor/node_modules"
+HAS_NODE=0
+HAS_VENDOR=0
+USE_AST=0
+
+command -v node > /dev/null 2>&1 && HAS_NODE=1
+if [ -f "$VENDOR_DIR/acorn/dist/acorn.js" ] && [ -d "$VENDOR_DIR/cheerio" ]; then
+  HAS_VENDOR=1
+fi
+
+if [ "$HAS_NODE" -eq 1 ] && [ "$HAS_VENDOR" -eq 1 ] && [ -f "$VALIDATE_AST" ]; then
+  USE_AST=1
+else
+  echo "  WARN: validate_ast.js not available — using grep fallback"
+fi
+
 echo "============================================"
 echo "  Viz Pack Validator"
 echo "============================================"
@@ -18,31 +37,40 @@ for f in "$APP_DIR"/appserver/static/visualizations/*/formatter.html; do
   echo ""
   echo "--- formatter: $VIZ ---"
 
-  # VIZ_NAMESPACE required, no hardcoded namespace
-  HARDCODED=$(grep -cE 'name="[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+\.' "$f" 2>/dev/null || true)
-  TEMPLATE=$(grep -c '{{VIZ_NAMESPACE}}' "$f" 2>/dev/null || true)
-  [ "$HARDCODED" -gt 0 ] && { echo "  FAIL B10: $HARDCODED hardcoded namespace(s)"; FAIL=1; }
-  [ "$TEMPLATE" -eq 0 ] && { echo "  FAIL B10: no {{VIZ_NAMESPACE}} found"; FAIL=1; }
+  if [ "$USE_AST" -eq 1 ]; then
+    OUTPUT=$(node "$VALIDATE_AST" --html "$f" 2>&1)
+    AST_EXIT=$?
+    [ -n "$OUTPUT" ] && echo "$OUTPUT"
+    [ "$AST_EXIT" -ne 0 ] && FAIL=1
+  else
+    # Fallback: grep-based checks
 
-  # value= not default=
-  DEFAULTS=$(grep -c 'default=' "$f" 2>/dev/null || true)
-  [ "$DEFAULTS" -gt 0 ] && { echo "  FAIL B7: $DEFAULTS default= attrs (use value=)"; FAIL=1; }
+    # VIZ_NAMESPACE required, no hardcoded namespace
+    HARDCODED=$(grep -cE 'name="[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+\.' "$f" 2>/dev/null || true)
+    TEMPLATE=$(grep -c '{{VIZ_NAMESPACE}}' "$f" 2>/dev/null || true)
+    [ "$HARDCODED" -gt 0 ] && { echo "  FAIL B10: $HARDCODED hardcoded namespace(s)"; FAIL=1; }
+    [ "$TEMPLATE" -eq 0 ] && { echo "  FAIL B10: no {{VIZ_NAMESPACE}} found"; FAIL=1; }
 
-  # type="custom" on color pickers (count opening tags only)
-  PICKERS=$(grep -c '<splunk-color-picker ' "$f" 2>/dev/null || true)
-  CUSTOM=$(grep -c 'type="custom"' "$f" 2>/dev/null || true)
-  [ "$PICKERS" -gt 0 ] && [ "$CUSTOM" -lt "$PICKERS" ] && { echo "  FAIL B5: color picker without type=\"custom\""; FAIL=1; }
+    # value= not default=
+    DEFAULTS=$(grep -c 'default=' "$f" 2>/dev/null || true)
+    [ "$DEFAULTS" -gt 0 ] && { echo "  FAIL B7: $DEFAULTS default= attrs (use value=)"; FAIL=1; }
 
-  # section-label on every <form>
-  FORMS=$(grep -c '<form' "$f" 2>/dev/null || true)
-  LABELS=$(grep -c 'section-label=' "$f" 2>/dev/null || true)
-  [ "$FORMS" -gt "$LABELS" ] && { echo "  FAIL B5: $((FORMS-LABELS)) <form> without section-label"; FAIL=1; }
+    # type="custom" on color pickers (count opening tags only)
+    PICKERS=$(grep -c '<splunk-color-picker ' "$f" 2>/dev/null || true)
+    CUSTOM=$(grep -c 'type="custom"' "$f" 2>/dev/null || true)
+    [ "$PICKERS" -gt 0 ] && [ "$CUSTOM" -lt "$PICKERS" ] && { echo "  FAIL B5: color picker without type=\"custom\""; FAIL=1; }
 
-  # Theme default must be "auto"
-  THEME_DARK=$(grep -c 'themeMode.*value="dark"' "$f" 2>/dev/null || true)
-  [ "$THEME_DARK" -gt 0 ] && { echo "  FAIL B20: themeMode defaults to dark (must be auto)"; FAIL=1; }
+    # section-label on every <form>
+    FORMS=$(grep -c '<form' "$f" 2>/dev/null || true)
+    LABELS=$(grep -c 'section-label=' "$f" 2>/dev/null || true)
+    [ "$FORMS" -gt "$LABELS" ] && { echo "  FAIL B5: $((FORMS-LABELS)) <form> without section-label"; FAIL=1; }
 
-  # Control count
+    # Theme default must be "auto"
+    THEME_DARK=$(grep -c 'themeMode.*value="dark"' "$f" 2>/dev/null || true)
+    [ "$THEME_DARK" -gt 0 ] && { echo "  FAIL B20: themeMode defaults to dark (must be auto)"; FAIL=1; }
+  fi
+
+  # Control count (always check, regardless of AST mode)
   CONTROLS=$(grep -c 'splunk-control-group' "$f" 2>/dev/null || true)
   [ "$CONTROLS" -lt 7 ] && echo "  WARN: only $CONTROLS controls (recommend 7+)"
 
@@ -79,8 +107,16 @@ for vizdir in "$APP_DIR"/appserver/static/visualizations/*/; do
   fi
 
   # ES5 compliance
-  ES6=$(grep -cE '\bconst \b|\blet \b| => ' "$f" 2>/dev/null || true)
-  [ "$ES6" -gt 0 ] && { echo "  FAIL F3: $ES6 ES6 occurrences"; FAIL=1; }
+  if [ "$USE_AST" -eq 1 ]; then
+    OUTPUT=$(node "$VALIDATE_AST" --js "$f" 2>&1)
+    AST_EXIT=$?
+    [ -n "$OUTPUT" ] && echo "$OUTPUT"
+    [ "$AST_EXIT" -ne 0 ] && FAIL=1
+  else
+    # Fallback grep check
+    ES6=$(grep -cE '\bconst \b|\blet \b| => ' "$f" 2>/dev/null || true)
+    [ "$ES6" -gt 0 ] && { echo "  FAIL F3: $ES6 ES6 occurrences (grep fallback — no line numbers)"; FAIL=1; }
+  fi
 
   # Theme detection
   grep -qE 'detectTheme|getCurrentTheme' "$f" || { echo "  FAIL B20: no theme detection"; FAIL=1; }
