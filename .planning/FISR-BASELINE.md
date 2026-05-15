@@ -102,13 +102,20 @@
 | hexFromSplunk bug (Settings-OK) | test27 (stripe_table) | Color picker integer format not handled |
 | Light theme contrast | test24 | textDim/textMuted used instead of full t.text |
 
+## Human Review (2026-05-15)
+
+**Reviewer corrections to automated scoring above:**
+
+1. **All vizs were installed and tested in Splunk** — Render-OK should be Y for most, not "?" as scored from incomplete handover notes. The handover docs did not capture all testing that occurred.
+2. **Some vizs did not render and needed revision** — specific ones unknown; the quality improved progressively from test21 (roughest) to test28 (cleanest).
+3. **Formatter settings consistently broken** — settings did not apply correctly in both ad-hoc search AND Dashboard Studio across many tests. This was a persistent issue, not isolated.
+4. **preview.png almost never correct** — this was a near-universal failure across all test sessions.
+5. **Build-OK is broadly true** (apps installed in Splunk) but **build quality** needs work — the distinction is between "can install" and "installs correctly with all assets and settings working."
+
+**Conclusion:** The 3.8% FISR score above reflects validator-detected structural issues (appIcon, preview.png, etc.) and incomplete handover notes. The true picture is that most vizs rendered data but had quality issues (broken settings, bad previews). This baseline is approximate — a fresh end-to-end test after Phase 1 validators are complete will provide accurate numbers.
+
 ## Baseline Acceptance
 
-This baseline serves as the measurement start point for Phase 1. The 3.8% FISR (1/26 scoreable vizs) represents the state of the splunk-viz-packs plugin as of tests 21-28 before Phase 1 improvements. Key drivers:
+This baseline serves as a rough measurement start point. The validator-based Build-OK scoring is objective and reproducible. The Render-OK and Settings-OK scores are unreliable (scored from incomplete handover notes, not from fresh testing). A proper re-test is planned after the validation pipeline is complete.
 
-1. **Structural failures dominate:** Most Build-OK=N cases are missing appIcon/preview.png, not broken code logic.
-2. **No Splunk install confirmation** for 5 of 8 test sessions — Render-OK/Settings-OK are ? rather than verified Y.
-3. **test23 is the only confirmed FISR PASS** — single viz, user-driven, tested in Splunk.
-4. **test24 gets partial credit** — 5 vizs render and settings work, but structural failures (appIcon, allow_user_selection) mark Build-OK=N.
-
-Future phases can compare against this 3.8% baseline. If structural issues (appIcon, preview.png) are addressed, the true PASS rate for "code works correctly" is higher (test24 5 vizs, test25 nps_ring_gauge, test28 5 vizs all have correct formatter/JS checks — only structure fails them).
+**Action:** Re-run FISR scoring with a fresh Splunk test after Phase 1 validators (01-01 + 01-02) are wired up.
