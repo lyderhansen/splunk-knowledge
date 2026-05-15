@@ -91,7 +91,7 @@ If any answer is bad, loop back.
 - 60-30-10 rule: 60% neutral, 30% brand primary, 10% accent
 - Tint neutrals toward brand hue (even 0.005 chroma)
 - Light theme is NOT an inversion of dark — design independently
-- Hero values use FULL `t.text` color — never textDim/textFaint
+- Hero values use FULL `t.text` color — see vp-viz SKILL.md light theme verification for contrast requirements
 
 ## Typography principles
 

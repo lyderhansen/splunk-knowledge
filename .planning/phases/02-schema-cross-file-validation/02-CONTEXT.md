@@ -59,7 +59,7 @@ Add Dashboard JSON schema validation and cross-file formatter-to-JS consistency 
 
 ### Skill Rules (define what schema validates)
 - `plugins/splunk-viz-packs/skills/vp-viz/SKILL.md` — B9 STOP section, B10 namespace rules
-- `plugins/splunk-viz-packs/skills/vp-ref-gotchas/SKILL.md` — all 54 FAIL/WARN rules
+- `plugins/splunk-viz-packs/skills/vp-debug/references/broken-rules.md` — all 54 FAIL/WARN rules
 
 ### Requirements
 - `.planning/REQUIREMENTS.md` — VAL-03, VAL-05 requirements for this phase

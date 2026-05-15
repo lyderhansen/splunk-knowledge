@@ -68,7 +68,7 @@ Automated validate-fix-rebuild cycle for common validation failures, plus WCAG A
 - `plugins/splunk-viz-packs/skills/vp-viz/scripts/vendor/node_modules/acorn/` — JS AST parsing
 
 ### Skill Rules (define what gets fixed)
-- `plugins/splunk-viz-packs/skills/vp-ref-gotchas/SKILL.md` — all 54 FAIL/WARN rules with descriptions
+- `plugins/splunk-viz-packs/skills/vp-debug/references/broken-rules.md` — all 54 FAIL/WARN rules with descriptions
 - `plugins/splunk-viz-packs/skills/vp-viz/SKILL.md` — B9 STOP section, B10 namespace rules
 
 ### Requirements

@@ -110,5 +110,9 @@ Common bug: forgetting step 4/5 resets. Shadow leaks into all subsequent draws. 
 
 ## References
 
-- **[All patterns](references/all-patterns.md)** — shapes, colors, text, effects, sparklines, animation, tooltip, parsing, number formatting (~900 lines)
+- **[All patterns](references/all-patterns.md)** — index of all Canvas patterns; load to find the right file for your need (~200 lines)
 - **[Mood recipes](references/mood-recipes.md)** — 9 moods with Canvas code, accent intensity curves, tinted neutral recipes (~400 lines)
+
+Full Canvas drawing code:
+- **[Canvas recipes](../vp-viz/references/canvas-recipes.md)** — shapes, colors, text, effects, animation, tooltip, sparklines, number formatting
+- **[Formatter patterns](../vp-viz/references/formatter-patterns.md)** — all formatter.html templates and section structure

@@ -39,12 +39,12 @@ CRITICAL: Do NOT package if validation fails. Fix and re-validate.
 
 ## Step 3: Fix failures
 
-Common fixes:
-- `FAIL B10`: Replace hardcoded namespace with `{{VIZ_NAMESPACE}}`
-- `FAIL B7`: Replace `default=` with `value=`
-- `FAIL B5`: Add `type="custom"` to color picker
-- `FAIL B20`: Change themeMode default from "dark" to "auto"
-- `FAIL F3`: Replace const/let/arrow with var/function
+For B10, B9, B5, B7, B20 — the repair loop in validate_viz.sh auto-fixes
+these. If auto-repair fails, see vp-viz SKILL.md STOP section for namespace
+rules and formatter attribute requirements.
+
+For F3 (ES5 violations) — replace const/let/arrow functions with var/function.
+See vp-debug references/fatal-rules.md F3 for ES5 conversion patterns.
 
 After fixing, re-run build (step 1) then validate (step 2).
 
