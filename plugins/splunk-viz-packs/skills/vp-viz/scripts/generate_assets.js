@@ -114,8 +114,8 @@ function makePng(w, h, rgbRows) {
     }
 
     var rawData = Buffer.concat(scanlines);
-    // Use level 1 (fast) for larger images, level 0 (store) for small icons
-    // to guarantee file size > 500 bytes for correctness checks.
+    // level 0 (store, no compression) for small icons: guarantees output > 500 bytes even
+    // when a solid-color icon compresses to near-nothing. level 6 (default) for preview PNGs.
     var compressLevel = (w <= 72 && h <= 72) ? 0 : 6;
     var compressed = zlib.deflateSync(rawData, { level: compressLevel });
 
