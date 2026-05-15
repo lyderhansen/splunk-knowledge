@@ -9,6 +9,7 @@ VVS="$SCRIPT_DIR/validate_viz.sh"
 VPC_VVS="$SCRIPT_DIR/../../vp-create/scripts/validate_viz.sh"
 TEST28="$SCRIPT_DIR/../../../../../tests/test28_drilldown_tabs/cloudflare_noc"
 TEST21="$SCRIPT_DIR/../../../../../tests/test21_patagonia/patagonia_outdoor_ops"
+TEST25="$SCRIPT_DIR/../../../../../tests/test25_v4/hospital_nps_gauge"
 
 PASS=0
 FAIL=0
@@ -45,29 +46,33 @@ else
   fail "validate_viz.sh missing 'node \"\$VALIDATE_AST\" --js' delegation"
 fi
 
-# --- T4: test28 exits 0 with AST mode active ---
-echo "--- T4: test28 exits 0 (clean pack, AST mode) ---"
+# --- T4: test28 exits 1 with B10 violations (Phase 2 dashboard check) ---
+# NOTE: Phase 2 update -- test28 has bare option keys, so validate_viz.sh correctly exits 1
+echo "--- T4: test28 exits 1 with B10 violations (Phase 2 dashboard check) ---"
 if [ -d "$TEST28" ]; then
   OUTPUT=$(bash "$VVS" "$TEST28" 2>&1)
   EXIT_CODE=$?
-  if [ "$EXIT_CODE" -eq 0 ]; then
-    pass "validate_viz.sh on test28 exits 0"
+  if [ "$EXIT_CODE" -eq 1 ] && echo "$OUTPUT" | grep -q 'FAIL B10'; then
+    pass "validate_viz.sh on test28 exits 1 with FAIL B10 (correct Phase 2 behavior)"
+  elif [ "$EXIT_CODE" -eq 0 ]; then
+    fail "validate_viz.sh on test28 exited 0 — expected B10 failures for bare option keys"
   else
-    fail "validate_viz.sh on test28 exits $EXIT_CODE (expected 0)"
+    fail "validate_viz.sh on test28 exits $EXIT_CODE but output missing FAIL B10"
     echo "    output: $(echo "$OUTPUT" | grep FAIL | head -3)"
   fi
 else
   fail "test28 fixture not found at $TEST28"
 fi
 
-# --- T5: test28 contains no FAIL lines ---
-echo "--- T5: test28 output has no FAIL lines ---"
+# --- T5: test28 output has FAIL B10 lines (Phase 2 bare-key detection) ---
+# NOTE: Phase 2 update -- test28 correctly produces FAIL B10 lines for bare option keys
+echo "--- T5: test28 output has FAIL B10 lines (Phase 2 bare-key detection) ---"
 if [ -d "$TEST28" ]; then
-  FAIL_LINES=$(bash "$VVS" "$TEST28" 2>&1 | grep -c '  FAIL' || true)
-  if [ "$FAIL_LINES" -eq 0 ]; then
-    pass "test28 output contains no FAIL lines"
+  FAIL_LINES=$(bash "$VVS" "$TEST28" 2>&1 | grep -c '  FAIL B10' || true)
+  if [ "$FAIL_LINES" -gt 0 ]; then
+    pass "test28 output contains $FAIL_LINES FAIL B10 line(s) (correct Phase 2 behavior)"
   else
-    fail "test28 output contains $FAIL_LINES FAIL line(s)"
+    fail "test28 output contains no FAIL B10 lines (expected bare-key violations)"
   fi
 fi
 
@@ -195,6 +200,63 @@ else
   else
     fail "validate_viz.sh missing WARN fallback message for when AST is unavailable"
   fi
+fi
+
+# --- T13: Phase 2 capability detection variables in validate_viz.sh ---
+echo "--- T13: Phase 2 capability detection variables in validate_viz.sh ---"
+if grep -q 'VALIDATE_DASH=' "$VVS" && grep -q 'HAS_DASH=' "$VVS"; then
+  pass "validate_viz.sh contains VALIDATE_DASH= and HAS_DASH= variables"
+else
+  fail "validate_viz.sh missing VALIDATE_DASH= or HAS_DASH= capability detection"
+fi
+
+# --- T14: test25 (clean namespaced dashboard) exits 0 ---
+echo "--- T14: test25 (clean namespaced dashboard) exits 0 ---"
+if [ -d "$TEST25" ]; then
+  OUTPUT=$(bash "$VVS" "$TEST25" 2>&1)
+  EXIT_CODE=$?
+  if [ "$EXIT_CODE" -eq 0 ]; then
+    pass "validate_viz.sh on test25 exits 0"
+  else
+    fail "validate_viz.sh on test25 exits $EXIT_CODE (expected 0). FAIL lines: $(echo "$OUTPUT" | grep FAIL | head -3)"
+  fi
+else
+  echo "  SKIP T14: test25 not found at $TEST25"
+fi
+
+# --- T15: test28 (bare-key dashboard) exits 1 with FAIL B10 ---
+echo "--- T15: test28 (bare-key dashboard) exits 1 with FAIL B10 ---"
+if [ -d "$TEST28" ]; then
+  OUTPUT=$(bash "$VVS" "$TEST28" 2>&1)
+  EXIT_CODE=$?
+  if [ "$EXIT_CODE" -ne 0 ] && echo "$OUTPUT" | grep -q 'FAIL B10'; then
+    pass "validate_viz.sh on test28 exits 1 with FAIL B10"
+  elif [ "$EXIT_CODE" -eq 0 ]; then
+    fail "validate_viz.sh on test28 exited 0 — expected failure for B10 violation"
+  else
+    fail "validate_viz.sh on test28 exited $EXIT_CODE but output missing FAIL B10: $(echo "$OUTPUT" | grep FAIL | head -3)"
+  fi
+else
+  echo "  SKIP T15: test28 not found at $TEST28"
+fi
+
+# --- T16: validate_findings.ndjson produced alongside app dir ---
+echo "--- T16: validate_findings.ndjson produced alongside app dir ---"
+if [ -d "$TEST28" ]; then
+  bash "$VVS" "$TEST28" > /dev/null 2>&1 || true
+  FINDINGS="$(dirname "$TEST28")/validate_findings.ndjson"
+  if [ -f "$FINDINGS" ]; then
+    # Check it has at least one FINDING: JSON line (NDJSON format with FINDING: prefix)
+    if grep -q '^FINDING:{' "$FINDINGS" 2>/dev/null; then
+      pass "validate_findings.ndjson exists and contains FINDING:{json} entries"
+    else
+      fail "validate_findings.ndjson exists but no FINDING:{json} lines found"
+    fi
+  else
+    fail "validate_findings.ndjson not found at $FINDINGS"
+  fi
+else
+  echo "  SKIP T16: test28 not found at $TEST28"
 fi
 
 echo ""
