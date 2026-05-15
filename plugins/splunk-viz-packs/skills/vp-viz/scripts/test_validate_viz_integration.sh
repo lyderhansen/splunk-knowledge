@@ -596,7 +596,7 @@ if command -v node > /dev/null 2>&1 && [ -f "$SCRIPT_DIR/generate_assets.js" ] &
   fi
 else
   echo "  SKIP T_ANEW_5: Node.js, generate_assets.js, or test28 not available"
-  pass "T_ANEW_5: skipped (not applicable in this environment)"
+  # Do NOT call pass() -- this test was not run
 fi
 
 echo ""
