@@ -170,19 +170,14 @@ fi
 # --- T11: vp-create shim exit code matches canonical ---
 echo "--- T11: vp-create shim exit code matches canonical for test28 ---"
 if [ -f "$VPC_VVS" ] && [ -d "$TEST28" ]; then
-  CANON_EXIT=$(bash "$VVS" "$TEST28" 2>&1; echo $?)
-  SHIM_EXIT=$(bash "$VPC_VVS" "$TEST28" 2>&1; echo $?)
-  CANON_CODE="${CANON_EXIT##*$'\n'}"
-  SHIM_CODE="${SHIM_EXIT##*$'\n'}"
-  # Re-run cleanly
-  bash "$VVS" "$TEST28" > $TMPDIR_INT/canon_out.txt 2>&1; CANON_CODE=$?
-  bash "$VPC_VVS" "$TEST28" > $TMPDIR_INT/shim_out.txt 2>&1; SHIM_CODE=$?
+  bash "$VVS" "$TEST28" > "$TMPDIR_INT/canon_out.txt" 2>&1; CANON_CODE=$?
+  bash "$VPC_VVS" "$TEST28" > "$TMPDIR_INT/shim_out.txt" 2>&1; SHIM_CODE=$?
   if [ "$CANON_CODE" -eq "$SHIM_CODE" ]; then
     pass "vp-create shim exit code ($SHIM_CODE) matches canonical ($CANON_CODE)"
   else
     fail "vp-create shim exit code $SHIM_CODE != canonical $CANON_CODE"
   fi
-  DIFF=$(diff $TMPDIR_INT/canon_out.txt $TMPDIR_INT/shim_out.txt)
+  DIFF=$(diff "$TMPDIR_INT/canon_out.txt" "$TMPDIR_INT/shim_out.txt")
   if [ -z "$DIFF" ]; then
     pass "vp-create shim output matches canonical exactly"
   else
