@@ -31,30 +31,50 @@ var args = process.argv.slice(2);
 if (args.length < 2) {
     process.stderr.write('Usage: node validate_ast.js --js <file>\n');
     process.stderr.write('       node validate_ast.js --html <file>\n');
+    process.stderr.write('       node validate_ast.js --cross <formatter.html> <visualization_source.js>\n');
     process.exit(2);
 }
 
 var mode = args[0];
 var filePath = args[1];
 
-if (mode !== '--js' && mode !== '--html') {
-    process.stderr.write('Error: unknown mode "' + mode + '". Use --js or --html.\n');
+if (mode !== '--js' && mode !== '--html' && mode !== '--cross') {
+    process.stderr.write('Error: unknown mode "' + mode + '". Use --js, --html, or --cross.\n');
     process.stderr.write('Usage: node validate_ast.js --js <file>\n');
     process.stderr.write('       node validate_ast.js --html <file>\n');
+    process.stderr.write('       node validate_ast.js --cross <formatter.html> <visualization_source.js>\n');
     process.exit(2);
 }
 
-if (!fs.existsSync(filePath)) {
-    process.stderr.write('Error: file not found: ' + filePath + '\n');
-    process.exit(1);
+if (mode === '--cross' && args.length < 3) {
+    process.stderr.write('Usage: node validate_ast.js --cross <formatter.html> <visualization_source.js>\n');
+    process.exit(2);
+}
+
+if (mode !== '--cross') {
+    if (!fs.existsSync(filePath)) {
+        process.stderr.write('Error: file not found: ' + filePath + '\n');
+        process.exit(1);
+    }
+} else {
+    if (!fs.existsSync(args[1])) {
+        process.stderr.write('Error: file not found: ' + args[1] + '\n');
+        process.exit(1);
+    }
+    if (!fs.existsSync(args[2])) {
+        process.stderr.write('Error: file not found: ' + args[2] + '\n');
+        process.exit(1);
+    }
 }
 
 // ---- Main dispatch ----
 
 if (mode === '--js') {
     runJsChecks(filePath);
-} else {
+} else if (mode === '--html') {
     runHtmlChecks(filePath);
+} else {
+    runCrossFileChecks(args[1], args[2]);
 }
 
 // ---- JS checks via acorn AST walk ----
@@ -244,6 +264,97 @@ function runHtmlChecks(file) {
         });
         if (!hasAuto) {
             violations.push('  FAIL B20: themeMode has no "auto" option');
+        }
+    });
+
+    for (var v = 0; v < violations.length; v++) {
+        process.stdout.write(violations[v] + '\n');
+    }
+
+    process.exit(violations.length > 0 ? 1 : 0);
+}
+
+// ---- Cross-file checks: formatter option names vs JS opt() calls ----
+
+function runCrossFileChecks(formatterPath, jsPath) {
+    var cheerio = require(CHEERIO_PATH);
+    var acorn = require(ACORN_PATH);
+
+    // --- Extract formatter option keys from name= attributes ---
+    var html = fs.readFileSync(formatterPath, 'utf8');
+    var $ = cheerio.load(html, null, false);
+    var formatterKeys = [];
+    $('[name]').each(function(i, el) {
+        var nameVal = $(el).attr('name') || '';
+        var lastDot = nameVal.lastIndexOf('.');
+        if (lastDot !== -1) {
+            formatterKeys.push(nameVal.substring(lastDot + 1));
+        }
+    });
+
+    // --- Extract JS opt() call keys from AST ---
+    var code = fs.readFileSync(jsPath, 'utf8');
+    var ast;
+    try {
+        ast = acorn.parse(code, { ecmaVersion: 2020, locations: true });
+    } catch (e) {
+        process.stderr.write('Error: acorn parse error in ' + jsPath + ': ' + e.message + '\n');
+        process.exit(1);
+    }
+
+    var jsKeys = [];
+
+    function walkForOptCalls(node) {
+        if (!node || typeof node !== 'object') return;
+        if (typeof node.type !== 'string') return;
+
+        // Detect: opt("keyName", ...) call expressions
+        if (node.type === 'CallExpression' &&
+            node.callee && node.callee.type === 'Identifier' &&
+            node.callee.name === 'opt' &&
+            node.arguments && node.arguments.length >= 1 &&
+            node.arguments[0].type === 'Literal') {
+            jsKeys.push(String(node.arguments[0].value));
+        }
+
+        // Recurse into child nodes using same pattern as runJsChecks walk()
+        var keys = Object.keys(node);
+        for (var k = 0; k < keys.length; k++) {
+            var key = keys[k];
+            if (key === 'type' || key === 'loc' || key === 'start' || key === 'end') continue;
+            var child = node[key];
+            if (Array.isArray(child)) {
+                for (var i = 0; i < child.length; i++) {
+                    walkForOptCalls(child[i]);
+                }
+            } else if (child && typeof child === 'object' && typeof child.type === 'string') {
+                walkForOptCalls(child);
+            }
+        }
+    }
+
+    walkForOptCalls(ast);
+
+    var violations = [];
+
+    // FAIL XFILE: formatter option not read in JS
+    formatterKeys.forEach(function(k) {
+        if (jsKeys.indexOf(k) === -1) {
+            violations.push('  FAIL XFILE: formatter option "' + k + '" not read in visualization_source.js');
+            process.stderr.write('FINDING:' + JSON.stringify({
+                type: 'FAIL',
+                code: 'XFILE',
+                file: formatterPath,
+                key: k,
+                message: 'formatter option not read in JS'
+            }) + '\n');
+        }
+    });
+
+    // WARN XFILE: JS reads key not declared in formatter
+    jsKeys.forEach(function(k) {
+        if (formatterKeys.indexOf(k) === -1) {
+            violations.push('  WARN XFILE: JS reads "' + k + '" but not declared in formatter');
         }
     });
 
