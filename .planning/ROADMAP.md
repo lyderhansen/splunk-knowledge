@@ -49,7 +49,15 @@ Plans:
   1. Running validation on a generated dashboard JSON catches B9 type format errors, B10 bare option keys, and missing data source references via ajv schema
   2. Running cross-file validation detects when a formatter.html option name does not match the corresponding JS config read (namespace mismatch)
   3. Validation output is structured (parseable by repair loop in Phase 3) rather than plain text grep output
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+**Wave 1** *(parallel — no file overlap)*
+- [ ] 02-01-PLAN.md — Bundle ajv@8.20.0 into vendor/ and create validate_dash.js (Dashboard JSON schema: B9/B10/dataSource checks + NDJSON findings)
+- [ ] 02-02-PLAN.md — Add --cross mode to validate_ast.js and extend test_validate_ast.js (cross-file formatter-to-JS option name consistency)
+
+**Wave 2** *(blocked on both Wave 1 plans)*
+- [ ] 02-03-PLAN.md — Wire validate_dash.js and --cross mode into validate_viz.sh; extend integration tests T13-T16
 
 ### Phase 3: Repair Loop & Light Theme Safety
 **Goal**: Common validation failures auto-fix without user intervention, and light theme text is always readable
@@ -97,7 +105,7 @@ Note: Phase 4 depends only on Phase 1, so it could theoretically run after Phase
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Baseline & Core Validators | 0/3 | Not started | - |
-| 2. Schema & Cross-file Validation | 0/? | Not started | - |
+| 2. Schema & Cross-file Validation | 0/3 | Not started | - |
 | 3. Repair Loop & Light Theme Safety | 0/? | Not started | - |
 | 4. Visual Identity & Assets | 0/? | Not started | - |
 | 5. Rule Consolidation | 0/? | Not started | - |
