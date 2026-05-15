@@ -56,6 +56,13 @@ CHECK_CONTRAST="$SCRIPT_DIR/check_contrast.js"
 FINDINGS_FILE="$(dirname "$APP_DIR")/validate_findings.ndjson"
 > "$FINDINGS_FILE"  # truncate/create
 
+# --- ASSET CAPABILITY DETECTION ---
+GENERATE_ASSETS="$SCRIPT_DIR/generate_assets.js"
+HAS_ASSETS=0
+if [ "$HAS_NODE" -eq 1 ] && [ -f "$GENERATE_ASSETS" ]; then
+  HAS_ASSETS=1
+fi
+
 echo "============================================"
 echo "  Viz Pack Validator"
 echo "============================================"
@@ -185,18 +192,27 @@ for d in "$APP_DIR"/appserver/static/visualizations/*/; do
   [ -d "$d" ] || continue
   VIZ=$(basename "$d")
   if [ ! -f "$d/preview.png" ]; then
-    echo "  FAIL R8: $VIZ missing preview.png — run step 3c in vp-create"
+    echo "  FAIL A01: $VIZ missing preview.png — run generate_assets.js (step 3b in vp-create)"
     TOTAL_FAIL=1
   else
     SIZE=$(wc -c < "$d/preview.png")
-    [ "$SIZE" -lt 100 ] && { echo "  FAIL R8: $VIZ preview.png too small ($SIZE bytes)"; TOTAL_FAIL=1; }
+    [ "$SIZE" -lt 500 ] && { echo "  FAIL A01: $VIZ preview.png solid-color placeholder ($SIZE bytes, need >500)"; TOTAL_FAIL=1; }
+    W=$(printf '%d' "0x$(od -An -tx1 -j16 -N4 "$d/preview.png" | tr -d ' \n')" 2>/dev/null || echo 0)
+    H=$(printf '%d' "0x$(od -An -tx1 -j20 -N4 "$d/preview.png" | tr -d ' \n')" 2>/dev/null || echo 0)
+    { [ "$W" -ne 300 ] || [ "$H" -ne 200 ]; } && { echo "  FAIL A02: $VIZ preview.png wrong dimensions (${W}x${H}, need 300x200)"; TOTAL_FAIL=1; }
   fi
 done
 
 # appIcon.png (FAIL — Splunk shows grey placeholder without it)
 if [ ! -f "$APP_DIR/static/appIcon.png" ]; then
-  echo "  FAIL: missing static/appIcon.png — run step 3b in vp-create"
+  echo "  FAIL A03: missing static/appIcon.png — run generate_assets.js (step 3b in vp-create)"
   TOTAL_FAIL=1
+else
+  ICON_SIZE=$(wc -c < "$APP_DIR/static/appIcon.png")
+  [ "$ICON_SIZE" -lt 100 ] && { echo "  FAIL A03: appIcon.png too small ($ICON_SIZE bytes — likely 1x1 pixel placeholder)"; TOTAL_FAIL=1; }
+  IW=$(printf '%d' "0x$(od -An -tx1 -j16 -N4 "$APP_DIR/static/appIcon.png" | tr -d ' \n')" 2>/dev/null || echo 0)
+  IH=$(printf '%d' "0x$(od -An -tx1 -j20 -N4 "$APP_DIR/static/appIcon.png" | tr -d ' \n')" 2>/dev/null || echo 0)
+  { [ "$IW" -ne 36 ] || [ "$IH" -ne 36 ]; } && { echo "  FAIL A04: appIcon.png wrong dimensions (${IW}x${IH}, need 36x36)"; TOTAL_FAIL=1; }
 fi
 
 # visualizations.conf
