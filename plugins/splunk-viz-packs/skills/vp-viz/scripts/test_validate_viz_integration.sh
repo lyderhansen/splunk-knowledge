@@ -93,25 +93,48 @@ if [ -d "$TEST28" ]; then
   fi
 fi
 
-# --- T8: test21 exits 1 and FAIL lines contain line numbers (if test21 available) ---
-echo "--- T8: test21 exits 1 and FAIL lines include line numbers ---"
+# --- T8: AST mode produces line numbers for F3 violations (direct validate_ast.js check) ---
+# Note: test21 has only B7 HTML violations (no ES6/F3 violations), so line numbers are
+# tested directly via validate_ast.js with a synthetic JS fixture containing a const declaration.
+echo "--- T8: AST mode produces line numbers for F3 ES6 violations ---"
+TMPJS=$(mktemp /tmp/test_es6_XXXXXX.js)
+cat > "$TMPJS" << 'JSEOF'
+// test fixture: ES6 violations for line number test
+define(['api/SplunkVisualizationBase'], function(SplunkVisualizationBase) {
+  var viz = SplunkVisualizationBase.extend({
+    initialize: function() {
+      const x = 1;
+    }
+  });
+  return viz;
+});
+JSEOF
+AST_OUTPUT=$(node "$SCRIPT_DIR/validate_ast.js" --js "$TMPJS" 2>&1)
+AST_CODE=$?
+rm -f "$TMPJS"
+if [ "$AST_CODE" -ne 0 ]; then
+  pass "validate_ast.js exits 1 on ES6 violation (F3 detection works)"
+else
+  fail "validate_ast.js exits 0 on ES6 violation (F3 detection broken)"
+fi
+if echo "$AST_OUTPUT" | grep -qE 'FAIL F3.*line [0-9]+'; then
+  pass "F3 FAIL line includes line number ($(echo "$AST_OUTPUT" | grep -oE 'line [0-9]+' | head -1))"
+else
+  fail "F3 FAIL line missing line number"
+  echo "    output: $AST_OUTPUT"
+fi
+
+# Also verify test21 exits 1 (html violations detected)
 if [ -d "$TEST21" ]; then
-  OUTPUT=$(bash "$VVS" "$TEST21" 2>&1)
-  EXIT_CODE=$?
+  EXIT_CODE=$(bash "$VVS" "$TEST21" 2>&1; echo $?)
+  bash "$VVS" "$TEST21" > /tmp/test21_out.txt 2>&1; EXIT_CODE=$?
   if [ "$EXIT_CODE" -eq 1 ]; then
     pass "validate_viz.sh on test21 exits 1 (violations detected)"
   else
     fail "validate_viz.sh on test21 exits $EXIT_CODE (expected 1)"
   fi
-  LINE_NUM_FAILS=$(echo "$OUTPUT" | grep -cE 'FAIL.*line [0-9]+' || true)
-  if [ "$LINE_NUM_FAILS" -gt 0 ]; then
-    pass "FAIL lines include line numbers ($LINE_NUM_FAILS line(s))"
-  else
-    fail "FAIL lines do not include line numbers (expected 'at line N:')"
-    echo "    FAIL lines found: $(echo "$OUTPUT" | grep '  FAIL' | head -5)"
-  fi
 else
-  echo "  SKIP T8: test21 not available at $TEST21"
+  echo "  SKIP T8b: test21 not available at $TEST21"
 fi
 
 # --- T9: vp-create shim exists and is a small file ---
