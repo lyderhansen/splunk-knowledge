@@ -223,9 +223,19 @@ function runHtmlChecks(file) {
 
     if (!hasTemplate && nameAttrs.length > 0) {
         violations.push('  FAIL B10: no {{VIZ_NAMESPACE}} found in formatter');
+        process.stderr.write('FINDING:' + JSON.stringify({
+            type: 'FAIL', code: 'B10', file: file,
+            message: 'no {{VIZ_NAMESPACE}} found in formatter',
+            context: { subtype: 'missing_template' }
+        }) + '\n');
     }
     if (hardcodedCount > 0) {
         violations.push('  FAIL B10: ' + hardcodedCount + ' hardcoded namespace(s)');
+        process.stderr.write('FINDING:' + JSON.stringify({
+            type: 'FAIL', code: 'B10', file: file,
+            message: hardcodedCount + ' hardcoded namespace(s)',
+            context: { count: hardcodedCount }
+        }) + '\n');
     }
 
     // B5a: splunk-color-picker must have type="custom"
