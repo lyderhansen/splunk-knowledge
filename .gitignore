@@ -21,6 +21,8 @@ docs/*.txt
 # Local sandbox / test scratch dirs
 /test[0-9]*/
 node_modules/
+!plugins/splunk-viz-packs/skills/vp-viz/scripts/vendor/
+!plugins/splunk-viz-packs/skills/vp-viz/scripts/vendor/**
 *.tar.gz
 
 # Logo designer artifacts
