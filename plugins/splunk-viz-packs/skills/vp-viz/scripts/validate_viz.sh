@@ -1,12 +1,23 @@
 #!/bin/bash
 # validate_viz.sh — post-build validator for Splunk custom viz apps
-# Usage: bash validate_viz.sh /path/to/app_dir
-# Exit code: 0 = all pass, 1 = failures found
+# Usage: bash validate_viz.sh [--repair] /path/to/app_dir
+# Exit code: 0 = all pass, 1 = failures found, 2 = usage error
 
-APP_DIR="${1:-.}"
+# --- ARGUMENT PARSING ---
+REPAIR_MODE=0
+APP_DIR=""
+for arg in "$@"; do
+  if [ "$arg" = "--repair" ]; then
+    REPAIR_MODE=1
+  else
+    APP_DIR="$arg"
+  fi
+done
+
+APP_DIR="${APP_DIR:-.}"
 if [ ! -d "$APP_DIR" ]; then
     echo "Error: directory not found: $APP_DIR"
-    echo "Usage: bash validate_viz.sh /path/to/app_dir"
+    echo "Usage: bash validate_viz.sh [--repair] /path/to/app_dir"
     exit 2
 fi
 TOTAL_FAIL=0
@@ -37,6 +48,10 @@ if [ "$HAS_NODE" -eq 1 ] && [ -f "$VALIDATE_DASH" ] && [ -f "$VENDOR_DIR/ajv/dis
   HAS_DASH=1
 fi
 
+# --- PHASE 3 CAPABILITY DETECTION ---
+REPAIR_FINDINGS="$SCRIPT_DIR/repair_findings.js"
+CHECK_CONTRAST="$SCRIPT_DIR/check_contrast.js"
+
 # FINDINGS_FILE: sibling of app dir, consumed by Phase 3 repair loop
 FINDINGS_FILE="$(dirname "$APP_DIR")/validate_findings.ndjson"
 > "$FINDINGS_FILE"  # truncate/create
@@ -54,9 +69,11 @@ for f in "$APP_DIR"/appserver/static/visualizations/*/formatter.html; do
   echo "--- formatter: $VIZ ---"
 
   if [ "$USE_AST" -eq 1 ]; then
-    OUTPUT=$(node "$VALIDATE_AST" --html "$f" 2>&1)
+    HTML_OUT=$(node "$VALIDATE_AST" --html "$f" 2>/tmp/html_err_$$)
     AST_EXIT=$?
-    [ -n "$OUTPUT" ] && echo "$OUTPUT"
+    [ -n "$HTML_OUT" ] && echo "$HTML_OUT"
+    grep '^FINDING:' /tmp/html_err_$$ >> "$FINDINGS_FILE" 2>/dev/null
+    rm -f /tmp/html_err_$$
     [ "$AST_EXIT" -ne 0 ] && FAIL=1
     # --- PHASE 2: cross-file check (formatter vs JS option names) ---
     vizdir="$(dirname "$f")"
@@ -223,6 +240,56 @@ for xml in "$APP_DIR"/default/data/ui/views/*.xml; do
     [ "$CUSTOM_PREFIX" -gt 0 ] && { echo "  FAIL B9: $XMLNAME has 'custom.' prefix in viz type — use '{app}.{viz}' format"; TOTAL_FAIL=1; }
   fi
 done
+
+# --- PHASE 3: Contrast Check ---
+echo ""
+echo "--- Contrast Check ---"
+THEME_JS="$APP_DIR/shared/theme.js"
+if [ "$HAS_NODE" -eq 1 ] && [ -f "$CHECK_CONTRAST" ] && [ -f "$THEME_JS" ]; then
+  CONTRAST_OUT=$(node "$CHECK_CONTRAST" "$THEME_JS" 2>/tmp/contrast_err_$$)
+  CONTRAST_EXIT=$?
+  [ -n "$CONTRAST_OUT" ] && echo "$CONTRAST_OUT"
+  grep '^FINDING:' /tmp/contrast_err_$$ >> "$FINDINGS_FILE" 2>/dev/null
+  rm -f /tmp/contrast_err_$$
+  if [ "$CONTRAST_EXIT" -ne 0 ]; then
+    TOTAL_FAIL=1
+  else
+    echo "  OK"
+  fi
+else
+  echo "  SKIP: shared/theme.js not found or Node.js unavailable"
+fi
+
+# --- PHASE 3: Repair Loop ---
+if [ "$TOTAL_FAIL" -ne 0 ] && [ "$REPAIR_MODE" -eq 1 ] && [ "$HAS_NODE" -eq 1 ] && [ -f "$REPAIR_FINDINGS" ]; then
+  REPAIR_LOG="$(dirname "$APP_DIR")/validate_repair_log.ndjson"
+  > "$REPAIR_LOG"
+  ATTEMPT=0
+  MAX_ATTEMPTS=3
+  BUILD_FLAT="$SCRIPT_DIR/build_flat.js"
+  while [ "$ATTEMPT" -lt "$MAX_ATTEMPTS" ] && [ "$TOTAL_FAIL" -ne 0 ]; do
+    ATTEMPT=$((ATTEMPT+1))
+    echo ""
+    echo "--- Repair attempt $ATTEMPT ---"
+    node "$REPAIR_FINDINGS" "$FINDINGS_FILE" "$APP_DIR" "$REPAIR_LOG" "$ATTEMPT"
+    REPAIR_EXIT=$?
+    if [ "$REPAIR_EXIT" -ne 0 ]; then
+      echo "  repair_findings.js exited $REPAIR_EXIT — stopping repair loop"
+      break
+    fi
+    if [ -f "$BUILD_FLAT" ]; then
+      node "$BUILD_FLAT" "$APP_DIR"
+      BUILD_EXIT=$?
+      if [ "$BUILD_EXIT" -ne 0 ]; then
+        echo "  build_flat.js exited $BUILD_EXIT — stopping repair loop"
+        break
+      fi
+    fi
+    > "$FINDINGS_FILE"
+    bash "$0" "$APP_DIR"
+    TOTAL_FAIL=$?
+  done
+fi
 
 echo ""
 echo "============================================"
