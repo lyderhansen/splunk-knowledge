@@ -1082,3 +1082,119 @@ function formatValue(raw, decimals, compact) {
 | 87.4 | 87 | 87 | 87.4 | 87.40 |
 
 **Rule:** always expose `decimals` in the formatter for KPI vizs.
+
+## Font loading — wait for font before drawing (B1)
+
+CSS `@font-face` registers the font but Canvas 2D does NOT auto-swap when the font loads.
+Drawing text before the font is ready produces tofu glyphs that never update.
+
+Do NOT use `document.fonts.ready` — it resolves when ALL currently loading fonts finish, not when
+your specific font is ready. Use `document.fonts.load()` targeting your exact font.
+
+```javascript
+var _fontReady = false;
+var _fontPending = false;
+
+function loadFont(fontFamily, onReady) {
+    if (_fontReady) { onReady(); return; }
+    if (typeof document === 'undefined' || !document.fonts ||
+        !document.fonts.load) {
+        setTimeout(onReady, 200);
+        return;
+    }
+    if (!_fontPending) {
+        _fontPending = true;
+        document.fonts.load('400 48px "' + fontFamily + '"').then(function() {
+            _fontReady = true;
+        });
+    }
+    var attempts = 0;
+    var poll = function() {
+        attempts++;
+        if (_fontReady || attempts > 30) {
+            _fontReady = true;
+            onReady();
+            return;
+        }
+        setTimeout(poll, 100);
+    };
+    poll();
+}
+```
+
+Call `loadFont(fontFamily, function() { self._render(data, config); })` inside `updateView`
+instead of calling `_render` directly.
+
+## HiDPI canvas scaling — Retina / 4K support (B2)
+
+Without device pixel ratio scaling, canvas renders at 1x and looks blurry on Retina and 4K displays.
+
+```javascript
+function setupHiDPI(canvas, w, h) {
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    var ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    return ctx;
+    // ALL drawing uses w, h (CSS pixels), NOT canvas.width/canvas.height
+}
+```
+
+## Variable scope in sub-methods — store on `this`, not local vars (B14)
+
+If a viz splits rendering into `_draw()` calling `_drawCenter()`, `_drawTicks()`, etc.,
+local variables declared in `_draw()` are NOT in scope inside those sub-methods.
+This causes `ReferenceError: x is not defined` at runtime.
+
+```javascript
+// WRONG — gi is local to _draw, invisible to _drawCenter
+_draw: function(parsed, config) {
+    var gi = 0.8;
+    this._drawCenter(ctx, parsed);     // gi is not defined inside _drawCenter!
+},
+_drawCenter: function(ctx, parsed) {
+    ctx.shadowBlur = 12 * gi;          // ReferenceError
+}
+
+// CORRECT — store render state on this
+_draw: function(parsed, config) {
+    this._gi = 0.8;
+    this._drawCenter(ctx, parsed);
+},
+_drawCenter: function(ctx, parsed) {
+    ctx.shadowBlur = 12 * (this._gi || 1);
+}
+```
+
+Pattern: any value computed in `_draw` that sub-methods need must be stored as `this._propName`.
+Clean up after render if the values should not persist: `delete this._gi` at end of `_draw`.
+
+## Date parsing — regex alternative for sandboxed iframes (B19)
+
+The custom viz iframe has `src="about:srcdoc"` and origin `null`.
+`new Date(isoString)` silently fails in this context, returning `Invalid Date` or epoch 0.
+
+```javascript
+// WRONG — returns Invalid Date in Splunk iframe
+var d = new Date("2026-05-13T08:42:00");
+var label = d.toLocaleDateString(); // "Invalid Date"
+
+// CORRECT — regex parse for ISO timestamps
+var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun',
+              'Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function parseTimestamp(s) {
+    if (s == null || s === '') return '';
+    var m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/);
+    if (m) {
+        var mon = MONTHS[parseInt(m[2], 10) - 1];
+        return mon + ' ' + parseInt(m[3], 10) + ' ' + m[4] + ':' + m[5];
+    }
+    return String(s);
+}
+```
+
+For epoch values: `new Date(parseInt(s, 10) * 1000)` works because epoch is numeric, not string-parsed.
