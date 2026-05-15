@@ -35,3 +35,4 @@ svgs/
 .splunk-agent/
 docs/*.md
 .planning/
+validate_findings.ndjson
