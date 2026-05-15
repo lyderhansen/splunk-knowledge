@@ -38,7 +38,7 @@ Plans:
 - [x] 01-03-PLAN.md — Retroactively score FISR for tests 21-28 and produce FISR-BASELINE.md
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 01-02-PLAN.md — Wire validate_ast.js into validate_viz.sh and replace vp-create duplicate with delegation shim
+- [x] 01-02-PLAN.md — Wire validate_ast.js into validate_viz.sh and replace vp-create duplicate with delegation shim
 
 ### Phase 2: Schema & Cross-file Validation
 **Goal**: Dashboard JSON and cross-file consistency bugs are caught before Splunk install
