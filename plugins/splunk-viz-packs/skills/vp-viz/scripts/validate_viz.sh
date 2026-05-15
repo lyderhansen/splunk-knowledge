@@ -4,6 +4,11 @@
 # Exit code: 0 = all pass, 1 = failures found
 
 APP_DIR="${1:-.}"
+if [ ! -d "$APP_DIR" ]; then
+    echo "Error: directory not found: $APP_DIR"
+    echo "Usage: bash validate_viz.sh /path/to/app_dir"
+    exit 2
+fi
 TOTAL_FAIL=0
 
 # --- NODE CAPABILITY DETECTION ---
