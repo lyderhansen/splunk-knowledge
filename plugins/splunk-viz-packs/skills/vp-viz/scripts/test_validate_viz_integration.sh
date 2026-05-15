@@ -189,14 +189,23 @@ if [ -f "$VPC_VVS" ] && [ -d "$TEST28" ]; then
   fi
 fi
 
-# --- T12: WARN fallback message when USE_AST disabled ---
-echo "--- T12: WARN message on fallback when AST unavailable ---"
-if USE_AST_TEST=0 bash "$VVS" "$TEST28" 2>&1 | grep -q 'WARN.*validate_ast.*fallback\|WARN.*grep fallback'; then
-  pass "validate_viz.sh prints WARN when AST unavailable (USE_AST=0 mode detectable)"
+# --- T12: WARN fallback message when vendor unavailable ---
+echo "--- T12: grep fallback when vendor unavailable ---"
+VENDOR_BAK="$SCRIPT_DIR/vendor/node_modules.bak"
+if [ -d "$SCRIPT_DIR/vendor/node_modules" ]; then
+  mv "$SCRIPT_DIR/vendor/node_modules" "$VENDOR_BAK"
+  OUTPUT=$(bash "$VVS" "$TEST28" 2>&1)
+  mv "$VENDOR_BAK" "$SCRIPT_DIR/vendor/node_modules"
+  if echo "$OUTPUT" | grep -q 'WARN.*fallback'; then
+    pass "grep fallback exercised when vendor unavailable"
+  else
+    fail "grep fallback not triggered"
+    echo "    output: $(echo "$OUTPUT" | head -5)"
+  fi
 else
-  # Check if the script has the WARN string at all
+  # Vendor dir not present -- fallback always active, check the WARN string exists in script
   if grep -q 'WARN.*fallback\|fallback.*grep' "$VVS"; then
-    pass "validate_viz.sh contains WARN fallback message text"
+    pass "validate_viz.sh contains WARN fallback message text (vendor dir absent)"
   else
     fail "validate_viz.sh missing WARN fallback message for when AST is unavailable"
   fi
