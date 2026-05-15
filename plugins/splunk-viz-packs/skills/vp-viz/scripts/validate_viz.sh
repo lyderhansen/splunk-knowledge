@@ -56,13 +56,6 @@ CHECK_CONTRAST="$SCRIPT_DIR/check_contrast.js"
 FINDINGS_FILE="$(dirname "$APP_DIR")/validate_findings.ndjson"
 > "$FINDINGS_FILE"  # truncate/create
 
-# --- ASSET CAPABILITY DETECTION ---
-GENERATE_ASSETS="$SCRIPT_DIR/generate_assets.js"
-HAS_ASSETS=0
-if [ "$HAS_NODE" -eq 1 ] && [ -f "$GENERATE_ASSETS" ]; then
-  HAS_ASSETS=1
-fi
-
 echo "============================================"
 echo "  Viz Pack Validator"
 echo "============================================"
