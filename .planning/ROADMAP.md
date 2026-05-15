@@ -52,7 +52,7 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-**Wave 1** *(parallel — no file overlap)*
+**Wave 1** *(parallel -- no file overlap)*
 - [x] 02-01-PLAN.md — Bundle ajv@8.20.0 into vendor/ and create validate_dash.js (Dashboard JSON schema: B9/B10/dataSource checks + NDJSON findings)
 - [x] 02-02-PLAN.md — Add --cross mode to validate_ast.js and extend test_validate_ast.js (cross-file formatter-to-JS option name consistency)
 
@@ -69,7 +69,15 @@ Plans:
   2. Theme.js color tokens are checked against WCAG AA contrast ratios for both dark and light backgrounds -- failing tokens are reported with specific hex values and contrast ratios
   3. A viz pack built with `/vp-create` renders readable text in both dark and light Splunk themes without manual color adjustments
   4. The repair loop produces a structured log showing each attempt (what failed, what was fixed, whether re-validation passed)
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+**Wave 1** *(parallel -- no file overlap)*
+- [ ] 03-01-PLAN.md — Extend validate_ast.js --html to emit FINDING: NDJSON for B5/B7/B20; create repair_findings.js and test_repair_findings.js
+- [ ] 03-03-PLAN.md — Create check_contrast.js (WCAG AA checker) and test_check_contrast.js
+
+**Wave 2** *(blocked on both Wave 1 plans)*
+- [ ] 03-02-PLAN.md — Wire --repair flag and check_contrast.js into validate_viz.sh; extend integration tests T17-T22
 
 ### Phase 4: Visual Identity & Assets
 **Goal**: Every viz pack looks like a professional designer made it -- unique to the brand, with proper app icons and preview images
@@ -106,6 +114,6 @@ Note: Phase 4 depends only on Phase 1, so it could theoretically run after Phase
 |-------|----------------|--------|-----------|
 | 1. Baseline & Core Validators | 0/3 | Not started | - |
 | 2. Schema & Cross-file Validation | 0/3 | Not started | - |
-| 3. Repair Loop & Light Theme Safety | 0/? | Not started | - |
+| 3. Repair Loop & Light Theme Safety | 0/3 | Not started | - |
 | 4. Visual Identity & Assets | 0/? | Not started | - |
 | 5. Rule Consolidation | 0/? | Not started | - |
