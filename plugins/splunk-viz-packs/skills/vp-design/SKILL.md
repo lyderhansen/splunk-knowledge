@@ -107,6 +107,15 @@ If any answer is bad, loop back.
 - Every data panel: custom Canvas viz (built-in Splunk vizs break brand identity)
 - Each brand gets unique _render() code — no copy-paste-recolor
 
+## Novelty check
+
+Load [references/viz-novelty-scores.md](references/viz-novelty-scores.md) before finalizing the viz inventory.
+
+- Compute pack novelty = sum of per-viz scores (from the scoring table in the reference file)
+- Minimum acceptable = 3 x vizCount (e.g., 4-viz pack needs >= 12 total)
+- If pack total < threshold: warn — list each low-scoring viz and suggest one score-4/5 replacement
+- Do NOT hard-block. Soft warning only. User may confirm the current inventory and proceed.
+
 ## Design brief output format
 
 ```
@@ -131,7 +140,37 @@ VIZ INVENTORY (N vizs)
    ...
 ```
 
+## Visual Language schema — output after design brief
+
+Forces shape vocabulary divergence between brands — not just swapped colors. Two brands serving the same data must differ in how their Canvas code draws geometry.
+
+Output this block immediately after the design brief:
+
+```
+VISUAL LANGUAGE — {brand}
+--------------------------
+cornerRadius:      sharp (0-2px) | medium (4-8px) | round (12px+)
+fillTechnique:     flat | gradient | textured
+strokeStyle:       none | subtle (0.5-1px) | bold (2px+)
+spacing:           tight | balanced | airy
+shadowDepth:       none | subtle | dramatic
+dataPresentation:  dense | focused | minimal
+```
+
+**Brand reference mappings** (from tests 21-28):
+
+| Brand | cornerRadius | fillTechnique | strokeStyle | spacing | shadowDepth | dataPresentation |
+|---|---|---|---|---|---|---|
+| Cloudflare | medium | gradient | none | balanced | subtle | focused |
+| Hospital | round | flat | subtle | balanced | none | focused |
+| Patagonia | round | textured | bold | airy | none | minimal |
+| Porsche | sharp | gradient | subtle | tight | subtle | focused |
+| Stripe | sharp | gradient | none | tight | subtle | dense |
+
+vp-viz reads this block when writing `_render()` code — choose cornerRadius, fillTechnique, and spacing values that differ from competitor brands in the same domain. A Stripe dashboard and a Patagonia dashboard should look like outputs from different design systems.
+
 ## References — detailed guidance
 
 - **[Mood and design](references/mood-and-design.md)** — 9 moods → color/font/effects, creative latitude, conditional logic, cognitive load gate, scoring, anti-AI checklist
 - **[Domain templates](references/domain-templates.md)** — viz inventories for F1/SOC/retail/healthcare/NOC, layout archetypes, anti-patterns
+- **[Viz novelty scores](references/viz-novelty-scores.md)** — per-type scores 1-5, pack threshold (3 x vizCount), anti-donut alternatives
