@@ -192,9 +192,11 @@ fi
 echo "--- T12: grep fallback when vendor unavailable ---"
 VENDOR_BAK="$SCRIPT_DIR/vendor/node_modules.bak"
 if [ -d "$SCRIPT_DIR/vendor/node_modules" ]; then
+  trap 'mv "$VENDOR_BAK" "$SCRIPT_DIR/vendor/node_modules" 2>/dev/null; trap - EXIT INT TERM' EXIT INT TERM
   mv "$SCRIPT_DIR/vendor/node_modules" "$VENDOR_BAK"
   OUTPUT=$(bash "$VVS" "$TEST28" 2>&1)
   mv "$VENDOR_BAK" "$SCRIPT_DIR/vendor/node_modules"
+  trap - EXIT INT TERM
   if echo "$OUTPUT" | grep -q 'WARN.*fallback'; then
     pass "grep fallback exercised when vendor unavailable"
   else
