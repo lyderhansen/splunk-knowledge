@@ -191,6 +191,9 @@ grep -q 'allow_user_selection' "$APP_DIR/default/visualizations.conf" 2>/dev/nul
 if [ -f "$APP_DIR/default/app.conf" ]; then
   STANZAS=$(grep -c '^\[' "$APP_DIR/default/app.conf")
   [ "$STANZAS" -lt 5 ] && { echo "  FAIL R1: app.conf has $STANZAS stanzas (need 5)"; TOTAL_FAIL=1; }
+else
+  echo "  FAIL R1: missing app.conf"
+  TOTAL_FAIL=1
 fi
 
 # --- PHASE 2: Dashboard XML checks via validate_dash.js (replaces grep-based B9/B10 heuristics) ---
