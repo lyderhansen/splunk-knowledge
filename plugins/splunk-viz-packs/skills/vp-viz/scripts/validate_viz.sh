@@ -25,6 +25,17 @@ else
   echo "  WARN: validate_ast.js not available — using grep fallback"
 fi
 
+# --- PHASE 2 CAPABILITY DETECTION ---
+VALIDATE_DASH="$SCRIPT_DIR/validate_dash.js"
+HAS_DASH=0
+if [ "$HAS_NODE" -eq 1 ] && [ -f "$VALIDATE_DASH" ] && [ -f "$VENDOR_DIR/ajv/dist/ajv.js" ]; then
+  HAS_DASH=1
+fi
+
+# FINDINGS_FILE: sibling of app dir, consumed by Phase 3 repair loop
+FINDINGS_FILE="$(dirname "$APP_DIR")/validate_findings.ndjson"
+> "$FINDINGS_FILE"  # truncate/create
+
 echo "============================================"
 echo "  Viz Pack Validator"
 echo "============================================"
@@ -42,6 +53,17 @@ for f in "$APP_DIR"/appserver/static/visualizations/*/formatter.html; do
     AST_EXIT=$?
     [ -n "$OUTPUT" ] && echo "$OUTPUT"
     [ "$AST_EXIT" -ne 0 ] && FAIL=1
+    # --- PHASE 2: cross-file check (formatter vs JS option names) ---
+    vizdir="$(dirname "$f")"
+    JS_SRC="$vizdir/src/visualization_source.js"
+    if [ -f "$JS_SRC" ]; then
+      CROSS_OUT=$(node "$VALIDATE_AST" --cross "$f" "$JS_SRC" 2>/tmp/cross_err_$$)
+      CROSS_EXIT=$?
+      [ -n "$CROSS_OUT" ] && echo "$CROSS_OUT"
+      grep '^FINDING:' /tmp/cross_err_$$ >> "$FINDINGS_FILE" 2>/dev/null
+      rm -f /tmp/cross_err_$$
+      [ "$CROSS_EXIT" -ne 0 ] && FAIL=1
+    fi
   else
     # Fallback: grep-based checks
 
@@ -171,26 +193,26 @@ if [ -f "$APP_DIR/default/app.conf" ]; then
   [ "$STANZAS" -lt 5 ] && { echo "  FAIL R1: app.conf has $STANZAS stanzas (need 5)"; TOTAL_FAIL=1; }
 fi
 
-# B9: Dashboard type format — check for "custom." prefix in dashboard XML
+# --- PHASE 2: Dashboard XML checks via validate_dash.js (replaces grep-based B9/B10 heuristics) ---
+echo ""
+echo "--- Dashboard XML ---"
 for xml in "$APP_DIR"/default/data/ui/views/*.xml; do
   [ -f "$xml" ] || continue
   XMLNAME=$(basename "$xml")
-  CUSTOM_PREFIX=$(grep -c '"custom\.' "$xml" 2>/dev/null || true)
-  [ "$CUSTOM_PREFIX" -gt 0 ] && { echo "  FAIL B9: $XMLNAME has 'custom.' prefix in viz type — use '{app}.{viz}' format"; TOTAL_FAIL=1; }
-done
-
-# B10: Dashboard JSON options must be namespaced
-# Check if any dashboard has bare option keys for custom vizs
-APP_NAME=$(basename "$APP_DIR")
-for xml in "$APP_DIR"/default/data/ui/views/*.xml; do
-  [ -f "$xml" ] || continue
-  XMLNAME=$(basename "$xml")
-  # Look for options that have simple keys (no dots) next to a custom viz type
-  # Heuristic: if the file contains our app name as a type but options without dots
-  if grep -q "\"$APP_NAME\." "$xml" 2>/dev/null; then
-    # Extract options blocks and check for bare keys
-    BARE_KEYS=$(grep -oE '"[a-zA-Z]+": "' "$xml" 2>/dev/null | grep -cvE '"type"|"primary"|"ds_' || true)
-    [ "$BARE_KEYS" -gt 3 ] && echo "  WARN B10: $XMLNAME may have bare option keys (need {app}.{viz}.key namespace)"
+  echo ""
+  echo "--- dashboard: $XMLNAME ---"
+  if [ "$HAS_DASH" -eq 1 ]; then
+    OUTPUT=$(node "$VALIDATE_DASH" --xml "$xml" 2>/tmp/dash_err_$$)
+    DASH_EXIT=$?
+    [ -n "$OUTPUT" ] && echo "$OUTPUT"
+    grep '^FINDING:' /tmp/dash_err_$$ >> "$FINDINGS_FILE" 2>/dev/null
+    rm -f /tmp/dash_err_$$
+    [ "$DASH_EXIT" -ne 0 ] && TOTAL_FAIL=1
+    [ "$DASH_EXIT" -eq 0 ] && echo "  OK"
+  else
+    # Existing grep fallback (preserved from Phase 1, skips comment lines)
+    CUSTOM_PREFIX=$(grep -v '^#' "$xml" 2>/dev/null | grep -c '"custom\.' || true)
+    [ "$CUSTOM_PREFIX" -gt 0 ] && { echo "  FAIL B9: $XMLNAME has 'custom.' prefix in viz type — use '{app}.{viz}' format"; TOTAL_FAIL=1; }
   fi
 done
 
