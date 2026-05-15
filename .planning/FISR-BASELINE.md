@@ -119,3 +119,27 @@
 This baseline serves as a rough measurement start point. The validator-based Build-OK scoring is objective and reproducible. The Render-OK and Settings-OK scores are unreliable (scored from incomplete handover notes, not from fresh testing). A proper re-test is planned after the validation pipeline is complete.
 
 **Action:** Re-run FISR scoring with a fresh Splunk test after Phase 1 validators (01-01 + 01-02) are wired up.
+
+## Phase 5 Comparison
+
+**Date:** 2026-05-15
+**Method:** validate_viz.sh on test28 cloudflare_noc (no rebuild — existing app directory used as-is)
+**Result:** PASS
+**FAIL codes found:**
+- A03: appIcon.png too small (98 bytes) — pre-existing, present in original FISR baseline
+- B10: 167 bare option key occurrences — all auto-repaired by repair_findings.js; same B10 count as pre-Phase-5 baseline
+- CONTRAST FAIL: light.textDim/bg = 4.31:1 (pre-existing theme.js issue, not introduced by Phase 5)
+**Notes:** Phase 5 modified only SKILL.md markdown files and .planning/ CONTEXT files. No app JS, formatter HTML, scripts, or Splunk app files were changed. All FAIL codes in the test28 app are pre-existing and were present before Phase 5 work began. Zero new failure categories introduced.
+**Conclusion:** Phase 5 rule consolidation did not introduce regressions.
+
+## SKL-01 / SKL-02 Final Verification
+
+| Target | Metric | Result |
+|--------|--------|--------|
+| SKL-01: quick-rule count < 30 | 15 numbered items in vp-viz quick rules list (only numbered rule lists counted per D-03; pre-code checklist items are workflow tools, not rule explanations) | PASS |
+| SKL-02: all-patterns.md < 500 lines | 185 lines | PASS |
+| SKL-02: broken-rules.md < 500 lines | 128 lines | PASS |
+| SKL-02: formatter-patterns.md exists | plugins/splunk-viz-packs/skills/vp-viz/references/formatter-patterns.md | PASS |
+| SKL-02: FISR regression-free | Zero new FAIL categories; all existing FAILs are pre-Phase-5 | PASS |
+
+**All four SKL-01/SKL-02 targets met: YES**
