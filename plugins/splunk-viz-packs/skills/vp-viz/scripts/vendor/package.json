@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "acorn": "^8.16.0",
+    "cheerio": "^1.2.0"
+  }
+}
