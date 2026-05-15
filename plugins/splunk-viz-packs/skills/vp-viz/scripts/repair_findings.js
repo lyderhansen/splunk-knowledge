@@ -62,7 +62,8 @@ lines.forEach(function(line) {
     if (FIXABLE_CODES.indexOf(finding.code) === -1) { return; }
     // Path traversal guard: file must be within appDir (T-03-02)
     var resolved = path.resolve(finding.file);
-    if (resolved.indexOf(appDir) !== 0) { return; }
+    var appDirWithSep = (appDir.slice(-1) === path.sep) ? appDir : (appDir + path.sep);
+    if (resolved !== appDir && resolved.indexOf(appDirWithSep) !== 0) { return; }
     if (!groups[resolved]) { groups[resolved] = []; }
     groups[resolved].push(finding);
 });
