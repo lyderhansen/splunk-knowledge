@@ -413,7 +413,6 @@ function drawProgressSilhouette(rows, ar, ag, ab, bgr, bgg, bgb) {
     var barH    = 22;
     var maxW    = 240;
     var fills   = [0.82, 0.57, 0.95, 0.43];
-    var labelW  = [50, 50, 50, 50];
     for (var i = 0; i < 4; i++) {
         // Track (dim background behind bar)
         fillRect(rows, 50, barY[i], maxW, barH, ar, ag, ab);
