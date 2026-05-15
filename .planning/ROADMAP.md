@@ -73,11 +73,11 @@ Plans:
 
 Plans:
 **Wave 1** *(parallel -- no file overlap)*
-- [ ] 03-01-PLAN.md — Extend validate_ast.js --html to emit FINDING: NDJSON for B5/B7/B20; create repair_findings.js and test_repair_findings.js
-- [ ] 03-03-PLAN.md — Create check_contrast.js (WCAG AA checker) and test_check_contrast.js
+- [x] 03-01-PLAN.md — Extend validate_ast.js --html to emit FINDING: NDJSON for B5/B7/B20; create repair_findings.js and test_repair_findings.js
+- [x] 03-03-PLAN.md — Create check_contrast.js (WCAG AA checker) and test_check_contrast.js
 
 **Wave 2** *(blocked on both Wave 1 plans)*
-- [ ] 03-02-PLAN.md — Wire --repair flag and check_contrast.js into validate_viz.sh; extend integration tests T17-T22
+- [x] 03-02-PLAN.md — Wire --repair flag and check_contrast.js into validate_viz.sh; extend integration tests T17-T22
 
 ### Phase 4: Visual Identity & Assets
 **Goal**: Every viz pack looks like a professional designer made it -- unique to the brand, with proper app icons and preview images
@@ -89,8 +89,15 @@ Plans:
   2. Every completed viz pack includes a preview.png (300x200) per visualization with a brand-colored silhouette that represents the viz type -- not a solid color block or 1x1 pixel
   3. vp-design produces viz type selections that avoid default donuts and generic compositions -- the anti-donut checklist and bold-choice guidance are enforced in the skill
   4. Two viz packs for different brands produce visibly different _render() code -- not the same code with swapped color tokens
-**Plans**: TBD
-**UI hint**: yes
+**Plans:** 3 plans
+
+Plans:
+**Wave 1** *(parallel -- no file overlap)*
+- [ ] 04-01-PLAN.md — Write generate_assets.js (pure Node.js PNG generator for appIcon + per-viz preview silhouettes) + test_generate_assets.js
+- [ ] 04-02-PLAN.md — Update vp-design SKILL.md (Visual Language schema + novelty scoring), create viz-novelty-scores.md, update vp-viz SKILL.md (interactivity mandate)
+
+**Wave 2** *(blocked on 04-01)*
+- [ ] 04-03-PLAN.md — Update validate_viz.sh (FAIL A01-A04 asset checks) and vp-create SKILL.md (replace Pillow steps with generate_assets.js)
 
 ### Phase 5: Rule Consolidation
 **Goal**: Skills carry fewer, higher-impact rules that the LLM actually follows consistently
@@ -115,5 +122,5 @@ Note: Phase 4 depends only on Phase 1, so it could theoretically run after Phase
 | 1. Baseline & Core Validators | 0/3 | Not started | - |
 | 2. Schema & Cross-file Validation | 0/3 | Not started | - |
 | 3. Repair Loop & Light Theme Safety | 0/3 | Not started | - |
-| 4. Visual Identity & Assets | 0/? | Not started | - |
+| 4. Visual Identity & Assets | 0/3 | Not started | - |
 | 5. Rule Consolidation | 0/? | Not started | - |
