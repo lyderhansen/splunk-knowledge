@@ -318,7 +318,16 @@ assert('input.* type exits 0', r.code, 0, r.stdout + r.stderr);
 console.log('\n-- Data source: dangling reference --');
 r = run(['--xml', XML_DS_MISSING]);
 assert('dangling data source exits 1', r.code, 1);
-assertIncludes('dangling data source reports FAIL on stdout', r.stdout, 'FAIL');
+assertIncludes('dangling data source reports FAIL DS1 on stdout', r.stdout, 'FAIL DS1');
+assertNotIncludes('dangling data source does not produce FAIL B9', r.stdout, 'FAIL B9');
+
+finding = parseFinding(r.stderr, 'DS1');
+assert('dangling data source emits FINDING:{...} with code DS1', finding !== null, true);
+if (finding) {
+    assert('DS1 finding has file field', typeof finding.file, 'string');
+    assert('DS1 finding has vizId field', typeof finding.vizId, 'string');
+    assert('DS1 finding has code field', finding.code, 'DS1');
+}
 
 // --- Data source: declared reference is clean ---
 console.log('\n-- Data source: declared reference (clean) --');

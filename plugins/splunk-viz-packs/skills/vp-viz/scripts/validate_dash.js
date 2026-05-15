@@ -20,7 +20,7 @@
  * Checks performed:
  *   B9  -- viz type starts with "custom." (wrong format; should be "app.viz")
  *   B10 -- custom viz has bare option keys (without "app.viz.key" namespace prefix)
- *   B9  -- viz references undeclared data source
+ *   DS1 -- viz references undeclared data source
  *
  * Pure ES5 CJS -- no const/let/arrow functions/template literals/import.
  */
@@ -170,7 +170,7 @@ function runDashChecks(filePathArg, dashJson) {
             var role = roles[k];
             var dsRef = vizDataSources[role];
             if (declared.indexOf(dsRef) === -1) {
-                emitFail('B9',
+                emitFail('DS1',
                     vizId,
                     'viz "' + vizId + '" references data source "' + dsRef + '" which is not declared in dataSources',
                     { dsRef: dsRef, declared: declared }
