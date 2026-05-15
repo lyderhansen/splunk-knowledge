@@ -286,16 +286,17 @@ fi
 # Run --repair on a COPY of test28 to avoid modifying the fixture
 echo "--- T18: validate_repair_log.ndjson created after --repair run ---"
 if [ -d "$TEST28" ]; then
-  TMP_APP=$(mktemp -d /tmp/test28_t18_XXXXXX)
+  TMP_PARENT=$(mktemp -d /tmp/test28_t18_parent_XXXXXX)
+  TMP_APP="$TMP_PARENT/app"
   cp -r "$TEST28/." "$TMP_APP/"
   bash "$VVS" --repair "$TMP_APP" > /dev/null 2>&1 || true
-  REPAIR_LOG="$(dirname "$TMP_APP")/validate_repair_log.ndjson"
+  REPAIR_LOG="$TMP_PARENT/validate_repair_log.ndjson"
   if [ -f "$REPAIR_LOG" ]; then
     pass "validate_repair_log.ndjson created alongside app dir after --repair"
   else
     fail "validate_repair_log.ndjson not found at $REPAIR_LOG after --repair"
   fi
-  rm -rf "$TMP_APP" "$(dirname "$TMP_APP")/validate_repair_log.ndjson" "$(dirname "$TMP_APP")/validate_findings.ndjson"
+  rm -rf "$TMP_PARENT"
 else
   echo "  SKIP T18: test28 not found at $TEST28"
 fi
@@ -308,7 +309,8 @@ fi
 # to get a clean final-state report; count B10 lines there.
 echo "--- T19: B10 violations eliminated after --repair on test28 ---"
 if [ -d "$TEST28" ]; then
-  TMP_APP=$(mktemp -d /tmp/test28_t19_XXXXXX)
+  TMP_PARENT=$(mktemp -d /tmp/test28_t19_parent_XXXXXX)
+  TMP_APP="$TMP_PARENT/app"
   cp -r "$TEST28/." "$TMP_APP/"
   bash "$VVS" --repair "$TMP_APP" > /dev/null 2>&1 || true
   # Re-run WITHOUT --repair to get a clean final-state report
@@ -321,13 +323,13 @@ if [ -d "$TEST28" ]; then
     echo "    first few remaining: $(echo "$FINAL_OUTPUT" | grep 'FAIL B10' | head -3)"
   fi
   # Also verify the repair log captured some entries
-  REPAIR_LOG="$(dirname "$TMP_APP")/validate_repair_log.ndjson"
+  REPAIR_LOG="$TMP_PARENT/validate_repair_log.ndjson"
   if [ -f "$REPAIR_LOG" ] && [ -s "$REPAIR_LOG" ]; then
     pass "validate_repair_log.ndjson has content"
   else
     fail "validate_repair_log.ndjson missing or empty"
   fi
-  rm -rf "$TMP_APP" "$(dirname "$TMP_APP")/validate_repair_log.ndjson" "$(dirname "$TMP_APP")/validate_findings.ndjson"
+  rm -rf "$TMP_PARENT"
 else
   echo "  SKIP T19: test28 not found at $TEST28"
 fi
