@@ -196,6 +196,13 @@ function runHtmlChecks(file) {
     var defaultAttrs = $('[default]');
     if (defaultAttrs.length > 0) {
         violations.push('  FAIL B7: ' + defaultAttrs.length + ' default= attr(s) — use value= instead');
+        process.stderr.write('FINDING:' + JSON.stringify({
+            type: 'FAIL',
+            code: 'B7',
+            file: file,
+            message: defaultAttrs.length + ' default= attr(s) -- use value= instead',
+            context: { count: defaultAttrs.length }
+        }) + '\n');
     }
 
     // B10: namespace checks
@@ -232,6 +239,13 @@ function runHtmlChecks(file) {
     });
     if (badPickers > 0) {
         violations.push('  FAIL B5: ' + badPickers + ' color picker(s) missing type="custom"');
+        process.stderr.write('FINDING:' + JSON.stringify({
+            type: 'FAIL',
+            code: 'B5',
+            file: file,
+            message: badPickers + ' color picker(s) missing type="custom"',
+            context: { count: badPickers }
+        }) + '\n');
     }
 
     // B5b: every <form> must have section-label=
@@ -264,6 +278,13 @@ function runHtmlChecks(file) {
         });
         if (!hasAuto) {
             violations.push('  FAIL B20: themeMode has no "auto" option');
+            process.stderr.write('FINDING:' + JSON.stringify({
+                type: 'FAIL',
+                code: 'B20',
+                file: file,
+                message: 'themeMode has no "auto" option',
+                context: {}
+            }) + '\n');
         }
     });
 
