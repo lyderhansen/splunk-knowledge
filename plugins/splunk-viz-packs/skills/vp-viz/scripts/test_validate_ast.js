@@ -417,8 +417,9 @@ assert('--cross FAIL XFILE emits FINDING to stderr', xfileFinding !== null, true
 assert('--cross FINDING has key field', xfileFinding ? (typeof xfileFinding.key === 'string') : false, true);
 
 // Extra JS read: formatter has no options, JS reads "extra_key" → WARN XFILE in stdout
+// WARN-only results should exit 0 (warnings do not block the build)
 r = run(['--cross', FORMATTER_EXTRA_JS, JS_EXTRA]);
-assert('--cross extra JS opt not in formatter exits non-zero', r.code !== 0, true, r.stdout + r.stderr);
+assert('--cross extra JS opt not in formatter exits 0 (warn-only)', r.code, 0, r.stdout + r.stderr);
 assertIncludes('--cross extra JS read shows WARN XFILE in stdout', r.stdout, 'WARN XFILE');
 assertIncludes('--cross extra JS read includes key name in stdout', r.stdout, 'extra_key');
 

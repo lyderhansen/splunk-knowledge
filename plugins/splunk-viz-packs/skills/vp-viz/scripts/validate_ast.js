@@ -335,12 +335,13 @@ function runCrossFileChecks(formatterPath, jsPath) {
 
     walkForOptCalls(ast);
 
-    var violations = [];
+    var failures = [];
+    var warnings = [];
 
     // FAIL XFILE: formatter option not read in JS
     formatterKeys.forEach(function(k) {
         if (jsKeys.indexOf(k) === -1) {
-            violations.push('  FAIL XFILE: formatter option "' + k + '" not read in visualization_source.js');
+            failures.push('  FAIL XFILE: formatter option "' + k + '" not read in visualization_source.js');
             process.stderr.write('FINDING:' + JSON.stringify({
                 type: 'FAIL',
                 code: 'XFILE',
@@ -354,13 +355,15 @@ function runCrossFileChecks(formatterPath, jsPath) {
     // WARN XFILE: JS reads key not declared in formatter
     jsKeys.forEach(function(k) {
         if (formatterKeys.indexOf(k) === -1) {
-            violations.push('  WARN XFILE: JS reads "' + k + '" but not declared in formatter');
+            warnings.push('  WARN XFILE: JS reads "' + k + '" but not declared in formatter');
         }
     });
 
-    for (var v = 0; v < violations.length; v++) {
-        process.stdout.write(violations[v] + '\n');
+    // Print both failures and warnings, but exit non-zero only for failures
+    var all = failures.concat(warnings);
+    for (var v = 0; v < all.length; v++) {
+        process.stdout.write(all[v] + '\n');
     }
 
-    process.exit(violations.length > 0 ? 1 : 0);
+    process.exit(failures.length > 0 ? 1 : 0);
 }
