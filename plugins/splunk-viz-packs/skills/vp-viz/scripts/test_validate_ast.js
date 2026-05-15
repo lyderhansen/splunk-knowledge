@@ -317,6 +317,117 @@ console.log('\n-- Output format --');
 r = run(['--js', ES6_CONST]);
 assertMatches('FAIL lines start with two spaces', r.stdout, /^  FAIL /m);
 
+// ---- Cross-file checks (--cross mode) ----
+
+console.log('\n-- cross-file checks (--cross mode) --');
+
+// Reference paths for test28 clean fixture pair
+var CROSS_FORMATTER = path.join(TESTS_ROOT,
+    'test28_drilldown_tabs', 'cloudflare_noc',
+    'appserver', 'static', 'visualizations', 'cf_kpi_tile',
+    'formatter.html');
+var CROSS_JS = path.join(TESTS_ROOT,
+    'test28_drilldown_tabs', 'cloudflare_noc',
+    'appserver', 'static', 'visualizations', 'cf_kpi_tile',
+    'src', 'visualization_source.js');
+
+// Synthetic fixtures for controlled test cases
+// FORMATTER_MATCHED: one option that JS also reads
+var FORMATTER_MATCHED = tmpFile('cross_fmt_matched.html',
+    '<html><body><splunk-text-input name="{{VIZ_NAMESPACE}}.the_same_key" value=""></splunk-text-input></body></html>');
+
+// FORMATTER_ORPHAN: one option "orphan_key" that JS does not read
+var FORMATTER_ORPHAN = tmpFile('cross_fmt_orphan.html',
+    '<html><body><splunk-text-input name="{{VIZ_NAMESPACE}}.orphan_key" value=""></splunk-text-input></body></html>');
+
+// FORMATTER_EXTRA_JS: no options, but JS reads "extra_key"
+var FORMATTER_EXTRA_JS = tmpFile('cross_fmt_extra_js.html',
+    '<html><body><p>No options here</p></body></html>');
+
+// FORMATTER_PARTIAL: two options alpha+beta, JS only reads alpha
+var FORMATTER_PARTIAL = tmpFile('cross_fmt_partial.html', [
+    '<html><body>',
+    '<splunk-text-input name="{{VIZ_NAMESPACE}}.alpha" value=""></splunk-text-input>',
+    '<splunk-text-input name="{{VIZ_NAMESPACE}}.beta" value=""></splunk-text-input>',
+    '</body></html>'
+].join('\n'));
+
+// JS_MATCHED: reads "the_same_key"
+var JS_MATCHED = tmpFile('cross_js_matched.js',
+    'var config = {}; function opt(key, fb) { return config[key] || fb; } var x = opt("the_same_key", "default");');
+
+// JS_EMPTY: no opt() calls
+var JS_EMPTY = tmpFile('cross_js_empty.js',
+    'var config = {}; function render() { return 42; }');
+
+// JS_EXTRA: reads "extra_key" (no formatter declaration)
+var JS_EXTRA = tmpFile('cross_js_extra.js',
+    'var config = {}; function opt(key, fb) { return config[key] || fb; } var x = opt("extra_key", "");');
+
+// JS_ALPHA: reads only "alpha" (not "beta")
+var JS_ALPHA = tmpFile('cross_js_alpha.js',
+    'var config = {}; function opt(key, fb) { return config[key] || fb; } var a = opt("alpha", "default");');
+
+// Helper: parse a FINDING:{json} line from stderr for a given code
+function parseFinding(stderr, code) {
+    var lines = stderr.split('\n');
+    for (var i = 0; i < lines.length; i++) {
+        if (lines[i].indexOf('FINDING:') === 0) {
+            try {
+                var obj = JSON.parse(lines[i].substring('FINDING:'.length));
+                if (obj && obj.code === code) { return obj; }
+            } catch (e) {}
+        }
+    }
+    return null;
+}
+
+// CLI error cases
+r = run(['--cross', CROSS_FORMATTER]);
+assert('--cross with only 1 extra arg exits 2', r.code, 2);
+assertMatches('--cross 1 arg shows usage or --cross in stderr', r.stderr, /Usage|--cross/);
+
+r = run(['--cross', '/nonexistent/formatter.html', CROSS_JS]);
+assert('--cross nonexistent formatter exits 1', r.code, 1);
+assertMatches('--cross nonexistent formatter has error in stderr', r.stderr, /[Ee]rror|not found/);
+
+r = run(['--cross', CROSS_FORMATTER, '/nonexistent/source.js']);
+assert('--cross nonexistent JS file exits 1', r.code, 1);
+assertMatches('--cross nonexistent JS has error in stderr', r.stderr, /[Ee]rror|not found/);
+
+// Clean fixture test28 — should exit 0 (no FAIL XFILE)
+r = run(['--cross', CROSS_FORMATTER, CROSS_JS]);
+assert('--cross test28 cf_kpi_tile clean pair exits 0', r.code, 0, r.stdout + r.stderr);
+assertNotIncludes('--cross test28 clean pair no FAIL XFILE in stdout', r.stdout, 'FAIL XFILE');
+
+// Matched synthetic: formatter option "the_same_key" + JS opt("the_same_key") → exits 0
+r = run(['--cross', FORMATTER_MATCHED, JS_MATCHED]);
+assert('--cross matched option/key exits 0', r.code, 0, r.stdout + r.stderr);
+
+// Orphaned formatter option: JS has no opt() calls → exits 1 with FAIL XFILE
+r = run(['--cross', FORMATTER_ORPHAN, JS_EMPTY]);
+assert('--cross orphaned formatter option exits 1', r.code, 1, r.stdout + r.stderr);
+assertIncludes('--cross orphaned option shows FAIL XFILE in stdout', r.stdout, 'FAIL XFILE');
+assertIncludes('--cross orphaned option includes key name in stdout', r.stdout, 'orphan_key');
+
+// FINDING check: FAIL XFILE emits FINDING:{json} to stderr with code XFILE and key field
+r = run(['--cross', FORMATTER_ORPHAN, JS_EMPTY]);
+var xfileFinding = parseFinding(r.stderr, 'XFILE');
+assert('--cross FAIL XFILE emits FINDING to stderr', xfileFinding !== null, true, r.stderr);
+assert('--cross FINDING has key field', xfileFinding ? (typeof xfileFinding.key === 'string') : false, true);
+
+// Extra JS read: formatter has no options, JS reads "extra_key" → WARN XFILE in stdout
+r = run(['--cross', FORMATTER_EXTRA_JS, JS_EXTRA]);
+assert('--cross extra JS opt not in formatter exits non-zero', r.code !== 0, true, r.stdout + r.stderr);
+assertIncludes('--cross extra JS read shows WARN XFILE in stdout', r.stdout, 'WARN XFILE');
+assertIncludes('--cross extra JS read includes key name in stdout', r.stdout, 'extra_key');
+
+// Partial match: formatter has alpha+beta, JS reads only alpha → exits 1 with FAIL XFILE for beta
+r = run(['--cross', FORMATTER_PARTIAL, JS_ALPHA]);
+assert('--cross partial match exits 1 (beta orphaned)', r.code, 1, r.stdout + r.stderr);
+assertIncludes('--cross partial shows FAIL XFILE in stdout', r.stdout, 'FAIL XFILE');
+assertIncludes('--cross partial includes orphaned key beta in stdout', r.stdout, 'beta');
+
 // ---- Cleanup temp files ----
 tmpFiles.forEach(function(p) {
     try { fs.unlinkSync(p); } catch (e) {}
