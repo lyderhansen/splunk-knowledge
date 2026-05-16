@@ -38,6 +38,12 @@
 - Use additive Y positioning for label-value-trend stack
 - All sizes scale from container: `Math.max(floor, h * ratio)`
 
+**Design rules:** See [design-principles.md](../../vp-design/references/design-principles.md)
+- DPR-01 (typography hierarchy) — hero/body/whisper 3-tier sizing
+- DPR-03 (gradient fills) — all data elements use createLinearGradient
+- DPR-09 (gradient mesh) — Futuristic/Luxury mood background
+**Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
+
 **Creative decisions YOU make:**
 - Value font weight (condensed, expanded, standard)
 - Label placement (above, below, beside)
@@ -63,6 +69,12 @@
 - All sizes relative to `Math.min(w, h)`
 - Gauge arc constraint: `cy - radius >= pad` (coupled — never calculate independently)
 
+**Design rules:** See [design-principles.md](../../vp-design/references/design-principles.md)
+- DPR-01 (typography hierarchy) — hero/body/whisper 3-tier sizing
+- DPR-03 (gradient fills) — all data elements use createLinearGradient
+- DPR-09 (gradient mesh) — Futuristic mood gauge backgrounds
+**Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
+
 **Creative decisions YOU make:**
 - Sweep angle (180, 270, 360, asymmetric)
 - Track style (hairline, thick band, dashed, invisible)
@@ -85,6 +97,11 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 
 **When NOT to use:** Don't use for continuous values (use gauge). Don't use for more than 6-8 statuses.
 
+**Design rules:** See [design-principles.md](../../vp-design/references/design-principles.md)
+- DPR-01 (typography hierarchy) — hero/body/whisper 3-tier sizing
+- DPR-03 (gradient fills) — all data elements use createLinearGradient
+**Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
+
 **Settings:** `field`, `labelField`, `themeMode`
 
 **Data contract:** requires severity field and label field. Reads last row.
@@ -101,6 +118,11 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 - Animation timers MUST be cleaned up in `destroy()`
 - Edge fade gradients prevent text clipping
 
+**Design rules:** See [design-principles.md](../../vp-design/references/design-principles.md)
+- DPR-01 (typography hierarchy) — hero/body/whisper 3-tier sizing
+- DPR-03 (gradient fills) — all data elements use createLinearGradient
+**Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
+
 **Settings:** `title`, `scrollSpeed`, `field1`-`field4`, `label1`-`label4`, `bgColor`, `textColor`, `accentColor`, `themeMode`
 
 **Data contract:** requires `_time` + 1-4 configurable fields. Multi-row.
@@ -112,6 +134,12 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 **Accessibility:** AA — text-based, inherently readable.
 
 **When NOT to use:** Don't use for unranked data (use table). If only 2-3 entries, use KPI strip.
+
+**Design rules:** See [design-principles.md](../../vp-design/references/design-principles.md)
+- DPR-01 (typography hierarchy) — hero/body/whisper 3-tier sizing
+- DPR-03 (gradient fills) — all data elements use createLinearGradient
+- DPR-06 (glass panel) — Luxury mood row highlight
+**Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
 **Settings:** `title`, `maxRows`, `scoreDigits`, `rankField`, `nameField`, `scoreField`, `showGlow`, `themeMode`
 
@@ -125,6 +153,11 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 
 **When NOT to use:** Don't use for non-sequential data. Don't use for more than 8-10 steps.
 
+**Design rules:** See [design-principles.md](../../vp-design/references/design-principles.md)
+- DPR-01 (typography hierarchy) — hero/body/whisper 3-tier sizing
+- DPR-03 (gradient fills) — all data elements use createLinearGradient
+**Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
+
 **Settings:** `labelField`, `valueField`, `statusField`, `palette`, `showArrows`, `themeMode`
 
 **Data contract:** requires label + value, optional status. Multi-row.
@@ -136,6 +169,11 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 **Accessibility:** C — color-only segments. MUST show legend with values.
 
 **When NOT to use:** Don't use for more than 6 segments. Don't default to donut when unsure — it's the most overused AI viz choice.
+
+**Design rules:** See [design-principles.md](../../vp-design/references/design-principles.md)
+- DPR-01 (typography hierarchy) — hero/body/whisper 3-tier sizing
+- DPR-03 (gradient fills) — all data elements use createLinearGradient
+**Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
 **Settings:** `categoryField`, `valueField`, `innerRadius`, `showLegend`, `showTotal`, `colors`, `themeMode`
 
@@ -149,6 +187,11 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 
 **When NOT to use:** Don't use for single-dimension data (use bar). Works best with 5+ rows AND 5+ columns.
 
+**Design rules:** See [design-principles.md](../../vp-design/references/design-principles.md)
+- DPR-01 (typography hierarchy) — hero/body/whisper 3-tier sizing
+- DPR-03 (gradient fills) — all data elements use createLinearGradient
+**Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
+
 **Settings:** `rowField`, `colField`, `valueField`, `lowColor`, `highColor`, `showValues`, `cellRadius`, `themeMode`
 
 **Data contract:** row label, column label, numeric value. Multi-row.
@@ -160,6 +203,11 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 **Accessibility:** B — tiny trend lines decorative for screen readers.
 
 **When NOT to use:** Don't use for more than 8 metrics. If trends don't matter, use KPI tiles.
+
+**Design rules:** See [design-principles.md](../../vp-design/references/design-principles.md)
+- DPR-01 (typography hierarchy) — hero/body/whisper 3-tier sizing
+- DPR-03 (gradient fills) — all data elements use createLinearGradient
+**Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
 **Settings:** `metrics` (CSV), `labels` (CSV), `sparkHeight`, `showValue`, `colors`, `themeMode`
 
@@ -173,6 +221,11 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 
 **When NOT to use:** Don't use for more than 8 axes. Don't use for time-series.
 
+**Design rules:** See [design-principles.md](../../vp-design/references/design-principles.md)
+- DPR-01 (typography hierarchy) — hero/body/whisper 3-tier sizing
+- DPR-03 (gradient fills) — all data elements use createLinearGradient
+**Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
+
 **Settings:** `fields` (CSV), `labels` (CSV), `maxValue`, `fillOpacity`, `showGrid`, `colors`, `themeMode`
 
 **Data contract:** one row per entity, one column per dimension.
@@ -184,6 +237,11 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 **Accessibility:** AA — physical metaphor intuitive. Numeric value provides text fallback.
 
 **When NOT to use:** Don't use 3+ needle gauges in a row.
+
+**Design rules:** See [design-principles.md](../../vp-design/references/design-principles.md)
+- DPR-01 (typography hierarchy) — hero/body/whisper 3-tier sizing
+- DPR-03 (gradient fills) — all data elements use createLinearGradient
+**Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
 **Settings:** `field`, `maxValue`, `zones` (CSV), `zoneColors` (CSV), `label`, `unit`, `themeMode`
 
@@ -197,6 +255,12 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 
 **When NOT to use:** Don't use for less than 10 entities (use status chips).
 
+**Design rules:** See [design-principles.md](../../vp-design/references/design-principles.md)
+- DPR-01 (typography hierarchy) — hero/body/whisper 3-tier sizing
+- DPR-03 (gradient fills) — all data elements use createLinearGradient
+- DPR-05 (vignette) — dark theme status grids benefit from edge darkening
+**Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
+
 **Settings:** `nameField`, `statusField`, `columns`, `cellSize`, `showLabels`, `statusColors`, `themeMode`
 
 **Data contract:** name + status field. Multi-row.
@@ -208,6 +272,11 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 **Accessibility:** AA — bar-based with value labels.
 
 **When NOT to use:** Don't use when there's no additive relationship.
+
+**Design rules:** See [design-principles.md](../../vp-design/references/design-principles.md)
+- DPR-01 (typography hierarchy) — hero/body/whisper 3-tier sizing
+- DPR-03 (gradient fills) — all data elements use createLinearGradient
+**Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
 **Settings:** `categoryField`, `valueField`, `positiveColor`, `negativeColor`, `totalColor`, `showConnectors`, `showValues`, `themeMode`
 
@@ -221,6 +290,12 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 
 **When NOT to use:** Don't use for time-series (use line/area).
 
+**Design rules:** See [design-principles.md](../../vp-design/references/design-principles.md)
+- DPR-01 (typography hierarchy) — hero/body/whisper 3-tier sizing
+- DPR-03 (gradient fills) — all data elements use createLinearGradient
+- DPR-10 (accent lines) — Precision mood decorative elements
+**Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
+
 **Settings:** `labelField`, `valueField`, `maxBars`, `barColor`, `showValues`, `unit`, `themeMode`
 
 **Data contract:** label + value. Multi-row sorted by value.
@@ -232,6 +307,12 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 **Accessibility:** AA — tabular with headers.
 
 **When NOT to use:** Don't use when only 1-2 fields needed (use KPI).
+
+**Design rules:** See [design-principles.md](../../vp-design/references/design-principles.md)
+- DPR-01 (typography hierarchy) — hero/body/whisper 3-tier sizing
+- DPR-03 (gradient fills) — all data elements use createLinearGradient
+- DPR-05 (vignette) — dark theme tables benefit from edge darkening
+**Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
 **MUST-HAVE features (non-negotiable):**
 
