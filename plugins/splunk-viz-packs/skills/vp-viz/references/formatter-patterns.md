@@ -48,6 +48,15 @@ only the `{FILL}` parts. Getting ANY attribute wrong causes silent failures.
 </splunk-control-group>
 ```
 
+### Accent intensity (D-07: controls glow and shadow strength only)
+
+```html
+<splunk-control-group label="Accent intensity" help="Glow and shadow strength (0=off, 100=full)">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.accentIntensity" value="50">
+    </splunk-text-input>
+</splunk-control-group>
+```
+
 ### Section wrapper
 
 ```html
@@ -64,21 +73,28 @@ WRONG: default="value"                 → MUST be value="value"
 WRONG: <splunk-color-picker value=     → MUST add type="custom"
 WRONG: <form>                          → MUST add class="splunk-formatter-section" section-label="..."
 WRONG: themeMode value="dark"          → MUST be value="auto"
+WRONG: fontColor or bgColor controls  → Dashboard Studio owns panel-level colors (D-03).
+                                         Only accentColor is a viz formatter color control.
+                                         CFG-07 is satisfied by accentColor alone.
 ```
 
 ## Section structure
 
-Every viz gets 3 sections with these EXACT `section-label` values (casing matters):
+Every viz gets a minimum of 4 sections with these EXACT `section-label` values (casing matters):
 
 1. `Data configurations` — field name mappings (text inputs)
 2. `Data display` — labels, units, toggles, decimals
-3. `Color and style` — themeMode, accentColor, series colors, accentIntensity
+3. `Color and style` — themeMode, accentColor, accentIntensity, series colors
+4. `Effects` — individual mood effect toggles (showAmbientLight, showVignette, showGlow, showGlassPanel). Default all to "true"; user can disable per effect.
+
+Add `help=` text only on non-obvious controls (accentIntensity, effect toggles). Self-explanatory controls (Theme, Accent color) do not need help text. (D-13)
 
 | Wrong | Right |
 |---|---|
 | `"Data Configuration"` (singular, capital C) | `"Data configurations"` |
 | `"Data Display"` (capital D) | `"Data display"` |
 | `"Color and Style"` (capital S) | `"Color and style"` |
+| `"Visual effects"` or `"Mood effects"` | `"Effects"` |
 
 Structure rules:
 - No wrapper `<div>` around forms — bare `<form>` elements only
@@ -93,7 +109,10 @@ Structure rules:
     <!-- labels, units, toggles, decimals -->
 </form>
 <form class="splunk-formatter-section" section-label="Color and style">
-    <!-- themeMode, accentColor, series colors -->
+    <!-- themeMode, accentColor, accentIntensity, series colors -->
+</form>
+<form class="splunk-formatter-section" section-label="Effects">
+    <!-- individual mood effect toggles: showAmbientLight, showVignette, showGlow, showGlassPanel -->
 </form>
 ```
 
