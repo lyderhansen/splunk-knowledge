@@ -53,7 +53,10 @@ RIGHT: "options": { "myapp.myviz.scoreField": "score" }
 □ Formatter: type="custom" on every <splunk-color-picker>
 □ Formatter: class="splunk-formatter-section" section-label="..." on every <form>
 □ Formatter: themeMode defaults to "auto" (NEVER "dark")
-□ Formatter: minimum 7 controls
+□ Formatter: minimum 10 controls (4 sections required when mood effects present)
+□ JS light theme: hero text uses t.text, NEVER t.textDim (ghost-text on white — D-08)
+□ JS light theme: glow scaled by isDark ? 1.0 : 0.4 (THM-03)
+□ JS light theme: inner shadow replaced by 1px t.edge border on panels (THM-04)
 □ JS: require()/module.exports — NEVER define()
 □ JS: SplunkVisualizationBase.extend({...}) object literal
 □ JS: safeStr()/safeNum() on all row field reads
@@ -295,6 +298,17 @@ module.exports = SplunkVisualizationBase.extend({
                    : themeMode === 'dark';
         var t = theme.getTheme(isDark ? 'dark' : 'light');
 
+        // D-05: accentIntensity /100 linear scale — 0=off, 0.5=default, 1.0=full
+        // NOTE: mood-recipes.md shows /50 (gi range 0-2) — that pattern is SUPERSEDED by D-05.
+        // Always use /100 in generated code.
+        var gi = parseFloat(opt('accentIntensity', '50')) / 100;
+        gi = gi < 0 ? 0 : gi > 1 ? 1 : gi;
+        // D-07: gi controls ONLY shadowBlur + shadowColor alpha (other effects use their own toggles)
+        // THM-03: reduce glow on light theme
+        var glowScale = isDark ? 1.0 : 0.4;
+        // Apply: ctx.shadowBlur = 20 * gi * glowScale; ctx.shadowColor = theme.withAlpha(accent, gi * glowScale);
+        // Always reset after glow: ctx.shadowBlur = 0; ctx.shadowColor = 'transparent';
+
         var w = this.el.clientWidth || this.el.offsetWidth || window.innerWidth || 300;
         var h = this.el.clientHeight || this.el.offsetHeight || window.innerHeight || 200;
         if (w < 10) w = window.innerWidth || 300;
@@ -414,7 +428,7 @@ Every viz MUST be tested in both dark and light theme. Light theme is NOT dark-i
 
 **How to verify:**
 1. In formatter panel: set themeMode to "light"
-2. Check: hero values use full `t.text` (never textDim/textFaint — they ghost on white)
+2. **D-08 STRUCTURAL CHECK:** hero values MUST use `t.text`. grep for `t\.textDim` near the hero draw call — if found, that is the ghost-text bug. Fix before proceeding.
 3. Check: panel backgrounds use `t.panel` (light grey, not white-on-white)
 4. Check: accents still have ≥4.5:1 contrast against light bg
 5. Check: glows and shadows are reduced (dark-mode glow overpowers on light)
