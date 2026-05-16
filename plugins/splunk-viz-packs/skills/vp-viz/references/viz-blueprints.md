@@ -26,6 +26,17 @@
 > design a rendering that looks like a graphic designer made it for
 > THIS specific brand.
 
+### Animation settings
+
+Every viz type includes these animation controls. Add them to the formatter Animation section (see formatter-patterns.md):
+
+- **showEntrance** (ON by default, D-02): Entrance animation style varies by viz type — arc fill for gauges, bar growth for bars, count-up for KPIs, fade-in/stagger for tables and leaderboards.
+- **flashCritical** (OFF by default, D-06): LED pulse (shadowBlur 4-12px, 700ms cadence) on critical values. Opt-in only to prevent alarm fatigue. Recommended for status-bearing vizs; Claude may add to any type based on brand personality.
+- **showHoverEffect** (ON by default, D-10): Eased row/segment highlight with accent-tinted fill. Functional feedback, stays on even with prefers-reduced-motion.
+- **animationSpeed** (normal by default, D-13): Three-tier multiplier — slow=1.5x, normal=1.0x, fast=0.6x applied to all durations.
+
+Note: `flashCritical` CAN be added to any viz type based on brand personality — the status-bearing types below mark it as the default recommendation, but Claude has discretion.
+
 ### Single Value Tile (KPI)
 
 **Expresses:** the single most important number. Hero metric.
@@ -52,7 +63,7 @@
 - Background treatment (flat, gradient, accent glow, texture)
 - Unit styling relative to value (smaller? dimmer? superscript?)
 
-**Settings:** `valueField`, `labelField`, `unit`, `unitPosition`, `decimals`, `showDelta`, `deltaField`, `showGlow`, `accentColor`, `accentIntensity`, `themeMode`
+**Settings:** `valueField`, `labelField`, `unit`, `unitPosition`, `decimals`, `showDelta`, `deltaField`, `showGlow`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** configurable field (default: `value`). Reads last row. Optional: `delta` field.
 
@@ -84,7 +95,7 @@
 - Cap style (round, butt, arrow tip)
 - Whether arc has drop shadow, glow, or bevel
 
-**Settings:** `field`, `maxValue`, `unit`, `label`, `showTicks`, `showGlow`, `displayMode`, `themeMode`, `accentColor`, `accentIntensity`, `zoneLow` (threshold where red→amber), `zoneHigh` (threshold where amber→green), `detractorColor`, `passiveColor`, `promoterColor`
+**Settings:** `field`, `maxValue`, `unit`, `label`, `showTicks`, `showGlow`, `displayMode`, `themeMode`, `accentColor`, `accentIntensity`, `zoneLow` (threshold where red→amber), `zoneHigh` (threshold where amber→green), `detractorColor`, `passiveColor`, `promoterColor`, `showEntrance`, `flashCritical`, `showHoverEffect`, `animationSpeed`
 
 Zone thresholds and zone colors MUST be independently configurable — never hardcode boundaries like 0-30/31-60/61-100 or use only theme severity colors.
 
@@ -103,7 +114,7 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 - DPR-03 (gradient fills) — all data elements use createLinearGradient
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
-**Settings:** `statusField`, `labelField`, `criticalLabel`, `warningLabel`, `okLabel`, `showGlow`, `accentColor`, `accentIntensity`, `themeMode`
+**Settings:** `statusField`, `labelField`, `criticalLabel`, `warningLabel`, `okLabel`, `showGlow`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `flashCritical`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** requires severity field and label field. Reads last row.
 
@@ -124,7 +135,7 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 - DPR-03 (gradient fills) — all data elements use createLinearGradient
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
-**Settings:** `title`, `scrollSpeed`, `field1`, `field2`, `field3`, `field4`, `label1`, `label2`, `label3`, `label4`, `accentColor`, `accentIntensity`, `themeMode`
+**Settings:** `title`, `scrollSpeed`, `field1`, `field2`, `field3`, `field4`, `label1`, `label2`, `label3`, `label4`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `flashCritical`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** requires `_time` + 1-4 configurable fields. Multi-row.
 
@@ -142,7 +153,7 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 - DPR-06 (glass panel) — Luxury mood row highlight
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
-**Settings:** `title`, `maxRows`, `scoreDigits`, `rankField`, `nameField`, `scoreField`, `showGlow`, `showMedals`, `accentColor`, `accentIntensity`, `themeMode`
+**Settings:** `title`, `maxRows`, `scoreDigits`, `rankField`, `nameField`, `scoreField`, `showGlow`, `showMedals`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** requires rank, name, score fields. Multi-row.
 
@@ -159,7 +170,7 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 - DPR-03 (gradient fills) — all data elements use createLinearGradient
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
-**Settings:** `labelField`, `valueField`, `statusField`, `palette`, `showArrows`, `showValues`, `showGlow`, `accentColor`, `accentIntensity`, `themeMode`
+**Settings:** `labelField`, `valueField`, `statusField`, `palette`, `showArrows`, `showValues`, `showGlow`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** requires label + value, optional status. Multi-row.
 
@@ -176,7 +187,7 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 - DPR-03 (gradient fills) — all data elements use createLinearGradient
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
-**Settings:** `categoryField`, `valueField`, `innerRadius`, `showLegend`, `showTotal`, `showGlow`, `colors`, `accentColor`, `accentIntensity`, `themeMode`
+**Settings:** `categoryField`, `valueField`, `innerRadius`, `showLegend`, `showTotal`, `showGlow`, `colors`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** category + value. Multi-row.
 
@@ -193,7 +204,7 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 - DPR-03 (gradient fills) — all data elements use createLinearGradient
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
-**Settings:** `rowField`, `colField`, `valueField`, `lowColor`, `highColor`, `showValues`, `cellRadius`, `showGlow`, `accentColor`, `accentIntensity`, `themeMode`
+**Settings:** `rowField`, `colField`, `valueField`, `lowColor`, `highColor`, `showValues`, `cellRadius`, `showGlow`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `flashCritical`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** row label, column label, numeric value. Multi-row.
 
@@ -210,7 +221,7 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 - DPR-03 (gradient fills) — all data elements use createLinearGradient
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
-**Settings:** `metrics`, `labels`, `sparkHeight`, `showValue`, `showArea`, `showGlow`, `colors`, `accentColor`, `accentIntensity`, `themeMode`
+**Settings:** `metrics`, `labels`, `sparkHeight`, `showValue`, `showArea`, `showGlow`, `colors`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** time series with multiple value columns. Multi-row.
 
@@ -228,7 +239,7 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 - DPR-10 (accent lines) — Precision mood decorative elements
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
-**Settings:** `lineField`, `xField`, `lineColor`, `showFill`, `showDots`, `lineWidth`, `unit`, `thresholdValue`, `thresholdColor`, `themeMode`, `accentColor`, `accentIntensity`
+**Settings:** `lineField`, `xField`, `lineColor`, `showFill`, `showDots`, `lineWidth`, `unit`, `thresholdValue`, `thresholdColor`, `themeMode`, `accentColor`, `accentIntensity`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** time-series rows. `xField` (default `_time`), `lineField` (configurable value). Multi-row.
 
@@ -245,7 +256,7 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 - DPR-03 (gradient fills) — all data elements use createLinearGradient
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
-**Settings:** `fields`, `labels`, `maxValue`, `fillOpacity`, `showGrid`, `showGlow`, `colors`, `accentColor`, `accentIntensity`, `themeMode`
+**Settings:** `fields`, `labels`, `maxValue`, `fillOpacity`, `showGrid`, `showGlow`, `colors`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** one row per entity, one column per dimension.
 
@@ -262,7 +273,7 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 - DPR-03 (gradient fills) — all data elements use createLinearGradient
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
-**Settings:** `field`, `maxValue`, `minValue`, `zones`, `zoneColors`, `label`, `unit`, `showGlow`, `accentColor`, `accentIntensity`, `themeMode`
+**Settings:** `field`, `maxValue`, `minValue`, `zones`, `zoneColors`, `label`, `unit`, `showGlow`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `flashCritical`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** single numeric value.
 
@@ -280,7 +291,7 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 - DPR-05 (vignette) — dark theme status grids benefit from edge darkening
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
-**Settings:** `nameField`, `statusField`, `columns`, `cellSize`, `showLabels`, `showCounts`, `statusColors`, `accentColor`, `accentIntensity`, `themeMode`
+**Settings:** `nameField`, `statusField`, `columns`, `cellSize`, `showLabels`, `showCounts`, `statusColors`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `flashCritical`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** name + status field. Multi-row.
 
@@ -297,7 +308,7 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 - DPR-03 (gradient fills) — all data elements use createLinearGradient
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
-**Settings:** `categoryField`, `valueField`, `positiveColor`, `negativeColor`, `totalColor`, `showConnectors`, `showValues`, `showGlow`, `accentColor`, `accentIntensity`, `themeMode`
+**Settings:** `categoryField`, `valueField`, `positiveColor`, `negativeColor`, `totalColor`, `showConnectors`, `showValues`, `showGlow`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** category + value. Multi-row.
 
@@ -315,7 +326,7 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 - DPR-10 (accent lines) — Precision mood decorative elements
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
-**Settings:** `labelField`, `valueField`, `maxBars`, `showValues`, `unit`, `showGlow`, `barColor`, `accentColor`, `accentIntensity`, `themeMode`
+**Settings:** `labelField`, `valueField`, `maxBars`, `showValues`, `unit`, `showGlow`, `barColor`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** label + value. Multi-row sorted by value.
 
@@ -356,7 +367,7 @@ var totalPages = Math.ceil(rows.length / rowsPerPage);
 var pageRows = rows.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
 ```
 
-**Settings:** `columns`, `hiddenColumns`, `columnWidths`, `defaultSortColumn`, `defaultSortDirection`, `maxRows`, `showHeader`, `showPosition`, `accentColor`, `accentIntensity`, `themeMode`
+**Settings:** `columns`, `hiddenColumns`, `columnWidths`, `defaultSortColumn`, `defaultSortDirection`, `maxRows`, `showHeader`, `showPosition`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** multi-column, multi-row. Field names from formatter.
 
