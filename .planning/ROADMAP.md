@@ -24,7 +24,7 @@ Full details: `.planning/milestones/v4.1.0-ROADMAP.md`
 
 **Milestone Goal:** Make every generated viz pack look like it was designed by a professional design studio — depth, glow, premium typography, intelligent configuration, and bulletproof code.
 
-- [ ] **Phase 6: Design Principles & Skill Layer** — Codify premium Canvas 2D design rules into reference files; extend canvas-recipes.md with depth/texture/typography patterns; define cross-viz consistency contracts
+- [x] **Phase 6: Design Principles & Skill Layer** — Codify premium Canvas 2D design rules into reference files; extend canvas-recipes.md with depth/texture/typography patterns; define cross-viz consistency contracts — completed 2026-05-16
 - [ ] **Phase 7: Generation Quality & Theme Parity** — Upgrade vp-viz generation to produce 10-14 formatter options per viz type; make dark and light themes independently designed, not inverted
 - [ ] **Phase 8: Design Quality Gate & Edge Case Resilience** — Ship check_design.js (D01-D08 design checks) wired into validate_viz.sh Phase 4; harden all generated code against empty/null/overflow data
 - [ ] **Phase 9: Animation & Motion** — Add requestAnimationFrame entrance animations, LED pulse effect, eased hover transitions, and staggered row entrance to the canvas-recipes.md toolkit; all togglable via formatter
@@ -43,9 +43,9 @@ Full details: `.planning/milestones/v4.1.0-ROADMAP.md`
   5. design-principles.md and consistency-grid.md exist in vp-design/references/ and are cross-referenced from vp-viz SKILL.md
 **Plans**: 3 plans
 Plans:
-- [ ] 06-01-PLAN.md — Split canvas-recipes.md into 4 recipe files (depth, texture, typography, animation)
-- [ ] 06-02-PLAN.md — Create design-principles.md and consistency-grid.md in vp-design/references/
-- [ ] 06-03-PLAN.md — Wire all files: update theme-template.md, vp-viz SKILL.md, viz-blueprints.md, mood-recipes.md, all-patterns.md
+- [x] 06-01-PLAN.md — Split canvas-recipes.md into 4 recipe files (depth, texture, typography, animation)
+- [x] 06-02-PLAN.md — Create design-principles.md and consistency-grid.md in vp-design/references/
+- [x] 06-03-PLAN.md — Wire all files: update theme-template.md, vp-viz SKILL.md, viz-blueprints.md, mood-recipes.md, all-patterns.md
 **UI hint**: yes
 
 ### Phase 7: Generation Quality & Theme Parity
