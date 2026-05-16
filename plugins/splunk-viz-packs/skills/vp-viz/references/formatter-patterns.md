@@ -165,7 +165,12 @@ function getNS(viz) {
 
 ## Full formatter example
 
-A complete minimal formatter.html for a KPI viz (3 sections, 7 controls):
+A complete formatter.html for a KPI viz (4 sections, 12 controls). This shows the
+target pattern — add or remove controls per viz type using viz-blueprints.md Settings:
+list as your guide (D-01, D-04).
+
+Note: This example shows 12 controls (4 sections). Add or remove controls per viz type
+using viz-blueprints.md Settings: list as your guide (D-01, D-04).
 
 ```html
 <form class="splunk-formatter-section" section-label="Data configurations">
@@ -173,13 +178,17 @@ A complete minimal formatter.html for a KPI viz (3 sections, 7 controls):
         <splunk-text-input name="{{VIZ_NAMESPACE}}.valueField" value="value">
         </splunk-text-input>
     </splunk-control-group>
-    <splunk-control-group label="Label field" help="SPL column with the KPI label">
-        <splunk-text-input name="{{VIZ_NAMESPACE}}.labelField" value="label">
+    <splunk-control-group label="Delta field" help="SPL column with the comparison value">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.deltaField" value="delta">
         </splunk-text-input>
     </splunk-control-group>
 </form>
 
 <form class="splunk-formatter-section" section-label="Data display">
+    <splunk-control-group label="Label" help="Display label for this KPI">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.label" value="Value">
+        </splunk-text-input>
+    </splunk-control-group>
     <splunk-control-group label="Unit suffix" help="Unit shown after value (e.g. ms, %)">
         <splunk-text-input name="{{VIZ_NAMESPACE}}.unit" value="">
         </splunk-text-input>
@@ -188,8 +197,8 @@ A complete minimal formatter.html for a KPI viz (3 sections, 7 controls):
         <splunk-text-input name="{{VIZ_NAMESPACE}}.decimals" value="-1">
         </splunk-text-input>
     </splunk-control-group>
-    <splunk-control-group label="Show trend" help="Show delta arrow below value">
-        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showTrend" value="true">
+    <splunk-control-group label="Show delta" help="Show trend arrow below value">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showDelta" value="false">
             <option value="true">Yes</option>
             <option value="false">No</option>
         </splunk-radio-input>
@@ -207,9 +216,32 @@ A complete minimal formatter.html for a KPI viz (3 sections, 7 controls):
     <splunk-control-group label="Accent color" help="Primary brand color">
         <splunk-color-picker name="{{VIZ_NAMESPACE}}.accentColor" type="custom" value="#0077B6">
             <splunk-color>#0077B6</splunk-color>
-            <splunk-color>#00B4D8</splunk-color>
-            <splunk-color>#90E0EF</splunk-color>
         </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Accent intensity" help="Glow and shadow strength (0=off, 100=full)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.accentIntensity" value="50">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Effects">
+    <splunk-control-group label="Ambient glow" help="Background light source effect">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showAmbientLight" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Vignette" help="Edge darkening to focus eye on data">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showVignette" value="false">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Glow" help="Accent glow on hero value and highlights">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showGlow" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
     </splunk-control-group>
 </form>
 ```
