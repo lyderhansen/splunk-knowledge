@@ -1,28 +1,36 @@
 # Canvas 2D Recipes
 
-## Contents
+> **Restructured in v5.0.0 Phase 6.** Effect-category recipes have been split into focused files.
+> Load the specific file you need — do not load all files.
+
+## Recipe files — load on demand
+
+| Effect category | File | When to load |
+|-----------------|------|--------------|
+| Depth (gradients, ambient light, vignette, gradient mesh, accent lines) | [depth-recipes.md](../../vp-recipes/references/depth-recipes.md) | Dark theme vizs, Futuristic/Luxury/Precision/Power mood |
+| Texture (noise grain, glass panels, tinted neutrals) | [texture-recipes.md](../../vp-recipes/references/texture-recipes.md) | Organic/Luxury mood, any viz needing surface quality |
+| Typography (3-tier hierarchy, spaced text, measureText) | [typography-recipes.md](../../vp-recipes/references/typography-recipes.md) | All vizs with text — load always |
+| Animation (entrance, pulse, hover, stagger) | [animation-recipes.md](../../vp-recipes/references/animation-recipes.md) | Phase 9 only — do not load in Phase 6/7 |
+
+## Functional patterns (unchanged — still in this file)
+
 - Hover tooltip (mandatory)
 - Drilldown (click navigation)
 - Decimals setting
 - Color interpolation
 - Rounded rectangles
 - Arc / gauge drawing
-- Legend drawing
 - Grid layout
 - Responsive text fitting
-- Hit-test for drilldown
-- Animation lifecycle
+- Animation lifecycle (basic)
 - Common mistakes
 - Shape primitives (extended)
 - Color utilities (extended)
 - Text utilities (extended)
-- Typographic tension
 - KPI tile vertical stacking
-- Effects (shadow, glow, scanlines, vignette, edge fade)
 - Sparkline
 - Horizontal gridlines
 - Data rendering principles
-- Animation (extended — modifiers, timing, easing)
 - Canvas effects stacking order
 - Parsing config values
 - Hover tooltip system (full implementation)
@@ -413,48 +421,6 @@ function drawDelta(ctx, x, y, size, value, upColor, downColor) {
 }
 ```
 
-## Typographic tension — 3-tier size system
-
-Great design has DRAMATIC size contrast — not everything slightly
-different, but hero text 4-6x larger than labels. The ratio creates
-visual hierarchy that tells the eye where to look.
-
-| Tier | Formula | Min | Max | Opacity | Role |
-|---|---|---|---|---|---|
-| **Hero** | `Math.min(w, h) * 0.35` | 36 | 72 | 100% | ONE dominant value per viz |
-| **Body** | `Math.min(w, h) * 0.14` | 14 | 24 | 60-80% | Supporting values, secondary |
-| **Whisper** | `Math.min(w, h) * 0.07` | 8 | 11 | 25-35% | Labels, headers, metadata |
-
-**Guideline:** aim for hero divided by whisper >= 4:1 for dramatic hierarchy. But some brands (brutalist, data-dense) intentionally flatten the hierarchy. The ratio is a diagnostic tool, not a gate.
-
-```javascript
-var heroSize = Math.max(36, Math.min(72, Math.min(w, h) * 0.35));
-var bodySize = Math.max(14, Math.min(24, Math.min(w, h) * 0.14));
-var whisperSize = Math.max(8, Math.min(11, Math.min(w, h) * 0.07));
-
-// Hero — bold, full opacity
-ctx.font = 'bold ' + heroSize + 'px ' + theme.FONTS.data;
-ctx.fillStyle = t.text;
-
-// Body — regular weight, reduced opacity
-ctx.font = bodySize + 'px ' + theme.FONTS.data;
-ctx.fillStyle = t.textDim;
-
-// Whisper — uppercase, very dim
-ctx.font = whisperSize + 'px ' + theme.FONTS.ui;
-ctx.fillStyle = t.textFaint;
-ctx.fillText(label.toUpperCase(), x, y);
-```
-
-**User override pattern:** `0` = auto, positive value = explicit.
-
-```javascript
-var userSize = parseInt(getOption(config, ns, 'fontSize', '0'), 10);
-var fontSize = userSize > 0
-    ? userSize
-    : Math.max(36, Math.min(72, Math.min(w, h) * 0.35));
-```
-
 ## KPI tile vertical stacking
 
 **NEVER use percentage-of-height** (`h * 0.28`, `h * 0.55`) for
@@ -474,99 +440,6 @@ This guarantees separation at any panel height.
 
 **Trend delta goes BELOW the value, not beside it.** At typical
 KPI widths, a large monospace number fills the horizontal space.
-
-## Effects
-
-### Drop shadow (multi-pass for intensity)
-
-```javascript
-function drawShadow(ctx, drawPath, passes, color, blur, offX, offY) {
-    for (var i = 0; i < passes; i++) {
-        ctx.save();
-        ctx.shadowColor = color;
-        ctx.shadowBlur = blur;
-        ctx.shadowOffsetX = offX;
-        ctx.shadowOffsetY = offY;
-        drawPath(ctx);
-        ctx.fillStyle = 'rgba(0,0,0,0.01)';
-        ctx.fill();
-        ctx.restore();
-    }
-    // ALWAYS reset shadow state
-    ctx.shadowBlur = 0;
-    ctx.shadowColor = 'transparent';
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
-}
-```
-
-### Neon glow (text)
-
-```javascript
-function drawGlowText(ctx, text, x, y, font, color, glowSize) {
-    ctx.save();
-    ctx.font = font;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    // Glow pass
-    ctx.shadowColor = color;
-    ctx.shadowBlur = glowSize;
-    ctx.fillStyle = color;
-    ctx.fillText(text, x, y);
-    // Crisp pass on top
-    ctx.shadowBlur = 0;
-    ctx.fillText(text, x, y);
-    ctx.restore();
-}
-```
-
-### CRT scanlines
-
-```javascript
-function drawScanlines(ctx, w, h, opacity) {
-    ctx.save();
-    ctx.fillStyle = 'rgba(0,0,0,' + (opacity || 0.15) + ')';
-    for (var y = 0; y < h; y += 3) {
-        ctx.fillRect(0, y, w, 1);
-    }
-    ctx.restore();
-}
-```
-
-### Vignette (radial darkening at edges)
-
-```javascript
-function drawVignette(ctx, w, h, strength) {
-    var cx = w / 2, cy = h / 2;
-    var r = Math.max(w, h) * 0.7;
-    var grad = ctx.createRadialGradient(cx, cy, r * 0.3, cx, cy, r);
-    grad.addColorStop(0, 'transparent');
-    grad.addColorStop(1, 'rgba(0,0,0,' + (strength || 0.4) + ')');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, w, h);
-}
-```
-
-### Edge fade gradient
-
-```javascript
-function drawEdgeFade(ctx, side, w, h, fadeWidth, bgColor) {
-    var grad;
-    if (side === 'left') {
-        grad = ctx.createLinearGradient(0, 0, fadeWidth, 0);
-        grad.addColorStop(0, bgColor);
-        grad.addColorStop(1, 'transparent');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, fadeWidth, h);
-    } else if (side === 'right') {
-        grad = ctx.createLinearGradient(w - fadeWidth, 0, w, 0);
-        grad.addColorStop(0, 'transparent');
-        grad.addColorStop(1, bgColor);
-        ctx.fillStyle = grad;
-        ctx.fillRect(w - fadeWidth, 0, fadeWidth, h);
-    }
-}
-```
 
 ## Sparkline (micro chart)
 
@@ -669,99 +542,6 @@ for (var i = 0; i < rows.length; i++) {
     })(i);
 }
 ```
-
-## Animation (extended — modifiers, timing, easing)
-
-### Timer lifecycle (continuous loop)
-
-```javascript
-// In updateView:
-var animType = getOption(config, ns, 'animation', 'none');
-if (animType !== 'none' && !this._animTimer) {
-    var self = this;
-    this._animTimer = setInterval(function() {
-        self._animPhase = (self._animPhase || 0) + 0.05;
-        self._render(self._lastData, self._lastConfig);
-    }, 33); // ~30fps
-} else if (animType === 'none' && this._animTimer) {
-    clearInterval(this._animTimer);
-    this._animTimer = null;
-    this._animPhase = 0;
-}
-
-// In destroy:
-if (this._animTimer) {
-    clearInterval(this._animTimer);
-    this._animTimer = null;
-}
-```
-
-### Animation modifiers
-
-| Type | Apply in _render |
-|---|---|
-| `pulse` | `ctx.globalAlpha = 0.5 + 0.5 * Math.sin(this._animPhase)` |
-| `glow_pulse` | Modulate `shadowBlur` multiplier |
-| `breathe` | `var s = 1 + 0.03 * Math.sin(this._animPhase); ctx.scale(s, s)` around center |
-| `spin` | Add `this._animPhase * 2` to rotation angle |
-
-### Motion timing constants
-
-**Duration tiers:**
-| Tier | Duration | When to use | Example |
-|---|---|---|---|
-| Instant | 50-100ms | Hover highlight, cursor change | Cell highlight on mouseover |
-| Micro | 150-200ms | Value update, color transition | KPI number change |
-| State | 250-350ms | Panel reveal, gauge fill | Gauge arc animation on load |
-| Entrance | 400-600ms | First render, page transition | All vizs fade in on load |
-
-**Easing functions (ES5):**
-```javascript
-function easeOutQuart(t) { return 1 - Math.pow(1 - t, 4); }
-function easeOutExpo(t) { return t === 1 ? 1 : 1 - Math.pow(2, -10 * t); }
-function easeInOutCubic(t) {
-    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-}
-```
-
-**Usage pattern:**
-```javascript
-// Animate gauge from 0 to target value over 350ms
-var startTime = null;
-var targetPct = 0.73;
-
-function animateGauge(timestamp) {
-    if (!startTime) startTime = timestamp;
-    var elapsed = timestamp - startTime;
-    var progress = Math.min(elapsed / 350, 1);
-    var eased = easeOutQuart(progress);
-    var currentPct = targetPct * eased;
-
-    ctx.clearRect(0, 0, w, h);
-    drawGaugeArc(ctx, currentPct);
-
-    if (progress < 1) {
-        requestAnimationFrame(animateGauge);
-    }
-}
-requestAnimationFrame(animateGauge);
-```
-
-**Rules:**
-- Exit animations = 75% of entrance duration (feels snappier)
-- Never animate more than 2 elements simultaneously (Christmas tree effect)
-- `requestAnimationFrame` over `setInterval` for smooth 60fps
-- Clean up in `destroy()` — cancel pending frames with a flag:
-  `this._animating = false;` in destroy, check in animation loop
-- Respect `prefers-reduced-motion`: skip entrance animations,
-  keep functional transitions (hover highlight still works)
-
-**What NOT to animate:**
-- Don't animate on every data update — only on first render or
-  significant value changes (>10% delta)
-- Don't use bounce or elastic easing — feels dated and cheap
-- Don't animate text content (numbers counting up) unless it's
-  the HERO metric — it's distracting on supporting vizs
 
 ## Canvas effects stacking order
 
