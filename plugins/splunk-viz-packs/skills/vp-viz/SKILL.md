@@ -434,6 +434,7 @@ CRITICAL: Run validation after every build. Do not skip. Fix all failures before
 - **[Canvas recipes](references/canvas-recipes.md)** — tooltip, drilldown, color math, grid layout, shape primitives
 - **[Conf templates](references/conf-templates.md)** — app.conf, visualizations.conf, default.meta, transforms.conf
 - **[Theme template](references/theme-template.md)** — complete theme.js with getSpacing, getTypoScale, getHoverAlpha
+- **[Edge cases](references/edge-cases.md)** — MUST-READ for step 5: empty state, pagination, safeStr/safeNum discipline, ctx.save/restore. ECR-01 through ECR-05.
 
 ## Light theme verification
 
