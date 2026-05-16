@@ -82,6 +82,7 @@ RIGHT: "options": { "myapp.myviz.scoreField": "score" }
 □ Formatter: drilldownField text input on every viz with clickable data rows
 □ Visual Language: implement cornerRadius/fillTechnique/spacing from vp-design brief; different brands MUST use different Canvas APIs (gradient vs flat fill, rounded vs sharp rects)
 □ Tarball: ONE top-level directory only — package from parent dir
+□ Animation opt() reads — showEntrance, flashCritical, showHoverEffect, animationSpeed read via opt() with correct defaults (true, false, true, normal); prefersReducedMotion() check before starting animations
 ```
 
 ## Conf templates
@@ -421,6 +422,7 @@ CRITICAL: Run validation after every build. Do not skip. Fix all failures before
 
 - **[Design principles](../../vp-design/references/design-principles.md)** — DPR-01 through DPR-10, Canvas API mappings, FAIL code annotations. Load before writing _render().
 - **[Consistency grid](../../vp-design/references/consistency-grid.md)** — CON-01 through CON-05 formulas, getSpacing/getTypoScale/getHoverAlpha usage, CON-CHECK compliance checklist.
+- **[Animation recipes](../../vp-recipes/references/animation-recipes.md)** — ANI-01 through ANI-06: rAF entrance, LED pulse, hover easing, stagger patterns, prefers-reduced-motion. Load before writing updateView() animation logic.
 
 ### Load based on mood (from Visual Language output)
 
