@@ -165,12 +165,25 @@ WRONG: themeMode value="dark"          → MUST be value="auto"
 
 ### Formatter structure
 
-Every viz gets 3 sections:
+Every viz gets a minimum of 4 sections:
 1. **Data configurations** — field name mappings (text inputs)
 2. **Data display** — labels, units, toggles, decimals
-3. **Color and style** — themeMode, accentColor, series colors, accentIntensity
+3. **Color and style** — themeMode, accentColor, accentIntensity, series colors
+4. **Effects** — individual mood effect toggles (showAmbientLight, showVignette, showGlow, showGlassPanel)
 
-Minimum 7 controls for simple vizs, 10+ for complex.
+Minimum 10 controls. See formatter-patterns.md for the 4-section full example.
+
+### Per-viz option derivation (CFG-08)
+
+Consult viz-blueprints.md Settings: list for the viz type being generated. Use it as a GUIDE, not a minimum:
+- Always include: themeMode, accentColor, accentIntensity (universal trio — D-02)
+- Add type-specific controls from the blueprint (field names, zone thresholds, maxRows, etc.)
+- Add 1-2 brand-specific options if the brand brief suggests them
+- Drop blueprint options that don't apply to this brand's data
+- Target 10-14 total controls
+- D-03: do NOT add fontColor or bgColor controls — Dashboard Studio owns those at panel level
+
+CFG-07 reconciliation: CFG-07 lists "font color, background color, accent color." D-03 takes precedence — only accentColor is a viz formatter control. bgColor and fontColor are DS panel-level settings.
 
 ## visualization_source.js — COMPLETE TEMPLATE
 
