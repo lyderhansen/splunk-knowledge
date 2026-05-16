@@ -112,7 +112,10 @@ Common bug: forgetting step 4/5 resets. Shadow leaks into all subsequent draws. 
 
 - **[All patterns](references/all-patterns.md)** — index of all Canvas patterns; load to find the right file for your need (~200 lines)
 - **[Mood recipes](references/mood-recipes.md)** — 9 moods with Canvas code, accent intensity curves, tinted neutral recipes (~400 lines)
+- **[Depth recipes](references/depth-recipes.md)** — gradients, ambient light, vignette, gradient mesh, accent lines
+- **[Texture recipes](references/texture-recipes.md)** — noise grain (with offscreen cache), glass panels, tinted neutrals, diagonal hatch
+- **[Typography recipes](references/typography-recipes.md)** — 3-tier hierarchy, measureText-before-draw, cinematic letter spacing
 
 Full Canvas drawing code:
-- **[Canvas recipes](../vp-viz/references/canvas-recipes.md)** — shapes, colors, text, effects, animation, tooltip, sparklines, number formatting
+- **[Canvas recipes](../vp-viz/references/canvas-recipes.md)** — shapes, colors, hover/drilldown, grid layout, sparklines
 - **[Formatter patterns](../vp-viz/references/formatter-patterns.md)** — all formatter.html templates and section structure

@@ -1,5 +1,8 @@
 ## Mood recipes — Canvas techniques that create FEELING
 
+> Phase 6: depth/texture effects extracted to [depth-recipes.md](depth-recipes.md) and [texture-recipes.md](texture-recipes.md).
+> DPR labels below map each effect to its design rule in vp-design/references/design-principles.md.
+
 The recipes above are functional — they draw shapes and text. The
 recipes below create ATMOSPHERE. They're the difference between
 "a dashboard" and "a place you want to look at."
@@ -8,7 +11,8 @@ recipes below create ATMOSPHERE. They're the difference between
 communication by creating visual hierarchy, directing attention,
 or establishing emotional context. Use them with intention.
 
-### Ambient light source
+### Ambient light source — DPR-04
+<!-- DPR-04: Ambient light on dark theme vizs | Phase 8 check: WARN if absent on Futuristic/Luxury/Power mood -->
 
 A subtle radial gradient from one corner creates a sense of
 physical space — the dashboard feels LIT, not flat.
@@ -28,7 +32,8 @@ function drawAmbientLight(ctx, w, h, color, intensity) {
 // Place AFTER background fill, BEFORE data elements
 ```
 
-### Glass panel (frosted glass effect)
+### Glass panel (frosted glass effect) — DPR-06
+<!-- DPR-06: Glass panels on Luxury/Futuristic mood vizs | Phase 8 check: WARN if absent on Luxury/Futuristic -->
 
 Simulates backdrop-filter blur with a layered approach:
 semi-transparent fill + bright top edge + subtle inner shadow.
@@ -60,7 +65,8 @@ function drawGlassPanel(ctx, x, y, w, h, bgColor, r) {
 }
 ```
 
-### Micro-texture: noise grain
+### Micro-texture: noise grain — DPR-07
+<!-- DPR-07: Noise grain on Organic/Luxury mood vizs | Cache to offscreen canvas | Phase 8 check: WARN -->
 
 Adds tactile quality — the surface feels REAL, not digital.
 Keep opacity very low (0.015–0.03) or it becomes distracting.
@@ -105,7 +111,8 @@ function drawCarbonHatch(ctx, w, h, opacity, spacing) {
 }
 ```
 
-### Atmospheric vignette
+### Atmospheric vignette — DPR-05
+<!-- DPR-05: Vignette on dark theme vizs | Phase 8 check: WARN if absent on dark mood -->
 
 Darkens edges, naturally draws focus to center content.
 
@@ -149,7 +156,8 @@ function drawTextGlow(ctx, text, x, y, font, color, glowRadius) {
 // Usage: drawTextGlow(ctx, '312', cx, cy, 'bold 48px mono', '#DC0000', 16);
 ```
 
-### Cinematic typography — letter spacing
+### Cinematic typography — letter spacing — DPR-08
+<!-- DPR-08: Whisper-tier uppercase labels use drawSpacedText | No automated check -->
 
 Canvas has no letter-spacing property. Draw character by character
 for headlines that feel designed, not rendered.
@@ -174,7 +182,8 @@ function drawSpacedText(ctx, text, x, y, spacing) {
 // drawSpacedText(ctx, 'TELEMETRY', cx, 20, 4);
 ```
 
-### Gradient mesh — rich multi-point background
+### Gradient mesh — rich multi-point background — DPR-09
+<!-- DPR-09: Gradient mesh on Futuristic/Luxury mood | Phase 8 check: WARN if single-color bg on Futuristic/Luxury -->
 
 Two overlapping radial gradients create depth that a single
 linear gradient can't achieve.
@@ -200,7 +209,8 @@ function drawGradientMesh(ctx, w, h, color1, color2, color3) {
 // Usage: drawGradientMesh(ctx, w, h, '#0B0E1A', '#1E3A6E', '#2D0A3E');
 ```
 
-### Geometric accent lines
+### Geometric accent lines — DPR-10
+<!-- DPR-10: Accent lines on Precision/Power mood | No automated check -->
 
 Technical decorative lines that say "precision engineering."
 Place behind data elements, never on top.

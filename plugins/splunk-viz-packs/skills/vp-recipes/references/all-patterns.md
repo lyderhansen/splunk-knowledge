@@ -44,7 +44,7 @@ Full code: [canvas-recipes.md](../vp-viz/references/canvas-recipes.md) — Text 
 Hero / Body / Whisper size formulas that create dramatic visual hierarchy. Hero is 4-6x
 larger than whisper, creating the "wait, that's Splunk?" effect. Includes user override pattern.
 Includes: heroSize, bodySize, whisperSize formulas, `fontSize` user override.
-Full code: [canvas-recipes.md](../vp-viz/references/canvas-recipes.md) — Typographic tension section
+Full code: [typography-recipes.md](typography-recipes.md) — Typographic tension section
 **Load when:** You are laying out a KPI or any viz with a dominant value + supporting labels.
 
 ---
@@ -64,7 +64,7 @@ Full code: [canvas-recipes.md](../vp-viz/references/canvas-recipes.md) — KPI t
 Five atmospheric Canvas effects: drop shadow (multi-pass), neon glow text, CRT scanlines,
 radial vignette, and edge fade gradient. Stack these on the background, not on data elements.
 Includes: `drawShadow`, `drawGlowText`, `drawScanlines`, `drawVignette`, `drawEdgeFade`.
-Full code: [canvas-recipes.md](../vp-viz/references/canvas-recipes.md) — Effects section
+Full code: [depth-recipes.md](depth-recipes.md) — Effects section
 **Load when:** You are adding atmosphere (glow, scanlines, vignette) to a viz.
 
 ---
@@ -106,7 +106,7 @@ Two animation approaches: a continuous `setInterval` loop for ongoing effects (p
 spin), and `requestAnimationFrame` for one-shot entrance animations. Includes easing functions,
 motion timing tiers, and rules on what NOT to animate.
 Includes: timer lifecycle, `easeOutQuart`, `easeOutExpo`, `easeInOutCubic`, animation modifiers table.
-Full code: [canvas-recipes.md](../vp-viz/references/canvas-recipes.md) — Animation section
+Full code: [animation-recipes.md](animation-recipes.md) — Animation section
 **Load when:** You are adding entrance animation, pulse effects, or gauge fill animation.
 
 ---
