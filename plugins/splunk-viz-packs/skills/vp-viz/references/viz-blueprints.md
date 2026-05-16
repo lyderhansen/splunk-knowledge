@@ -10,6 +10,7 @@
 - Donut / Ring
 - Heat Grid / Matrix
 - Spark Strip
+- Line Chart
 - Radar / Spider Chart
 - Needle Gauge (Speedometer)
 - Status Matrix / Health Grid
@@ -212,6 +213,24 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 **Settings:** `metrics`, `labels`, `sparkHeight`, `showValue`, `showArea`, `showGlow`, `colors`, `accentColor`, `accentIntensity`, `themeMode`
 
 **Data contract:** time series with multiple value columns. Multi-row.
+
+### Line Chart
+
+**Expresses:** time-series trend, single or multi-metric over time.
+
+**Accessibility:** AA — line encoding with value labels.
+
+**When NOT to use:** Don't use for single data points (use KPI). Don't use for non-temporal categorical comparison (use bar).
+
+**Design rules:** See [design-principles.md](../../vp-design/references/design-principles.md)
+- DPR-01 (typography hierarchy) — hero/body/whisper 3-tier sizing
+- DPR-03 (gradient fills) — fill area under line uses createLinearGradient
+- DPR-10 (accent lines) — Precision mood decorative elements
+**Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
+
+**Settings:** `lineField`, `xField`, `lineColor`, `showFill`, `showDots`, `lineWidth`, `unit`, `thresholdValue`, `thresholdColor`, `themeMode`, `accentColor`, `accentIntensity`
+
+**Data contract:** time-series rows. `xField` (default `_time`), `lineField` (configurable value). Multi-row.
 
 ### Radar / Spider Chart
 
