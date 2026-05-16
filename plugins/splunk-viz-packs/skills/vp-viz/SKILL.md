@@ -390,10 +390,23 @@ CRITICAL: Run validation after every build. Do not skip. Fix all failures before
 
 ## References — read on demand
 
-- **[Viz blueprints](references/viz-blueprints.md)** — 15 viz types with creative direction + data contracts
-- **[Canvas recipes](references/canvas-recipes.md)** — tooltip, drilldown, animation, color math, grid layout
+### MUST-LOAD for every viz (universal design rules)
+
+- **[Design principles](../../vp-design/references/design-principles.md)** — DPR-01 through DPR-10, Canvas API mappings, FAIL code annotations. Load before writing _render().
+- **[Consistency grid](../../vp-design/references/consistency-grid.md)** — CON-01 through CON-05 formulas, getSpacing/getTypoScale/getHoverAlpha usage, CON-CHECK compliance checklist.
+
+### Load based on mood (from Visual Language output)
+
+- **[Depth recipes](../../vp-recipes/references/depth-recipes.md)** — gradients, ambient light, vignette, gradient mesh, accent lines. Load for: dark theme, Futuristic, Luxury, Precision, Power mood.
+- **[Texture recipes](../../vp-recipes/references/texture-recipes.md)** — noise grain, glass panels, tinted neutrals. Load for: Organic, Luxury mood.
+- **[Typography recipes](../../vp-recipes/references/typography-recipes.md)** — 3-tier hierarchy, cinematic letter spacing, measureText-before-draw. Load for: all vizs with text labels (nearly always).
+
+### Other references
+
+- **[Viz blueprints](references/viz-blueprints.md)** — 15 viz types with creative direction + data contracts (includes DPR cross-references)
+- **[Canvas recipes](references/canvas-recipes.md)** — tooltip, drilldown, color math, grid layout, shape primitives
 - **[Conf templates](references/conf-templates.md)** — app.conf, visualizations.conf, default.meta, transforms.conf
-- **[Theme template](references/theme-template.md)** — complete theme.js with all function implementations
+- **[Theme template](references/theme-template.md)** — complete theme.js with getSpacing, getTypoScale, getHoverAlpha
 
 ## Light theme verification
 

@@ -146,6 +146,25 @@ function parseInts(raw) {
     return raw.split(',').map(function(s) { return parseInt(s.trim(), 10); }).filter(function(n) { return !isNaN(n); });
 }
 
+// Phase 6 additions — CON-01, CON-02, CON-03
+// getSpacing: responsive spacing base unit
+function getSpacing(w) {
+    return Math.max(4, Math.round(w * 0.025));
+}
+// getHoverAlpha: consistent hover highlight alpha across all vizs
+function getHoverAlpha() {
+    return 0.12;
+}
+// getTypoScale: returns {hero, body, whisper} font sizes in px
+function getTypoScale(w, h) {
+    var dim = Math.min(w, h);
+    return {
+        hero:    Math.max(36, Math.min(72, dim * 0.35)),
+        body:    Math.max(14, Math.min(24, dim * 0.14)),
+        whisper: Math.max(8,  Math.min(11, dim * 0.07))
+    };
+}
+
 module.exports = {
     getTheme: getTheme,
     withAlpha: withAlpha,
@@ -157,7 +176,10 @@ module.exports = {
     drawHGrid: drawHGrid,
     parseColors: parseColors,
     parseInts: parseInts,
-    FONTS: FONTS
+    FONTS: FONTS,
+    getSpacing: getSpacing,
+    getHoverAlpha: getHoverAlpha,
+    getTypoScale: getTypoScale
 };
 ```
 
