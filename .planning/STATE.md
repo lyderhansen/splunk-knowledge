@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v5.0.0
 milestone_name: Design Awesomeness
-status: complete
-stopped_at: Phase 9 complete — milestone v5.0.0 done
-last_updated: "2026-05-16T21:30:00.000Z"
-last_activity: 2026-05-16 -- Phase 09 execution complete
+status: planning
+stopped_at: v5.1.0 milestone started — needs requirements + roadmap
+last_updated: "2026-05-17T00:30:00.000Z"
+last_activity: 2026-05-17 -- v5.1.0 milestone started, paused before requirements
 progress:
   total_phases: 4
   completed_phases: 4

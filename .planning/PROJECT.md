@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A marketplace of Claude Code plugins for Splunk development — custom visualizations, dashboards, SPL queries, and admin tasks. The primary focus is **splunk-viz-packs** (v4.1.0): a plugin that generates branded Splunk custom visualization apps from a brand brief. v4.1.0 hardening milestone shipped — the plugin now has AST/DOM/schema validation, automated repair, WCAG contrast enforcement, pure JS asset generation, and consolidated rules.
+A marketplace of Claude Code plugins for Splunk development — custom visualizations, dashboards, SPL queries, and admin tasks. The primary focus is **splunk-viz-packs** (v5.0.0): a plugin that generates branded Splunk custom visualization apps from a brand brief. v4.1.0 shipped validation/repair infrastructure. v5.0.0 focuses on design awesomeness — making every generated viz look like a professional designer made it, with depth, glow, premium typography, intelligent configuration, and bulletproof rendering.
 
 ## Core Value
 
@@ -30,11 +30,22 @@ When a user runs `/vp-init`, the resulting viz pack installs in Splunk without e
 
 ### Active
 
+- [ ] Design principles engine — codified Canvas 2D design rules from top design skills
+- [ ] Design quality gate — automated scorer for aesthetics (shadows, color, typography, spacing)
+- [ ] Premium rendering recipes — gradients, glow, shadow layering, responsive text, animations
+- [ ] Enhanced vp-viz generation — DataDrivers-quality code from the start
+- [ ] Intelligent viz configuration — context-aware formatter options with smart defaults per viz type
+- [ ] Theme parity — dark and light themes that both look intentional
+- [ ] Cross-viz consistency — shared spacing grid, hover contract, typography scale
+- [ ] Edge case resilience — graceful degradation for empty/null/overflow data
+- [ ] First-build success hardening — push FISR toward 100%
+
+### Deferred
+
 - [ ] Dashboard drilldown working end-to-end in generated dashboards
 - [ ] Dashboard JSON `"title"` field populated in generated output
 - [ ] Harden splunk-dashboard-studio plugin (ds-* skills)
 - [ ] Harden splunk-spl and splunk-admin plugins
-- [ ] Full LLM rebuild regression test (build from scratch with consolidated skills)
 
 ### Out of Scope
 
@@ -43,8 +54,40 @@ When a user runs `/vp-init`, the resulting viz pack installs in Splunk without e
 - Mobile-responsive viz rendering — Splunk dashboards are desktop/wall-display
 - Multi-tenant viz sharing — each pack is a standalone Splunk app
 
+## Current Milestone: v5.1.0 Viz Hardening & Dashboard Wow-Factor
+
+**Goal:** Fix every bug found in test29, fill missing settings gaps, give Claude more creative freedom in viz design, and make generated dashboards look professionally composed — not just panels dumped on a canvas.
+
+**Target features:**
+- Fix entrance-animation-off breaks gauge rendering (stuck at 0)
+- Fix zone color / hover toggle / accentIntensity wiring bugs
+- Make flashCritical LED pulse visually prominent
+- Add missing settings: pagination, text placement, sparkline controls, flexible status values
+- Loosen viz blueprints — creative freedom over rigid templates, especially KPI
+- Generate unique preview.png per viz (no duplicates)
+- Dashboard composition: story, depth, background, professional layout
+
+<details>
+<summary>v5.0.0 Design Awesomeness (shipped 2026-05-16)</summary>
+
+**Goal:** Make every generated viz pack look like it was designed by a professional design studio — depth, glow, premium typography, intelligent configuration, and bulletproof code.
+
+**Target features:**
+- Design principles engine (codified from ui-ux-pro-max, impeccable, design-taste-frontend, gpt-taste, minimalist-ui)
+- Design quality gate (automated aesthetic scoring)
+- Premium Canvas 2D rendering recipes (gradients, glow, shadow layering, responsive text, animations)
+- Enhanced vp-viz generation (DataDrivers F1 app quality bar)
+- Intelligent viz configuration (context-aware formatter options per viz type)
+- Theme parity (intentional dark + light, not just inverted)
+- Cross-viz consistency (spacing grid, hover contract, typography scale)
+- Edge case resilience (empty/null/overflow graceful degradation)
+- First-build success hardening (toward 100% FISR)
+
+</details>
+
 ## Context
 
+- **Reference bar:** DataDrivers F1 app — LED glow effects, trail opacity fading, responsive pagination, neon accents, custom fonts, every viz fully configurable via formatter options
 - **Testing approach:** 195 automated tests (AST, repair, contrast, dashboard, assets, integration) + manual Splunk tests. Tests 21-28 cover brands (Patagonia, Nike, Apple, Hospital, Riot Games, Stripe, Cloudflare).
 - **Validation pipeline:** validate_viz.sh orchestrates acorn AST (ES5), cheerio DOM (HTML), ajv schema (JSON), cross-file consistency, WCAG contrast, and asset quality checks. --repair flag auto-fixes B10/B9/B5/B7/B20.
 - **Design quality:** Visual Language schema enforces brand-specific rendering. Novelty scoring prevents lazy viz defaults. Interactivity mandates ensure sort/hover/drilldown.
@@ -84,4 +127,4 @@ When a user runs `/vp-init`, the resulting viz pack installs in Splunk without e
 This document evolves at phase transitions and milestone boundaries.
 
 ---
-*Last updated: 2026-05-15 after v4.1.0 milestone*
+*Last updated: 2026-05-17 after v5.1.0 milestone start*
