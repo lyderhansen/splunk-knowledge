@@ -76,7 +76,11 @@ Plans:
   3. A generated viz fed zero SPL results displays "No data available" in brand typography — no blank canvas, no JS error
   4. A generated table viz fed 1000 rows renders the first page without lag — pagination is active, not iterating all 1000 rows on every draw
   5. A generated viz with null field values displays fallback text, not "null" or "undefined" — safeStr/safeNum guards are present on all data access
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 08-01-PLAN.md — Create check_design.js with all seven design checks (D01-D06, D08)
+- [ ] 08-02-PLAN.md — Create edge-cases.md with ECR-01 through ECR-05 canonical patterns
+- [ ] 08-03-PLAN.md — Wire pipeline: test_check_design.js + validate_viz.sh Phase 4 hook + SKILL.md pointer
 
 ### Phase 9: Animation & Motion
 **Goal**: Entrance animations, LED pulse, eased hover transitions, and staggered row cascades are available as canvas-recipes.md patterns with formatter toggles — all off by default, all individually controllable
@@ -102,5 +106,5 @@ Plans:
 | 5. Rule Consolidation | v4.1.0 | 3/3 | Complete | 2026-05-15 |
 | 6. Design Principles & Skill Layer | v5.0.0 | 0/3 | Not started | - |
 | 7. Generation Quality & Theme Parity | v5.0.0 | 0/4 | Not started | - |
-| 8. Design Quality Gate & Edge Case Resilience | v5.0.0 | 0/? | Not started | - |
+| 8. Design Quality Gate & Edge Case Resilience | v5.0.0 | 0/3 | Not started | - |
 | 9. Animation & Motion | v5.0.0 | 0/? | Not started | - |
