@@ -202,6 +202,8 @@ destroy: function() {
 }
 ```
 
+PREFER: For production animations, use the rAF timestamp-based pattern in [animation-recipes.md](../../vp-recipes/references/animation-recipes.md) which provides smooth 60fps, auto-pauses on hidden tabs, and is cancelable via a single flag. The setInterval pattern above is retained as a simple reference for non-animated vizs that just need a timer.
+
 ## Common mistakes
 
 | Mistake | Fix |
@@ -529,18 +531,34 @@ Proportional fonts cause column misalignment and visual jitter.
 **Color is never the ONLY indicator.** A red gauge segment must ALSO
 have tick marks, zone labels, or text. ~8% of men are colorblind.
 
-**Stagger entrance for lists.** When rendering multiple rows,
-stagger by 20-40ms per row for a cascade effect:
+**Stagger entrance for lists.** When rendering multiple rows, stagger using
+rAF timestamp math — a single loop instead of N setTimeouts (Phase 9, D-11 rAF preferred):
 ```javascript
-// In _render, after computing all rows:
-var self = this;
-for (var i = 0; i < rows.length; i++) {
-    (function(idx) {
-        setTimeout(function() {
-            self._drawRow(ctx, idx);
-        }, idx * 30);
-    })(i);
-}
+// In initialize(): this._staggerStart = 0; this._staggerRAF = null;
+// In updateView(): call this._startStagger(rows);
+_startStagger: function(rows) {
+    var self = this;
+    if (self._staggerRAF) { cancelAnimationFrame(self._staggerRAF); }
+    var rowDelay = Math.min(30, 500 / rows.length);   // cap total stagger at 500ms
+    self._staggerStart = 0;
+    function step(ts) {
+        if (!self._staggerStart) { self._staggerStart = ts; }
+        var elapsed = ts - self._staggerStart;
+        var speedMult = self._speedMult || 1.0;        // slow=1.5x, normal=1.0x, fast=0.6x
+        var allDone = true;
+        for (var i = 0; i < rows.length; i++) {
+            var rowProgress = (elapsed - i * rowDelay * speedMult) / (200 * speedMult);
+            rowProgress = rowProgress < 0 ? 0 : rowProgress > 1 ? 1 : rowProgress;
+            rows[i]._alpha = rowProgress * rowProgress * rowProgress * rowProgress; // easeOutQuart
+            if (rowProgress < 1) { allDone = false; }
+        }
+        self.invalidateUpdateView();
+        if (!allDone) { self._staggerRAF = requestAnimationFrame(step); }
+        else { self._staggerRAF = null; }
+    }
+    self._staggerRAF = requestAnimationFrame(step);
+},
+// In destroy(): if (this._staggerRAF) { cancelAnimationFrame(this._staggerRAF); }
 ```
 
 ## Canvas effects stacking order
