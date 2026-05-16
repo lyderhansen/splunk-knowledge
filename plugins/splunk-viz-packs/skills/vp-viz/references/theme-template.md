@@ -50,28 +50,35 @@ var DARK = {
     invert: '{{DARK_INVERT}}'
 };
 
+// Light theme is NOT an inversion of dark. Design independently.
 var LIGHT = {
     name: 'light',
-    bg: '{{LIGHT_BG}}',
-    panel: '{{LIGHT_PANEL}}',
-    panelHi: '{{LIGHT_PANEL_HI}}',
-    edge: '{{LIGHT_EDGE}}',
-    edgeStrong: '{{LIGHT_EDGE_STRONG}}',
-    grid: '{{LIGHT_GRID}}',
-    text: '{{LIGHT_TEXT}}',
-    textDim: '{{LIGHT_TEXT_DIM}}',
-    textFaint: '{{LIGHT_TEXT_FAINT}}',
-    s1: '{{LIGHT_S1}}',
-    s2: '{{LIGHT_S2}}',
-    s3: '{{LIGHT_S3}}',
-    s4: '{{LIGHT_S4}}',
-    s5: '{{LIGHT_S5}}',
-    accent: '{{LIGHT_ACCENT}}',
-    success: '{{LIGHT_SUCCESS}}',
-    warn: '{{LIGHT_WARN}}',
-    danger: '{{LIGHT_DANGER}}',
-    invert: '{{LIGHT_INVERT}}'
+    bg:          '#F0F2F5',             // cool grey — never pure white (glare)
+    panel:       '#FFFFFF',             // pure white panels for contrast with bg
+    panelHi:     '#F7F8FA',            // hover/selected state
+    edge:        'rgba(0,0,0,0.10)',    // subtle 10% black separator
+    edgeStrong:  'rgba(0,0,0,0.20)',   // stronger separator
+    grid:        'rgba(0,0,0,0.06)',   // very subtle gridlines
+    text:        '#0B0E1A',            // near-black — D-08: ALWAYS use for hero text
+    textDim:     '#3D4050',            // secondary text — readable on white
+    textFaint:   '#8A8FA0',            // whisper labels — 25-35% perceived on white
+    s1: '{{PLACEHOLDER}}',             // brand-specific series colors — Claude fills per brand brief
+    s2: '{{PLACEHOLDER}}',
+    s3: '{{PLACEHOLDER}}',
+    s4: '{{PLACEHOLDER}}',
+    s5: '{{PLACEHOLDER}}',
+    accent:      '{{PLACEHOLDER}}',    // brand-specific; may differ from dark accent
+    success:     '#00875A',            // WCAG AA on white (#FFFFFF)
+    warn:        '#A66200',            // WCAG AA on white
+    danger:      '#C7001E',            // WCAG AA on white
+    invert:      '#FFFFFF'             // inverted text (on dark accent surfaces)
 };
+
+// D-08 STRUCTURAL RULE: hero text ALWAYS uses t.text on light theme.
+// NEVER use t.textDim or t.textFaint for hero/primary values on light bg.
+// t.textDim (#3D4050) on white (#FFFFFF) has very low perceived visibility — ghost-text bug (test24).
+// ctx.fillStyle = t.text;    // hero value — always t.text
+// ctx.fillStyle = t.textDim; // WRONG for hero on light theme — use only for secondary/label text
 
 function getTheme(name) {
     return (name === 'light') ? LIGHT : DARK;
@@ -188,3 +195,14 @@ module.exports = {
 - Panel: `#FFFFFF` with subtle edge
 - Text: `#0B0E1A` primary (full opacity for hero values)
 - Grid: `rgba(0,0,0,0.06)`
+
+```javascript
+// THM-03: Glow scaling on light theme — reduce to 40% of dark intensity
+// var glowScale = isDark ? 1.0 : 0.4;
+// ctx.shadowBlur = 20 * gi * glowScale;
+// ctx.shadowColor = theme.withAlpha(accent, gi * glowScale);
+
+// THM-04: Inner shadow (dark) vs 1px border (light)
+// if (isDark) { drawInnerShadow(ctx, x, y, w, h, 4, cr); }
+// else { roundRect(ctx, x+0.5, y+0.5, w-1, h-1, cr); ctx.strokeStyle = t.edge; ctx.lineWidth = 1; ctx.stroke(); }
+```
