@@ -245,3 +245,73 @@ using viz-blueprints.md Settings: list as your guide (D-01, D-04).
     </splunk-control-group>
 </form>
 ```
+
+### Animation section
+
+Add after the Effects section. All animation controls are independently toggleable per D-03/D-05/D-06.
+
+```html
+<form class="splunk-formatter-section" section-label="Animation">
+    <splunk-control-group label="Entrance animation" help="Animate on first render">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showEntrance" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Critical pulse" help="LED pulse on critical/error states">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.flashCritical" value="false">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Hover highlight" help="Highlight row/segment on mouse hover">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showHoverEffect" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Animation speed" help="Controls entrance and transition speed">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.animationSpeed" value="normal">
+            <option value="slow">Slow</option>
+            <option value="normal">Normal</option>
+            <option value="fast">Fast</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
+```
+
+Optional 5th control (add when brand brief mentions real-time data):
+
+```html
+    <splunk-control-group label="Re-animate on refresh" help="Replay entrance animation when data updates">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.reanimateOnRefresh" value="false">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+```
+
+### Animation opt() read pattern
+
+In `updateView`, alongside existing opt() calls — all 4 standard reads plus speed multiplier and prefers-reduced-motion override:
+
+```javascript
+var showEntrance = opt('showEntrance', 'true') === 'true';
+var flashCritical = opt('flashCritical', 'false') === 'true';
+var showHoverEffect = opt('showHoverEffect', 'true') === 'true';
+var animSpeed = opt('animationSpeed', 'normal');
+var speedMult = animSpeed === 'slow' ? 1.5 : animSpeed === 'fast' ? 0.6 : 1.0;
+
+// D-03: prefers-reduced-motion override — kills entrance + pulse, keeps hover (functional)
+var reducedMotion = false;
+try {
+    reducedMotion = window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+} catch (e) {}
+
+if (reducedMotion) {
+    showEntrance = false;
+    flashCritical = false;
+    // showHoverEffect stays ON — functional feedback, not decorative
+}
+```
