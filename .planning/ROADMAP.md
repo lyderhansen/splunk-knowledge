@@ -78,9 +78,9 @@ Plans:
   5. A generated viz with null field values displays fallback text, not "null" or "undefined" — safeStr/safeNum guards are present on all data access
 **Plans**: 3 plans
 Plans:
-- [ ] 08-01-PLAN.md — Create check_design.js with all seven design checks (D01-D06, D08)
-- [ ] 08-02-PLAN.md — Create edge-cases.md with ECR-01 through ECR-05 canonical patterns
-- [ ] 08-03-PLAN.md — Wire pipeline: test_check_design.js + validate_viz.sh Phase 4 hook + SKILL.md pointer
+- [x] 08-01-PLAN.md — Create check_design.js with all seven design checks (D01-D06, D08)
+- [x] 08-02-PLAN.md — Create edge-cases.md with ECR-01 through ECR-05 canonical patterns
+- [x] 08-03-PLAN.md — Wire pipeline: test_check_design.js + validate_viz.sh Phase 4 hook + SKILL.md pointer
 
 ### Phase 9: Animation & Motion
 **Goal**: Entrance animations, LED pulse, eased hover transitions, and staggered row cascades are available as canvas-recipes.md patterns with formatter toggles — all off by default, all individually controllable
@@ -92,7 +92,11 @@ Plans:
   3. User toggling showEntrance=false in the formatter immediately stops entrance animation without any other visual change
   4. A generated leaderboard with staggered entrance shows rows cascading in at 30ms delay intervals — not all appearing simultaneously
   5. animationSpeed and accentIntensity formatter controls produce measurably different output — "slow" takes longer than "fast", intensity 10 glows less than intensity 90
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 09-01-PLAN.md — Expand animation-recipes.md: remove DO NOT LOAD gate, add rAF entrance, LED pulse, hover easing, stagger patterns
+- [ ] 09-02-PLAN.md — Add Animation formatter section to formatter-patterns.md; add animation settings to all viz types in viz-blueprints.md
+- [ ] 09-03-PLAN.md — Wire SKILL.md MUST-LOAD, update canvas-recipes.md stagger/lifecycle, verify D08 compatibility
 **UI hint**: yes
 
 ## Progress
@@ -107,4 +111,4 @@ Plans:
 | 6. Design Principles & Skill Layer | v5.0.0 | 0/3 | Not started | - |
 | 7. Generation Quality & Theme Parity | v5.0.0 | 0/4 | Not started | - |
 | 8. Design Quality Gate & Edge Case Resilience | v5.0.0 | 0/3 | Not started | - |
-| 9. Animation & Motion | v5.0.0 | 0/? | Not started | - |
+| 9. Animation & Motion | v5.0.0 | 0/3 | Not started | - |
