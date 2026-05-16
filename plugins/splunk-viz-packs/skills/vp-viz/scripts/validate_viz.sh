@@ -306,6 +306,34 @@ if [ "$TOTAL_FAIL" -ne 0 ] && [ "$REPAIR_MODE" -eq 1 ] && [ "$HAS_NODE" -eq 1 ] 
   done
 fi
 
+# --- PHASE 4: Design Quality Gate ---
+CHECK_DESIGN="$SCRIPT_DIR/check_design.js"
+THEME_JS="$APP_DIR/shared/theme.js"
+echo ""
+echo "--- Design Quality Gate ---"
+if [ "$HAS_NODE" -eq 1 ] && [ -f "$CHECK_DESIGN" ]; then
+  for f in "$APP_DIR"/appserver/static/visualizations/*/formatter.html; do
+    [ -f "$f" ] || continue
+    vizdir="$(dirname "$f")"
+    if [ -f "$vizdir/src/visualization_source.js" ]; then
+      JS_SRC="$vizdir/src/visualization_source.js"
+    elif [ -f "$vizdir/visualization.js" ]; then
+      JS_SRC="$vizdir/visualization.js"
+    else
+      continue
+    fi
+    DESIGN_OUT=$(node "$CHECK_DESIGN" "$f" "$JS_SRC" "$THEME_JS" 2>/tmp/design_err_$$)
+    DESIGN_EXIT=$?
+    [ -n "$DESIGN_OUT" ] && echo "$DESIGN_OUT"
+    grep '^FINDING:' /tmp/design_err_$$ >> "$FINDINGS_FILE" 2>/dev/null
+    rm -f /tmp/design_err_$$
+    [ "$DESIGN_EXIT" -ne 0 ] && TOTAL_FAIL=1
+    [ "$DESIGN_EXIT" -eq 0 ] && echo "  OK"
+  done
+else
+  echo "  SKIP: check_design.js not found or Node.js unavailable"
+fi
+
 echo ""
 echo "============================================"
 if [ "$TOTAL_FAIL" -eq 0 ]; then
