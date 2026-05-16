@@ -27,7 +27,7 @@ Full details: `.planning/milestones/v4.1.0-ROADMAP.md`
 - [x] **Phase 6: Design Principles & Skill Layer** — Codify premium Canvas 2D design rules into reference files; extend canvas-recipes.md with depth/texture/typography patterns; define cross-viz consistency contracts — completed 2026-05-16
 - [ ] **Phase 7: Generation Quality & Theme Parity** — Upgrade vp-viz generation to produce 10-14 formatter options per viz type; make dark and light themes independently designed, not inverted
 - [ ] **Phase 8: Design Quality Gate & Edge Case Resilience** — Ship check_design.js (D01-D08 design checks) wired into validate_viz.sh Phase 4; harden all generated code against empty/null/overflow data
-- [ ] **Phase 9: Animation & Motion** — Add requestAnimationFrame entrance animations, LED pulse effect, eased hover transitions, and staggered row entrance to the canvas-recipes.md toolkit; all togglable via formatter
+- [x] **Phase 9: Animation & Motion** — Add requestAnimationFrame entrance animations, LED pulse effect, eased hover transitions, and staggered row entrance to the canvas-recipes.md toolkit; all togglable via formatter — completed 2026-05-16
 
 ## Phase Details
 
@@ -94,9 +94,9 @@ Plans:
   5. animationSpeed and accentIntensity formatter controls produce measurably different output — "slow" takes longer than "fast", intensity 10 glows less than intensity 90
 **Plans**: 3 plans
 Plans:
-- [ ] 09-01-PLAN.md — Expand animation-recipes.md: remove DO NOT LOAD gate, add rAF entrance, LED pulse, hover easing, stagger patterns
-- [ ] 09-02-PLAN.md — Add Animation formatter section to formatter-patterns.md; add animation settings to all viz types in viz-blueprints.md
-- [ ] 09-03-PLAN.md — Wire SKILL.md MUST-LOAD, update canvas-recipes.md stagger/lifecycle, verify D08 compatibility
+- [x] 09-01-PLAN.md — Expand animation-recipes.md: remove DO NOT LOAD gate, add rAF entrance, LED pulse, hover easing, stagger patterns
+- [x] 09-02-PLAN.md — Add Animation formatter section to formatter-patterns.md; add animation settings to all viz types in viz-blueprints.md
+- [x] 09-03-PLAN.md — Wire SKILL.md MUST-LOAD, update canvas-recipes.md stagger/lifecycle, verify D08 compatibility
 **UI hint**: yes
 
 ## Progress
@@ -111,4 +111,4 @@ Plans:
 | 6. Design Principles & Skill Layer | v5.0.0 | 0/3 | Not started | - |
 | 7. Generation Quality & Theme Parity | v5.0.0 | 0/4 | Not started | - |
 | 8. Design Quality Gate & Edge Case Resilience | v5.0.0 | 0/3 | Not started | - |
-| 9. Animation & Motion | v5.0.0 | 0/3 | Not started | - |
+| 9. Animation & Motion | v5.0.0 | 3/3 | Complete | 2026-05-16 |
