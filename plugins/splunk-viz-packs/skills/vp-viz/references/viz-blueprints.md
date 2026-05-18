@@ -67,6 +67,7 @@ These rules are guardrails, not a blueprint. Within these constraints, design a 
 - Layout archetype (counter card, progress bar with target line, win-streak ribbon, delta comparison card, radial progress, icon-led badge)
 - Container shape (full-bleed, inset card with rounded corners, pill shape, asymmetric notch)
 - Trend visualization (inline sparkline, arrow with percentage, color-coded dot, pulsing glow on threshold breach)
+- Sparkline display mode (area fill, bare line, bar mini-chart, dot trail)
 - Value hierarchy (hero number dominates, label dominates with number secondary, icon dominates with number as caption)
 - Decorative accents (accent stripe at top/left/bottom, background gradient direction, subtle watermark pattern, corner flourish)
 
@@ -77,6 +78,8 @@ These rules are guardrails, not a blueprint. Within these constraints, design a 
 `textPlacement` controls the label-value-trend stack position within the panel. center=vertically and horizontally centered (default). top=anchored to top with breathing room below. left=left-aligned with value. right=right-aligned. Claude should choose the default that best fits the brand personality.
 
 `sparkPlacement` controls where the trend sparkline renders relative to the hero value: bottom (default, horizontal strip below value), right (vertical strip beside value), background (full-panel-width subtle area fill behind the value). `sparkHeight` is a percentage of panel height (10-50, default 25).
+
+Sparkline rendering: use the drawSparkline() recipe from [canvas-recipes.md](canvas-recipes.md) for the sparkline implementation. The sparkline reads trend data from the search result (multiple rows or a trend field). When sparkPlacement is 'background', draw the sparkline at full panel width with 8-12% opacity as an ambient element behind the hero value.
 
 **Data contract:** configurable field (default: `value`). Reads last row. Optional: `delta` field.
 
