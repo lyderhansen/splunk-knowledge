@@ -36,6 +36,9 @@ Without context, you produce generic output. You need ALL five:
 1. Brand research          → understand the visual language
 2. Design context          → brand, domain, tone, fonts
 3. Design direction        → palette, typography, aesthetic
+3b. Domain visual language  → research how this domain displays data
+                              Produce: 2-3 domain-unique viz concepts
+                              Load domain-templates.md for precedents
 4. Viz inventory           → from domain templates or custom
 5. Design brief            → per-viz specs with data contracts
 6. Quality gate            → all checks pass
@@ -44,6 +47,22 @@ Without context, you produce generic output. You need ALL five:
 ```
 
 Write all viz code INLINE (same context). Do NOT dispatch subagents for code generation — they lose the skill context.
+
+## Domain visual language research (step 3b)
+
+Before selecting viz types, research how professionals in this domain visualize data.
+
+1. **Load domain-templates.md** — read the domain visual language note for this industry
+2. **Domain concept sketch** — write 2-3 sentences: what would a specialist expect to see? What would surprise them?
+3. **Identify domain-unique concepts** — list 2-3 viz types that could NOT exist outside this domain (e.g., a MITRE ATT&CK heatmap only exists in SOC, a departure board only exists in aviation)
+4. **Canvas complexity gate** — for each domain-unique concept, classify:
+   - **Renderable** (iterates rows, draws primitives): proceed
+   - **Stretched** (coordinate transforms, state machine): proceed with caution, keep draw code under 200 lines
+   - **Overambitious** (graph layout, physics, recursive algorithms): use proxy pattern from domain-templates.md instead
+
+**Domain lock assertion:** Before finalizing the inventory, ask: "Could this exact inventory appear in a different domain with different colors?" If yes, replace at least one generic viz with a domain-unique type.
+
+**Minimum: 2 domain-unique viz types per pack** (DOM-02). Types annotated "no generic equivalent" in domain-templates.md satisfy this. Universal types (KPI, table) are allowed as supporting vizs alongside the domain-unique ones.
 
 ## Hand-off protocol
 
@@ -107,6 +126,7 @@ If any answer is bad, loop back.
 - Minimum 3 DISTINCT categories — no all-gauges or all-donuts
 - Every data panel: custom Canvas viz (built-in Splunk vizs break brand identity)
 - Each brand gets unique _render() code — no copy-paste-recolor
+- Minimum 2 domain-unique viz types (from domain-templates.md "no generic equivalent" entries)
 
 ## Novelty check
 
