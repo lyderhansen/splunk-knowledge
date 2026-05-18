@@ -2,7 +2,7 @@
 name: vp-create
 description: "Builds and packages Splunk custom visualization apps — flat AMD compilation, post-build validation, and tarball packaging ready for Splunk install."
 when_to_use: "Use when building, validating, or packaging a viz app. Triggers on 'build app', 'package tarball', 'deploy viz', 'validate build', 'create tarball'."
-disable-model-invocation: true
+disable-model-invocation: false
 allowed-tools: Bash(node *) Bash(tar *) Bash(find *) Bash(wc *) Bash(chmod *)
 model: sonnet
 ---
