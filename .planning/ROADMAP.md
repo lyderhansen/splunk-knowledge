@@ -205,11 +205,9 @@ Plans:
   1. User runs vp-create and a Dashboard Studio JSON file is produced without any additional prompting — dashboard generation is Step 3c, not an optional extra
   2. The generated dashboard contains one panel per viz in the pack — a pack with 5 vizs produces a dashboard with exactly 5 panels
   3. vp-create refuses to generate the dashboard and reports an error if validate_viz.sh exits non-zero for any viz — the dashboard is never produced from broken vizs
-**Plans**: 2 plans
+**Plans**: 1 plan
 Plans:
-- [ ] 14-01-PLAN.md — Domain visual language step in vp-design + domain-unique viz entries in domain-templates.md
-- [ ] 14-02-PLAN.md — Auto-field discovery patterns reference + vp-viz SKILL.md template update
-
+- [ ] 15-01-PLAN.md — Add Step 3c mandatory dashboard generation to vp-create with validation gate and panel count verification
 
 ## Progress
 
@@ -229,4 +227,4 @@ Plans:
 | 12. Dashboard Composition | v5.1.0 | 2/2 | Complete | 2026-05-18 |
 | 13. Accent Architecture Foundation | v5.2.0 | 0/3 | In progress | - |
 | 14. Smart Fields & Domain Ideation | v5.2.0 | 0/? | Not started | - |
-| 15. Mandatory Dashboard Packaging | v5.2.0 | 0/? | Not started | - |
+| 15. Mandatory Dashboard Packaging | v5.2.0 | 0/1 | Not started | - |
