@@ -275,14 +275,37 @@ function hexToRgb(hex) {
 // ---- Viz type detection ----
 
 var VIZ_TYPE_KEYWORDS = [
-    { type: 'bars',     keywords: ['bar', 'bars', 'column', 'histogram', 'bar_chart', 'barchart', 'vertical'] },
-    { type: 'gauge',    keywords: ['gauge', 'arc', 'ring', 'donut', 'dial', 'speedometer', 'radial'] },
-    { type: 'grid',     keywords: ['grid', 'table', 'matrix', 'heatmap', 'heat', 'map', 'cell'] },
-    { type: 'line',     keywords: ['line', 'trend', 'area', 'sparkline', 'area_chart', 'linechart', 'timeseries', 'time_series'] },
-    { type: 'timeline', keywords: ['timeline', 'gantt', 'feed', 'activity', 'event', 'stream', 'log'] },
-    { type: 'radar',    keywords: ['radar', 'spider', 'polar', 'web', 'radarchart'] },
-    { type: 'progress', keywords: ['progress', 'bullet', 'meter', 'completion', 'fill', 'progress_bar'] },
-    { type: 'kpi',      keywords: ['kpi', 'metric', 'score', 'value', 'number', 'stat', 'card', 'tile', 'badge', 'counter'] }
+    { type: 'bars',     keywords: ['leaderboard', 'leader', 'ranking', 'waterfall', 'bullet',
+                                   'bar_chart', 'barchart', 'histogram', 'horizontal', 'vertical',
+                                   'ranked', 'podium', 'position_board',
+                                   'bar', 'bars', 'column'] },
+    { type: 'gauge',    keywords: ['kpi_gauge', 'ring_gauge', 'speedometer', 'utilization',
+                                   'battery', 'fuel', 'needle', 'meter',
+                                   'gauge', 'arc', 'ring', 'donut', 'dial', 'radial'] },
+    { type: 'grid',     keywords: ['status_matrix', 'health_grid', 'attack_heatmap', 'host_grid',
+                                   'heatmap', 'heat', 'occupancy', 'department', 'severity',
+                                   'grid', 'table', 'matrix', 'cell'] },
+    { type: 'line',     keywords: ['power_horizon', 'spark_strip', 'time_series', 'timeseries',
+                                   'area_chart', 'linechart', 'sparkline', 'horizon',
+                                   'line', 'trend', 'area', 'spark'] },
+    { type: 'timeline', keywords: ['incident_feed', 'event_feed', 'live_ticker', 'passenger_flow',
+                                   'kill_chain', 'pipeline', 'process', 'observation',
+                                   'timeline', 'gantt', 'feed', 'activity', 'event',
+                                   'stream', 'log', 'ticker', 'incident', 'queue', 'flow'] },
+    { type: 'radar',    keywords: ['multi_axis', 'radarchart', 'dimension', 'profile',
+                                   'radar', 'spider', 'polar', 'web'] },
+    { type: 'progress', keywords: ['stage_tracker', 'progress_bar', 'completion', 'saturation',
+                                   'capacity', 'runway',
+                                   'progress', 'fill', 'step', 'stage'] },
+    { type: 'scatter',  keywords: ['latency_scatter', 'scatterplot', 'bivariate', 'distribution',
+                                   'scatter', 'bubble', 'correlation', 'plot', 'xy'] },
+    { type: 'network',  keywords: ['network_topology', 'force_directed', 'dependency',
+                                   'relationship', 'geographic', 'flight', 'route',
+                                   'network', 'topology', 'connection', 'graph',
+                                   'force', 'node', 'edge', 'path'] },
+    { type: 'kpi',      keywords: ['single_value', 'satisfaction', 'counter',
+                                   'kpi', 'metric', 'score', 'value', 'number',
+                                   'stat', 'card', 'tile', 'badge', 'nps'] }
 ];
 
 function detectVizType(dirName) {
