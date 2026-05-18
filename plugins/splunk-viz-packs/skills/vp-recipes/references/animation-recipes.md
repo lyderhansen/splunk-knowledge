@@ -7,9 +7,8 @@ These patterns cover all Phase 9 animation requirements (ANI-01 through ANI-06).
 
 ### Timer lifecycle — continuous loop
 
-Standard pattern for continuous animations (pulse rings, breathing gauges).
-Uses setInterval for simple phase-based loops; prefer rAF for entrance and
-one-shot animations. Always clean up in `destroy()`.
+Uses setInterval at ~30fps for continuous animations (pulse, breathe).
+ACC-05: rAF at 60fps is too CPU-intensive for dashboards with 5+ animated vizs running simultaneously. Use rAF only for one-shot entrance animations. Always clean up in `destroy()`.
 
 ```javascript
 // In initialize():
@@ -88,7 +87,7 @@ function getSpeedMult(config, ns) {
 | State | 250–350ms | Gauge arc fill on load |
 | Entrance | 400–600ms | All vizs fade in |
 
-**Rules:** `requestAnimationFrame` over `setInterval` for 60fps. Exit = 75% of entrance.
+**Rules:** requestAnimationFrame for one-shot entrance animations. setInterval at 30fps (~33ms) for continuous loops (LED pulse, breathing gauge) — reduces CPU when multiple vizs animate simultaneously. Exit = 75% of entrance.
 Never animate >2 elements simultaneously. Clean up in `destroy()` with a boolean flag.
 
 ---
@@ -189,28 +188,32 @@ Default OFF (`flashCritical: false`) per D-06. cadence = 700ms per D-05.
 ```javascript
 // In initialize():
 this._pulsing = false;
+this._pulseTimer = null;
 
 _startPulse: function(cadenceMs) {
-    if (this._pulsing) { return; }   // single loop guard
+    if (this._pulseTimer) { return; }   // single loop guard
     cadenceMs = cadenceMs || 700;
-    var startTime = null;
+    var startTime = Date.now();
     var self = this;
     this._pulsing = true;
-    function pulse(timestamp) {
-        if (!self._pulsing) { return; }
-        if (!startTime) { startTime = timestamp; }
-        var phase = ((timestamp - startTime) % cadenceMs) / cadenceMs;
+    this._pulseTimer = setInterval(function() {
+        if (!self._pulsing) { clearInterval(self._pulseTimer); self._pulseTimer = null; return; }
+        var elapsed = Date.now() - startTime;
+        var phase = (elapsed % cadenceMs) / cadenceMs;
         self._pulseBlur = 8 + 16 * (0.5 + 0.5 * Math.sin(phase * Math.PI * 2));
         self.invalidateUpdateView();
-        requestAnimationFrame(pulse);
-    }
-    requestAnimationFrame(pulse);
+    }, 33); // ~30fps — ACC-05: setInterval for continuous loops, not rAF
 },
 
-_stopPulse: function() { this._pulsing = false; this._pulseBlur = 0; },
+_stopPulse: function() {
+    this._pulsing = false;
+    this._pulseBlur = 0;
+    if (this._pulseTimer) { clearInterval(this._pulseTimer); this._pulseTimer = null; }
+},
 
 // In destroy():
 this._pulsing = false;
+if (this._pulseTimer) { clearInterval(this._pulseTimer); this._pulseTimer = null; }
 ```
 
 **Apply in _render** — MUST use ctx.save()/ctx.restore() per ECR-05:
