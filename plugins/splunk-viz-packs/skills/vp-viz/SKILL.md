@@ -67,6 +67,7 @@ RIGHT: "options": { "myapp.myviz.scoreField": "score" }
 □ JS: measureText() before positioning text (prevent overflow)
 □ JS: Math.max(floor, h * ratio) for font sizes — NO upper pixel cap
 □ JS: ROW_MAJOR_OUTPUT_MODE in getInitialDataParams
+□ JS: hexFromSplunk() wraps ALL color picker opt() reads — Splunk delivers color values as integers (B22)
 □ JS: pure ES5 — no const/let/arrow/template literals
 □ Dashboard JSON type: {app_id}.{viz_name} — NEVER custom.* or splunk.custom.*
 □ Dashboard JSON options: {app_id}.{viz_name}.key — NEVER bare key names
@@ -241,6 +242,15 @@ function detectTheme() {
     return 'dark';
 }
 
+// Two-path config lookup — checks namespaced key first, falls back to short key (see formatter-patterns.md)
+function getOption(config, ns, key, defaultValue) {
+    var v = config[ns + key];
+    if (v !== undefined && v !== null) return v;
+    v = config[key];
+    if (v !== undefined && v !== null) return v;
+    return defaultValue;
+}
+
 module.exports = SplunkVisualizationBase.extend({
 
     initialize: function() {
@@ -298,11 +308,8 @@ module.exports = SplunkVisualizationBase.extend({
             else return;
         }
 
-        var ns = this.getPropertyNamespaceInfo().propertyNamespace;
-        function opt(key, fallback) {
-            var v = config[ns + key];
-            return (v != null && v !== '') ? v : fallback;
-        }
+        var ns = (function(viz) { try { var i = viz.getPropertyNamespaceInfo(); return i && i.propertyNamespace ? i.propertyNamespace : ''; } catch(e) { return ''; } })(this);
+        function opt(key, fallback) { return getOption(config, ns, key, fallback); }
 
         // {FILL: read settings — defaults MUST match formatter value= attrs}
         var valueField = opt('{FILL}', '{FILL}');
