@@ -68,6 +68,8 @@ RIGHT: "options": { "myapp.myviz.scoreField": "score" }
 □ JS: Math.max(floor, h * ratio) for font sizes — NO upper pixel cap
 □ JS: ROW_MAJOR_OUTPUT_MODE in getInitialDataParams
 □ JS: hexFromSplunk() wraps ALL color picker opt() reads — Splunk delivers color values as integers (B22)
+□ JS accent role: t.accent used ONLY for hover highlight, glow shadowColor, selection ring, threshold breach, focus indicator. Never as ctx.fillStyle for data bars, arcs, or area fills. See DPR-03b.
+□ JS series data fills: multi-series fills use theme.getSeriesColor(i, t) from t.series[0]-[4]. Single-series vizs may use t.accent as the primary fill (KPI hero value, single gauge arc).
 □ JS: pure ES5 — no const/let/arrow/template literals
 □ Dashboard JSON type: {app_id}.{viz_name} — NEVER custom.* or splunk.custom.*
 □ Dashboard JSON options: {app_id}.{viz_name}.key — NEVER bare key names
@@ -319,12 +321,10 @@ module.exports = SplunkVisualizationBase.extend({
                    : themeMode === 'dark';
         var t = theme.getTheme(isDark ? 'dark' : 'light');
 
-        // D-05: accentIntensity /100 linear scale — 0=off, 0.5=default, 1.0=full
-        // NOTE: mood-recipes.md shows /50 (gi range 0-2) — that pattern is SUPERSEDED by D-05.
-        // Always use /100 in generated code.
+        // ACC-03: accentIntensity /100 uncapped multiplier -- 0=off, 0.5=default, 1.0=full, >1.0=extreme
+        // gi controls ONLY shadowBlur + shadowColor alpha (other effects use their own toggles)
         var gi = parseFloat(opt('accentIntensity', '50')) / 100;
-        gi = gi < 0 ? 0 : gi > 1 ? 1 : gi;
-        // D-07: gi controls ONLY shadowBlur + shadowColor alpha (other effects use their own toggles)
+        gi = gi < 0 ? 0 : gi;  // floor at 0, no ceiling
         // THM-03: reduce glow on light theme
         var glowScale = isDark ? 1.0 : 0.4;
         // Apply: ctx.shadowBlur = 20 * gi * glowScale; ctx.shadowColor = theme.withAlpha(accent, gi * glowScale);
