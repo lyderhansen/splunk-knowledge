@@ -1,0 +1,112 @@
+<form class="splunk-formatter-section" section-label="Data Configuration">
+    <splunk-control-group label="Remaining Field" help="Field for fuel remaining percentage">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.remainingField" value="fuel_remaining_pct">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Burn 1 Field" help="Percentage consumed by first burn">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.burn1Field" value="burn1_pct">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Burn 2 Field" help="Percentage consumed by second burn">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.burn2Field" value="burn2_pct">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Burn 3 Field" help="Percentage consumed by third burn">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.burn3Field" value="burn3_pct">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Drilldown Field" help="Field sent on click">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.drilldownField" value="fuel_remaining_pct">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Display">
+    <splunk-control-group label="Max Burns" help="Number of burn segments to show">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.maxBurns" value="3">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Burn Labels" help="Comma-separated labels for burns">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.burnLabels" value="TLI,LOI,TEI">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Reserve Threshold" help="Percent below which reserve warning triggers">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.reserveThreshold" value="15">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Arc Width" help="Thickness of the arc gauge">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.arcWidth" value="medium">
+            <option value="thin">Thin</option>
+            <option value="medium">Medium</option>
+            <option value="thick">Thick</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show Labels" help="Display burn labels along the arc">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showLabels" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Color and Style">
+    <splunk-control-group label="Theme" help="Auto detects dashboard theme">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto">
+            <option value="auto">Auto</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Remaining Color" help="Color for remaining fuel segment">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.remainingColor" type="custom" value="#00E5A0">
+            <splunk-color>#00E5A0</splunk-color>
+            <splunk-color>#00B4FF</splunk-color>
+            <splunk-color>#C084FC</splunk-color>
+            <splunk-color>#FACC15</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Burn Color" help="Color for consumed burn segments">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.burnColor" type="custom" value="#FF6B35">
+            <splunk-color>#FF6B35</splunk-color>
+            <splunk-color>#FACC15</splunk-color>
+            <splunk-color>#C084FC</splunk-color>
+            <splunk-color>#00B4FF</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Reserve Color" help="Color when fuel drops below reserve">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.reserveColor" type="custom" value="#FF3B5C">
+            <splunk-color>#FF3B5C</splunk-color>
+            <splunk-color>#FF6B35</splunk-color>
+            <splunk-color>#FACC15</splunk-color>
+            <splunk-color>#C084FC</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Animation">
+    <splunk-control-group label="Entrance Animation" help="Arc segments grow in on first load">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showEntrance" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Flash Critical" help="Pulse when fuel below reserve">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.flashCritical" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Hover Effect" help="Brighten segment on hover">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showHoverEffect" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Animation Speed" help="Speed of entrance animation">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.animationSpeed" value="normal">
+            <option value="slow">Slow</option>
+            <option value="normal">Normal</option>
+            <option value="fast">Fast</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>

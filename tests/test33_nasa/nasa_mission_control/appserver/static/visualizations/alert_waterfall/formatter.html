@@ -1,0 +1,83 @@
+<form class="splunk-formatter-section" section-label="Data Configuration">
+    <splunk-control-group label="Time Field" help="Field containing alert timestamp">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.timeField" value="_time">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Alert Field" help="Field containing alert name">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.alertField" value="alert_name">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Severity Field" help="Field for severity (info/warning/critical)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.severityField" value="severity">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Subsystem Field" help="Field for subsystem identifier">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.subsystemField" value="subsystem">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Status Field" help="Field for alert status (active/resolved)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.statusField" value="status">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Drilldown Field" help="Field sent on click">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.drilldownField" value="alert_name">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Display">
+    <splunk-control-group label="Max Rows" help="Maximum number of visible alert rows">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.maxRows" value="20">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Sort Order" help="Sort alerts by time">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.sortOrder" value="newest">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show Timestamp" help="Display timestamp column">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showTimestamp" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Active Glow" help="Pulse active (unresolved) alert rows">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.activeGlow" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Color and Style">
+    <splunk-control-group label="Theme" help="Auto detects dashboard theme">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto">
+            <option value="auto">Auto</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Animation">
+    <splunk-control-group label="Entrance Animation" help="Rows cascade in from top">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showEntrance" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Flash Critical" help="Pulse critical severity rows">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.flashCritical" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Animation Speed" help="Speed of entrance cascade">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.animationSpeed" value="normal">
+            <option value="slow">Slow</option>
+            <option value="normal">Normal</option>
+            <option value="fast">Fast</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
