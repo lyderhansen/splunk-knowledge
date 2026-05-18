@@ -37,7 +37,7 @@ Full details: `.planning/milestones/v4.1.0-ROADMAP.md`
 
 - [x] **Phase 10: Foundation Fixes** — Fix all confirmed test29 bugs: opt() two-path lookup, entrance-animation-off gauge stuck at zero, flashCritical LED pulse prominence, zone color wiring, hover toggle — completed 2026-05-18
 - [x] **Phase 11: Blueprint Expansion & Creative Freedom** — Add missing settings (pagination, text placement, sparkline controls, flexible status values, cell label/header toggles); loosen KPI blueprint for brand-distinct tiles; improve drilldown field help text — completed 2026-05-18
-- [ ] **Phase 12: Dashboard Composition** — Create dashboard-composition.md reference; establish branded background treatments, visual hierarchy, depth through card grouping, and story-first panel arrangement
+- [x] **Phase 12: Dashboard Composition** — Create dashboard-composition.md reference; establish branded background treatments, visual hierarchy, depth through card grouping, and story-first panel arrangement — completed 2026-05-18
 
 ## Phase Details
 
@@ -151,8 +151,8 @@ Plans:
   4. A user reading a generated dashboard can identify the story from layout alone — the arrangement follows data narrative order (summary to detail, alert to root-cause, or KPI to trend)
 **Plans**: 2 plans
 Plans:
-- [ ] 12-01-PLAN.md — Create dashboard-composition.md reference and wire into vp-design SKILL.md
-- [ ] 12-02-PLAN.md — Extend generate_assets.js with gradient background PNG generation
+- [x] 12-01-PLAN.md — Create dashboard-composition.md reference and wire into vp-design SKILL.md
+- [x] 12-02-PLAN.md — Extend generate_assets.js with gradient background PNG generation
 **UI hint**: yes
 
 
