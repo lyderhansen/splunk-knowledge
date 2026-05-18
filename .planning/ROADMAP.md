@@ -55,7 +55,7 @@ Full details: `.planning/milestones/v5.2.0-ROADMAP.md`
 
 ### v5.3.0 Production Polish & Interactive Dashboards
 
-- [ ] **Phase 16: Code Quality & Reference Cleanup** — Trim canvas-recipes.md and fix generated code patterns (accentIntensity cap, hover early-exit, KPI sparkline, preview silhouettes)
+- [x] **Phase 16: Code Quality & Reference Cleanup** — Trim canvas-recipes.md and fix generated code patterns (accentIntensity cap, hover early-exit, KPI sparkline, preview silhouettes) (completed 2026-05-18)
 - [ ] **Phase 17: Dashboard Schema & Composition** — Fix tab schema enforcement, upgrade background treatment, mandate branded titles, auto-load ds-int-tabs
 - [ ] **Phase 18: Interactive Dashboard Features** — Drilldown token flows, input filter controls, default tokens so dashboard works before any click
 
@@ -231,8 +231,8 @@ Plans:
   5. Two preview.png thumbnails in the same generated pack have distinct shapes — grepping the generate_assets.js silhouette map confirms each @viz-type annotation maps to a unique drawing routine
 **Plans**: 2 plans
 Plans:
-- [ ] 16-01-PLAN.md — Trim canvas-recipes.md from 998 to under 500 lines (remove duplicates, condense verbose sections)
-- [ ] 16-02-PLAN.md — Add D09/D10/D11 design quality rules, update pre-code-checklist.md and viz-blueprints.md
+- [x] 16-01-PLAN.md — Trim canvas-recipes.md from 998 to under 500 lines (remove duplicates, condense verbose sections)
+- [x] 16-02-PLAN.md — Add D09/D10/D11 design quality rules, update pre-code-checklist.md and viz-blueprints.md
 
 ### Phase 17: Dashboard Schema & Composition
 **Goal**: Generated tabbed dashboards use the correct JSON schema, the dashboard background is visually dramatic, every dashboard has a branded title panel, and ds-int-tabs is loaded automatically when tabs are needed
@@ -243,7 +243,10 @@ Plans:
   2. A generated dashboard background is visually distinct from default Splunk grey — it uses depth layers (at minimum a gradient wash plus a radial accent glow or branded pattern element)
   3. Every generated dashboard contains a splunk.markdown panel at the top with the brand name or project title visible — the panel is present even if no explicit title was requested
   4. When a user requests a dashboard with 7 or more vizs or explicitly requests tabs, ds-int-tabs is loaded before any dashboard JSON is written — no manual reminder required
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 17-01-PLAN.md — Add DS2/DS3/DS4 checks to validate_dash.js + tests (tab schema, background, title panel)
+- [ ] 17-02-PLAN.md — Update dashboard-json-template.md with mandatory title section + vp-create SKILL.md ds-int-tabs conditional load
 **UI hint**: yes
 
 ### Phase 18: Interactive Dashboard Features
@@ -276,6 +279,6 @@ Plans:
 | 13. Accent Architecture Foundation | v5.2.0 | 0/3 | Not started | - |
 | 14. Smart Fields & Domain Ideation | v5.2.0 | 0/2 | Not started | - |
 | 15. Mandatory Dashboard Packaging | v5.2.0 | 0/1 | Not started | - |
-| 16. Code Quality & Reference Cleanup | v5.3.0 | 0/2 | Not started | - |
+| 16. Code Quality & Reference Cleanup | v5.3.0 | 2/2 | Complete    | 2026-05-18 |
 | 17. Dashboard Schema & Composition | v5.3.0 | 0/? | Not started | - |
 | 18. Interactive Dashboard Features | v5.3.0 | 0/? | Not started | - |
