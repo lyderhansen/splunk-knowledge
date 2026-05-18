@@ -1,0 +1,764 @@
+<dashboard version="2" theme="dark">
+  <label>NASA Mission Control</label>
+  <definition><![CDATA[
+{
+    "dataSources": {
+        "ds_telemetry_signal_lock": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup telemetry_signal.csv | where mission_id=\"$mission_filter$\" OR \"$mission_filter$\"=\"*\" | stats latest(signal_dbm) as value | eval label=\"Signal Lock\", unit=\"dBm\""
+            },
+            "name": "Signal Lock KPI"
+        },
+        "ds_telemetry_data_rate": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup telemetry_signal.csv | where mission_id=\"$mission_filter$\" OR \"$mission_filter$\"=\"*\" | stats latest(data_rate_kbps) as value | eval label=\"Data Rate\", unit=\"kbps\""
+            },
+            "name": "Data Rate KPI"
+        },
+        "ds_telemetry_latency": {
+            "type": "ds.search",
+            "options": {
+                "query": "| makeresults | eval value=round(random()%200+50,0), label=\"Latency\", unit=\"ms\""
+            },
+            "name": "Latency KPI"
+        },
+        "ds_telemetry_ber": {
+            "type": "ds.search",
+            "options": {
+                "query": "| makeresults | eval value=round(random()%10,2)/1000, label=\"BER\", unit=\"\""
+            },
+            "name": "Bit Error Rate KPI"
+        },
+        "ds_signal_waveform": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup telemetry_signal.csv | where mission_id=\"$mission_filter$\" OR \"$mission_filter$\"=\"*\" | table _time signal_dbm data_rate_kbps"
+            },
+            "name": "Signal Waveform"
+        },
+        "ds_radar_sweep": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup ground_stations.csv"
+            },
+            "name": "Radar Sweep"
+        },
+        "ds_particle_timeline_comm": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup comm_events.csv | where mission_id=\"$mission_filter$\" OR \"$mission_filter$\"=\"*\""
+            },
+            "name": "Comm Particle Timeline"
+        },
+        "ds_orbital_altitude": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup orbital_params.csv | where mission_id=\"$mission_filter$\" OR \"$mission_filter$\"=\"*\" | stats latest(altitude_km) as value | eval label=\"Altitude\", unit=\"km\""
+            },
+            "name": "Altitude KPI"
+        },
+        "ds_orbital_velocity": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup orbital_params.csv | where mission_id=\"$mission_filter$\" OR \"$mission_filter$\"=\"*\" | stats latest(velocity_kms) as value | eval label=\"Velocity\", unit=\"km/s\""
+            },
+            "name": "Velocity KPI"
+        },
+        "ds_orbital_inclination": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup orbital_params.csv | where mission_id=\"$mission_filter$\" OR \"$mission_filter$\"=\"*\" | stats latest(inclination_deg) as value | eval label=\"Inclination\", unit=\"deg\""
+            },
+            "name": "Inclination KPI"
+        },
+        "ds_orbital_period": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup orbital_params.csv | where mission_id=\"$mission_filter$\" OR \"$mission_filter$\"=\"*\" | stats latest(period_min) as value | eval label=\"Period\", unit=\"min\""
+            },
+            "name": "Period KPI"
+        },
+        "ds_radial_orbit": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup orbital_params.csv | where mission_id=\"$mission_filter$\" OR \"$mission_filter$\"=\"*\" | stats latest(orbit_phase_deg) as phase, latest(altitude_km) as alt, latest(velocity_kms) as vel, latest(periapsis_km) as peri, latest(apoapsis_km) as apo"
+            },
+            "name": "Radial Orbit"
+        },
+        "ds_arc_fuel": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup fuel_budget.csv | where mission_id=\"$mission_filter$\" OR \"$mission_filter$\"=\"*\" | head 1"
+            },
+            "name": "Arc Fuel Meter"
+        },
+        "ds_particle_timeline_maneuver": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup maneuver_events.csv | where mission_id=\"$mission_filter$\" OR \"$mission_filter$\"=\"*\""
+            },
+            "name": "Maneuver Particle Timeline"
+        },
+        "ds_systems_power": {
+            "type": "ds.search",
+            "options": {
+                "query": "| makeresults | eval value=round(random()%800+1200,0), label=\"Power Draw\", unit=\"W\""
+            },
+            "name": "Power Draw KPI"
+        },
+        "ds_systems_thermal": {
+            "type": "ds.search",
+            "options": {
+                "query": "| makeresults | eval value=round(random()%15+18,1), label=\"Thermal Avg\", unit=\"°C\""
+            },
+            "name": "Thermal Avg KPI"
+        },
+        "ds_systems_o2": {
+            "type": "ds.search",
+            "options": {
+                "query": "| makeresults | eval value=round(random()%5+20,1), label=\"O₂ Level\", unit=\"%\""
+            },
+            "name": "O2 Level KPI"
+        },
+        "ds_systems_crew": {
+            "type": "ds.search",
+            "options": {
+                "query": "| makeresults | eval value=4, label=\"Crew Status\", unit=\"nominal\""
+            },
+            "name": "Crew Status KPI"
+        },
+        "ds_hex_health": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup subsystem_health.csv | where mission_id=\"$mission_filter$\" OR \"$mission_filter$\"=\"*\" | stats latest(status) as status, sparkline(avg(health_pct),1h) as trend by subsystem"
+            },
+            "name": "Hex Health Grid"
+        },
+        "ds_alert_waterfall": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup alerts.csv | where mission_id=\"$mission_filter$\" OR \"$mission_filter$\"=\"*\" | sort -_time | head 20"
+            },
+            "name": "Alert Waterfall"
+        },
+        "ds_power_waveform": {
+            "type": "ds.search",
+            "options": {
+                "query": "| inputlookup power_telemetry.csv | where mission_id=\"$mission_filter$\" OR \"$mission_filter$\"=\"*\" | rename voltage as amplitude | table _time amplitude"
+            },
+            "name": "Power Bus Waveform"
+        }
+    },
+    "defaults": {
+        "dataSources": {
+            "ds.search": {
+                "options": {
+                    "queryParameters": {
+                        "earliest": "$global_time.earliest$",
+                        "latest": "$global_time.latest$"
+                    }
+                }
+            }
+        }
+    },
+    "inputs": {
+        "input_timerange": {
+            "type": "input.timerange",
+            "options": {
+                "token": "global_time",
+                "defaultValue": "-24h,now"
+            },
+            "title": "Time Range"
+        },
+        "input_mission": {
+            "type": "input.dropdown",
+            "options": {
+                "token": "mission_filter",
+                "defaultValue": "*",
+                "items": [
+                    {"label": "All", "value": "*"},
+                    {"label": "ARTEMIS-II", "value": "ARTEMIS-II"},
+                    {"label": "ISS-EXP70", "value": "ISS-EXP70"},
+                    {"label": "JWST", "value": "JWST"},
+                    {"label": "OSIRIS-APEX", "value": "OSIRIS-APEX"}
+                ]
+            },
+            "title": "Mission"
+        }
+    },
+    "visualizations": {
+        "viz_signal_lock_orb": {
+            "type": "nasa_mission_control.kpi_orb",
+            "options": {
+                "nasa_mission_control.kpi_orb.valueField": "value",
+                "nasa_mission_control.kpi_orb.unitField": "unit",
+                "nasa_mission_control.kpi_orb.labelField": "label",
+                "nasa_mission_control.kpi_orb.orbColor": "#00E5A0",
+                "nasa_mission_control.kpi_orb.warnThreshold": "-80",
+                "nasa_mission_control.kpi_orb.criticalThreshold": "-100",
+                "nasa_mission_control.kpi_orb.orbSize": "medium",
+                "nasa_mission_control.kpi_orb.showUnit": "true",
+                "nasa_mission_control.kpi_orb.showLabel": "true",
+                "nasa_mission_control.kpi_orb.showHalo": "true",
+                "nasa_mission_control.kpi_orb.decimals": "1",
+                "nasa_mission_control.kpi_orb.themeMode": "dark",
+                "nasa_mission_control.kpi_orb.showEntrance": "true",
+                "nasa_mission_control.kpi_orb.flashCritical": "true",
+                "nasa_mission_control.kpi_orb.showHoverEffect": "true",
+                "nasa_mission_control.kpi_orb.animationSpeed": "normal"
+            },
+            "dataSources": {
+                "primary": "ds_telemetry_signal_lock"
+            },
+            "title": "Signal Lock"
+        },
+        "viz_data_rate_orb": {
+            "type": "nasa_mission_control.kpi_orb",
+            "options": {
+                "nasa_mission_control.kpi_orb.valueField": "value",
+                "nasa_mission_control.kpi_orb.unitField": "unit",
+                "nasa_mission_control.kpi_orb.labelField": "label",
+                "nasa_mission_control.kpi_orb.orbColor": "#00B4FF",
+                "nasa_mission_control.kpi_orb.warnThreshold": "500",
+                "nasa_mission_control.kpi_orb.criticalThreshold": "100",
+                "nasa_mission_control.kpi_orb.orbSize": "medium",
+                "nasa_mission_control.kpi_orb.showUnit": "true",
+                "nasa_mission_control.kpi_orb.showLabel": "true",
+                "nasa_mission_control.kpi_orb.showHalo": "true",
+                "nasa_mission_control.kpi_orb.decimals": "0",
+                "nasa_mission_control.kpi_orb.themeMode": "dark",
+                "nasa_mission_control.kpi_orb.showEntrance": "true",
+                "nasa_mission_control.kpi_orb.flashCritical": "true",
+                "nasa_mission_control.kpi_orb.showHoverEffect": "true",
+                "nasa_mission_control.kpi_orb.animationSpeed": "normal"
+            },
+            "dataSources": {
+                "primary": "ds_telemetry_data_rate"
+            },
+            "title": "Data Rate"
+        },
+        "viz_latency_orb": {
+            "type": "nasa_mission_control.kpi_orb",
+            "options": {
+                "nasa_mission_control.kpi_orb.valueField": "value",
+                "nasa_mission_control.kpi_orb.unitField": "unit",
+                "nasa_mission_control.kpi_orb.labelField": "label",
+                "nasa_mission_control.kpi_orb.orbColor": "#00B4FF",
+                "nasa_mission_control.kpi_orb.warnThreshold": "150",
+                "nasa_mission_control.kpi_orb.criticalThreshold": "200",
+                "nasa_mission_control.kpi_orb.orbSize": "medium",
+                "nasa_mission_control.kpi_orb.showUnit": "true",
+                "nasa_mission_control.kpi_orb.showLabel": "true",
+                "nasa_mission_control.kpi_orb.showHalo": "true",
+                "nasa_mission_control.kpi_orb.decimals": "0",
+                "nasa_mission_control.kpi_orb.themeMode": "dark",
+                "nasa_mission_control.kpi_orb.showEntrance": "true",
+                "nasa_mission_control.kpi_orb.flashCritical": "true",
+                "nasa_mission_control.kpi_orb.showHoverEffect": "true",
+                "nasa_mission_control.kpi_orb.animationSpeed": "normal"
+            },
+            "dataSources": {
+                "primary": "ds_telemetry_latency"
+            },
+            "title": "Latency"
+        },
+        "viz_ber_orb": {
+            "type": "nasa_mission_control.kpi_orb",
+            "options": {
+                "nasa_mission_control.kpi_orb.valueField": "value",
+                "nasa_mission_control.kpi_orb.unitField": "unit",
+                "nasa_mission_control.kpi_orb.labelField": "label",
+                "nasa_mission_control.kpi_orb.orbColor": "#C084FC",
+                "nasa_mission_control.kpi_orb.warnThreshold": "0.005",
+                "nasa_mission_control.kpi_orb.criticalThreshold": "0.008",
+                "nasa_mission_control.kpi_orb.orbSize": "medium",
+                "nasa_mission_control.kpi_orb.showUnit": "false",
+                "nasa_mission_control.kpi_orb.showLabel": "true",
+                "nasa_mission_control.kpi_orb.showHalo": "true",
+                "nasa_mission_control.kpi_orb.decimals": "2",
+                "nasa_mission_control.kpi_orb.themeMode": "dark",
+                "nasa_mission_control.kpi_orb.showEntrance": "true",
+                "nasa_mission_control.kpi_orb.flashCritical": "true",
+                "nasa_mission_control.kpi_orb.showHoverEffect": "true",
+                "nasa_mission_control.kpi_orb.animationSpeed": "normal"
+            },
+            "dataSources": {
+                "primary": "ds_telemetry_ber"
+            },
+            "title": "Bit Error Rate"
+        },
+        "viz_signal_waveform": {
+            "type": "nasa_mission_control.signal_waveform",
+            "options": {
+                "nasa_mission_control.signal_waveform.amplitudeField": "signal_dbm",
+                "nasa_mission_control.signal_waveform.frequencyField": "data_rate_kbps",
+                "nasa_mission_control.signal_waveform.traceColor": "#00E5A0",
+                "nasa_mission_control.signal_waveform.noiseFloor": "-100",
+                "nasa_mission_control.signal_waveform.traceWidth": "2",
+                "nasa_mission_control.signal_waveform.showGrid": "true",
+                "nasa_mission_control.signal_waveform.gridOpacity": "20",
+                "nasa_mission_control.signal_waveform.scrollSpeed": "normal",
+                "nasa_mission_control.signal_waveform.themeMode": "dark",
+                "nasa_mission_control.signal_waveform.showEntrance": "true",
+                "nasa_mission_control.signal_waveform.flashCritical": "true",
+                "nasa_mission_control.signal_waveform.showHoverEffect": "true",
+                "nasa_mission_control.signal_waveform.animationSpeed": "normal"
+            },
+            "dataSources": {
+                "primary": "ds_signal_waveform"
+            },
+            "title": "Signal Waveform — Telemetry"
+        },
+        "viz_radar_sweep": {
+            "type": "nasa_mission_control.radar_sweep",
+            "options": {
+                "nasa_mission_control.radar_sweep.nameField": "station_name",
+                "nasa_mission_control.radar_sweep.azimuthField": "azimuth_deg",
+                "nasa_mission_control.radar_sweep.rangeField": "range_km",
+                "nasa_mission_control.radar_sweep.typeField": "station_type",
+                "nasa_mission_control.radar_sweep.sweepSpeed": "normal",
+                "nasa_mission_control.radar_sweep.fadeTime": "5",
+                "nasa_mission_control.radar_sweep.showGrid": "true",
+                "nasa_mission_control.radar_sweep.showRangeLabels": "true",
+                "nasa_mission_control.radar_sweep.centerLabel": "TDRSS",
+                "nasa_mission_control.radar_sweep.maxRange": "20000",
+                "nasa_mission_control.radar_sweep.sweepColor": "#00B4FF",
+                "nasa_mission_control.radar_sweep.themeMode": "dark",
+                "nasa_mission_control.radar_sweep.showEntrance": "true",
+                "nasa_mission_control.radar_sweep.showHoverEffect": "true",
+                "nasa_mission_control.radar_sweep.animationSpeed": "normal"
+            },
+            "dataSources": {
+                "primary": "ds_radar_sweep"
+            },
+            "title": "Ground Station Radar"
+        },
+        "viz_particle_timeline_comm": {
+            "type": "nasa_mission_control.particle_timeline",
+            "options": {
+                "nasa_mission_control.particle_timeline.timeField": "_time",
+                "nasa_mission_control.particle_timeline.eventField": "event_type",
+                "nasa_mission_control.particle_timeline.severityField": "severity",
+                "nasa_mission_control.particle_timeline.impactField": "impact_score",
+                "nasa_mission_control.particle_timeline.maxParticles": "200",
+                "nasa_mission_control.particle_timeline.particleSize": "medium",
+                "nasa_mission_control.particle_timeline.flowSpeed": "normal",
+                "nasa_mission_control.particle_timeline.showAxis": "true",
+                "nasa_mission_control.particle_timeline.showLabels": "true",
+                "nasa_mission_control.particle_timeline.laneMode": "lanes",
+                "nasa_mission_control.particle_timeline.themeMode": "dark",
+                "nasa_mission_control.particle_timeline.showEntrance": "true",
+                "nasa_mission_control.particle_timeline.flashCritical": "true",
+                "nasa_mission_control.particle_timeline.showHoverEffect": "true",
+                "nasa_mission_control.particle_timeline.animationSpeed": "normal"
+            },
+            "dataSources": {
+                "primary": "ds_particle_timeline_comm"
+            },
+            "title": "Comm Events Timeline"
+        },
+        "viz_altitude_orb": {
+            "type": "nasa_mission_control.kpi_orb",
+            "options": {
+                "nasa_mission_control.kpi_orb.valueField": "value",
+                "nasa_mission_control.kpi_orb.unitField": "unit",
+                "nasa_mission_control.kpi_orb.labelField": "label",
+                "nasa_mission_control.kpi_orb.orbColor": "#00B4FF",
+                "nasa_mission_control.kpi_orb.warnThreshold": "200",
+                "nasa_mission_control.kpi_orb.criticalThreshold": "150",
+                "nasa_mission_control.kpi_orb.orbSize": "medium",
+                "nasa_mission_control.kpi_orb.showUnit": "true",
+                "nasa_mission_control.kpi_orb.showLabel": "true",
+                "nasa_mission_control.kpi_orb.showHalo": "true",
+                "nasa_mission_control.kpi_orb.decimals": "0",
+                "nasa_mission_control.kpi_orb.themeMode": "dark",
+                "nasa_mission_control.kpi_orb.showEntrance": "true",
+                "nasa_mission_control.kpi_orb.flashCritical": "true",
+                "nasa_mission_control.kpi_orb.showHoverEffect": "true",
+                "nasa_mission_control.kpi_orb.animationSpeed": "normal"
+            },
+            "dataSources": {
+                "primary": "ds_orbital_altitude"
+            },
+            "title": "Altitude"
+        },
+        "viz_velocity_orb": {
+            "type": "nasa_mission_control.kpi_orb",
+            "options": {
+                "nasa_mission_control.kpi_orb.valueField": "value",
+                "nasa_mission_control.kpi_orb.unitField": "unit",
+                "nasa_mission_control.kpi_orb.labelField": "label",
+                "nasa_mission_control.kpi_orb.orbColor": "#00E5A0",
+                "nasa_mission_control.kpi_orb.warnThreshold": "5",
+                "nasa_mission_control.kpi_orb.criticalThreshold": "3",
+                "nasa_mission_control.kpi_orb.orbSize": "medium",
+                "nasa_mission_control.kpi_orb.showUnit": "true",
+                "nasa_mission_control.kpi_orb.showLabel": "true",
+                "nasa_mission_control.kpi_orb.showHalo": "true",
+                "nasa_mission_control.kpi_orb.decimals": "2",
+                "nasa_mission_control.kpi_orb.themeMode": "dark",
+                "nasa_mission_control.kpi_orb.showEntrance": "true",
+                "nasa_mission_control.kpi_orb.flashCritical": "true",
+                "nasa_mission_control.kpi_orb.showHoverEffect": "true",
+                "nasa_mission_control.kpi_orb.animationSpeed": "normal"
+            },
+            "dataSources": {
+                "primary": "ds_orbital_velocity"
+            },
+            "title": "Velocity"
+        },
+        "viz_inclination_orb": {
+            "type": "nasa_mission_control.kpi_orb",
+            "options": {
+                "nasa_mission_control.kpi_orb.valueField": "value",
+                "nasa_mission_control.kpi_orb.unitField": "unit",
+                "nasa_mission_control.kpi_orb.labelField": "label",
+                "nasa_mission_control.kpi_orb.orbColor": "#C084FC",
+                "nasa_mission_control.kpi_orb.warnThreshold": "70",
+                "nasa_mission_control.kpi_orb.criticalThreshold": "30",
+                "nasa_mission_control.kpi_orb.orbSize": "medium",
+                "nasa_mission_control.kpi_orb.showUnit": "true",
+                "nasa_mission_control.kpi_orb.showLabel": "true",
+                "nasa_mission_control.kpi_orb.showHalo": "true",
+                "nasa_mission_control.kpi_orb.decimals": "1",
+                "nasa_mission_control.kpi_orb.themeMode": "dark",
+                "nasa_mission_control.kpi_orb.showEntrance": "true",
+                "nasa_mission_control.kpi_orb.flashCritical": "false",
+                "nasa_mission_control.kpi_orb.showHoverEffect": "true",
+                "nasa_mission_control.kpi_orb.animationSpeed": "normal"
+            },
+            "dataSources": {
+                "primary": "ds_orbital_inclination"
+            },
+            "title": "Inclination"
+        },
+        "viz_period_orb": {
+            "type": "nasa_mission_control.kpi_orb",
+            "options": {
+                "nasa_mission_control.kpi_orb.valueField": "value",
+                "nasa_mission_control.kpi_orb.unitField": "unit",
+                "nasa_mission_control.kpi_orb.labelField": "label",
+                "nasa_mission_control.kpi_orb.orbColor": "#FF6B35",
+                "nasa_mission_control.kpi_orb.warnThreshold": "70",
+                "nasa_mission_control.kpi_orb.criticalThreshold": "30",
+                "nasa_mission_control.kpi_orb.orbSize": "medium",
+                "nasa_mission_control.kpi_orb.showUnit": "true",
+                "nasa_mission_control.kpi_orb.showLabel": "true",
+                "nasa_mission_control.kpi_orb.showHalo": "true",
+                "nasa_mission_control.kpi_orb.decimals": "1",
+                "nasa_mission_control.kpi_orb.themeMode": "dark",
+                "nasa_mission_control.kpi_orb.showEntrance": "true",
+                "nasa_mission_control.kpi_orb.flashCritical": "false",
+                "nasa_mission_control.kpi_orb.showHoverEffect": "true",
+                "nasa_mission_control.kpi_orb.animationSpeed": "normal"
+            },
+            "dataSources": {
+                "primary": "ds_orbital_period"
+            },
+            "title": "Period"
+        },
+        "viz_radial_orbit": {
+            "type": "nasa_mission_control.radial_orbit",
+            "options": {
+                "nasa_mission_control.radial_orbit.phaseField": "phase",
+                "nasa_mission_control.radial_orbit.altitudeField": "alt",
+                "nasa_mission_control.radial_orbit.velocityField": "vel",
+                "nasa_mission_control.radial_orbit.periapsisField": "peri",
+                "nasa_mission_control.radial_orbit.apoapsisField": "apo",
+                "nasa_mission_control.radial_orbit.trailLength": "30",
+                "nasa_mission_control.radial_orbit.bodyLabel": "Earth",
+                "nasa_mission_control.radial_orbit.showReadouts": "true",
+                "nasa_mission_control.radial_orbit.orbitColor": "#00B4FF",
+                "nasa_mission_control.radial_orbit.bodyColor": "#1E40AF",
+                "nasa_mission_control.radial_orbit.themeMode": "dark",
+                "nasa_mission_control.radial_orbit.showEntrance": "true",
+                "nasa_mission_control.radial_orbit.flashCritical": "true",
+                "nasa_mission_control.radial_orbit.showHoverEffect": "true",
+                "nasa_mission_control.radial_orbit.animationSpeed": "normal"
+            },
+            "dataSources": {
+                "primary": "ds_radial_orbit"
+            },
+            "title": "Orbital Trajectory"
+        },
+        "viz_arc_fuel": {
+            "type": "nasa_mission_control.arc_fuel",
+            "options": {
+                "nasa_mission_control.arc_fuel.remainingField": "fuel_remaining_pct",
+                "nasa_mission_control.arc_fuel.burn1Field": "burn1_pct",
+                "nasa_mission_control.arc_fuel.burn2Field": "burn2_pct",
+                "nasa_mission_control.arc_fuel.burn3Field": "burn3_pct",
+                "nasa_mission_control.arc_fuel.maxBurns": "3",
+                "nasa_mission_control.arc_fuel.burnLabels": "TLI,LOI,TEI",
+                "nasa_mission_control.arc_fuel.reserveThreshold": "15",
+                "nasa_mission_control.arc_fuel.arcWidth": "medium",
+                "nasa_mission_control.arc_fuel.showLabels": "true",
+                "nasa_mission_control.arc_fuel.remainingColor": "#00E5A0",
+                "nasa_mission_control.arc_fuel.burnColor": "#FF6B35",
+                "nasa_mission_control.arc_fuel.reserveColor": "#FF3B5C",
+                "nasa_mission_control.arc_fuel.themeMode": "dark",
+                "nasa_mission_control.arc_fuel.showEntrance": "true",
+                "nasa_mission_control.arc_fuel.flashCritical": "true",
+                "nasa_mission_control.arc_fuel.showHoverEffect": "true",
+                "nasa_mission_control.arc_fuel.animationSpeed": "normal"
+            },
+            "dataSources": {
+                "primary": "ds_arc_fuel"
+            },
+            "title": "Delta-V Fuel Budget"
+        },
+        "viz_particle_timeline_maneuver": {
+            "type": "nasa_mission_control.particle_timeline",
+            "options": {
+                "nasa_mission_control.particle_timeline.timeField": "_time",
+                "nasa_mission_control.particle_timeline.eventField": "event_type",
+                "nasa_mission_control.particle_timeline.severityField": "severity",
+                "nasa_mission_control.particle_timeline.impactField": "impact_score",
+                "nasa_mission_control.particle_timeline.maxParticles": "200",
+                "nasa_mission_control.particle_timeline.particleSize": "medium",
+                "nasa_mission_control.particle_timeline.flowSpeed": "normal",
+                "nasa_mission_control.particle_timeline.showAxis": "true",
+                "nasa_mission_control.particle_timeline.showLabels": "true",
+                "nasa_mission_control.particle_timeline.laneMode": "lanes",
+                "nasa_mission_control.particle_timeline.themeMode": "dark",
+                "nasa_mission_control.particle_timeline.showEntrance": "true",
+                "nasa_mission_control.particle_timeline.flashCritical": "true",
+                "nasa_mission_control.particle_timeline.showHoverEffect": "true",
+                "nasa_mission_control.particle_timeline.animationSpeed": "normal"
+            },
+            "dataSources": {
+                "primary": "ds_particle_timeline_maneuver"
+            },
+            "title": "Maneuver Events Timeline"
+        },
+        "viz_power_orb": {
+            "type": "nasa_mission_control.kpi_orb",
+            "options": {
+                "nasa_mission_control.kpi_orb.valueField": "value",
+                "nasa_mission_control.kpi_orb.unitField": "unit",
+                "nasa_mission_control.kpi_orb.labelField": "label",
+                "nasa_mission_control.kpi_orb.orbColor": "#FACC15",
+                "nasa_mission_control.kpi_orb.warnThreshold": "1800",
+                "nasa_mission_control.kpi_orb.criticalThreshold": "1900",
+                "nasa_mission_control.kpi_orb.orbSize": "medium",
+                "nasa_mission_control.kpi_orb.showUnit": "true",
+                "nasa_mission_control.kpi_orb.showLabel": "true",
+                "nasa_mission_control.kpi_orb.showHalo": "true",
+                "nasa_mission_control.kpi_orb.decimals": "0",
+                "nasa_mission_control.kpi_orb.themeMode": "dark",
+                "nasa_mission_control.kpi_orb.showEntrance": "true",
+                "nasa_mission_control.kpi_orb.flashCritical": "true",
+                "nasa_mission_control.kpi_orb.showHoverEffect": "true",
+                "nasa_mission_control.kpi_orb.animationSpeed": "normal"
+            },
+            "dataSources": {
+                "primary": "ds_systems_power"
+            },
+            "title": "Power Draw"
+        },
+        "viz_thermal_orb": {
+            "type": "nasa_mission_control.kpi_orb",
+            "options": {
+                "nasa_mission_control.kpi_orb.valueField": "value",
+                "nasa_mission_control.kpi_orb.unitField": "unit",
+                "nasa_mission_control.kpi_orb.labelField": "label",
+                "nasa_mission_control.kpi_orb.orbColor": "#FF6B35",
+                "nasa_mission_control.kpi_orb.warnThreshold": "28",
+                "nasa_mission_control.kpi_orb.criticalThreshold": "32",
+                "nasa_mission_control.kpi_orb.orbSize": "medium",
+                "nasa_mission_control.kpi_orb.showUnit": "true",
+                "nasa_mission_control.kpi_orb.showLabel": "true",
+                "nasa_mission_control.kpi_orb.showHalo": "true",
+                "nasa_mission_control.kpi_orb.decimals": "1",
+                "nasa_mission_control.kpi_orb.themeMode": "dark",
+                "nasa_mission_control.kpi_orb.showEntrance": "true",
+                "nasa_mission_control.kpi_orb.flashCritical": "true",
+                "nasa_mission_control.kpi_orb.showHoverEffect": "true",
+                "nasa_mission_control.kpi_orb.animationSpeed": "normal"
+            },
+            "dataSources": {
+                "primary": "ds_systems_thermal"
+            },
+            "title": "Thermal Avg"
+        },
+        "viz_o2_orb": {
+            "type": "nasa_mission_control.kpi_orb",
+            "options": {
+                "nasa_mission_control.kpi_orb.valueField": "value",
+                "nasa_mission_control.kpi_orb.unitField": "unit",
+                "nasa_mission_control.kpi_orb.labelField": "label",
+                "nasa_mission_control.kpi_orb.orbColor": "#00E5A0",
+                "nasa_mission_control.kpi_orb.warnThreshold": "19",
+                "nasa_mission_control.kpi_orb.criticalThreshold": "18",
+                "nasa_mission_control.kpi_orb.orbSize": "medium",
+                "nasa_mission_control.kpi_orb.showUnit": "true",
+                "nasa_mission_control.kpi_orb.showLabel": "true",
+                "nasa_mission_control.kpi_orb.showHalo": "true",
+                "nasa_mission_control.kpi_orb.decimals": "1",
+                "nasa_mission_control.kpi_orb.themeMode": "dark",
+                "nasa_mission_control.kpi_orb.showEntrance": "true",
+                "nasa_mission_control.kpi_orb.flashCritical": "true",
+                "nasa_mission_control.kpi_orb.showHoverEffect": "true",
+                "nasa_mission_control.kpi_orb.animationSpeed": "normal"
+            },
+            "dataSources": {
+                "primary": "ds_systems_o2"
+            },
+            "title": "O₂ Level"
+        },
+        "viz_crew_orb": {
+            "type": "nasa_mission_control.kpi_orb",
+            "options": {
+                "nasa_mission_control.kpi_orb.valueField": "value",
+                "nasa_mission_control.kpi_orb.unitField": "unit",
+                "nasa_mission_control.kpi_orb.labelField": "label",
+                "nasa_mission_control.kpi_orb.orbColor": "#00B4FF",
+                "nasa_mission_control.kpi_orb.warnThreshold": "3",
+                "nasa_mission_control.kpi_orb.criticalThreshold": "2",
+                "nasa_mission_control.kpi_orb.orbSize": "medium",
+                "nasa_mission_control.kpi_orb.showUnit": "true",
+                "nasa_mission_control.kpi_orb.showLabel": "true",
+                "nasa_mission_control.kpi_orb.showHalo": "true",
+                "nasa_mission_control.kpi_orb.decimals": "0",
+                "nasa_mission_control.kpi_orb.themeMode": "dark",
+                "nasa_mission_control.kpi_orb.showEntrance": "true",
+                "nasa_mission_control.kpi_orb.flashCritical": "true",
+                "nasa_mission_control.kpi_orb.showHoverEffect": "true",
+                "nasa_mission_control.kpi_orb.animationSpeed": "normal"
+            },
+            "dataSources": {
+                "primary": "ds_systems_crew"
+            },
+            "title": "Crew Status"
+        },
+        "viz_hex_health": {
+            "type": "nasa_mission_control.hex_health",
+            "options": {
+                "nasa_mission_control.hex_health.subsystemField": "subsystem",
+                "nasa_mission_control.hex_health.statusField": "status",
+                "nasa_mission_control.hex_health.sparklineField": "trend",
+                "nasa_mission_control.hex_health.hexSize": "medium",
+                "nasa_mission_control.hex_health.showLabels": "true",
+                "nasa_mission_control.hex_health.showSparkline": "true",
+                "nasa_mission_control.hex_health.nominalColor": "#00E5A0",
+                "nasa_mission_control.hex_health.warnColor": "#FACC15",
+                "nasa_mission_control.hex_health.criticalColor": "#FF3B5C",
+                "nasa_mission_control.hex_health.themeMode": "dark",
+                "nasa_mission_control.hex_health.showEntrance": "true",
+                "nasa_mission_control.hex_health.flashCritical": "true",
+                "nasa_mission_control.hex_health.animationSpeed": "normal"
+            },
+            "dataSources": {
+                "primary": "ds_hex_health"
+            },
+            "title": "Subsystem Health Grid"
+        },
+        "viz_alert_waterfall": {
+            "type": "nasa_mission_control.alert_waterfall",
+            "options": {
+                "nasa_mission_control.alert_waterfall.timeField": "_time",
+                "nasa_mission_control.alert_waterfall.alertField": "alert_name",
+                "nasa_mission_control.alert_waterfall.severityField": "severity",
+                "nasa_mission_control.alert_waterfall.subsystemField": "subsystem",
+                "nasa_mission_control.alert_waterfall.statusField": "status",
+                "nasa_mission_control.alert_waterfall.maxRows": "20",
+                "nasa_mission_control.alert_waterfall.sortOrder": "newest",
+                "nasa_mission_control.alert_waterfall.showTimestamp": "true",
+                "nasa_mission_control.alert_waterfall.activeGlow": "true",
+                "nasa_mission_control.alert_waterfall.themeMode": "dark",
+                "nasa_mission_control.alert_waterfall.showEntrance": "true",
+                "nasa_mission_control.alert_waterfall.flashCritical": "true",
+                "nasa_mission_control.alert_waterfall.animationSpeed": "normal"
+            },
+            "dataSources": {
+                "primary": "ds_alert_waterfall"
+            },
+            "title": "Alert Feed"
+        },
+        "viz_power_waveform": {
+            "type": "nasa_mission_control.signal_waveform",
+            "options": {
+                "nasa_mission_control.signal_waveform.amplitudeField": "amplitude",
+                "nasa_mission_control.signal_waveform.traceColor": "#FACC15",
+                "nasa_mission_control.signal_waveform.noiseFloor": "-100",
+                "nasa_mission_control.signal_waveform.traceWidth": "2",
+                "nasa_mission_control.signal_waveform.showGrid": "true",
+                "nasa_mission_control.signal_waveform.gridOpacity": "20",
+                "nasa_mission_control.signal_waveform.scrollSpeed": "normal",
+                "nasa_mission_control.signal_waveform.themeMode": "dark",
+                "nasa_mission_control.signal_waveform.showEntrance": "true",
+                "nasa_mission_control.signal_waveform.flashCritical": "true",
+                "nasa_mission_control.signal_waveform.showHoverEffect": "true",
+                "nasa_mission_control.signal_waveform.animationSpeed": "normal"
+            },
+            "dataSources": {
+                "primary": "ds_power_waveform"
+            },
+            "title": "Power Bus Waveform"
+        }
+    },
+    "layout": {
+        "globalInputs": [
+            "input_timerange",
+            "input_mission"
+        ],
+        "tabs": {
+            "items": [
+                { "layoutId": "tab_telemetry", "label": "Telemetry" },
+                { "layoutId": "tab_orbital", "label": "Orbital Mechanics" },
+                { "layoutId": "tab_health", "label": "Systems Health" }
+            ],
+            "options": {
+                "barPosition": "top",
+                "showTabBar": true
+            }
+        },
+        "layoutDefinitions": {
+            "tab_telemetry": {
+                "type": "absolute",
+                "options": { "display": "auto-scale", "backgroundColor": "#05080F", "width": 1920, "height": 1200 },
+                "structure": [
+                    { "item": "viz_signal_lock_orb", "type": "block", "position": { "x": 36, "y": 20, "w": 440, "h": 160 } },
+                    { "item": "viz_data_rate_orb", "type": "block", "position": { "x": 500, "y": 20, "w": 440, "h": 160 } },
+                    { "item": "viz_latency_orb", "type": "block", "position": { "x": 964, "y": 20, "w": 440, "h": 160 } },
+                    { "item": "viz_ber_orb", "type": "block", "position": { "x": 1428, "y": 20, "w": 440, "h": 160 } },
+                    { "item": "viz_signal_waveform", "type": "block", "position": { "x": 36, "y": 200, "w": 1848, "h": 340 } },
+                    { "item": "viz_radar_sweep", "type": "block", "position": { "x": 36, "y": 560, "w": 900, "h": 580 } },
+                    { "item": "viz_particle_timeline_comm", "type": "block", "position": { "x": 960, "y": 560, "w": 924, "h": 580 } }
+                ]
+            },
+            "tab_orbital": {
+                "type": "absolute",
+                "options": { "display": "auto-scale", "backgroundColor": "#05080F", "width": 1920, "height": 1200 },
+                "structure": [
+                    { "item": "viz_altitude_orb", "type": "block", "position": { "x": 36, "y": 20, "w": 440, "h": 160 } },
+                    { "item": "viz_velocity_orb", "type": "block", "position": { "x": 500, "y": 20, "w": 440, "h": 160 } },
+                    { "item": "viz_inclination_orb", "type": "block", "position": { "x": 964, "y": 20, "w": 440, "h": 160 } },
+                    { "item": "viz_period_orb", "type": "block", "position": { "x": 1428, "y": 20, "w": 440, "h": 160 } },
+                    { "item": "viz_radial_orbit", "type": "block", "position": { "x": 36, "y": 200, "w": 900, "h": 340 } },
+                    { "item": "viz_arc_fuel", "type": "block", "position": { "x": 960, "y": 200, "w": 924, "h": 340 } },
+                    { "item": "viz_particle_timeline_maneuver", "type": "block", "position": { "x": 36, "y": 560, "w": 1848, "h": 580 } }
+                ]
+            },
+            "tab_health": {
+                "type": "absolute",
+                "options": { "display": "auto-scale", "backgroundColor": "#05080F", "width": 1920, "height": 1200 },
+                "structure": [
+                    { "item": "viz_power_orb", "type": "block", "position": { "x": 36, "y": 20, "w": 440, "h": 160 } },
+                    { "item": "viz_thermal_orb", "type": "block", "position": { "x": 500, "y": 20, "w": 440, "h": 160 } },
+                    { "item": "viz_o2_orb", "type": "block", "position": { "x": 964, "y": 20, "w": 440, "h": 160 } },
+                    { "item": "viz_crew_orb", "type": "block", "position": { "x": 1428, "y": 20, "w": 440, "h": 160 } },
+                    { "item": "viz_hex_health", "type": "block", "position": { "x": 36, "y": 200, "w": 900, "h": 340 } },
+                    { "item": "viz_alert_waterfall", "type": "block", "position": { "x": 960, "y": 200, "w": 924, "h": 340 } },
+                    { "item": "viz_power_waveform", "type": "block", "position": { "x": 36, "y": 560, "w": 1848, "h": 580 } }
+                ]
+            }
+        }
+    },
+    "title": "NASA Mission Control",
+    "description": "Real-time telemetry, orbital mechanics, and systems health monitoring for active space missions"
+}
+  ]]></definition>
+</dashboard>
