@@ -272,17 +272,63 @@ function hexToRgb(hex) {
     ];
 }
 
+/*
+ * previewContrastAccent(accentHex, bgHex): ensure silhouette is visible on brand bg.
+ * If accent-on-bg contrast is below 3:1 (perceived luminance), brighten accent 30% toward white.
+ * Returns [r, g, b] array.
+ */
+function previewContrastAccent(accentHex, bgHex) {
+    var ar = hexToRgb(accentHex);
+    var br = hexToRgb(bgHex);
+    var aLum = (ar[0] * 0.299 + ar[1] * 0.587 + ar[2] * 0.114) / 255;
+    var bLum = (br[0] * 0.299 + br[1] * 0.587 + br[2] * 0.114) / 255;
+    var lighter = Math.max(aLum, bLum) + 0.05;
+    var darker  = Math.min(aLum, bLum) + 0.05;
+    var contrast = lighter / darker;
+    if (contrast < 3.0) {
+        return [
+            Math.min(255, Math.round(ar[0] + (255 - ar[0]) * 0.3)),
+            Math.min(255, Math.round(ar[1] + (255 - ar[1]) * 0.3)),
+            Math.min(255, Math.round(ar[2] + (255 - ar[2]) * 0.3))
+        ];
+    }
+    return ar;
+}
+
 // ---- Viz type detection ----
 
 var VIZ_TYPE_KEYWORDS = [
-    { type: 'bars',     keywords: ['bar', 'bars', 'column', 'histogram', 'bar_chart', 'barchart', 'vertical'] },
-    { type: 'gauge',    keywords: ['gauge', 'arc', 'ring', 'donut', 'dial', 'speedometer', 'radial'] },
-    { type: 'grid',     keywords: ['grid', 'table', 'matrix', 'heatmap', 'heat', 'map', 'cell'] },
-    { type: 'line',     keywords: ['line', 'trend', 'area', 'sparkline', 'area_chart', 'linechart', 'timeseries', 'time_series'] },
-    { type: 'timeline', keywords: ['timeline', 'gantt', 'feed', 'activity', 'event', 'stream', 'log'] },
-    { type: 'radar',    keywords: ['radar', 'spider', 'polar', 'web', 'radarchart'] },
-    { type: 'progress', keywords: ['progress', 'bullet', 'meter', 'completion', 'fill', 'progress_bar'] },
-    { type: 'kpi',      keywords: ['kpi', 'metric', 'score', 'value', 'number', 'stat', 'card', 'tile', 'badge', 'counter'] }
+    { type: 'bars',     keywords: ['leaderboard', 'leader', 'ranking', 'waterfall', 'bullet',
+                                   'bar_chart', 'barchart', 'histogram', 'horizontal', 'vertical',
+                                   'ranked', 'podium', 'position_board',
+                                   'bar', 'bars', 'column'] },
+    { type: 'gauge',    keywords: ['kpi_gauge', 'ring_gauge', 'speedometer', 'utilization',
+                                   'battery', 'fuel', 'needle', 'meter',
+                                   'gauge', 'arc', 'ring', 'donut', 'dial', 'radial'] },
+    { type: 'grid',     keywords: ['status_matrix', 'health_grid', 'attack_heatmap', 'host_grid',
+                                   'heatmap', 'heat', 'occupancy', 'department', 'severity',
+                                   'grid', 'table', 'matrix', 'cell'] },
+    { type: 'line',     keywords: ['power_horizon', 'spark_strip', 'time_series', 'timeseries',
+                                   'area_chart', 'linechart', 'sparkline', 'horizon',
+                                   'line', 'trend', 'area', 'spark'] },
+    { type: 'timeline', keywords: ['incident_feed', 'event_feed', 'live_ticker', 'passenger_flow',
+                                   'kill_chain', 'pipeline', 'process', 'observation',
+                                   'timeline', 'gantt', 'feed', 'activity', 'event',
+                                   'stream', 'log', 'ticker', 'incident', 'queue', 'flow'] },
+    { type: 'radar',    keywords: ['multi_axis', 'radarchart', 'dimension', 'profile',
+                                   'radar', 'spider', 'polar', 'web'] },
+    { type: 'progress', keywords: ['stage_tracker', 'progress_bar', 'completion', 'saturation',
+                                   'capacity', 'runway',
+                                   'progress', 'fill', 'step', 'stage'] },
+    { type: 'scatter',  keywords: ['latency_scatter', 'scatterplot', 'bivariate', 'distribution',
+                                   'scatter', 'bubble', 'correlation', 'plot', 'xy'] },
+    { type: 'network',  keywords: ['network_topology', 'force_directed', 'dependency',
+                                   'relationship', 'geographic', 'flight', 'route',
+                                   'network', 'topology', 'connection', 'graph',
+                                   'force', 'node', 'edge', 'path'] },
+    { type: 'kpi',      keywords: ['single_value', 'satisfaction', 'counter',
+                                   'kpi', 'metric', 'score', 'value', 'number',
+                                   'stat', 'card', 'tile', 'badge', 'nps'] }
 ];
 
 function detectVizType(dirName) {
@@ -469,6 +515,64 @@ function drawProgressSilhouette(rows, ar, ag, ab, bgr, bgg, bgb) {
     }
 }
 
+function drawScatterSilhouette(rows, ar, ag, ab, bgr, bgg, bgb) {
+    // Axis lines
+    fillRect(rows, 25, 170, 250, 3, ar, ag, ab);  // x-axis
+    fillRect(rows, 25, 20, 3, 150, ar, ag, ab);   // y-axis
+    // 12 data points as filled squares (approximating circles)
+    var points = [
+        {x: 60,  y: 140, r: 8},  {x: 90,  y: 100, r: 12},
+        {x: 130, y: 130, r: 6},  {x: 160, y: 70,  r: 10},
+        {x: 185, y: 50,  r: 14}, {x: 200, y: 110, r: 7},
+        {x: 220, y: 85,  r: 9},  {x: 75,  y: 60,  r: 5},
+        {x: 110, y: 45,  r: 11}, {x: 245, y: 40,  r: 8},
+        {x: 245, y: 120, r: 6},  {x: 145, y: 150, r: 7}
+    ];
+    for (var i = 0; i < points.length; i++) {
+        var p = points[i];
+        fillRect(rows, p.x - p.r, p.y - p.r, p.r * 2, p.r * 2, ar, ag, ab);
+    }
+}
+
+function drawNetworkSilhouette(rows, ar, ag, ab, bgr, bgg, bgb) {
+    var nodes = [
+        {x: 150, y: 100},  // center hub
+        {x: 80,  y: 50},  {x: 220, y: 50},
+        {x: 60,  y: 130}, {x: 240, y: 130},
+        {x: 100, y: 165}, {x: 200, y: 165},
+        {x: 150, y: 170}
+    ];
+    // Edges from hub to spokes
+    var hub = nodes[0];
+    for (var i = 1; i < nodes.length; i++) {
+        var n = nodes[i];
+        var steps = Math.max(Math.abs(n.x - hub.x), Math.abs(n.y - hub.y));
+        for (var s = 0; s <= steps; s++) {
+            var t = s / steps;
+            var px = Math.round(hub.x + (n.x - hub.x) * t);
+            var py = Math.round(hub.y + (n.y - hub.y) * t);
+            fillRect(rows, px, py, 2, 2, ar, ag, ab);
+        }
+    }
+    // Peripheral ring edges
+    var ring = [1, 2, 4, 7, 6, 5, 3];
+    for (var j = 0; j < ring.length - 1; j++) {
+        var n1 = nodes[ring[j]], n2 = nodes[ring[j + 1]];
+        var steps2 = Math.max(Math.abs(n2.x - n1.x), Math.abs(n2.y - n1.y));
+        for (var k = 0; k <= steps2; k++) {
+            var t2 = k / steps2;
+            var px2 = Math.round(n1.x + (n2.x - n1.x) * t2);
+            var py2 = Math.round(n1.y + (n2.y - n1.y) * t2);
+            fillRect(rows, px2, py2, 2, 2, ar, ag, ab);
+        }
+    }
+    // Node dots (hub larger)
+    for (var ni = 0; ni < nodes.length; ni++) {
+        var r = (ni === 0) ? 8 : 5;
+        fillRect(rows, nodes[ni].x - r, nodes[ni].y - r, r * 2, r * 2, ar, ag, ab);
+    }
+}
+
 function drawSilhouette(rows, type, ar, ag, ab, bgr, bgg, bgb) {
     if (type === 'bars')     { drawBarsSilhouette(rows, ar, ag, ab, bgr, bgg, bgb); return; }
     if (type === 'gauge')    { drawGaugeSilhouette(rows, ar, ag, ab, bgr, bgg, bgb); return; }
@@ -477,6 +581,8 @@ function drawSilhouette(rows, type, ar, ag, ab, bgr, bgg, bgb) {
     if (type === 'timeline') { drawTimelineSilhouette(rows, ar, ag, ab, bgr, bgg, bgb); return; }
     if (type === 'radar')    { drawRadarSilhouette(rows, ar, ag, ab, bgr, bgg, bgb); return; }
     if (type === 'progress') { drawProgressSilhouette(rows, ar, ag, ab, bgr, bgg, bgb); return; }
+    if (type === 'scatter')  { drawScatterSilhouette(rows, ar, ag, ab, bgr, bgg, bgb); return; }
+    if (type === 'network')  { drawNetworkSilhouette(rows, ar, ag, ab, bgr, bgg, bgb); return; }
     // Default: kpi
     drawKpiSilhouette(rows, ar, ag, ab, bgr, bgg, bgb);
 }
@@ -526,8 +632,8 @@ function generateAppIcon(appDir, dark) {
  * Silhouette style is determined by viz directory name.
  */
 function generatePreviews(appDir, dark) {
-    var accentRgb = hexToRgb(dark.accent);
-    var ar = accentRgb[0], ag = accentRgb[1], ab = accentRgb[2];
+    var previewRgb = previewContrastAccent(dark.accent, dark.bg);
+    var ar = previewRgb[0], ag = previewRgb[1], ab = previewRgb[2];
     var bgRgb = hexToRgb(dark.bg);
     var bgr = bgRgb[0], bgg = bgRgb[1], bgb = bgRgb[2];
 
