@@ -65,6 +65,39 @@ only the `{FILL}` parts. Getting ANY attribute wrong causes silent failures.
 </form>
 ```
 
+### Drilldown field
+
+The drilldown field tells the viz which SPL column value to pass when the user clicks a row, bar,
+or segment. Clicking a viz element sends this field's value to downstream panels via token
+substitution or to a drilldown URL. Without it, clicks do nothing.
+
+```html
+<splunk-control-group label="Drilldown field" help="SPL field name passed on click -- e.g. 'host' sends the clicked row's host value to downstream panels">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.drilldownField" value="">
+    </splunk-text-input>
+</splunk-control-group>
+```
+
+Add to the `Interaction` or `Data configurations` section. Every viz with clickable elements
+(tables, leaderboards, bars, donuts, status chips) should include this control. The JS
+`_hitTest` function reads the `drilldownField` value to build `drilldownData`.
+
+### Comma-separated text input (status value mapping)
+
+Use for settings where the user provides a list of matching strings, such as status tier mapping.
+The JS side splits on comma and trims whitespace:
+`val.split(',').map(function(s){return s.trim().toLowerCase();})`.
+
+```html
+<splunk-control-group label="{FILL} values" help="Comma-separated list of field values that map to this status (e.g. ok,healthy,active,up)">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.{FILL}Values" value="{FILL}">
+    </splunk-text-input>
+</splunk-control-group>
+```
+
+Matching is case-insensitive. Order does not matter. Unmatched values render as neutral/informational.
+See viz-blueprints.md Status Chip and Status Matrix sections for the three-tier status pattern.
+
 ## WRONG patterns — broken if you see these
 
 ```
@@ -76,6 +109,10 @@ WRONG: themeMode value="dark"          → MUST be value="auto"
 WRONG: fontColor or bgColor controls  → Dashboard Studio owns panel-level colors (D-03).
                                          Only accentColor is a viz formatter color control.
                                          CFG-07 is satisfied by accentColor alone.
+WRONG: hardcoded if (status === 'ok') → MUST read comma-separated statusOkValues from formatter
+                                         and match case-insensitively. Hardcoded status strings
+                                         break when SPL returns 'active', 'healthy', or numeric
+                                         severity levels.
 ```
 
 ## Section structure
