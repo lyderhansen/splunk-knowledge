@@ -192,7 +192,10 @@ Plans:
   4. User adds an xField formatter control and its value overrides the auto-discovered field for that role — auto-discovery is the default, manual override takes precedence
   5. A generated viz pack for a specific domain (e.g., SOC, Energy, Healthcare) contains at least 2 viz types that could not exist outside that domain, drawn from domain-templates.md entries annotated "no generic equivalent"
   6. When a domain-specific viz type exceeds Canvas 2D complexity budget, the generated code uses the documented proxy pattern — not a blank panel or a JS error
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 14-01-PLAN.md — Domain visual language step in vp-design + domain-unique viz entries in domain-templates.md
+- [ ] 14-02-PLAN.md — Auto-field discovery patterns reference + vp-viz SKILL.md template update
 
 ### Phase 15: Mandatory Dashboard Packaging
 **Goal**: Every generated viz pack ships with a Dashboard Studio view containing all vizs — the dashboard is generated automatically as the final packaging step and is blocked if any viz fails validation
@@ -202,7 +205,10 @@ Plans:
   1. User runs vp-create and a Dashboard Studio JSON file is produced without any additional prompting — dashboard generation is Step 3c, not an optional extra
   2. The generated dashboard contains one panel per viz in the pack — a pack with 5 vizs produces a dashboard with exactly 5 panels
   3. vp-create refuses to generate the dashboard and reports an error if validate_viz.sh exits non-zero for any viz — the dashboard is never produced from broken vizs
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 14-01-PLAN.md — Domain visual language step in vp-design + domain-unique viz entries in domain-templates.md
+- [ ] 14-02-PLAN.md — Auto-field discovery patterns reference + vp-viz SKILL.md template update
 
 
 ## Progress
