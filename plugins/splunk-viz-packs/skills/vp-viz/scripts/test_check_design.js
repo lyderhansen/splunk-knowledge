@@ -19,6 +19,15 @@
  *   - D02 WARN (no shadow): exits 0 (WARN only), stdout has WARN D02
  *   - D08 FAIL forward (formatter key not in JS): exits 1, stdout has FAIL D08
  *   - D08 PASS forward: formatter key referenced in JS, no FAIL D08
+ *   - D09 FAIL ternary cap: gi > 1 ? 1 : gi pattern detected
+ *   - D09 FAIL Math.min cap: Math.min(gi, 1) pattern detected
+ *   - D09 PASS uncapped: no ceiling clamp on gi
+ *   - D10 FAIL missing annotation: no @viz-type on first line
+ *   - D10 PASS valid annotation: // @viz-type: kpi on first line
+ *   - D10 WARN invalid type: // @viz-type: foobar on first line
+ *   - D11 FAIL no guard: _onMouseMove without showHoverEffect guard
+ *   - D11 PASS with guard: _onMouseMove has early-exit guard
+ *   - D11 PASS no mousemove: no _onMouseMove present
  *
  * Pure ES5 CJS -- no const/let/arrow functions/template literals/import.
  */
@@ -113,9 +122,11 @@ var THEME_WITH_RGBA = [
 
 /*
  * GOOD_JS: a JS source with all positive signals — Math.min/Math.max (D03 pass),
- * createLinearGradient (D01 pass), shadowBlur (D02 pass), opt() calls to match formatter keys.
+ * createLinearGradient (D01 pass), shadowBlur (D02 pass), opt() calls to match formatter keys,
+ * and @viz-type annotation on first line (D10 pass).
  */
 var GOOD_JS = [
+    '// @viz-type: kpi',
     'var vis = {',
     '  updateView: function(data, config) {',
     '    var w = Math.min(this.el.clientWidth, 1920);',
@@ -175,6 +186,7 @@ assertIncludes('no args shows Usage in stderr', r.stderr, 'Usage:');
 // --- D03 FAIL: no hero formula ---
 console.log('\n-- D03 FAIL: no hero sizing formula (no Math.min/max, no getTypoScale) --');
 var NO_HERO_JS = tmpFile('no_hero.js', [
+    '// @viz-type: kpi',
     'var vis = {',
     '  updateView: function(data, config) {',
     '    var grad = ctx.createLinearGradient(0, 0, 100, 100);',
@@ -194,6 +206,7 @@ assertIncludes('D03 FAIL stdout contains FAIL D03', r.stdout, 'FAIL D03');
 // --- D03 PASS via getTypoScale ---
 console.log('\n-- D03 PASS: getTypoScale present --');
 var TYPO_JS = tmpFile('typo.js', [
+    '// @viz-type: kpi',
     'var vis = {',
     '  updateView: function(data, config) {',
     '    var scale = getTypoScale(this.el.clientWidth);',
@@ -213,6 +226,7 @@ assertNotIncludes('D03 PASS (getTypoScale): no FAIL D03 in stdout', r.stdout, 'F
 // --- D03 PASS via Math.min+Math.max ---
 console.log('\n-- D03 PASS: Math.min + Math.max present --');
 var MINMAX_JS = tmpFile('minmax.js', [
+    '// @viz-type: kpi',
     'var vis = {',
     '  updateView: function(data, config) {',
     '    var w = Math.min(this.el.clientWidth, 1920);',
@@ -288,6 +302,7 @@ var FORMATTER_MINIMAL = [
     '</form>'
 ].join('\n');
 var NO_GRAD_JS = tmpFile('no_grad.js', [
+    '// @viz-type: kpi',
     'var vis = {',
     '  updateView: function(data, config) {',
     '    var w = Math.min(this.el.clientWidth, 1920);',
@@ -312,6 +327,7 @@ assertIncludes('D01 WARN stdout contains WARN D01', r.stdout, 'WARN D01');
 // The JS has Math.min/Math.max (D03 pass) and gradient (D01 pass) but no shadow.
 console.log('\n-- D02 WARN: no shadowBlur or shadowColor (exits 0) --');
 var NO_SHADOW_JS = tmpFile('no_shadow.js', [
+    '// @viz-type: kpi',
     'var vis = {',
     '  updateView: function(data, config) {',
     '    var w = Math.min(this.el.clientWidth, 1920);',
@@ -357,6 +373,7 @@ var D08_FORMATTER = tmpFile('formatter_d08.html', [
 ].join('\n'));
 // JS does NOT contain 'myControl' as a quoted string
 var D08_JS_MISSING = tmpFile('js_d08_missing.js', [
+    '// @viz-type: kpi',
     'var vis = {',
     '  updateView: function(data, config) {',
     '    var w = Math.min(this.el.clientWidth, 1920);',
@@ -379,6 +396,7 @@ assertIncludes('D08 FAIL forward stdout contains FAIL D08', r.stdout, 'FAIL D08'
 // --- D08 PASS forward: formatter key referenced in JS ---
 console.log('\n-- D08 PASS forward: all formatter keys referenced in JS --');
 var D08_JS_PRESENT = tmpFile('js_d08_present.js', [
+    '// @viz-type: kpi',
     'var vis = {',
     '  updateView: function(data, config) {',
     '    var w = Math.min(this.el.clientWidth, 1920);',
@@ -398,6 +416,236 @@ var D08_FORMATTER_PASS = tmpFile('formatter_d08_pass.html', D08_FORMATTER);
 var THEME_D08_PASS = tmpFile('theme_d08_pass.js', THEME_WITH_RGBA);
 r = run(D08_FORMATTER, D08_JS_PRESENT, THEME_D08_PASS);
 assertNotIncludes('D08 PASS forward: no FAIL D08 in stdout', r.stdout, 'FAIL D08');
+
+// ---- D09: accentIntensity (gi) cap detection ----
+
+/*
+ * Base JS for D09/D11 tests: has gradient, shadow, Math.min+Max, @viz-type on first line,
+ * valid formatter keys, and no _onMouseMove. Avoids noise from D01/D02/D03/D10.
+ */
+var D_BASE_FORMATTER = [
+    '<form section-label="Data">',
+    '  <splunk-control-group label="Intensity">',
+    '    <splunk-text-input name="{{VIZ_NAMESPACE}}.accentIntensity" value="1.5"></splunk-text-input>',
+    '  </splunk-control-group>',
+    '</form>',
+    '<form section-label="Colors">',
+    '  <splunk-control-group label="Primary">',
+    '    <splunk-color-picker type="custom" name="{{VIZ_NAMESPACE}}.primaryColor" value="#007bff"></splunk-color-picker>',
+    '  </splunk-control-group>',
+    '</form>',
+    '<form section-label="Theme">',
+    '  <splunk-control-group label="Mode">',
+    '    <splunk-text-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto"></splunk-text-input>',
+    '  </splunk-control-group>',
+    '</form>',
+    '<form section-label="Layout">',
+    '  <splunk-control-group label="Accent">',
+    '    <splunk-color-picker type="custom" name="{{VIZ_NAMESPACE}}.accentColor" value="#ff6b00"></splunk-color-picker>',
+    '  </splunk-control-group>',
+    '</form>'
+].join('\n');
+
+function makeBaseJs(extraLines) {
+    return [
+        '// @viz-type: kpi',
+        'var vis = {',
+        '  updateView: function(data, config) {',
+        '    var w = Math.min(this.el.clientWidth, 1920);',
+        '    var h = Math.max(this.el.clientHeight, 100);',
+        '    var grad = ctx.createLinearGradient(0, 0, w, h);',
+        '    ctx.shadowBlur = 8;',
+        '    ctx.shadowColor = "rgba(0,0,0,0.5)";',
+        '    var gi = opt("accentIntensity", 1.5);',
+        '    var color1 = opt("primaryColor", "#007bff");',
+        '    var mode = opt("themeMode", "auto");',
+        '    var accent = opt("accentColor", "#ff6b00");',
+        '    detectTheme();',
+        extraLines || '',
+        '  }',
+        '};',
+        'module.exports = vis;'
+    ].join('\n');
+}
+
+// --- D09 FAIL: ternary cap ---
+console.log('\n-- D09 FAIL: gi ternary cap pattern (gi > 1 ? 1 : gi) --');
+var D09_TERNARY_JS = tmpFile('d09_ternary.js', makeBaseJs('    gi = gi < 0 ? 0 : gi > 1 ? 1 : gi;'));
+var D09_FORMATTER = tmpFile('d09_formatter.html', D_BASE_FORMATTER);
+var D09_THEME = tmpFile('d09_theme.js', THEME_WITH_RGBA);
+r = run(D09_FORMATTER, D09_TERNARY_JS, D09_THEME);
+assert('D09 FAIL ternary cap exits 1', r.code, 1, r.stdout + r.stderr);
+assertIncludes('D09 FAIL ternary cap stdout contains FAIL D09', r.stdout, 'FAIL D09');
+
+// --- D09 FAIL: Math.min cap ---
+console.log('\n-- D09 FAIL: Math.min(gi, 1) cap pattern --');
+var D09_MATHMIN_JS = tmpFile('d09_mathmin.js', makeBaseJs('    gi = Math.min(gi, 1);'));
+var D09_MATHMIN_FORMATTER = tmpFile('d09_mathmin_formatter.html', D_BASE_FORMATTER);
+var D09_MATHMIN_THEME = tmpFile('d09_mathmin_theme.js', THEME_WITH_RGBA);
+r = run(D09_MATHMIN_FORMATTER, D09_MATHMIN_JS, D09_MATHMIN_THEME);
+assert('D09 FAIL Math.min cap exits 1', r.code, 1, r.stdout + r.stderr);
+assertIncludes('D09 FAIL Math.min cap stdout contains FAIL D09', r.stdout, 'FAIL D09');
+
+// --- D09 PASS: no ceiling clamp ---
+console.log('\n-- D09 PASS: gi has floor clamp only (no ceiling) --');
+var D09_UNCAPPED_JS = tmpFile('d09_uncapped.js', makeBaseJs('    gi = gi < 0 ? 0 : gi;'));
+var D09_UNCAPPED_FORMATTER = tmpFile('d09_uncapped_formatter.html', D_BASE_FORMATTER);
+var D09_UNCAPPED_THEME = tmpFile('d09_uncapped_theme.js', THEME_WITH_RGBA);
+r = run(D09_UNCAPPED_FORMATTER, D09_UNCAPPED_JS, D09_UNCAPPED_THEME);
+assertNotIncludes('D09 PASS uncapped: no FAIL D09 in stdout', r.stdout, 'FAIL D09');
+
+// ---- D10: @viz-type annotation on first line ----
+
+/*
+ * Base formatter for D10 tests: 4 sections, 2 color pickers, keys: myLabel, primaryColor, bgColor, themeMode.
+ * Reuses FORMATTER_MINIMAL defined earlier.
+ */
+
+// --- D10 FAIL: missing annotation ---
+console.log('\n-- D10 FAIL: no @viz-type annotation on first line --');
+var D10_NO_ANNOT_JS = tmpFile('d10_no_annot.js', [
+    'var vis = {',
+    '  updateView: function(data, config) {',
+    '    var w = Math.min(this.el.clientWidth, 1920);',
+    '    var h = Math.max(this.el.clientHeight, 100);',
+    '    var grad = ctx.createLinearGradient(0, 0, w, h);',
+    '    ctx.shadowBlur = 8;',
+    '    ctx.shadowColor = "rgba(0,0,0,0.5)";',
+    '    var label = opt("myLabel", "default");',
+    '    var color = opt("primaryColor", "#007bff");',
+    '    var bg = opt("bgColor", "#28a745");',
+    '    var mode = opt("themeMode", "auto");',
+    '    detectTheme();',
+    '  }',
+    '};'
+].join('\n'));
+var D10_FORMATTER = tmpFile('d10_formatter.html', FORMATTER_MINIMAL);
+var D10_THEME = tmpFile('d10_theme.js', THEME_WITH_RGBA);
+r = run(D10_FORMATTER, D10_NO_ANNOT_JS, D10_THEME);
+assert('D10 FAIL missing annotation exits 1', r.code, 1, r.stdout + r.stderr);
+assertIncludes('D10 FAIL missing annotation stdout contains FAIL D10', r.stdout, 'FAIL D10');
+
+// --- D10 PASS: valid annotation ---
+console.log('\n-- D10 PASS: // @viz-type: kpi on first line --');
+var D10_VALID_JS = tmpFile('d10_valid.js', [
+    '// @viz-type: kpi',
+    'var vis = {',
+    '  updateView: function(data, config) {',
+    '    var w = Math.min(this.el.clientWidth, 1920);',
+    '    var h = Math.max(this.el.clientHeight, 100);',
+    '    var grad = ctx.createLinearGradient(0, 0, w, h);',
+    '    ctx.shadowBlur = 8;',
+    '    ctx.shadowColor = "rgba(0,0,0,0.5)";',
+    '    var label = opt("myLabel", "default");',
+    '    var color = opt("primaryColor", "#007bff");',
+    '    var bg = opt("bgColor", "#28a745");',
+    '    var mode = opt("themeMode", "auto");',
+    '    detectTheme();',
+    '  }',
+    '};'
+].join('\n'));
+var D10_VALID_FORMATTER = tmpFile('d10_valid_formatter.html', FORMATTER_MINIMAL);
+var D10_VALID_THEME = tmpFile('d10_valid_theme.js', THEME_WITH_RGBA);
+r = run(D10_VALID_FORMATTER, D10_VALID_JS, D10_VALID_THEME);
+assertNotIncludes('D10 PASS valid annotation: no FAIL D10 in stdout', r.stdout, 'FAIL D10');
+
+// --- D10 WARN: unrecognized viz type ---
+console.log('\n-- D10 WARN: // @viz-type: foobar (unrecognized type) --');
+var D10_INVALID_JS = tmpFile('d10_invalid.js', [
+    '// @viz-type: foobar',
+    'var vis = {',
+    '  updateView: function(data, config) {',
+    '    var w = Math.min(this.el.clientWidth, 1920);',
+    '    var h = Math.max(this.el.clientHeight, 100);',
+    '    var grad = ctx.createLinearGradient(0, 0, w, h);',
+    '    ctx.shadowBlur = 8;',
+    '    ctx.shadowColor = "rgba(0,0,0,0.5)";',
+    '    var label = opt("myLabel", "default");',
+    '    var color = opt("primaryColor", "#007bff");',
+    '    var bg = opt("bgColor", "#28a745");',
+    '    var mode = opt("themeMode", "auto");',
+    '    detectTheme();',
+    '  }',
+    '};'
+].join('\n'));
+var D10_INVALID_FORMATTER = tmpFile('d10_invalid_formatter.html', FORMATTER_MINIMAL);
+var D10_INVALID_THEME = tmpFile('d10_invalid_theme.js', THEME_WITH_RGBA);
+r = run(D10_INVALID_FORMATTER, D10_INVALID_JS, D10_INVALID_THEME);
+assertIncludes('D10 WARN invalid type stdout contains WARN D10', r.stdout, 'WARN D10');
+assertNotIncludes('D10 WARN invalid type does not FAIL (exits 0)', r.stdout, 'FAIL D10');
+
+// ---- D11: showHoverEffect early-exit guard in _onMouseMove ----
+
+// --- D11 FAIL: _onMouseMove without guard ---
+console.log('\n-- D11 FAIL: _onMouseMove present but no showHoverEffect guard --');
+var D11_NO_GUARD_JS = tmpFile('d11_no_guard.js', [
+    '// @viz-type: kpi',
+    'var vis = {',
+    '  updateView: function(data, config) {',
+    '    var w = Math.min(this.el.clientWidth, 1920);',
+    '    var h = Math.max(this.el.clientHeight, 100);',
+    '    var grad = ctx.createLinearGradient(0, 0, w, h);',
+    '    ctx.shadowBlur = 8;',
+    '    ctx.shadowColor = "rgba(0,0,0,0.5)";',
+    '    var gi = opt("accentIntensity", 1.5);',
+    '    var color1 = opt("primaryColor", "#007bff");',
+    '    var mode = opt("themeMode", "auto");',
+    '    var accent = opt("accentColor", "#ff6b00");',
+    '    detectTheme();',
+    '  },',
+    '  _onMouseMove: function(e) {',
+    '    var x = e.offsetX;',
+    '    var y = e.offsetY;',
+    '    this._render(x, y);',
+    '  }',
+    '};',
+    'module.exports = vis;'
+].join('\n'));
+var D11_NO_GUARD_FORMATTER = tmpFile('d11_no_guard_formatter.html', D_BASE_FORMATTER);
+var D11_NO_GUARD_THEME = tmpFile('d11_no_guard_theme.js', THEME_WITH_RGBA);
+r = run(D11_NO_GUARD_FORMATTER, D11_NO_GUARD_JS, D11_NO_GUARD_THEME);
+assert('D11 FAIL no guard exits 1', r.code, 1, r.stdout + r.stderr);
+assertIncludes('D11 FAIL no guard stdout contains FAIL D11', r.stdout, 'FAIL D11');
+
+// --- D11 PASS: _onMouseMove with guard ---
+console.log('\n-- D11 PASS: _onMouseMove has if (!this._showHoverEffect) return; guard --');
+var D11_WITH_GUARD_JS = tmpFile('d11_with_guard.js', [
+    '// @viz-type: kpi',
+    'var vis = {',
+    '  updateView: function(data, config) {',
+    '    var w = Math.min(this.el.clientWidth, 1920);',
+    '    var h = Math.max(this.el.clientHeight, 100);',
+    '    var grad = ctx.createLinearGradient(0, 0, w, h);',
+    '    ctx.shadowBlur = 8;',
+    '    ctx.shadowColor = "rgba(0,0,0,0.5)";',
+    '    var gi = opt("accentIntensity", 1.5);',
+    '    var color1 = opt("primaryColor", "#007bff");',
+    '    var mode = opt("themeMode", "auto");',
+    '    var accent = opt("accentColor", "#ff6b00");',
+    '    this._showHoverEffect = opt("showHoverEffect", true);',
+    '    detectTheme();',
+    '  },',
+    '  _onMouseMove: function(e) {',
+    '    if (!this._showHoverEffect) return;',
+    '    var x = e.offsetX;',
+    '    var y = e.offsetY;',
+    '    this._render(x, y);',
+    '  }',
+    '};',
+    'module.exports = vis;'
+].join('\n'));
+var D11_GUARD_FORMATTER = tmpFile('d11_guard_formatter.html', D_BASE_FORMATTER);
+var D11_GUARD_THEME = tmpFile('d11_guard_theme.js', THEME_WITH_RGBA);
+r = run(D11_GUARD_FORMATTER, D11_WITH_GUARD_JS, D11_GUARD_THEME);
+assertNotIncludes('D11 PASS with guard: no FAIL D11 in stdout', r.stdout, 'FAIL D11');
+
+// --- D11 PASS: no _onMouseMove at all ---
+console.log('\n-- D11 PASS: no _onMouseMove present (D11 skips) --');
+var D11_NO_MOUSEMOVE_JS = tmpFile('d11_no_mm.js', makeBaseJs(''));
+var D11_NO_MM_FORMATTER = tmpFile('d11_no_mm_formatter.html', D_BASE_FORMATTER);
+var D11_NO_MM_THEME = tmpFile('d11_no_mm_theme.js', THEME_WITH_RGBA);
+r = run(D11_NO_MM_FORMATTER, D11_NO_MOUSEMOVE_JS, D11_NO_MM_THEME);
+assertNotIncludes('D11 PASS no _onMouseMove: no FAIL D11 in stdout', r.stdout, 'FAIL D11');
 
 // ---- Cleanup temp files ----
 tmpFiles.forEach(function(p) {
