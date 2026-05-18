@@ -1,0 +1,93 @@
+<form class="splunk-formatter-section" section-label="Data Configuration">
+    <splunk-control-group label="Subsystem Field" help="Field containing subsystem name">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.subsystemField" value="subsystem">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Status Field" help="Field containing status (nominal/degraded/critical)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.statusField" value="status">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Sparkline Field" help="Sparkline data field (comma-separated or Splunk sparkline)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.sparklineField" value="trend">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Drilldown Field" help="Field sent on click">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.drilldownField" value="subsystem">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Display">
+    <splunk-control-group label="Hex Size" help="Size of hexagonal cells">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.hexSize" value="medium">
+            <option value="small">Small</option>
+            <option value="medium">Medium</option>
+            <option value="large">Large</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show Labels" help="Display subsystem names in cells">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showLabels" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show Sparkline" help="Draw trend sparkline inside each hex">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showSparkline" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Color and Style">
+    <splunk-control-group label="Theme" help="Auto detects dashboard theme">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto">
+            <option value="auto">Auto</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Nominal Color" help="Color for nominal status">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.nominalColor" type="custom" value="#00E5A0">
+            <splunk-color>#00E5A0</splunk-color>
+            <splunk-color>#00B4FF</splunk-color>
+            <splunk-color>#C084FC</splunk-color>
+            <splunk-color>#FACC15</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Warn Color" help="Color for degraded status">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.warnColor" type="custom" value="#FACC15">
+            <splunk-color>#FACC15</splunk-color>
+            <splunk-color>#FF6B35</splunk-color>
+            <splunk-color>#C084FC</splunk-color>
+            <splunk-color>#00B4FF</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Critical Color" help="Color for critical status">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.criticalColor" type="custom" value="#FF3B5C">
+            <splunk-color>#FF3B5C</splunk-color>
+            <splunk-color>#FF6B35</splunk-color>
+            <splunk-color>#FACC15</splunk-color>
+            <splunk-color>#C084FC</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Animation">
+    <splunk-control-group label="Entrance Animation" help="Hexagons fade in on first load">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showEntrance" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Flash Critical" help="Pulse critical hexagons">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.flashCritical" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Animation Speed" help="Speed of entrance animation">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.animationSpeed" value="normal">
+            <option value="slow">Slow</option>
+            <option value="normal">Normal</option>
+            <option value="fast">Fast</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>

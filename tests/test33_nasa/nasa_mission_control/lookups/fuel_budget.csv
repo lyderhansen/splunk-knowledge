@@ -1,0 +1,5 @@
+mission_id,fuel_remaining_pct,burn1_pct,burn2_pct,burn3_pct,burn1_label,burn2_label,burn3_label
+ARTEMIS-II,42.5,18.0,22.5,17.0,TLI,LOI,TEI
+ISS-EXP70,71.2,12.3,8.5,8.0,Reboost-1,Reboost-2,DAM
+JWST,89.4,6.2,2.8,1.6,MCC-1,MCC-2,SK-1
+OSIRIS-APEX,55.8,21.0,14.2,9.0,TCM-1,OIM,Departure

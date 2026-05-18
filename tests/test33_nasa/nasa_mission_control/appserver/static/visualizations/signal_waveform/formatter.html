@@ -1,0 +1,91 @@
+<form class="splunk-formatter-section" section-label="Data Configuration">
+    <splunk-control-group label="Amplitude Field" help="Field for signal strength (dBm)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.amplitudeField" value="amplitude">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Frequency Field" help="Field for data rate (kbps)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.frequencyField" value="frequency">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Noise Floor" help="dBm threshold for noise floor line">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.noiseFloor" value="-100">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Drilldown Field" help="Field sent on click">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.drilldownField" value="amplitude">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Display">
+    <splunk-control-group label="Trace Width" help="Width of the waveform line">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.traceWidth" value="2">
+            <option value="1">Thin</option>
+            <option value="2">Normal</option>
+            <option value="3">Thick</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show Grid" help="Display background grid lines">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showGrid" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Grid Opacity" help="Opacity of grid lines (%)">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.gridOpacity" value="20">
+            <option value="10">Faint</option>
+            <option value="20">Normal</option>
+            <option value="40">Strong</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Scroll Speed" help="Speed of waveform scroll">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.scrollSpeed" value="normal">
+            <option value="slow">Slow</option>
+            <option value="normal">Normal</option>
+            <option value="fast">Fast</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Color and Style">
+    <splunk-control-group label="Theme" help="Auto detects dashboard theme">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto">
+            <option value="auto">Auto</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Trace Color" help="Color of the waveform trace">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.traceColor" type="custom" value="#00E5A0">
+            <splunk-color>#00E5A0</splunk-color>
+            <splunk-color>#00B4FF</splunk-color>
+            <splunk-color>#C084FC</splunk-color>
+            <splunk-color>#FACC15</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Animation">
+    <splunk-control-group label="Entrance Animation" help="Waveform draws in on first load">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showEntrance" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Flash Critical" help="Pulse trace when below noise floor">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.flashCritical" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Hover Effect" help="Show crosshair on mouse hover">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showHoverEffect" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Animation Speed" help="Speed of scroll and entrance">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.animationSpeed" value="normal">
+            <option value="slow">Slow</option>
+            <option value="normal">Normal</option>
+            <option value="fast">Fast</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>

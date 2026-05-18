@@ -1,0 +1,97 @@
+<form class="splunk-formatter-section" section-label="Data Configuration">
+    <splunk-control-group label="Phase Field" help="Orbital phase angle in degrees (0-360)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.phaseField" value="phase">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Altitude Field" help="Altitude in km">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.altitudeField" value="alt">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Velocity Field" help="Velocity in km/s">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.velocityField" value="vel">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Periapsis Field" help="Periapsis altitude in km">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.periapsisField" value="peri">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Apoapsis Field" help="Apoapsis altitude in km">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.apoapsisField" value="apo">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Drilldown Field" help="Field sent on click">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.drilldownField" value="alt">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Display">
+    <splunk-control-group label="Trail Length" help="Afterglow trail angle in degrees">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.trailLength" value="30">
+            <option value="15">Short</option>
+            <option value="30">Normal</option>
+            <option value="45">Long</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Body Label" help="Label for center body">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.bodyLabel" value="Earth">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show Readouts" help="Display altitude and velocity text">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showReadouts" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Color and Style">
+    <splunk-control-group label="Theme" help="Auto detects dashboard theme">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto">
+            <option value="auto">Auto</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Orbit Color" help="Color of the orbital path">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.orbitColor" type="custom" value="#00B4FF">
+            <splunk-color>#00B4FF</splunk-color>
+            <splunk-color>#C084FC</splunk-color>
+            <splunk-color>#00E5A0</splunk-color>
+            <splunk-color>#FACC15</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Body Color" help="Color of the center body sphere">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.bodyColor" type="custom" value="#1E40AF">
+            <splunk-color>#1E40AF</splunk-color>
+            <splunk-color>#7B8BA4</splunk-color>
+            <splunk-color>#3D4C63</splunk-color>
+            <splunk-color>#059669</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Animation">
+    <splunk-control-group label="Entrance Animation" help="Orbit path draws in on first load">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showEntrance" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Flash Critical" help="Pulse when altitude is below threshold">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.flashCritical" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Hover Effect" help="Highlight position dot on hover">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showHoverEffect" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Animation Speed" help="Speed of entrance animation">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.animationSpeed" value="normal">
+            <option value="slow">Slow</option>
+            <option value="normal">Normal</option>
+            <option value="fast">Fast</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>

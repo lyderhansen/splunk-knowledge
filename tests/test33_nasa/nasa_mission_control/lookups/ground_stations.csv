@@ -1,0 +1,13 @@
+station_name,azimuth_deg,range_km,station_type,status
+Goldstone DSS-14,243,0,DSN,active
+Goldstone DSS-25,245,0,DSN,active
+Canberra DSS-43,128,16500,DSN,active
+Canberra DSS-35,130,16500,DSN,standby
+Madrid DSS-63,32,9500,DSN,active
+Madrid DSS-55,34,9500,DSN,active
+White Sands,265,2200,TDRS,active
+Guam,290,13200,SGLS,active
+Wallops Island,280,400,SGLS,maintenance
+Merritt Island,270,200,SGLS,active
+McMurdo,178,15300,TDRS,active
+Svalbard,10,8800,KSAT,active

@@ -1,0 +1,104 @@
+<form class="splunk-formatter-section" section-label="Data Configuration">
+    <splunk-control-group label="Value Field" help="Field containing the KPI value">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.valueField" value="value">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Unit Field" help="Field containing the unit (e.g. dBm, km)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.unitField" value="unit">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Label Field" help="Field containing the metric label">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.labelField" value="label">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Drilldown Field" help="Field sent on click for drilldowns">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.drilldownField" value="label">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Display">
+    <splunk-control-group label="Warn Threshold" help="Value below which warn state activates">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.warnThreshold" value="70">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Critical Threshold" help="Value below which critical state activates">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.criticalThreshold" value="30">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Decimals" help="Decimal places for value display">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.decimals" value="1">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Orb Size" help="Size of the glowing orb">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.orbSize" value="medium">
+            <option value="small">Small</option>
+            <option value="medium">Medium</option>
+            <option value="large">Large</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show Unit" help="Display unit below value">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showUnit" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show Label" help="Display label above value">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showLabel" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Show Halo" help="Pulsing halo ring on threshold breach">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showHalo" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Color and Style">
+    <splunk-control-group label="Theme" help="Auto detects dashboard theme">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto">
+            <option value="auto">Auto</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Orb Color" help="Primary color for the orb glow">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.orbColor" type="custom" value="#00B4FF">
+            <splunk-color>#00B4FF</splunk-color>
+            <splunk-color>#00E5A0</splunk-color>
+            <splunk-color>#FF6B35</splunk-color>
+            <splunk-color>#C084FC</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Animation">
+    <splunk-control-group label="Entrance Animation" help="Scale-in on first load">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showEntrance" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Flash Critical" help="Pulse halo when in critical zone">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.flashCritical" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Hover Effect" help="Brighten orb on mouse hover">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showHoverEffect" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Animation Speed" help="Speed of entrance and pulse animations">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.animationSpeed" value="normal">
+            <option value="slow">Slow</option>
+            <option value="normal">Normal</option>
+            <option value="fast">Fast</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
