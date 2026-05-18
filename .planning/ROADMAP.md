@@ -229,7 +229,10 @@ Plans:
   3. Every generated viz's _onMouseMove function begins with a showHoverEffect guard that returns immediately when the toggle is false — no exceptions across any viz type
   4. A generated KPI viz's formatter.html contains sparkPlacement and sparkHeight controls, and the corresponding JS renders a sparkline by default
   5. Two preview.png thumbnails in the same generated pack have distinct shapes — grepping the generate_assets.js silhouette map confirms each @viz-type annotation maps to a unique drawing routine
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 16-01-PLAN.md — Trim canvas-recipes.md from 998 to under 500 lines (remove duplicates, condense verbose sections)
+- [ ] 16-02-PLAN.md — Add D09/D10/D11 design quality rules, update pre-code-checklist.md and viz-blueprints.md
 
 ### Phase 17: Dashboard Schema & Composition
 **Goal**: Generated tabbed dashboards use the correct JSON schema, the dashboard background is visually dramatic, every dashboard has a branded title panel, and ds-int-tabs is loaded automatically when tabs are needed
@@ -273,6 +276,6 @@ Plans:
 | 13. Accent Architecture Foundation | v5.2.0 | 0/3 | Not started | - |
 | 14. Smart Fields & Domain Ideation | v5.2.0 | 0/2 | Not started | - |
 | 15. Mandatory Dashboard Packaging | v5.2.0 | 0/1 | Not started | - |
-| 16. Code Quality & Reference Cleanup | v5.3.0 | 0/? | Not started | - |
+| 16. Code Quality & Reference Cleanup | v5.3.0 | 0/2 | Not started | - |
 | 17. Dashboard Schema & Composition | v5.3.0 | 0/? | Not started | - |
 | 18. Interactive Dashboard Features | v5.3.0 | 0/? | Not started | - |
