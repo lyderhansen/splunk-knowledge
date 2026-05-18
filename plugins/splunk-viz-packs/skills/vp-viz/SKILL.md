@@ -76,6 +76,9 @@ RIGHT: "options": { "myapp.myviz.scoreField": "score" }
 □ Dashboard data sources: every ds.search has "name" field
 □ Tables: sort ALL columns, pagination with maxRows, hiddenColumns, columnWidths
 □ Event handlers: field names from config properties, NEVER hardcoded strings
+□ JS formatData: result object includes fields: data.fields (enables auto-field discovery)
+□ JS auto-field: _ prefix fields excluded from auto-discovery (charAt(0) === '_' check)
+□ JS field resolver: formatter config overrides auto-discovered fields (opt('valueField','') checked first)
 □ Drilldown tokens: setToken → search consumes it → default value set
 □ Formatter: settings are VIZ-APPROPRIATE — KPI exposes threshold ranges (green/yellow/red); bar exposes label toggle; table exposes sort column + maxRows
 □ JS tables: column sort (click header → re-sort) + pagination (maxRows config, prev/next controls) — MANDATORY
@@ -299,7 +302,7 @@ module.exports = SplunkVisualizationBase.extend({
         for (var i = 0; i < fields.length; i++) {
             colIdx[fields[i].name] = i;
         }
-        var result = { colIdx: colIdx, rows: data.rows };
+        var result = { colIdx: colIdx, rows: data.rows, fields: data.fields };
         this._lastGoodData = result;
         return result;
     },
@@ -440,6 +443,7 @@ CRITICAL: Run validation after every build. Do not skip. Fix all failures before
 ### Other references
 
 - **[Viz blueprints](references/viz-blueprints.md)** — 15 viz types with creative direction + data contracts (includes DPR cross-references)
+- **[Auto-field patterns](references/auto-field-patterns.md)** — per-viz-type auto-field discovery: RESERVED exclusion, isNumericCol, three-tier resolver, multi-series color assignment
 - **[Canvas recipes](references/canvas-recipes.md)** — tooltip, drilldown, color math, grid layout, shape primitives
 - **[Conf templates](references/conf-templates.md)** — app.conf, visualizations.conf, default.meta, transforms.conf
 - **[Theme template](references/theme-template.md)** — complete theme.js with getSpacing, getTypoScale, getHoverAlpha
