@@ -33,7 +33,7 @@ Without context, you produce generic output. You need ALL five:
 ## Workflow
 
 ```
-1. Brand research          → understand the visual language
+1. Brand research          → WebSearch the brand: find official colors, logo, design language, brand guidelines
 2. Design context          → brand, domain, tone, fonts
 3. Design direction        → palette, typography, aesthetic
 3b. Domain visual language  → research how this domain displays data
@@ -47,6 +47,16 @@ Without context, you produce generic output. You need ALL five:
 ```
 
 Write all viz code INLINE (same context). Do NOT dispatch subagents for code generation — they lose the skill context.
+
+## Brand research (step 1) — USE WEBSEARCH
+
+**Do NOT skip this step.** Use WebSearch to find:
+1. **Official brand colors** — primary, secondary, accent hex codes from brand guidelines or website
+2. **Logo and visual identity** — what shapes, patterns, or motifs define the brand?
+3. **Design language** — is it minimal? bold? technical? organic?
+4. **Typography** — what fonts does the brand use? (fall back to system fonts if custom fonts aren't web-safe)
+
+If WebSearch is unavailable, use your knowledge of the brand but note that colors may be approximate.
 
 ## Domain visual language research (step 3b)
 
