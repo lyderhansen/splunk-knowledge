@@ -515,6 +515,7 @@ Run this checklist before finalizing dashboard JSON:
 - [ ] All main panel groups have shadow or glow cards (consistent depth)
 - [ ] Spacing varies: 8px within groups, 24–32px between sections
 - [ ] Panel arrangement follows domain narrative (not random grid)
+- [ ] Dashboard has a branded title — `splunk.markdown` panel at top with dashboard name and one-line description
 - [ ] `splunk.markdown` section headers (if used) use only allowed fontFamily enum values
 - [ ] No solid-color full-width banner rectangle at top
 

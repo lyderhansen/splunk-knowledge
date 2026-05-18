@@ -57,6 +57,7 @@ RIGHT: "options": { "myapp.myviz.scoreField": "score" }
 □ JS light theme: hero text uses t.text, NEVER t.textDim (ghost-text on white — D-08)
 □ JS light theme: glow scaled by isDark ? 1.0 : 0.4 (THM-03)
 □ JS light theme: inner shadow replaced by 1px t.edge border on panels (THM-04)
+□ JS: first line of visualization_source.js MUST be: // @viz-type: <type> (one of: kpi, gauge, bars, grid, line, timeline, radar, progress, scatter, network)
 □ JS: require()/module.exports — NEVER define()
 □ JS: SplunkVisualizationBase.extend({...}) object literal
 □ JS: safeStr()/safeNum() on all row field reads
@@ -481,3 +482,9 @@ Apply the Visual Language schema from vp-design:
 - fillTechnique → createLinearGradient() for gradient; ctx.fillStyle=hex for flat; hatching pattern for textured
 - spacing → multiply base padding/gap by: tight=0.7, balanced=1.0, airy=1.4
 - Two brands serving the same data MUST differ in BOTH shape vocabulary AND layout algorithm — a Stripe KPI and a Patagonia KPI should look like different components from different design systems.
+
+## STOP — after all vizs are written
+
+**DO NOT report the task as complete.** You MUST now load and follow **vp-create** to build, validate, generate the dashboard, and package the tarball. The viz pack is NOT done until vp-create Step 3c (mandatory dashboard) completes and the tarball is verified.
+
+Load vp-create now. Do not skip this step.

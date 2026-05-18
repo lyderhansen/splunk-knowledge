@@ -654,7 +654,18 @@ function generatePreviews(appDir, dark) {
             continue;
         }
 
-        var type = detectVizType(name);
+        // Try @viz-type annotation from source file first, fall back to keyword detection
+        var type = null;
+        var srcPath = path.join(vizDir, 'src', 'visualization_source.js');
+        if (!fs.existsSync(srcPath)) { srcPath = path.join(vizDir, 'visualization_source.js'); }
+        if (fs.existsSync(srcPath)) {
+            try {
+                var firstLine = fs.readFileSync(srcPath, 'utf8').split('\n')[0];
+                var match = firstLine.match(/\/\/\s*@viz-type:\s*(\S+)/);
+                if (match) { type = match[1].toLowerCase(); }
+            } catch (e) {}
+        }
+        if (!type) { type = detectVizType(name); }
         var W = 300, H = 200;
         var rows = makeRgbRows(W, H, bgr, bgg, bgb);
         drawSilhouette(rows, type, ar, ag, ab, bgr, bgg, bgb);
