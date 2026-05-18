@@ -22,9 +22,9 @@
 > to expose. They are NOT templates to copy verbatim. Study the brand's
 > design language, then write Canvas code that matches THAT.
 
-> The agent's job: take the data contract + expression intent, then
-> design a rendering that looks like a graphic designer made it for
-> THIS specific brand.
+> The agent's job: use the data contract and expression intent as a starting point,
+> then design a rendering that a graphic designer would claim as their own work for
+> THIS specific brand. Settings lists define WHAT is configurable -- not HOW it should look.
 
 ### Animation settings
 
@@ -50,6 +50,8 @@ Note: `flashCritical` CAN be added to any viz type based on brand personality �
 - Use additive Y positioning for label-value-trend stack
 - All sizes scale from container: `Math.max(floor, h * ratio)`
 
+These rules are guardrails, not a blueprint. Within these constraints, design a Single Value Tile (KPI) that a graphic designer would recognize as intentional brand work -- not a default chart.
+
 **Design rules:** See [design-principles.md](../../vp-design/references/design-principles.md)
 - DPR-01 (typography hierarchy) — hero/body/whisper 3-tier sizing
 - DPR-03 (gradient fills) — all data elements use createLinearGradient
@@ -62,6 +64,13 @@ Note: `flashCritical` CAN be added to any viz type based on brand personality �
 - Trend indicator (arrow, dot, sparkline, percentage badge)
 - Background treatment (flat, gradient, accent glow, texture)
 - Unit styling relative to value (smaller? dimmer? superscript?)
+- Layout archetype (counter card, progress bar with target line, win-streak ribbon, delta comparison card, radial progress, icon-led badge)
+- Container shape (full-bleed, inset card with rounded corners, pill shape, asymmetric notch)
+- Trend visualization (inline sparkline, arrow with percentage, color-coded dot, pulsing glow on threshold breach)
+- Value hierarchy (hero number dominates, label dominates with number secondary, icon dominates with number as caption)
+- Decorative accents (accent stripe at top/left/bottom, background gradient direction, subtle watermark pattern, corner flourish)
+
+**Brand-distinct KPI is mandatory.** Two KPI tiles generated for different brands MUST look visually different -- not just recolored. Vary at least 3 of: layout archetype, container shape, font weight, label position, trend indicator, and background treatment. A 'Luxury' brand KPI and a 'Clinical' brand KPI should be immediately distinguishable even without reading the data.
 
 **Settings:** `valueField`, `labelField`, `unit`, `unitPosition`, `textPlacement`, `sparkPlacement`, `sparkHeight`, `decimals`, `showDelta`, `deltaField`, `showGlow`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
@@ -84,6 +93,8 @@ Note: `flashCritical` CAN be added to any viz type based on brand personality �
 - Brand-colored segments, NOT default green-yellow-red
 - All sizes relative to `Math.min(w, h)`
 - Gauge arc constraint: `cy - radius >= pad` (coupled — never calculate independently)
+
+These rules are guardrails, not a blueprint. Within these constraints, design a Ring Gauge that a graphic designer would recognize as intentional brand work -- not a default chart.
 
 **Design rules:** See [design-principles.md](../../vp-design/references/design-principles.md)
 - DPR-01 (typography hierarchy) — hero/body/whisper 3-tier sizing
@@ -136,6 +147,8 @@ Status matching: compare the statusField value against each comma-separated list
 - Animation timers MUST be cleaned up in `destroy()`
 - Edge fade gradients prevent text clipping
 
+These rules are guardrails, not a blueprint. Within these constraints, design a Live Ticker that a graphic designer would recognize as intentional brand work -- not a default chart.
+
 **Design rules:** See [design-principles.md](../../vp-design/references/design-principles.md)
 - DPR-01 (typography hierarchy) — hero/body/whisper 3-tier sizing
 - DPR-03 (gradient fills) — all data elements use createLinearGradient
@@ -174,6 +187,8 @@ Pagination: when showPagination is ON and row count exceeds maxRows, draw prev/n
 **Accessibility:** B — spatial layout hard to linearize.
 
 **When NOT to use:** Don't use for non-sequential data. Don't use for more than 8-10 steps.
+
+These rules are guardrails, not a blueprint. Within these constraints, design a Process Flow that a graphic designer would recognize as intentional brand work -- not a default chart.
 
 **Design rules:** See [design-principles.md](../../vp-design/references/design-principles.md)
 - DPR-01 (typography hierarchy) — hero/body/whisper 3-tier sizing
@@ -353,6 +368,8 @@ Status matching: compare the statusField value against each comma-separated list
 **Accessibility:** AA — tabular with headers.
 
 **When NOT to use:** Don't use when only 1-2 fields needed (use KPI).
+
+These rules are guardrails, not a blueprint. Within these constraints, design a Data Table that a graphic designer would recognize as intentional brand work -- not a default chart.
 
 **Design rules:** See [design-principles.md](../../vp-design/references/design-principles.md)
 - DPR-01 (typography hierarchy) — hero/body/whisper 3-tier sizing
