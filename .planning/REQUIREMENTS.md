@@ -1,92 +1,74 @@
-# Requirements: splunk-knowledge
+# Requirements: splunk-knowledge — v5.1.0 Viz Hardening & Dashboard Wow-Factor
 
-**Defined:** 2026-05-15
-**Core Value:** Zero-fix first builds AND wow-factor dashboards — reliable + beautiful every time
+**Defined:** 2026-05-18
+**Core Value:** When a user runs `/vp-init`, the resulting viz pack installs in Splunk without errors and produces a dashboard that makes someone say "wait, that's Splunk?" — zero manual fixes, wow-factor by default.
 
 ## Constraint: Zero User Dependencies
 
-Plugins must work with **zero external dependencies for end users**. Users run `/install-plugin` and start building — no npm, no Python, no Node.js required on their machine. All validation tooling (acorn, cheerio, ajv) runs inside skill scripts executed by Claude Code during builds. If a user's system doesn't have Node.js, validators fall back gracefully (warn instead of fail).
+Plugins must work with **zero external dependencies for end users**. All validation tooling runs inside skill scripts executed by Claude Code during builds. If Node.js is unavailable, validators fall back gracefully.
 
 ## v1 Requirements
 
-### Validation
+### Bug Fixes (FIX)
 
-- [ ] **VAL-01**: validate_viz.sh uses acorn AST parsing in ES5 mode to enforce pure ES5 compliance — replaces fragile grep-based detection
-- [ ] **VAL-02**: validate_viz.sh uses cheerio DOM parsing for formatter.html — catches structural HTML bugs (unclosed tags, malformed nesting, missing attributes)
-- [ ] **VAL-03**: Dashboard Studio JSON validated against ajv schema — catches B9 type format, B10 bare option keys, missing data sources
-- [ ] **VAL-04**: Automated repair loop — on validation failure, auto-fix common issues (namespace, value= vs default=, theme default), rebuild, re-validate up to 3 times
-- [ ] **VAL-05**: Cross-file consistency check — formatter option names match JS config reads (namespace mismatch detection)
-- [ ] **VAL-06**: WCAG AA contrast checker on theme.js tokens — catches "text disappears on light theme" before install
+- [ ] **FIX-01**: User changes any formatter setting and sees the change reflected immediately — opt() uses two-path lookup (namespaced + short key)
+- [ ] **FIX-02**: User sets showEntrance=false and sees the viz render at its final value immediately — no stuck-at-zero state
+- [ ] **FIX-03**: User sees flashCritical LED pulse clearly visible on critical cells — shadowBlur 8-24px with solid inner fill as secondary cue
+- [ ] **FIX-04**: User changes zone colors on ring gauge and sees the arc colors change — hexFromSplunk applied to all color picker opt() reads
+- [ ] **FIX-05**: User toggles showHoverEffect off on leaderboard/status matrix and hover highlight stops
 
-### Design Quality
+### Settings Completeness (SET)
 
-- [ ] **DES-01**: Light theme works by default — every viz tested in both dark and light, hero values use full t.text
-- [ ] **DES-02**: appIcon.png generated automatically with brand accent color and initial letter for every build
-- [ ] **DES-03**: preview.png generated automatically per viz with brand-colored silhouette (not solid color, not 1x1)
-- [ ] **DES-04**: Creative viz selection guidance — anti-donut rules, bold viz choices, anti-AI generic output checklist enforced in vp-design
-- [ ] **DES-05**: Brand-specific rendering enforced — no copy-paste-recolor between packs, unique _render() code per brand
+- [ ] **SET-01**: User sees status matrix accept any status string value — not hardcoded to ok/warn/crit
+- [ ] **SET-02**: User sees leaderboard with pagination controls — next/prev page when rows exceed maxRows
+- [ ] **SET-03**: User can control KPI text placement — center/top/left/right positioning via formatter
+- [ ] **SET-04**: User can control KPI sparkline placement and size — bottom/right/background with configurable height
+- [ ] **SET-05**: User can show/hide cell value labels in status matrix via formatter toggle
+- [ ] **SET-06**: User can show/hide column headers in leaderboard via formatter toggle
 
-### Skill Architecture
+### Creative Freedom (CRE)
 
-- [ ] **SKL-01**: Rule consolidation — reduce 54 rules to <30 high-impact rules, merge overlapping rules, reframe NEVER/ALWAYS as positive patterns
-- [ ] **SKL-02**: Split oversized references — all-patterns.md (<500 lines), broken-rules.md (<500 lines), classify rules as universal vs contextual
-- [ ] **SKL-03**: FISR baseline — retroactively score First-Install Success Rate for tests 21-28 to measure improvement
+- [ ] **CRE-01**: Claude generates visually distinct KPI tiles per brand — no default centered-number template, creative decisions driven by brand personality
+- [ ] **CRE-02**: All viz blueprints use "inspiration not template" language — Creative decisions section expanded, Technical rules section loosened
+- [ ] **CRE-03**: Drilldown Field formatter control has clear help text explaining it sets which field value is passed on click
 
-## v2 Requirements
+### Dashboard Composition (DSH)
 
-### Validation (Advanced)
+- [ ] **DSH-01**: Generated dashboard has a branded background treatment — gradient wash, radial accent glow, or generated pattern; never a plain single color
+- [ ] **DSH-02**: Generated dashboard has visual hierarchy — hero KPI strip at top, primary viz center, detail panels right
+- [ ] **DSH-03**: Generated dashboard has depth — background rectangles creating card groups and section separators
+- [ ] **DSH-04**: Generated dashboard tells a story — panel arrangement follows data narrative, not random grid placement
 
-- **VAL-07**: Cross-plugin MUST-LOAD enforcement via validation — verify ds-create, spl-gotchas loaded when needed
-- **VAL-08**: Splunk AppInspect pre-check — validate against AppInspect rules before packaging
-- **VAL-09**: node:test snapshot regression suite for validators — prevent validator regressions
+## Future Requirements
 
-### Design Quality (Advanced)
-
-- **DES-06**: Visual quality scoring (hierarchy, whitespace, brand, emotion) — 4-dimension scoring
-- **DES-07**: Automated visual diff — compare generated dashboard screenshots across iterations
-
-### Secondary Plugins
-
-- **PLG-01**: Harden splunk-dashboard-studio (ds-* skills) — apply lessons learned from vp-*
-- **PLG-02**: Harden splunk-spl — expand spl-gotchas coverage
-- **PLG-03**: Harden splunk-admin — conf file validation
+- Preview.png uniqueness — shape-distinct silhouettes per viz type (gauge=arc, kpi=number, table=rows)
+- score_design.js automated aesthetic scoring (deferred — needs calibration against test packs)
 
 ## Out of Scope
 
-| Feature | Reason |
-|---------|--------|
-| Dynamic template engine (Handlebars) | Risk of conflicting with SKILL.md code generation — needs prototyping first |
-| Subagent code generation | Proven 100% failure rate in test22a/b — inline execution only |
-| ESLint integration | Too heavy for this context — acorn AST + custom walks is lighter and more targeted |
-| Real-time streaming vizs | Standard Splunk polling is sufficient |
-| Mobile-responsive viz rendering | Splunk dashboards are desktop/wall-display |
-| Multi-tenant viz sharing | Each pack is a standalone Splunk app |
-| User-facing npm/Python deps | Users must not need to install Node.js, Python, or any package manager — plugins work via /install-plugin only |
+- Responsive dashboard layouts — Splunk Dashboard Studio uses absolute positioning only
+- Real-time animation sync across vizs — each viz manages its own rAF loop independently (D-12)
+- Mobile-responsive viz rendering — Splunk dashboards are desktop/wall-display
 
 ## Traceability
 
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| VAL-01 | Phase 1 | Pending |
-| VAL-02 | Phase 1 | Pending |
-| VAL-03 | Phase 2 | Pending |
-| VAL-04 | Phase 3 | Pending |
-| VAL-05 | Phase 2 | Pending |
-| VAL-06 | Phase 3 | Pending |
-| DES-01 | Phase 3 | Pending |
-| DES-02 | Phase 4 | Pending |
-| DES-03 | Phase 4 | Pending |
-| DES-04 | Phase 4 | Pending |
-| DES-05 | Phase 4 | Pending |
-| SKL-01 | Phase 5 | Pending |
-| SKL-02 | Phase 5 | Pending |
-| SKL-03 | Phase 1 | Pending |
-
-**Coverage:**
-- v1 requirements: 14 total
-- Mapped to phases: 14
-- Unmapped: 0
-
----
-*Requirements defined: 2026-05-15*
-*Last updated: 2026-05-15 after roadmap creation*
+| Requirement | Phase | Plan | Status |
+|-------------|-------|------|--------|
+| FIX-01 | Phase 10 | - | pending |
+| FIX-02 | Phase 10 | - | pending |
+| FIX-03 | Phase 10 | - | pending |
+| FIX-04 | Phase 10 | - | pending |
+| FIX-05 | Phase 10 | - | pending |
+| SET-01 | Phase 11 | - | pending |
+| SET-02 | Phase 11 | - | pending |
+| SET-03 | Phase 11 | - | pending |
+| SET-04 | Phase 11 | - | pending |
+| SET-05 | Phase 11 | - | pending |
+| SET-06 | Phase 11 | - | pending |
+| CRE-01 | Phase 11 | - | pending |
+| CRE-02 | Phase 11 | - | pending |
+| CRE-03 | Phase 11 | - | pending |
+| DSH-01 | Phase 12 | - | pending |
+| DSH-02 | Phase 12 | - | pending |
+| DSH-03 | Phase 12 | - | pending |
+| DSH-04 | Phase 12 | - | pending |

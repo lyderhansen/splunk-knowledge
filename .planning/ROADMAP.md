@@ -3,7 +3,8 @@
 ## Milestones
 
 - ✅ **v4.1.0 splunk-viz-packs Hardening** — Phases 1-5 (shipped 2026-05-15)
-- 🚧 **v5.0.0 Design Awesomeness** — Phases 6-9 (in progress)
+- ✅ **v5.0.0 Design Awesomeness** — Phases 6-9 (shipped 2026-05-16)
+- 🚧 **v5.1.0 Viz Hardening & Dashboard Wow-Factor** — Phases 10-12 (in progress)
 
 ## Phases
 
@@ -20,14 +21,23 @@ Full details: `.planning/milestones/v4.1.0-ROADMAP.md`
 
 </details>
 
-### 🚧 v5.0.0 Design Awesomeness (In Progress)
+<details>
+<summary>✅ v5.0.0 Design Awesomeness (Phases 6-9) — SHIPPED 2026-05-16</summary>
 
-**Milestone Goal:** Make every generated viz pack look like it was designed by a professional design studio — depth, glow, premium typography, intelligent configuration, and bulletproof code.
+- [x] Phase 6: Design Principles & Skill Layer (3/3 plans) — completed 2026-05-16
+- [x] Phase 7: Generation Quality & Theme Parity (4/4 plans) — completed 2026-05-16
+- [x] Phase 8: Design Quality Gate & Edge Case Resilience (3/3 plans) — completed 2026-05-16
+- [x] Phase 9: Animation & Motion (3/3 plans) — completed 2026-05-16
 
-- [x] **Phase 6: Design Principles & Skill Layer** — Codify premium Canvas 2D design rules into reference files; extend canvas-recipes.md with depth/texture/typography patterns; define cross-viz consistency contracts — completed 2026-05-16
-- [ ] **Phase 7: Generation Quality & Theme Parity** — Upgrade vp-viz generation to produce 10-14 formatter options per viz type; make dark and light themes independently designed, not inverted
-- [ ] **Phase 8: Design Quality Gate & Edge Case Resilience** — Ship check_design.js (D01-D08 design checks) wired into validate_viz.sh Phase 4; harden all generated code against empty/null/overflow data
-- [x] **Phase 9: Animation & Motion** — Add requestAnimationFrame entrance animations, LED pulse effect, eased hover transitions, and staggered row entrance to the canvas-recipes.md toolkit; all togglable via formatter — completed 2026-05-16
+</details>
+
+### 🚧 v5.1.0 Viz Hardening & Dashboard Wow-Factor (In Progress)
+
+**Milestone Goal:** Fix every bug found in test29, fill missing settings gaps, give Claude more creative freedom in viz design, and make generated dashboards look professionally composed — not just panels dumped on a canvas.
+
+- [ ] **Phase 10: Foundation Fixes** — Fix all confirmed test29 bugs: opt() two-path lookup, entrance-animation-off gauge stuck at zero, flashCritical LED pulse prominence, zone color wiring, hover toggle
+- [ ] **Phase 11: Blueprint Expansion & Creative Freedom** — Add missing settings (pagination, text placement, sparkline controls, flexible status values, cell label/header toggles); loosen KPI blueprint for brand-distinct tiles; improve drilldown field help text
+- [ ] **Phase 12: Dashboard Composition** — Create dashboard-composition.md reference; establish branded background treatments, visual hierarchy, depth through card grouping, and story-first panel arrangement
 
 ## Phase Details
 
@@ -99,6 +109,43 @@ Plans:
 - [x] 09-03-PLAN.md — Wire SKILL.md MUST-LOAD, update canvas-recipes.md stagger/lifecycle, verify D08 compatibility
 **UI hint**: yes
 
+### Phase 10: Foundation Fixes
+**Goal**: Every formatter control responds from both config delivery paths, gauge renders correctly when entrance animation is off, flashCritical LED pulse is visually prominent, and zone color / hover toggle wiring bugs are resolved
+**Depends on**: Phase 9
+**Requirements**: FIX-01, FIX-02, FIX-03, FIX-04, FIX-05
+**Success Criteria** (what must be TRUE):
+  1. User changes any formatter setting (in Format panel or dashboard JSON options) and sees the change reflected in the viz — opt() is replaced with two-path getOption() in the SKILL.md source template
+  2. User sets showEntrance=false and the gauge renders immediately at its correct final value — _entranceProgress=1 and _entranceDone=true are set on the off-path
+  3. User sees flashCritical LED pulse clearly on critical cells at any panel size — shadowBlur oscillates 8-24px and a solid inner fill provides a secondary visual cue
+  4. User changes zone colors on ring gauge and the arc segment colors update — hexFromSplunk wraps all color picker opt() reads
+  5. User toggles showHoverEffect=false on leaderboard or status matrix and hover highlight disappears completely
+**Plans**: TBD
+
+### Phase 11: Blueprint Expansion & Creative Freedom
+**Goal**: Claude generates visually distinct KPI tiles per brand, all viz blueprints invite creative decisions instead of mandating templates, missing settings (pagination, text placement, sparkline controls, flexible status values, cell label and header toggles) are documented and wired, and drilldown field help text is clear
+**Depends on**: Phase 10
+**Requirements**: SET-01, SET-02, SET-03, SET-04, SET-05, SET-06, CRE-01, CRE-02, CRE-03
+**Success Criteria** (what must be TRUE):
+  1. User configures status matrix with custom status strings (e.g., "degraded", "maintenance") and the viz renders correct colors — status values read from formatter-defined comma-separated lists, not hardcoded ok/warn/crit
+  2. User sees pagination controls (next/prev page) on a leaderboard when rows exceed maxRows — clicking navigates without page reload
+  3. User moves KPI text placement (center/top/left/right) via the formatter and sees the label and value reposition accordingly
+  4. Two KPI tiles generated for different brands look visually distinct — different label position, trend indicator shape, or background treatment per brand personality
+  5. User reads the Drilldown Field formatter control and immediately understands what clicking a viz row will pass downstream — help text is unambiguous
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 12: Dashboard Composition
+**Goal**: Generated dashboards have a branded background, clear visual hierarchy, depth through card grouping, and panel arrangement that follows a data narrative — never a flat equal-weight grid
+**Depends on**: Phase 10
+**Requirements**: DSH-01, DSH-02, DSH-03, DSH-04
+**Success Criteria** (what must be TRUE):
+  1. A generated dashboard has a background treatment other than plain Splunk grey — gradient wash, radial accent glow, or pattern; applied via splunk.rectangle or dashboard backgroundColor property
+  2. A generated dashboard has an identifiable hero zone — at least one KPI or primary viz occupies 40-60% of canvas width at the top, visually larger than secondary panels
+  3. A generated dashboard shows card-group depth — background rectangles establish section separators between hero, primary, and detail zones
+  4. A user reading a generated dashboard can identify the story from layout alone — the arrangement follows data narrative order (summary to detail, alert to root-cause, or KPI to trend)
+**Plans**: TBD
+**UI hint**: yes
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -108,7 +155,10 @@ Plans:
 | 3. Repair Loop & Light Theme Safety | v4.1.0 | 3/3 | Complete | 2026-05-15 |
 | 4. Visual Identity & Assets | v4.1.0 | 3/3 | Complete | 2026-05-15 |
 | 5. Rule Consolidation | v4.1.0 | 3/3 | Complete | 2026-05-15 |
-| 6. Design Principles & Skill Layer | v5.0.0 | 0/3 | Not started | - |
-| 7. Generation Quality & Theme Parity | v5.0.0 | 0/4 | Not started | - |
-| 8. Design Quality Gate & Edge Case Resilience | v5.0.0 | 0/3 | Not started | - |
+| 6. Design Principles & Skill Layer | v5.0.0 | 3/3 | Complete | 2026-05-16 |
+| 7. Generation Quality & Theme Parity | v5.0.0 | 4/4 | Complete | 2026-05-16 |
+| 8. Design Quality Gate & Edge Case Resilience | v5.0.0 | 3/3 | Complete | 2026-05-16 |
 | 9. Animation & Motion | v5.0.0 | 3/3 | Complete | 2026-05-16 |
+| 10. Foundation Fixes | v5.1.0 | 0/? | Not started | - |
+| 11. Blueprint Expansion & Creative Freedom | v5.1.0 | 0/? | Not started | - |
+| 12. Dashboard Composition | v5.1.0 | 0/? | Not started | - |
