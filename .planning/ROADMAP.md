@@ -45,7 +45,7 @@ Full details: `.planning/milestones/v4.1.0-ROADMAP.md`
 
 **Milestone Goal:** Generated vizs auto-discover data fields (no hardcoded column names), each pack includes domain-specific creative viz types (not just gauge/KPI/bar/line/heatmap/table), accent color is used correctly (highlights only), and the dashboard is mandatory with all vizs included.
 
-- [ ] **Phase 13: Accent Architecture Foundation** — Fix color model: series fills use t.series[i], accent reserved for highlight/glow/focus, accentIntensity uncapped, preview.png silhouettes distinct per viz type
+- [ ] **Phase 13: Accent Architecture Foundation** — Fix color model: series fills use t.series[i], accent reserved for highlight/glow/focus, accentIntensity uncapped, preview.png silhouettes distinct per viz type, continuous animations use setInterval 30fps (not rAF 60fps)
 - [ ] **Phase 14: Smart Fields & Domain Ideation** — Auto-discover numeric and column fields from data.fields dynamically; exclude _ fields; domain-first viz type ideation with proxy patterns for complex types
 - [ ] **Phase 15: Mandatory Dashboard Packaging** — vp-create Step 3c generates Dashboard Studio view with all vizs; panel count verified against viz directory count; dashboard gated on clean validation
 
@@ -166,15 +166,20 @@ Plans:
 **UI hint**: yes
 
 ### Phase 13: Accent Architecture Foundation
-**Goal**: The color model is correct by default — data element fills use series colors, accent is reserved for glow/highlight/focus only, accentIntensity is uncapped for extreme effects, and preview.png silhouettes are shape-distinct per viz type
+**Goal**: The color model is correct by default — data element fills use series colors, accent is reserved for glow/highlight/focus only, accentIntensity is uncapped for extreme effects, preview.png silhouettes are shape-distinct per viz type, and continuous animations use setInterval at 30fps
 **Depends on**: Phase 12
-**Requirements**: ACC-01, ACC-02, ACC-03, ACC-04
+**Requirements**: ACC-01, ACC-02, ACC-03, ACC-04, ACC-05
 **Success Criteria** (what must be TRUE):
   1. A generated bar chart uses t.series[0], t.series[1], etc. for bar fills — t.accent does not appear as a fill color for any data element
   2. User sets accentIntensity above 100 and sees glow radius and shadowBlur scale beyond their previous maximum — no capping at 100 occurs in the generated JS
   3. Two preview.png thumbnails from the same pack are visually distinguishable by silhouette shape alone — a gauge preview shows an arc, a bar chart shows columns, a table shows rows
   4. t.accent appears only in hover highlight, selection ring, glow halo, or focus indicator code — no ctx.fillStyle = t.accent calls are present outside those contexts
-**Plans**: TBD
+  5. LED pulse and continuous animations use setInterval at 30fps, not requestAnimationFrame at 60fps
+**Plans**: 3 plans
+Plans:
+- [ ] 13-01-PLAN.md — Establish color model: DPR-03b in design-principles.md, series[] in theme-template.md, uncap accentIntensity in formatter-patterns.md
+- [ ] 13-02-PLAN.md — Update vp-viz SKILL.md checklist for accent/series roles, uncap gi, switch LED pulse to setInterval in animation-recipes.md
+- [ ] 13-03-PLAN.md — Expand generate_assets.js: 10 silhouette types, domain keywords, contrast guard
 
 ### Phase 14: Smart Fields & Domain Ideation
 **Goal**: Generated vizs read field names from data.fields at runtime instead of relying on hardcoded formatter inputs, and every pack includes at least two viz types that are domain-specific with Canvas complexity guardrails for overambitious types
@@ -216,6 +221,6 @@ Plans:
 | 10. Foundation Fixes | v5.1.0 | 2/2 | Complete | 2026-05-18 |
 | 11. Blueprint Expansion & Creative Freedom | v5.1.0 | 2/2 | Complete | 2026-05-18 |
 | 12. Dashboard Composition | v5.1.0 | 2/2 | Complete | 2026-05-18 |
-| 13. Accent Architecture Foundation | v5.2.0 | 0/? | Not started | - |
+| 13. Accent Architecture Foundation | v5.2.0 | 0/3 | In progress | - |
 | 14. Smart Fields & Domain Ideation | v5.2.0 | 0/? | Not started | - |
 | 15. Mandatory Dashboard Packaging | v5.2.0 | 0/? | Not started | - |
