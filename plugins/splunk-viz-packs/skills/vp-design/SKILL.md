@@ -49,12 +49,13 @@ Write all viz code INLINE (same context). Do NOT dispatch subagents for code gen
 
 When design brief is complete, hand off:
 
-1. **Load vp-viz** — all code templates and patterns
-2. **Load vp-create** — for packaging after all vizs are built
-3. **Load ds-create** from splunk-dashboard-studio — dashboard JSON has strict rules: fontFamily is an enum (only Splunk Platform Sans, Arial, Helvetica, etc.), fontSize is an enum (extraSmall/small/default/large/extraLarge), canvas min 1920px wide
-4. If production data: load **spl-gotchas** from splunk-spl
-5. If dashboard uses tabs: load **ds-int-tabs** from splunk-dashboard-studio
-6. If dashboard uses drilldowns: load **ds-int-drilldowns** from splunk-dashboard-studio
+1. **Load dashboard-composition.md** from vp-design/references/ — branded background treatment, visual hierarchy, depth layering, and narrative panel arrangement for the dashboard JSON
+2. **Load vp-viz** — all code templates and patterns
+3. **Load vp-create** — for packaging after all vizs are built
+4. **Load ds-create** from splunk-dashboard-studio — dashboard JSON has strict rules: fontFamily is an enum (only Splunk Platform Sans, Arial, Helvetica, etc.), fontSize is an enum (extraSmall/small/default/large/extraLarge), canvas min 1920px wide
+5. If production data: load **spl-gotchas** from splunk-spl
+6. If dashboard uses tabs: load **ds-int-tabs** from splunk-dashboard-studio
+7. If dashboard uses drilldowns: load **ds-int-drilldowns** from splunk-dashboard-studio
 
 **Important for color pickers:** Splunk may return color values as integers (e.g. `6511615`) instead of hex strings. vp-viz includes `hexFromSplunk()` to handle this — ensure it's used on all color picker reads.
 
@@ -171,6 +172,7 @@ vp-viz reads this block when writing `_render()` code — choose cornerRadius, f
 
 ## References — detailed guidance
 
+- **[Dashboard composition](references/dashboard-composition.md)** — branded backgrounds, visual hierarchy, depth layering, narrative panel arrangement, composition checklist
 - **[Mood and design](references/mood-and-design.md)** — 9 moods → color/font/effects, creative latitude, conditional logic, cognitive load gate, scoring, anti-AI checklist
 - **[Domain templates](references/domain-templates.md)** — viz inventories for F1/SOC/retail/healthcare/NOC, layout archetypes, anti-patterns
 - **[Viz novelty scores](references/viz-novelty-scores.md)** — per-type scores 1-5, pack threshold (3 x vizCount), anti-donut alternatives
