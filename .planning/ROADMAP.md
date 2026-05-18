@@ -35,7 +35,7 @@ Full details: `.planning/milestones/v4.1.0-ROADMAP.md`
 
 **Milestone Goal:** Fix every bug found in test29, fill missing settings gaps, give Claude more creative freedom in viz design, and make generated dashboards look professionally composed — not just panels dumped on a canvas.
 
-- [ ] **Phase 10: Foundation Fixes** — Fix all confirmed test29 bugs: opt() two-path lookup, entrance-animation-off gauge stuck at zero, flashCritical LED pulse prominence, zone color wiring, hover toggle
+- [x] **Phase 10: Foundation Fixes** — Fix all confirmed test29 bugs: opt() two-path lookup, entrance-animation-off gauge stuck at zero, flashCritical LED pulse prominence, zone color wiring, hover toggle — completed 2026-05-18
 - [ ] **Phase 11: Blueprint Expansion & Creative Freedom** — Add missing settings (pagination, text placement, sparkline controls, flexible status values, cell label/header toggles); loosen KPI blueprint for brand-distinct tiles; improve drilldown field help text
 - [ ] **Phase 12: Dashboard Composition** — Create dashboard-composition.md reference; establish branded background treatments, visual hierarchy, depth through card grouping, and story-first panel arrangement
 
@@ -121,8 +121,8 @@ Plans:
   5. User toggles showHoverEffect=false on leaderboard or status matrix and hover highlight disappears completely
 **Plans**: 2 plans
 Plans:
-- [ ] 10-01-PLAN.md — Replace opt() with two-path getOption() in SKILL.md template; update D08 regex
-- [ ] 10-02-PLAN.md — Fix entrance-off path, widen flashCritical pulse, add hexFromSplunk and hover-toggle ECR patterns
+- [x] 10-01-PLAN.md — Replace opt() with two-path getOption() in SKILL.md template; update D08 regex
+- [x] 10-02-PLAN.md — Fix entrance-off path, widen flashCritical pulse, add hexFromSplunk and hover-toggle ECR patterns
 
 ### Phase 11: Blueprint Expansion & Creative Freedom
 **Goal**: Claude generates visually distinct KPI tiles per brand, all viz blueprints invite creative decisions instead of mandating templates, missing settings (pagination, text placement, sparkline controls, flexible status values, cell label and header toggles) are documented and wired, and drilldown field help text is clear
