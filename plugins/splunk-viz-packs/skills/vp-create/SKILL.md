@@ -69,9 +69,9 @@ If Node.js is unavailable, validation will report FAIL A01-A04 on missing/placeh
 zero FAIL for ALL vizs. If any viz has outstanding FAIL codes, fix them first (Step 3),
 re-build (Step 1), and re-validate (Step 2) until clean.**
 
-MUST LOAD: `vp-design/references/dashboard-composition.md` before writing dashboard JSON.
-It contains background treatment options, visual hierarchy patterns, depth recipes, and a
-complete JSON skeleton.
+MUST LOAD before writing dashboard JSON:
+1. **[references/dashboard-json-template.md](references/dashboard-json-template.md)** — exact JSON structure, WRONG patterns, viz type format, z-order rules. Read this FIRST.
+2. **`vp-design/references/dashboard-composition.md`** — visual hierarchy, depth recipes, background treatment.
 
 **Requirements:**
 

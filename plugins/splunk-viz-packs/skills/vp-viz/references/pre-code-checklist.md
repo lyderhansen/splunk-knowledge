@@ -46,3 +46,22 @@ Verify EVERY item before writing visualization code. This is the gate between "r
 □ Visual Language: implement cornerRadius/fillTechnique/spacing from vp-design brief; different brands MUST use different Canvas APIs (gradient vs flat fill, rounded vs sharp rects)
 □ Tarball: ONE top-level directory only — package from parent dir
 ```
+
+## Settings Wiring Verification — AFTER writing each viz
+
+For EVERY formatter control, trace the value through to the Canvas draw call:
+
+```
+1. Formatter HTML: name="{{VIZ_NAMESPACE}}.controlName" value="defaultValue"
+2. JS opt() read:  var val = opt('controlName', 'defaultValue');
+   → Key spelling matches? Defaults match?
+   → Color pickers: wrapped in hexFromSplunk()?
+3. JS application: val is used in a ctx.* call or conditional
+   → Toggle controls: early-exit pattern? (if (!val) return;)
+   → Numeric controls: NOT clamped unless documented (gi > 1 ? 1 : gi ← WRONG for accentIntensity)
+   → Color controls: actually changes a visible fillStyle/strokeStyle/shadowColor?
+```
+
+If ANY control exists in the formatter but has no Canvas effect: either wire it or remove it.
+If ANY control has a Canvas effect but no formatter: add the formatter control.
+

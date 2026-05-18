@@ -53,23 +53,35 @@ Recommended: 4-6 for a balanced suite, max 8.
 ### 7. Dashboard included?
 - **Always yes.** Every viz pack ships with a Dashboard Studio JSON dashboard that showcases all vizs. This is mandatory — vp-create Step 3c generates it automatically.
 
-## Routing
+## Pipeline — FOLLOW THIS EXACT ORDER
+
+The viz pack is NOT done until ALL 4 stages complete. Do NOT skip any stage.
 
 ```
-Single viz (inventory = 1):
-  → vp-viz (code) → vp-create (package)
+STAGE 1: DESIGN (load vp-design)
+  → Brand research, palette, mood, viz inventory
+  → Domain visual language step 3b (2+ domain-unique vizs)
+  → Output: design brief
 
-Multi-viz pack (inventory > 1):
-  → vp-design (design) → vp-viz (code per viz) → vp-create (package)
+STAGE 2: CODE (load vp-viz)
+  → Write shared/theme.js, then each viz (formatter + source)
+  → Build with build_flat.js after all vizs
+  → Output: built viz app directory
 
-Production data (any count):
-  → Add: spl-gotchas before savedsearches.conf
+STAGE 3: VALIDATE + PACKAGE (load vp-create)
+  → Step 2: validate_viz.sh (MUST pass with 0 FAIL)
+  → Step 3b: generate_assets.js (icons + previews + gradient bg)
+  → Step 3c: generate Dashboard Studio JSON with ALL vizs
+  → Step 4: package tarball
+  → Output: installable .tar.gz
 
-Dashboard (always included):
-  → vp-create Step 3c generates dashboard automatically
-  → If tabs: also add ds-int-tabs
-  → If drilldowns: also add ds-int-drilldowns
+STAGE 4: VERIFY
+  → Tarball > 1KB, single top-level dir
+  → Dashboard includes all viz types
+  → Nav bar points to dashboard
 ```
+
+**CRITICAL:** Stage 3 (vp-create) is where most failures happen. You MUST load the vp-create skill — do NOT package from memory. The dashboard JSON template and composition rules are in vp-create's references.
 
 Write all viz code INLINE (same context). Do NOT dispatch subagents for code generation.
 
