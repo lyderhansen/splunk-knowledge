@@ -33,8 +33,20 @@ Save to: `default/data/ui/views/{{view_name}}.xml`
     }
   },
   "visualizations": {
+    "viz_bg_gradient": {
+      "type": "splunk.image",
+      "options": { "src": "/static/app/{{APP_ID}}/images/bg_gradient.png", "preserveAspectRatio": false }
+    },
+    "viz_depth_overlay": {
+      "type": "splunk.rectangle",
+      "options": { "fillColor": "rgba(0,0,0,0.35)" }
+    },
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": { "markdown": "# {{BRAND_NAME}} Overview" }
+    },
     "viz_kpi_hero": {
-      "type": "{{app_id}}.{{viz_name}}",
+      "type": "{{APP_ID}}.{{viz_name}}",
       "options": {},
       "dataSources": { "primary": "ds_viz_name" }
     }
@@ -49,10 +61,13 @@ Save to: `default/data/ui/views/{{view_name}}.xml`
       "backgroundColor": "#0D0F14"
     },
     "structure": [
+      { "item": "viz_bg_gradient", "type": "block", "position": { "x": 0, "y": 0, "w": 1920, "h": 1080 } },
+      { "item": "viz_depth_overlay", "type": "block", "position": { "x": 0, "y": 0, "w": 1920, "h": 1080 } },
+      { "item": "viz_title", "type": "block", "position": { "x": 20, "y": 20, "w": 1000, "h": 60 } },
       {
         "item": "viz_kpi_hero",
         "type": "block",
-        "position": { "x": 20, "y": 20, "w": 600, "h": 200 }
+        "position": { "x": 20, "y": 100, "w": 600, "h": 200 }
       }
     ]
   }
@@ -64,7 +79,20 @@ Save to: `default/data/ui/views/{{view_name}}.xml`
 ```json
 {
   "dataSources": { },
-  "visualizations": { },
+  "visualizations": {
+    "viz_bg_gradient": {
+      "type": "splunk.image",
+      "options": { "src": "/static/app/{{APP_ID}}/images/bg_gradient.png", "preserveAspectRatio": false }
+    },
+    "viz_depth_overlay": {
+      "type": "splunk.rectangle",
+      "options": { "fillColor": "rgba(0,0,0,0.35)" }
+    },
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": { "markdown": "# {{BRAND_NAME}} Overview" }
+    }
+  },
   "defaults": {},
   "inputs": {
     "input_time": {
@@ -85,12 +113,20 @@ Save to: `default/data/ui/views/{{view_name}}.xml`
       "tab_overview": {
         "type": "absolute",
         "options": { "width": 1920, "height": 1080, "backgroundColor": "#0D0F14" },
-        "structure": []
+        "structure": [
+          { "item": "viz_bg_gradient", "type": "block", "position": { "x": 0, "y": 0, "w": 1920, "h": 1080 } },
+          { "item": "viz_depth_overlay", "type": "block", "position": { "x": 0, "y": 0, "w": 1920, "h": 1080 } },
+          { "item": "viz_title", "type": "block", "position": { "x": 20, "y": 20, "w": 1000, "h": 60 } }
+        ]
       },
       "tab_detail": {
         "type": "absolute",
         "options": { "width": 1920, "height": 1080, "backgroundColor": "#0D0F14" },
-        "structure": []
+        "structure": [
+          { "item": "viz_bg_gradient", "type": "block", "position": { "x": 0, "y": 0, "w": 1920, "h": 1080 } },
+          { "item": "viz_depth_overlay", "type": "block", "position": { "x": 0, "y": 0, "w": 1920, "h": 1080 } },
+          { "item": "viz_title", "type": "block", "position": { "x": 20, "y": 20, "w": 1000, "h": 60 } }
+        ]
       }
     }
   }
@@ -108,6 +144,9 @@ WRONG: "label" inside layoutDefinitions   ← labels go on tabs.items objects ON
 WRONG: "layout": { "type": "absolute", "tabs": {...} }  ← tabs and type are SIBLINGS, not nested
 WRONG: "type": "custom"                   ← use "{{app_id}}.{{viz_name}}" directly
 WRONG: "options": { "valueField": "x" }   ← use "{{app_id}}.{{viz_name}}.valueField": "x"
+WRONG: no splunk.image with bg_gradient in id or src  ← DS3 FAIL — mandatory background (D-03)
+WRONG: background image present but no splunk.rectangle depth overlay  ← DQ-02 requires visually dramatic depth layers, not a flat background
+WRONG: no splunk.markdown title panel at y <= 200  ← DS4 FAIL (D-05)
 ```
 
 ## Viz type format
@@ -129,9 +168,10 @@ WRONG: "type": "splunk.custom.cloudflare_soc_viz.kpi_tile"
 
 Items render in array order — first item is bottom layer:
 
-1. `splunk.image` — bg_gradient.png background (z=0)
+1. `splunk.image` (id: `viz_bg_gradient`) — bg_gradient.png at x:0 y:0 w:1920 h:1080 (mandatory, per D-03)
+   + `splunk.rectangle` (id: `viz_depth_overlay`) — semi-transparent overlay at same canvas size, fillColor rgba(0,0,0,~0.35) (creates depth, per DQ-02)
 2. `splunk.rectangle` — depth cards behind panel groups
-3. `splunk.markdown` — section headers and title
+3. `splunk.markdown` — section headers and title (viz_title at y <= 200)
 4. Custom viz panels — the actual data visualizations
 
 ## Panel count rule
