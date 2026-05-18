@@ -45,7 +45,7 @@ Full details: `.planning/milestones/v4.1.0-ROADMAP.md`
 
 **Milestone Goal:** Generated vizs auto-discover data fields (no hardcoded column names), each pack includes domain-specific creative viz types (not just gauge/KPI/bar/line/heatmap/table), accent color is used correctly (highlights only), and the dashboard is mandatory with all vizs included.
 
-- [ ] **Phase 13: Accent Architecture Foundation** — Fix color model: series fills use t.series[i], accent reserved for highlight/glow/focus, accentIntensity uncapped, preview.png silhouettes distinct per viz type, continuous animations use setInterval 30fps (not rAF 60fps)
+- [x] **Phase 13: Accent Architecture Foundation** — Fix color model: series fills use t.series[i], accent reserved for highlight/glow/focus, accentIntensity uncapped, preview.png silhouettes distinct per viz type, continuous animations use setInterval 30fps (not rAF 60fps) — completed 2026-05-18
 - [ ] **Phase 14: Smart Fields & Domain Ideation** — Auto-discover numeric and column fields from data.fields dynamically; exclude _ fields; domain-first viz type ideation with proxy patterns for complex types
 - [ ] **Phase 15: Mandatory Dashboard Packaging** — vp-create Step 3c generates Dashboard Studio view with all vizs; panel count verified against viz directory count; dashboard gated on clean validation
 
