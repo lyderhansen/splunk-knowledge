@@ -6,6 +6,7 @@
 - ✅ **v5.0.0 Design Awesomeness** — Phases 6-9 (shipped 2026-05-16)
 - ✅ **v5.1.0 Viz Hardening & Dashboard Wow-Factor** — Phases 10-12 (shipped 2026-05-18)
 - ✅ **v5.2.0 Smart Vizs & Domain Identity** — Phases 13-15 (shipped 2026-05-18)
+- **v5.3.0 Production Polish & Interactive Dashboards** — Phases 16-18 (active)
 
 ## Phases
 
@@ -51,6 +52,12 @@ Full details: `.planning/milestones/v4.1.0-ROADMAP.md`
 Full details: `.planning/milestones/v5.2.0-ROADMAP.md`
 
 </details>
+
+### v5.3.0 Production Polish & Interactive Dashboards
+
+- [ ] **Phase 16: Code Quality & Reference Cleanup** — Trim canvas-recipes.md and fix generated code patterns (accentIntensity cap, hover early-exit, KPI sparkline, preview silhouettes)
+- [ ] **Phase 17: Dashboard Schema & Composition** — Fix tab schema enforcement, upgrade background treatment, mandate branded titles, auto-load ds-int-tabs
+- [ ] **Phase 18: Interactive Dashboard Features** — Drilldown token flows, input filter controls, default tokens so dashboard works before any click
 
 ## Phase Details
 
@@ -212,6 +219,41 @@ Plans:
 Plans:
 - [ ] 15-01-PLAN.md — Add Step 3c mandatory dashboard generation to vp-create with validation gate and panel count verification
 
+### Phase 16: Code Quality & Reference Cleanup
+**Goal**: The canvas-recipes.md reference file is under 500 lines, and generated viz code never produces a capped accentIntensity, a missing hover early-exit, a KPI without sparkline, or a duplicate preview silhouette
+**Depends on**: Phase 15
+**Requirements**: CQ-01, CQ-02, CQ-03, CQ-04, CQ-05
+**Success Criteria** (what must be TRUE):
+  1. canvas-recipes.md is under 500 lines — duplicate sections are removed and remaining content cross-references split files; verified by wc -l
+  2. A generated viz's accentIntensity calculation passes grep for Math.min capping and produces no match — the cap is absent from all generated JS
+  3. Every generated viz's _onMouseMove function begins with a showHoverEffect guard that returns immediately when the toggle is false — no exceptions across any viz type
+  4. A generated KPI viz's formatter.html contains sparkPlacement and sparkHeight controls, and the corresponding JS renders a sparkline by default
+  5. Two preview.png thumbnails in the same generated pack have distinct shapes — grepping the generate_assets.js silhouette map confirms each @viz-type annotation maps to a unique drawing routine
+**Plans**: TBD
+
+### Phase 17: Dashboard Schema & Composition
+**Goal**: Generated tabbed dashboards use the correct JSON schema, the dashboard background is visually dramatic, every dashboard has a branded title panel, and ds-int-tabs is loaded automatically when tabs are needed
+**Depends on**: Phase 16
+**Requirements**: DQ-01, DQ-02, DQ-03, DQ-04
+**Success Criteria** (what must be TRUE):
+  1. A generated tabbed dashboard opens in Splunk without "Layout undefined" errors — tabs.items are objects with layoutId and label fields, and barPosition is used (not tabBarPosition)
+  2. A generated dashboard background is visually distinct from default Splunk grey — it uses depth layers (at minimum a gradient wash plus a radial accent glow or branded pattern element)
+  3. Every generated dashboard contains a splunk.markdown panel at the top with the brand name or project title visible — the panel is present even if no explicit title was requested
+  4. When a user requests a dashboard with 7 or more vizs or explicitly requests tabs, ds-int-tabs is loaded before any dashboard JSON is written — no manual reminder required
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 18: Interactive Dashboard Features
+**Goal**: Generated dashboards work interactively out of the box — clicking a viz panel filters downstream panels, input dropdowns let users change time range and category, and default token values ensure the dashboard renders meaningfully before any interaction
+**Depends on**: Phase 17
+**Requirements**: INT-01, INT-02, INT-03
+**Success Criteria** (what must be TRUE):
+  1. User clicks a panel in a generated dashboard and a downstream panel's search updates to show filtered data — the drilldown token is set, referenced in a downstream search, and the panel refreshes
+  2. A generated dashboard contains at least one input control (time range picker or dropdown) that filters one or more panels — the input's token is referenced in a search query
+  3. Every drilldown token in a generated dashboard has a default value defined in defaults.tokens — the dashboard displays meaningful data before any click, not an empty or broken panel
+**Plans**: TBD
+**UI hint**: yes
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -228,6 +270,9 @@ Plans:
 | 10. Foundation Fixes | v5.1.0 | 2/2 | Complete | 2026-05-18 |
 | 11. Blueprint Expansion & Creative Freedom | v5.1.0 | 2/2 | Complete | 2026-05-18 |
 | 12. Dashboard Composition | v5.1.0 | 2/2 | Complete | 2026-05-18 |
-| 13. Accent Architecture Foundation | v5.2.0 | 0/3 | In progress | - |
-| 14. Smart Fields & Domain Ideation | v5.2.0 | 0/? | Not started | - |
+| 13. Accent Architecture Foundation | v5.2.0 | 0/3 | Not started | - |
+| 14. Smart Fields & Domain Ideation | v5.2.0 | 0/2 | Not started | - |
 | 15. Mandatory Dashboard Packaging | v5.2.0 | 0/1 | Not started | - |
+| 16. Code Quality & Reference Cleanup | v5.3.0 | 0/? | Not started | - |
+| 17. Dashboard Schema & Composition | v5.3.0 | 0/? | Not started | - |
+| 18. Interactive Dashboard Features | v5.3.0 | 0/? | Not started | - |

@@ -54,17 +54,25 @@ When a user runs `/vp-init`, the resulting viz pack installs in Splunk without e
 - Mobile-responsive viz rendering — Splunk dashboards are desktop/wall-display
 - Multi-tenant viz sharing — each pack is a standalone Splunk app
 
-## Current Milestone: v5.2.0 Smart Vizs & Domain Identity
+## Current Milestone: v5.3.0 Production Polish & Interactive Dashboards
 
-**Goal:** Generated vizs auto-discover data fields (no hardcoded column names), each pack includes domain-specific creative viz types (not just gauge/KPI/bar/line/heatmap/table), accent color is used correctly (highlights only), and the dashboard is mandatory with all vizs included.
+**Goal:** Trim bloated reference files, fix remaining generated code quality issues, and add interactive dashboard features — drilldown flows, input filters, tabbed navigation that actually works.
 
 **Target features:**
-- Auto-field discovery — vizs read data.fields dynamically, plot all numeric columns as series
-- Creative viz types — force domain-first ideation, reject generic-only inventories
-- Accent = highlights only — series colors for data fills, uncapped intensity, position control
-- Mandatory dashboard with ALL vizs — add step + checklist to vp-create
-- Fix preview.png — expand keywords, add contrast, unique silhouettes per viz
-- showHoverEffect early-exit enforcement in generated code
+- canvas-recipes.md trim from 998 to ~500 lines
+- Generated code quality: accentIntensity never capped, hover toggle always wired, KPI sparkline
+- Background treatment more dramatic
+- Interactive dashboards: drilldown token flows, input filters, cross-panel filtering
+- Tabbed dashboards with correct schema (fix recurring "Layout undefined" errors)
+
+<details>
+<summary>v5.2.0 Smart Vizs & Domain Identity (shipped 2026-05-18)</summary>
+
+**Goal:** Auto-field discovery, domain-specific viz types, accent separation, mandatory dashboard.
+
+**Delivered:** auto-field-patterns.md, domain visual language step 3b, 9 domain-unique viz entries, mandatory Step 3c, @viz-type annotation, pipeline fixes (disable-model-invocation), WebSearch for brand research.
+
+</details>
 
 <details>
 <summary>v5.1.0 Viz Hardening & Dashboard Wow-Factor (shipped 2026-05-18)</summary>
@@ -135,4 +143,4 @@ When a user runs `/vp-init`, the resulting viz pack installs in Splunk without e
 This document evolves at phase transitions and milestone boundaries.
 
 ---
-*Last updated: 2026-05-18 after v5.2.0 milestone start*
+*Last updated: 2026-05-18 after v5.3.0 milestone start*

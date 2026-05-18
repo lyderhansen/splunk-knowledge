@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v5.2.0
-milestone_name: Smart Vizs & Domain Identity
-status: executing
-stopped_at: Roadmap created for v5.2.0 (Phases 13-15)
-last_updated: "2026-05-18T14:58:21.699Z"
-last_activity: 2026-05-18 -- Phase 15 execution started
+milestone: v5.3.0
+milestone_name: Production Polish & Interactive Dashboards
+status: planning
+last_updated: "2026-05-18T00:00:00.000Z"
+last_activity: 2026-05-18
 progress:
-  total_phases: 10
-  completed_phases: 7
-  total_plans: 21
-  completed_plans: 23
-  percent: 100
+  total_phases: 3
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-18)
 
 **Core value:** Zero-fix first builds AND wow-factor dashboards — reliable + beautiful every time
-**Current focus:** Phase 15 — mandatory-dashboard-packaging
+**Current focus:** Phase 16 — code-quality-reference-cleanup
 
 ## Current Position
 
-Phase: 15 (mandatory-dashboard-packaging) — EXECUTING
-Plan: 1 of 1
-Status: Executing Phase 15
-Last activity: 2026-05-18 -- Phase 15 execution started
+Phase: 16 — Code Quality & Reference Cleanup
+Plan: —
+Status: Ready to plan
+Last activity: 2026-05-18 — Roadmap created for v5.3.0 (Phases 16-18)
 
 ## Performance Metrics
 
@@ -51,6 +50,12 @@ Last activity: 2026-05-18 -- Phase 15 execution started
 
 **v5.2.0 Velocity:**
 
+- Total plans completed: 6
+- Total phases completed: 3
+- Average duration: ~5 min/plan
+
+**v5.3.0 Velocity:**
+
 - Total plans completed: 0
 - Average duration: —
 
@@ -58,9 +63,9 @@ Last activity: 2026-05-18 -- Phase 15 execution started
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 13 | 0/? | - | - |
-| 14 | 0/? | - | - |
-| 15 | 0/? | - | - |
+| 16 | 0/? | - | - |
+| 17 | 0/? | - | - |
+| 18 | 0/? | - | - |
 
 *Updated after each plan completion*
 
@@ -71,22 +76,23 @@ Last activity: 2026-05-18 -- Phase 15 execution started
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- [Roadmap]: Phase 13 first — color model correction (ACC-01 through ACC-04) is a prerequisite; Phase 14 smart field patterns must not introduce t.accent fills that Phase 13 will then prohibit
-- [Roadmap]: Phase 14 combines SFD and DOM — both are generative instruction changes (skill reference files); they share the same file targets (viz-blueprints.md, domain-templates.md, vp-design SKILL.md) and separating them would cause repeated edits to the same files
-- [Roadmap]: Phase 15 is terminal — mandatory dashboard generation depends on Phase 14 completing the viz inventory (DOM-02) so the dashboard panel count check (DSB-02) has correct inputs
-- [Architecture]: ACC-01/ACC-02 correction lives in vp-viz SKILL.md source template and viz-blueprints.md color guidance sections — not in validate_viz.sh (no FAIL code warranted; this is generation guidance, not a runtime check)
-- [Architecture]: ACC-03 (uncapped accentIntensity) is a JS template change — remove the Math.min(intensity, 100) cap in the glow calculation pattern in canvas-recipes.md or the SKILL.md source template
-- [Architecture]: ACC-04 (distinct preview.png silhouettes) continues the generate_assets.js work from Phase 12; shape selection logic already in place, needs more distinct per-type shapes
-- [Architecture]: SFD-01/SFD-02 field auto-discovery is a JS template pattern — loop over data.fields, filter _ prefix, map to series; added to viz-blueprints.md as a "data binding" section
-- [Architecture]: DOM-03 proxy pattern documentation goes in domain-templates.md or a new canvas-complexity.md reference; keeps SKILL.md under 500 lines
+- [Roadmap]: Phase 16 first — canvas-recipes.md trim (CQ-01) and generated code pattern fixes (CQ-02 through CQ-05) are all reference/skill layer changes; they share the same target files (canvas-recipes.md, vp-viz SKILL.md, viz-blueprints.md, generate_assets.js) and must complete before downstream phases rely on a stable reference layer
+- [Roadmap]: Phase 17 depends on Phase 16 — DQ-01 tab schema fix and DQ-04 auto-load both modify ds-int-tabs and vp-design SKILL.md; those files should not be in flux during code quality cleanup
+- [Roadmap]: Phase 18 depends on Phase 17 — drilldown token flows (INT-01 through INT-03) require a working dashboard scaffold; DQ-01 tab schema and DQ-03 title panel must be correct first or drilldown patterns land on a broken foundation
+- [Architecture]: CQ-01 trim targets canvas-recipes.md specifically — split strategy should consolidate into existing split files (depth-recipes.md, typography-recipes.md, animation-recipes.md) already created in Phase 6; no new files needed
+- [Architecture]: CQ-02 accentIntensity uncap is a SKILL.md template change — remove Math.min() cap from glow calculation; companion to ACC-03 work already noted in v5.2.0 context
+- [Architecture]: CQ-03 hover early-exit is a viz-blueprints.md enforcement change — add a mandatory guard pattern to the _onMouseMove section of every viz type entry
+- [Architecture]: CQ-05 preview silhouette uniqueness is a generate_assets.js change — each @viz-type annotation must map to a distinct drawing routine; cross-references Phase 13 ACC-04 work
+- [Architecture]: INT-01 drilldown token flows require three parts: setToken call in formatter.html, token reference in downstream SPL, and defaults.tokens.default in dashboard JSON — all three must be documented in ds-int-tabs or a new interactivity reference
+- [Architecture]: INT-02 input controls live in the Dashboard Studio inputs section — reference ds-int-tabs or create a new dashboard-interactivity.md; keep vp-design SKILL.md under 500 lines
 
 ### Pending Todos
 
-- [ ] Run /gsd-plan-phase 13 to begin Phase 13 planning
+- [ ] Run /gsd-plan-phase 16 to begin Phase 16 planning
 
 ### Blockers/Concerns
 
-None blocking. Phase 13 can start immediately.
+None blocking. Phase 16 can start immediately.
 
 ## Deferred Items
 
@@ -94,6 +100,9 @@ Items acknowledged and carried forward:
 
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
+| v6.0 scope | validate_dash.js automated dashboard JSON schema checker | deferred | 2026-05-18 |
+| v6.0 scope | Aviation and Fintech domain-specific viz types | deferred | 2026-05-18 |
+| v6.0 scope | Real Splunk data integration patterns (production SPL templates) | deferred | 2026-05-18 |
 | v5.3.0 | Aviation and Fintech domain-specific viz types | deferred | 2026-05-18 |
 | v5.3.0 | score_design.js automated aesthetic scoring | deferred | 2026-05-18 |
 | v5.3.0 | Auto-palette HSL derivation for series colors | deferred | 2026-05-18 |
@@ -104,9 +113,9 @@ Items acknowledged and carried forward:
 ## Session Continuity
 
 Last session: 2026-05-18
-Stopped at: Roadmap created for v5.2.0 (Phases 13-15)
-Resume: Run /gsd-plan-phase 13
+Stopped at: Roadmap created for v5.3.0 (Phases 16-18)
+Resume: Run /gsd-plan-phase 16
 
 ## Operator Next Steps
 
-- Run /gsd-plan-phase 13 to begin Phase 13 planning
+- Run /gsd-plan-phase 16 to begin Phase 16 planning
