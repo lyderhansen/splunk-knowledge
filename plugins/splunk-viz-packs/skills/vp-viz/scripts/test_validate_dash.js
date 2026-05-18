@@ -147,7 +147,7 @@ var XML_B10_BARE = tmpFile('b10_bare.xml', wrapXml({
     }
 }));
 
-// B10 namespaced options fixture: custom viz with properly namespaced keys
+// B10 namespaced options fixture: custom viz with properly namespaced keys + bg_gradient + markdown title
 var XML_B10_NAMESPACED = tmpFile('b10_namespaced.xml', wrapXml({
     dataSources: {
         ds_main: { type: 'ds.search', options: { query: '| makeresults' } }
@@ -157,11 +157,27 @@ var XML_B10_NAMESPACED = tmpFile('b10_namespaced.xml', wrapXml({
             type: 'myapp.kpi',
             dataSources: { primary: 'ds_main' },
             options: { 'myapp.kpi.label': 'foo' }
+        },
+        viz_bg_gradient: {
+            type: 'splunk.image',
+            options: { src: '/static/app/myapp/bg_gradient.png', preserveAspectRatio: 'none' }
+        },
+        viz_title: {
+            type: 'splunk.markdown',
+            options: { markdown: '# My Dashboard' }
         }
+    },
+    layout: {
+        structure: [
+            { vizId: 'viz_bg_gradient', position: { x: 0, y: 0, w: 1920, h: 1080 } },
+            { vizId: 'viz_title', position: { x: 20, y: 10, w: 800, h: 80 } },
+            { vizId: 'viz_ok', position: { x: 20, y: 120, w: 400, h: 300 } }
+        ]
     }
 }));
 
 // B10 builtin viz: splunk.* type with bare option keys -- should NOT trigger B10
+// Includes bg_gradient + markdown to pass DS3/DS4
 var XML_B10_BUILTIN = tmpFile('b10_builtin.xml', wrapXml({
     dataSources: {
         ds_main: { type: 'ds.search', options: { query: '| makeresults' } }
@@ -171,22 +187,54 @@ var XML_B10_BUILTIN = tmpFile('b10_builtin.xml', wrapXml({
             type: 'splunk.singlevalue',
             dataSources: { primary: 'ds_main' },
             options: { fillColor: 'red', sparklineDisplay: 'off' }
+        },
+        viz_bg_gradient: {
+            type: 'splunk.image',
+            options: { src: '/static/app/myapp/bg_gradient.png', preserveAspectRatio: 'none' }
+        },
+        viz_title: {
+            type: 'splunk.markdown',
+            options: { markdown: '# Dashboard' }
         }
+    },
+    layout: {
+        structure: [
+            { vizId: 'viz_bg_gradient', position: { x: 0, y: 0, w: 1920, h: 1080 } },
+            { vizId: 'viz_title', position: { x: 20, y: 10, w: 800, h: 80 } },
+            { vizId: 'viz_builtin', position: { x: 20, y: 120, w: 400, h: 300 } }
+        ]
     }
 }));
 
 // B10 input viz: input.* type with bare option keys -- should NOT trigger B10
+// Includes bg_gradient + markdown to pass DS3/DS4
 var XML_B10_INPUT = tmpFile('b10_input.xml', wrapXml({
     dataSources: {},
     visualizations: {
         viz_input: {
             type: 'input.text',
             options: { token: 'search_text', defaultValue: '' }
+        },
+        viz_bg_gradient: {
+            type: 'splunk.image',
+            options: { src: '/static/app/myapp/bg_gradient.png', preserveAspectRatio: 'none' }
+        },
+        viz_title: {
+            type: 'splunk.markdown',
+            options: { markdown: '# Dashboard' }
         }
+    },
+    layout: {
+        structure: [
+            { vizId: 'viz_bg_gradient', position: { x: 0, y: 0, w: 1920, h: 1080 } },
+            { vizId: 'viz_title', position: { x: 20, y: 10, w: 800, h: 80 } },
+            { vizId: 'viz_input', position: { x: 20, y: 120, w: 400, h: 100 } }
+        ]
     }
 }));
 
 // Data source missing: viz references ds_missing which is not declared
+// (includes bg_gradient + markdown to avoid DS3/DS4 noise)
 var XML_DS_MISSING = tmpFile('ds_missing.xml', wrapXml({
     dataSources: {
         ds_real: { type: 'ds.search', options: { query: '| makeresults' } }
@@ -196,11 +244,27 @@ var XML_DS_MISSING = tmpFile('ds_missing.xml', wrapXml({
             type: 'myapp.kpi',
             dataSources: { primary: 'ds_missing' },
             options: { 'myapp.kpi.label': 'foo' }
+        },
+        viz_bg_gradient: {
+            type: 'splunk.image',
+            options: { src: '/static/app/myapp/bg_gradient.png', preserveAspectRatio: 'none' }
+        },
+        viz_title: {
+            type: 'splunk.markdown',
+            options: { markdown: '# Dashboard' }
         }
+    },
+    layout: {
+        structure: [
+            { vizId: 'viz_bg_gradient', position: { x: 0, y: 0, w: 1920, h: 1080 } },
+            { vizId: 'viz_title', position: { x: 20, y: 10, w: 800, h: 80 } },
+            { vizId: 'viz_broken', position: { x: 20, y: 120, w: 400, h: 300 } }
+        ]
     }
 }));
 
 // Data source OK: viz references ds_main which IS declared
+// (includes bg_gradient + markdown to pass DS3/DS4 cleanly)
 var XML_DS_OK = tmpFile('ds_ok.xml', wrapXml({
     dataSources: {
         ds_main: { type: 'ds.search', options: { query: '| makeresults' } }
@@ -210,12 +274,28 @@ var XML_DS_OK = tmpFile('ds_ok.xml', wrapXml({
             type: 'myapp.kpi',
             dataSources: { primary: 'ds_main' },
             options: { 'myapp.kpi.label': 'foo' }
+        },
+        viz_bg_gradient: {
+            type: 'splunk.image',
+            options: { src: '/static/app/myapp/bg_gradient.png', preserveAspectRatio: 'none' }
+        },
+        viz_title: {
+            type: 'splunk.markdown',
+            options: { markdown: '# Dashboard' }
         }
+    },
+    layout: {
+        structure: [
+            { vizId: 'viz_bg_gradient', position: { x: 0, y: 0, w: 1920, h: 1080 } },
+            { vizId: 'viz_title', position: { x: 20, y: 10, w: 800, h: 80 } },
+            { vizId: 'viz_ok', position: { x: 20, y: 120, w: 400, h: 300 } }
+        ]
     }
 }));
 
 // ---- JSON mode fixtures ----
 
+// JSON_VALID: includes bg_gradient + markdown title at y=10 to pass DS3/DS4
 var JSON_VALID = tmpFile('valid.json', JSON.stringify({
     dataSources: {
         ds_main: { type: 'ds.search', options: { query: '| makeresults' } }
@@ -225,10 +305,26 @@ var JSON_VALID = tmpFile('valid.json', JSON.stringify({
             type: 'myapp.kpi',
             dataSources: { primary: 'ds_main' },
             options: { 'myapp.kpi.label': 'foo' }
+        },
+        viz_bg_gradient: {
+            type: 'splunk.image',
+            options: { src: '/static/app/myapp/bg_gradient.png', preserveAspectRatio: 'none' }
+        },
+        viz_title: {
+            type: 'splunk.markdown',
+            options: { markdown: '# Dashboard' }
         }
+    },
+    layout: {
+        structure: [
+            { vizId: 'viz_bg_gradient', position: { x: 0, y: 0, w: 1920, h: 1080 } },
+            { vizId: 'viz_title', position: { x: 20, y: 10, w: 800, h: 80 } },
+            { vizId: 'viz_ok', position: { x: 20, y: 120, w: 400, h: 300 } }
+        ]
     }
 }));
 
+// JSON_BARE_OPTIONS: has bare option key (B10) + bg_gradient + markdown to isolate B10 failure
 var JSON_BARE_OPTIONS = tmpFile('bare_opts.json', JSON.stringify({
     dataSources: {
         ds_main: { type: 'ds.search', options: { query: '| makeresults' } }
@@ -238,7 +334,22 @@ var JSON_BARE_OPTIONS = tmpFile('bare_opts.json', JSON.stringify({
             type: 'myapp.kpi',
             dataSources: { primary: 'ds_main' },
             options: { label: 'foo' }
+        },
+        viz_bg_gradient: {
+            type: 'splunk.image',
+            options: { src: '/static/app/myapp/bg_gradient.png', preserveAspectRatio: 'none' }
+        },
+        viz_title: {
+            type: 'splunk.markdown',
+            options: { markdown: '# Dashboard' }
         }
+    },
+    layout: {
+        structure: [
+            { vizId: 'viz_bg_gradient', position: { x: 0, y: 0, w: 1920, h: 1080 } },
+            { vizId: 'viz_title', position: { x: 20, y: 10, w: 800, h: 80 } },
+            { vizId: 'viz_bad', position: { x: 20, y: 120, w: 400, h: 300 } }
+        ]
     }
 }));
 
@@ -335,17 +446,24 @@ r = run(['--xml', XML_DS_OK]);
 assert('declared data source exits 0', r.code, 0, r.stdout + r.stderr);
 assertNotIncludes('declared data source no FAIL output', r.stdout, 'FAIL');
 
-// --- Real file: test25 clean dashboard ---
-console.log('\n-- Real file: test25 nps_ring_gauge_demo.xml (clean) --');
+// --- Real file: test25 dashboard (legacy -- lacks bg_gradient/markdown, expects DS3+DS4) ---
+// test25 was created before DS3/DS4 checks existed. It correctly exits 1 now (missing background/title).
+// The check here validates B9/B10/DS1 are not reported (those it was clean for).
+console.log('\n-- Real file: test25 nps_ring_gauge_demo.xml (legacy -- DS3/DS4 expected) --');
 r = run(['--xml', CLEAN_XML_TEST25]);
-assert('test25 clean dashboard exits 0', r.code, 0, r.stdout + r.stderr);
-assertNotIncludes('test25 no FAIL output', r.stdout, 'FAIL');
+assert('test25 dashboard exits 1 (DS3+DS4 violations expected for legacy file)', r.code, 1, r.stdout + r.stderr);
+assertNotIncludes('test25 no FAIL B9', r.stdout, 'FAIL B9');
+assertNotIncludes('test25 no FAIL B10', r.stdout, 'FAIL B10');
+assertNotIncludes('test25 no FAIL DS1', r.stdout, 'FAIL DS1');
 
-// --- Real file: test28 cloudflare_noc_overview.xml (dirty - bare keys) ---
-console.log('\n-- Real file: test28 cloudflare_noc_overview.xml (dirty - bare keys) --');
+// --- Real file: test28 cloudflare_noc_overview.xml (legacy -- DS3/DS4 expected) ---
+// test28 option keys have been fixed since initial creation (all properly namespaced).
+// It now correctly exits 1 due to DS3/DS4 (missing bg_gradient + markdown title).
+console.log('\n-- Real file: test28 cloudflare_noc_overview.xml (legacy -- DS3/DS4 expected) --');
 r = run(['--xml', DIRTY_XML_TEST28]);
-assert('test28 dirty dashboard exits 1', r.code, 1);
-assertIncludes('test28 reports FAIL B10', r.stdout, 'FAIL B10');
+assert('test28 dashboard exits 1 (DS3+DS4 violations expected for legacy file)', r.code, 1);
+assertNotIncludes('test28 no FAIL B10 (keys are now properly namespaced)', r.stdout, 'FAIL B10');
+assertIncludes('test28 reports FAIL DS3 (no bg_gradient)', r.stdout, 'FAIL DS3');
 
 // --- JSON mode ---
 console.log('\n-- --json mode: valid JSON --');
@@ -373,6 +491,276 @@ console.log('\n-- FAIL line format --');
 r = run(['--xml', XML_B9_PREFIX]);
 var hasLeadingSpaces = /^  FAIL /m.test(r.stdout);
 assert('FAIL lines start with two leading spaces', hasLeadingSpaces, true);
+
+// ---- DS2: Tab schema tests ----
+
+console.log('\n-- DS2: array layoutDefinitions --');
+var XML_DS2_ARRAY_LAYOUTDEFS = tmpFile('ds2_array_layoutdefs.xml', wrapXml({
+    dataSources: {},
+    visualizations: {
+        viz_bg_gradient: {
+            type: 'splunk.image',
+            options: { src: '/static/app/myapp/bg_gradient.png', preserveAspectRatio: 'none' }
+        },
+        viz_title: {
+            type: 'splunk.markdown',
+            options: { markdown: '# Dashboard' }
+        }
+    },
+    layout: {
+        layoutDefinitions: [],
+        structure: [
+            { vizId: 'viz_bg_gradient', position: { x: 0, y: 0, w: 1920, h: 1080 } },
+            { vizId: 'viz_title', position: { x: 20, y: 10, w: 800, h: 80 } }
+        ]
+    }
+}));
+r = run(['--xml', XML_DS2_ARRAY_LAYOUTDEFS]);
+assert('DS2 array layoutDefinitions: expect exit 1', r.code, 1, r.stdout + r.stderr);
+assertIncludes('DS2 array layoutDefinitions: expect FAIL DS2 in stdout', r.stdout, 'FAIL DS2');
+
+console.log('\n-- DS2: tabBarPosition key in tabs.options --');
+var XML_DS2_TABBARPOSITION = tmpFile('ds2_tabbarposition.xml', wrapXml({
+    dataSources: {},
+    visualizations: {
+        viz_bg_gradient: {
+            type: 'splunk.image',
+            options: { src: '/static/app/myapp/bg_gradient.png', preserveAspectRatio: 'none' }
+        },
+        viz_title: {
+            type: 'splunk.markdown',
+            options: { markdown: '# Dashboard' }
+        }
+    },
+    layout: {
+        tabs: {
+            items: [
+                { layoutId: 'tab1', label: 'Tab One' }
+            ],
+            options: { tabBarPosition: 'top' }
+        },
+        layoutDefinitions: {
+            tab1: {
+                structure: [
+                    { vizId: 'viz_bg_gradient', position: { x: 0, y: 0, w: 1920, h: 1080 } },
+                    { vizId: 'viz_title', position: { x: 20, y: 10, w: 800, h: 80 } }
+                ]
+            }
+        }
+    }
+}));
+r = run(['--xml', XML_DS2_TABBARPOSITION]);
+assert('DS2 tabBarPosition: expect exit 1', r.code, 1, r.stdout + r.stderr);
+assertIncludes('DS2 tabBarPosition: expect FAIL DS2 in stdout', r.stdout, 'FAIL DS2');
+
+console.log('\n-- DS2: string items in tabs.items --');
+var XML_DS2_STRING_ITEMS = tmpFile('ds2_string_items.xml', wrapXml({
+    dataSources: {},
+    visualizations: {
+        viz_bg_gradient: {
+            type: 'splunk.image',
+            options: { src: '/static/app/myapp/bg_gradient.png', preserveAspectRatio: 'none' }
+        },
+        viz_title: {
+            type: 'splunk.markdown',
+            options: { markdown: '# Dashboard' }
+        }
+    },
+    layout: {
+        tabs: {
+            items: ['tab1', 'tab2'],
+            options: { barPosition: 'top' }
+        },
+        layoutDefinitions: {
+            tab1: {
+                structure: [
+                    { vizId: 'viz_bg_gradient', position: { x: 0, y: 0, w: 1920, h: 1080 } },
+                    { vizId: 'viz_title', position: { x: 20, y: 10, w: 800, h: 80 } }
+                ]
+            }
+        }
+    }
+}));
+r = run(['--xml', XML_DS2_STRING_ITEMS]);
+assert('DS2 string items in tabs.items: expect exit 1', r.code, 1, r.stdout + r.stderr);
+assertIncludes('DS2 string items in tabs.items: expect FAIL DS2 in stdout', r.stdout, 'FAIL DS2');
+
+console.log('\n-- DS2: valid tab schema (PASS) --');
+var XML_DS2_PASS = tmpFile('ds2_pass.xml', wrapXml({
+    dataSources: {},
+    visualizations: {
+        viz_bg_gradient: {
+            type: 'splunk.image',
+            options: { src: '/static/app/myapp/bg_gradient.png', preserveAspectRatio: 'none' }
+        },
+        viz_title: {
+            type: 'splunk.markdown',
+            options: { markdown: '# Dashboard' }
+        }
+    },
+    layout: {
+        tabs: {
+            items: [
+                { layoutId: 'tab1', label: 'Tab One' },
+                { layoutId: 'tab2', label: 'Tab Two' }
+            ],
+            options: { barPosition: 'top' }
+        },
+        layoutDefinitions: {
+            tab1: {
+                structure: [
+                    { vizId: 'viz_bg_gradient', position: { x: 0, y: 0, w: 1920, h: 1080 } },
+                    { vizId: 'viz_title', position: { x: 20, y: 10, w: 800, h: 80 } }
+                ]
+            },
+            tab2: {
+                structure: [
+                    { vizId: 'viz_bg_gradient', position: { x: 0, y: 0, w: 1920, h: 1080 } }
+                ]
+            }
+        }
+    }
+}));
+r = run(['--xml', XML_DS2_PASS]);
+assertNotIncludes('DS2 valid tab schema: no FAIL DS2 in stdout', r.stdout, 'FAIL DS2');
+
+// ---- DS3: Background image tests ----
+
+console.log('\n-- DS3: no splunk.image viz at all --');
+var XML_DS3_NO_IMAGE = tmpFile('ds3_no_image.xml', wrapXml({
+    dataSources: {},
+    visualizations: {
+        viz_title: {
+            type: 'splunk.markdown',
+            options: { markdown: '# Dashboard' }
+        }
+    },
+    layout: {
+        structure: [
+            { vizId: 'viz_title', position: { x: 20, y: 10, w: 800, h: 80 } }
+        ]
+    }
+}));
+r = run(['--xml', XML_DS3_NO_IMAGE]);
+assert('DS3 no image: expect exit 1', r.code, 1, r.stdout + r.stderr);
+assertIncludes('DS3 no image: expect FAIL DS3 in stdout', r.stdout, 'FAIL DS3');
+
+console.log('\n-- DS3: splunk.image present but id is "viz_logo" (not bg_gradient) --');
+var XML_DS3_WRONG_IMAGE = tmpFile('ds3_wrong_image.xml', wrapXml({
+    dataSources: {},
+    visualizations: {
+        viz_logo: {
+            type: 'splunk.image',
+            options: { src: '/static/app/myapp/logo.png', preserveAspectRatio: 'xMidYMid' }
+        },
+        viz_title: {
+            type: 'splunk.markdown',
+            options: { markdown: '# Dashboard' }
+        }
+    },
+    layout: {
+        structure: [
+            { vizId: 'viz_logo', position: { x: 0, y: 0, w: 1920, h: 1080 } },
+            { vizId: 'viz_title', position: { x: 20, y: 10, w: 800, h: 80 } }
+        ]
+    }
+}));
+r = run(['--xml', XML_DS3_WRONG_IMAGE]);
+assert('DS3 image without bg_gradient: expect exit 1', r.code, 1, r.stdout + r.stderr);
+assertIncludes('DS3 image without bg_gradient: expect FAIL DS3 in stdout', r.stdout, 'FAIL DS3');
+
+console.log('\n-- DS3: splunk.image with bg_gradient in id (PASS) --');
+var XML_DS3_PASS = tmpFile('ds3_pass.xml', wrapXml({
+    dataSources: {},
+    visualizations: {
+        viz_bg_gradient: {
+            type: 'splunk.image',
+            options: { src: '/static/app/myapp/bg_gradient.png', preserveAspectRatio: 'none' }
+        },
+        viz_title: {
+            type: 'splunk.markdown',
+            options: { markdown: '# Dashboard' }
+        }
+    },
+    layout: {
+        structure: [
+            { vizId: 'viz_bg_gradient', position: { x: 0, y: 0, w: 1920, h: 1080 } },
+            { vizId: 'viz_title', position: { x: 20, y: 10, w: 800, h: 80 } }
+        ]
+    }
+}));
+r = run(['--xml', XML_DS3_PASS]);
+assertNotIncludes('DS3 bg_gradient image present: no FAIL DS3 in stdout', r.stdout, 'FAIL DS3');
+
+// ---- DS4: Markdown title panel tests ----
+
+console.log('\n-- DS4: no splunk.markdown viz at all --');
+var XML_DS4_NO_MARKDOWN = tmpFile('ds4_no_markdown.xml', wrapXml({
+    dataSources: {},
+    visualizations: {
+        viz_bg_gradient: {
+            type: 'splunk.image',
+            options: { src: '/static/app/myapp/bg_gradient.png', preserveAspectRatio: 'none' }
+        }
+    },
+    layout: {
+        structure: [
+            { vizId: 'viz_bg_gradient', position: { x: 0, y: 0, w: 1920, h: 1080 } }
+        ]
+    }
+}));
+r = run(['--xml', XML_DS4_NO_MARKDOWN]);
+assert('DS4 no markdown: expect exit 1', r.code, 1, r.stdout + r.stderr);
+assertIncludes('DS4 no markdown: expect FAIL DS4 in stdout', r.stdout, 'FAIL DS4');
+
+console.log('\n-- DS4: splunk.markdown at y=300 (too low) --');
+var XML_DS4_MARKDOWN_TOO_LOW = tmpFile('ds4_markdown_low.xml', wrapXml({
+    dataSources: {},
+    visualizations: {
+        viz_bg_gradient: {
+            type: 'splunk.image',
+            options: { src: '/static/app/myapp/bg_gradient.png', preserveAspectRatio: 'none' }
+        },
+        viz_title: {
+            type: 'splunk.markdown',
+            options: { markdown: '# Dashboard' }
+        }
+    },
+    layout: {
+        structure: [
+            { vizId: 'viz_bg_gradient', position: { x: 0, y: 0, w: 1920, h: 1080 } },
+            { vizId: 'viz_title', position: { x: 20, y: 300, w: 800, h: 80 } }
+        ]
+    }
+}));
+r = run(['--xml', XML_DS4_MARKDOWN_TOO_LOW]);
+assert('DS4 markdown at y=300: expect exit 1', r.code, 1, r.stdout + r.stderr);
+assertIncludes('DS4 markdown at y=300: expect FAIL DS4 in stdout', r.stdout, 'FAIL DS4');
+
+console.log('\n-- DS4: splunk.markdown at y=10 (PASS) --');
+var XML_DS4_PASS = tmpFile('ds4_pass.xml', wrapXml({
+    dataSources: {},
+    visualizations: {
+        viz_bg_gradient: {
+            type: 'splunk.image',
+            options: { src: '/static/app/myapp/bg_gradient.png', preserveAspectRatio: 'none' }
+        },
+        viz_title: {
+            type: 'splunk.markdown',
+            options: { markdown: '# Dashboard' }
+        }
+    },
+    layout: {
+        structure: [
+            { vizId: 'viz_bg_gradient', position: { x: 0, y: 0, w: 1920, h: 1080 } },
+            { vizId: 'viz_title', position: { x: 20, y: 10, w: 800, h: 80 } }
+        ]
+    }
+}));
+r = run(['--xml', XML_DS4_PASS]);
+assertNotIncludes('DS4 markdown at y=10: no FAIL DS4 in stdout', r.stdout, 'FAIL DS4');
+
+// DS2/DS3/DS4 tests: 10 added
 
 // ---- Cleanup temp files ----
 tmpFiles.forEach(function(p) {
