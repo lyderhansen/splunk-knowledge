@@ -376,3 +376,98 @@ function drawHighlightedRow(ctx, t, x, y, w, h, isHovered) {
     ctx.fillText(label, x + 8, y + h / 2);
 }
 ```
+
+---
+
+## ECR-06: hexFromSplunk on All Color Picker Reads
+
+**Requirement:** Every `<splunk-color-picker>` formatter control MUST have its `opt()`/`getOption()`
+value wrapped in `hexFromSplunk()`. Splunk delivers color picker values as decimal integers
+(e.g., `30646`), not hex strings. Using the raw integer directly as `ctx.fillStyle` renders
+black or an incorrect color.
+
+**Root cause:** broken-rules.md B22 — "Color picker value ignored (reads as integer)."
+
+### Wrong pattern
+
+```javascript
+// WRONG — opt() returns "30646", not "#0077B6"
+var zoneColor = opt('detractorColor', '#FF4136');
+ctx.fillStyle = zoneColor;  // BUG: renders black (invalid CSS color string)
+```
+
+### Correct pattern
+
+```javascript
+// CORRECT — hexFromSplunk converts Splunk integer to hex string
+var zoneColor = hexFromSplunk(opt('detractorColor', ''), t.error);
+ctx.fillStyle = zoneColor;
+```
+
+### Rules
+
+- The `opt()` fallback for color pickers should be empty string (`''`), letting `hexFromSplunk`
+  handle the default via its own fallback parameter.
+- The fallback in `hexFromSplunk` should be a theme token (`t.error`, `t.accent`, etc.),
+  not a hardcoded hex string — so the fallback adapts to the current theme.
+- This applies to ALL color pickers: accentColor, zone colors, series colors, status colors.
+- `hexFromSplunk` is defined in `theme.js` and available in every viz bundle.
+
+---
+
+## ECR-07: showHoverEffect Early-Exit in _onMouseMove
+
+**Requirement:** When `showHoverEffect=false`, the `_onMouseMove` handler MUST return
+immediately without calling `invalidateUpdateView()`. Without this early-exit, mouse
+movement triggers 60fps redraws even though no hover highlight is rendered — causing
+visible CPU spikes on multi-viz dashboards.
+
+**Root cause:** MP-03 in PITFALLS.md — "showHoverEffect=false — mousemove handler still
+calls invalidateUpdateView."
+
+### Wrong pattern
+
+```javascript
+// WRONG — _startHoverTransition checks the flag, but _onMouseMove may already
+// have called invalidateUpdateView in some code paths before reaching it
+_onMouseMove: function(e) {
+    var newIndex = this._getHitIndex(e);
+    if (newIndex !== this._hoveredIndex) {
+        this._hoveredIndex = newIndex;
+        this._hoverTarget = (newIndex >= 0) ? 0.12 : 0;
+        this._startHoverTransition(this._lastConfig, ns);
+    }
+}
+```
+
+### Correct pattern
+
+In `updateView`, store the hover flag as an instance property:
+
+```javascript
+// In updateView — store flag so event handler can access it
+this._showHoverEffect = opt('showHoverEffect', 'true') === 'true';
+```
+
+In `_onMouseMove`, early-exit before any hit testing or redraw:
+
+```javascript
+_onMouseMove: function(e) {
+    if (!this._showHoverEffect) { return; }  // early exit — no hit test, no invalidate
+    var newIndex = this._getHitIndex(e);
+    if (newIndex !== this._hoveredIndex) {
+        this._hoveredIndex = newIndex;
+        this._hoverTarget = (newIndex >= 0) ? 0.12 : 0;
+        this._startHoverTransition(this._lastConfig, '{{VIZ_NAMESPACE}}');
+    }
+},
+```
+
+### Rules
+
+- Store `_showHoverEffect` as an instance property in `updateView` — event handlers do not
+  receive config, so they cannot call `opt()` directly.
+- The early return prevents ALL downstream processing: no hit testing, no hover state
+  changes, no `invalidateUpdateView`.
+- On a 10-viz dashboard, unnecessary redraws from mouse movement cause visible frame drops.
+  This is a correctness fix, not a premature optimization.
