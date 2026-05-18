@@ -324,10 +324,11 @@ module.exports = SplunkVisualizationBase.extend({
                    : themeMode === 'dark';
         var t = theme.getTheme(isDark ? 'dark' : 'light');
 
-        // ACC-03: accentIntensity /100 uncapped multiplier -- 0=off, 0.5=default, 1.0=full, >1.0=extreme
-        // gi controls ONLY shadowBlur + shadowColor alpha (other effects use their own toggles)
+        // ACC-03: accentIntensity /100 UNCAPPED multiplier -- 0=off, 0.5=default, 1.0=full, >1.0=extreme
+        // DO NOT clamp gi to 1.0 — values above 100 are intentional for extreme glow
+        // WRONG: gi = gi < 0 ? 0 : gi > 1 ? 1 : gi  ← NEVER cap at 1
         var gi = parseFloat(opt('accentIntensity', '50')) / 100;
-        gi = gi < 0 ? 0 : gi;  // floor at 0, no ceiling
+        gi = gi < 0 ? 0 : gi;  // floor at 0, NO ceiling — user can set 200, 500, etc.
         // THM-03: reduce glow on light theme
         var glowScale = isDark ? 1.0 : 0.4;
         // Apply: ctx.shadowBlur = 20 * gi * glowScale; ctx.shadowColor = theme.withAlpha(accent, gi * glowScale);
