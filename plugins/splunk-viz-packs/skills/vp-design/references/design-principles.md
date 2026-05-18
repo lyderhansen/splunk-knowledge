@@ -56,10 +56,10 @@ Full implementation: [texture-recipes.md](../../vp-recipes/references/texture-re
 
 ---
 
-### DPR-03: Gradient fills on all data elements
+### DPR-03: Gradient fills on all data elements (see DPR-03b for accent/series separation)
 
 **Before:** `ctx.fillStyle = t.accent; ctx.fill();`
-**After:** Linear gradient fill — accent to withAlpha(accent, 0.5) creates depth.
+**After:** Linear gradient fill using series color creates depth without misusing accent.
 
 **Canvas API:** `ctx.createLinearGradient`, `ctx.createRadialGradient`
 
@@ -72,12 +72,46 @@ Full implementation: [texture-recipes.md](../../vp-recipes/references/texture-re
 
 **Minimum implementation:**
 ```javascript
+// Data element gradient — use series color, NOT t.accent (see DPR-03b)
+var seriesColor = theme.getSeriesColor(seriesIndex, t);
 var grad = ctx.createLinearGradient(x, y, x, y + barH);
-grad.addColorStop(0, t.accent);
-grad.addColorStop(1, withAlpha(t.accent, 0.5));
+grad.addColorStop(0, seriesColor);
+grad.addColorStop(1, theme.withAlpha(seriesColor, 0.5));
 ctx.fillStyle = grad;
 ctx.fill();
+
+// Accent reserved for highlights:
+// ctx.fillStyle = theme.withAlpha(t.accent, gi * 0.15); // hover overlay
+// ctx.shadowColor = theme.withAlpha(t.accent, gi);       // glow halo
 ```
+
+---
+
+### DPR-03b: Accent vs series color separation
+
+**Rule:** `t.accent` is the HIGHLIGHT color — used for the single element that must pop on each frame. Data series fills use `t.series[i]` (brand-derived palette), NEVER `t.accent`.
+
+**Accent IS appropriate for (10% of visual weight):**
+- Hover highlight overlay (semi-transparent fill behind hovered row/bar)
+- Selection ring or selected-state border
+- Glow halo (shadowColor in flashCritical LED pulse)
+- Focus indicator on interactive elements
+- Threshold breach indicator (value exceeds danger zone)
+- Single-value vizs where ONE data element is the entire story (KPI hero, single gauge arc)
+
+**Accent is NOT appropriate for:**
+- Multi-series bar fills, arc segments, line strokes, area fills
+- Default fill when no threshold context applies
+- Background fills or decorative gradients (use t.bg, t.panel instead)
+
+**The 60/30/10 rule (already in vp-design SKILL.md, enforced here):**
+- 60% = background/panel neutrals (t.bg, t.panel)
+- 30% = data series fills (t.series[0] through t.series[4])
+- 10% = accent highlights only (hover, glow, threshold, focus)
+
+Accent at full saturation on more than one element per frame = visual noise. Position is explicit: choose which element gets accent. Do not default to "first series = accent, rest = dimmed accent."
+
+**Phase 8 check:** No automated check — semantic usage rule. Design-time guidance only.
 
 ---
 
@@ -206,7 +240,8 @@ ctx.fill();
 |-----|-----------|-------------|---------------|
 | DPR-01 | 3-tier typography hierarchy | (inline above) | DQG-03 FAIL |
 | DPR-02 | Tinted neutral backgrounds | texture-recipes.md | DQG-04 WARN |
-| DPR-03 | Gradient fills on data elements | (inline above) | DQG-01 WARN |
+| DPR-03 | Gradient fills on data elements — see DPR-03b for accent/series separation | (inline above) | DQG-01 WARN |
+| DPR-03b | Accent vs series color separation | (inline above) | (design-time) |
 | DPR-04 | Ambient light on dark theme | depth-recipes.md | DQG-04 WARN |
 | DPR-05 | Vignette edge darkening | depth-recipes.md | DQG-05 WARN |
 | DPR-06 | Glass panel | texture-recipes.md | DQG-06 WARN |
