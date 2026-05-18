@@ -1,8 +1,9 @@
 # Domain Templates + Layout Archetypes
 
 ## Contents
-- Domain viz inventories (F1, SOC, Retail, Healthcare, NOC)
+- Domain viz inventories (F1, SOC, Retail, Healthcare, NOC, Energy)
 - Layout archetypes (5 types)
+- Canvas complexity gate
 - Anti-patterns (design-level)
 
 ## Domain viz inventories
@@ -10,6 +11,9 @@
 Starting points — analyze the actual data before choosing.
 
 ### F1 Racing
+
+**Domain visual language:** F1 engineers recognize lap-time deltas as color-coded delta arrows, tyre compounds as colored circles, and ERS charge as a vertical fill gauge styled like a capacitor. Sector highlights on a circuit outline are expected — they encode time-loss by track position. Generic bar charts feel wrong here: time is spatial, not ranked.
+
 | Viz | Purpose |
 |---|---|
 | single_value_tile | Lap time, gap to leader, pit window |
@@ -20,6 +24,9 @@ Starting points — analyze the actual data before choosing.
 | track_info | Circuit outline with sector highlights |
 
 ### SOC / Security
+
+**Domain visual language:** Security analysts recognize MITRE ATT&CK stage flow as a horizontal band chart, severity heatmaps as tactic-by-severity grids, and kill-chain progression as a left-to-right pipeline. Departure from these conventions signals unfamiliarity with the domain. Dwell time (detection gap in days) is a domain-specific KPI with no consumer analogue.
+
 | Viz | Purpose |
 |---|---|
 | single_value_tile | Alert count, MTTD, MTTR |
@@ -28,8 +35,19 @@ Starting points — analyze the actual data before choosing.
 | severity_board | Stacked severity lanes with counts |
 | alert_ticker | Scrolling real-time alert feed |
 | risk_radar | Polar plot of risk dimensions |
+| kill_chain_stage_flow | Stage band chart with fixed MITRE ordering (Recon through Act), band width = alert volume (no generic equivalent) |
+| threat_tactic_heatmap | MITRE ATT&CK tactic (x) by severity (y) cell grid, tactic ordering fixed to ATT&CK spec (no generic equivalent) |
+| dwell_time_histogram | Detection gap distribution in days, log-scale x-axis (no generic equivalent) |
+
+Data for domain-unique SOC entries:
+- `kill_chain_stage_flow`: `stage + count`
+- `threat_tactic_heatmap`: `tactic + severity + count`
+- `dwell_time_histogram`: `dwell_days + count`
 
 ### Retail / E-commerce
+
+**Domain visual language:** Retail analysts expect conversion funnels with labeled drop-off percentages, basket composition as a ring chart, and store/region performance as a heatmap grid. Revenue-vs-target fill gauges are standard operating procedure. Generic time-series charts without reference lines are considered incomplete.
+
 | Viz | Purpose |
 |---|---|
 | single_value_tile | Revenue, AOV, conversion rate |
@@ -40,6 +58,9 @@ Starting points — analyze the actual data before choosing.
 | live_ticker | Real-time transaction feed |
 
 ### Healthcare
+
+**Domain visual language:** Clinical staff recognize bed-occupancy as horizontal fill bars per ward, patient flow as a directional pipeline (ED to ward to ICU to discharge), and vital signs as a sparkline matrix (rows=patients, columns=vitals). Monitors and departure-board patterns are familiar from bedside equipment. Triage category colors (green/yellow/orange/red) are a clinical standard — deviation from them causes confusion.
+
 | Viz | Purpose |
 |---|---|
 | single_value_tile | Wait time, bed count, patient volume |
@@ -48,8 +69,19 @@ Starting points — analyze the actual data before choosing.
 | patient_flow | Admission/discharge/transfer pipeline |
 | wait_ticker | Live queue progression |
 | department_board | Multi-department status lanes |
+| ward_occupancy_bars | Bar per ward, fill=occupancy%, reference line=target capacity, zone colors (no generic equivalent) |
+| vital_sparkline_matrix | Grid: patient rows x vital columns (HR, SpO2, BP, Temp), each cell a sparkline (no generic equivalent) |
+| triage_horizon | Horizon chart of wait time by triage category over the day (no generic equivalent) |
+
+Data for domain-unique Healthcare entries:
+- `ward_occupancy_bars`: `ward + occupied + capacity`
+- `vital_sparkline_matrix`: `patient_id + hr + spo2 + bp + temp + _time`
+- `triage_horizon`: `hour + triage_cat + avg_wait_min`
 
 ### Infrastructure / NOC
+
+**Domain visual language:** NOC operators read service health as color-coded status grids (green/amber/red), latency as sparklines with threshold bands, and incident queues as scrolling tickers. Topology maps are expected but Canvas 2D force-directed layout is overambitious — use a status grid proxy instead. Time-series charts without threshold lines feel unfinished to an on-call engineer.
+
 | Viz | Purpose |
 |---|---|
 | single_value_tile | Uptime, latency, error rate |
@@ -58,6 +90,26 @@ Starting points — analyze the actual data before choosing.
 | service_board | Service health status grid |
 | incident_ticker | Scrolling incident feed |
 | topology_map | Node-edge service topology |
+
+### Energy / Utilities
+
+**Domain visual language:** Energy operators recognize generation-mix as directional flows from source to load, grid frequency as a band chart with tolerance zones, and state-of-charge as battery-shaped fill indicators. Arrow directionality is critical — energy flows have direction. The ±0.2Hz amber and ±0.5Hz red frequency bands are operational standards; a line chart without those bands fails the domain expectation.
+
+| Viz | Purpose |
+|---|---|
+| single_value_tile | Generation output MW, grid frequency Hz, load factor % |
+| soc_thermometer | Battery state-of-charge vertical fill bar with segmented fill (no generic equivalent) |
+| grid_frequency_band | Frequency deviation chart with colored tolerance bands at +/-0.2Hz and +/-0.5Hz (no generic equivalent) |
+| generation_mix_bars | Source-to-load generation breakdown as horizontal bars with directional arrow indicators (no generic equivalent) |
+| asset_health_grid | Spatial grid with assets in fixed positions, color-coded by health status |
+| power_horizon | Time-series power output with area fill |
+
+Data for domain-unique Energy entries:
+- `soc_thermometer`: `soc_pct`
+- `grid_frequency_band`: `_time + freq_hz`
+- `generation_mix_bars`: `source + destination + mwh`
+
+Note: `generation_mix_bars` is a proxy for Sankey flow diagrams. Sankey requires crossing-line layout algorithms and is classified Overambitious — use horizontal bars with directional arrow indicators instead.
 
 ## Layout archetypes
 
@@ -85,6 +137,25 @@ analyst consoles.
 50/50 or 60/40 horizontal split. One side is a hero visual (map,
 diagram, large gauge), other side is detail data. Works when one
 viz IS the story and everything else is context.
+
+## Canvas complexity gate
+
+Before adding a domain-specific viz type to the inventory, classify its rendering complexity:
+
+| Tier | Characteristics | Decision |
+|---|---|---|
+| **Renderable** | Iterates rows, draws primitives (rect, arc, line, text) | Proceed |
+| **Stretched** | Coordinate transform math or state machine | Proceed with caution — keep draw code under 200 lines |
+| **Overambitious** | Graph layout, physics simulation, recursive algorithms | Reject — use proxy pattern |
+
+**Proxy patterns for overambitious types:**
+- Topology map -> Status health grid with hop-count encoded as cell size
+- Force-directed graph -> Node list with connection count as a bar
+- Sankey flow -> Horizontal bar list with flow amounts as widths (no crossing logic)
+- Geospatial grid -> Regional heatmap with fixed rows/columns (no geo projection)
+- Candlestick -> Stacked horizontal bar (high-low range) with open-close marker
+
+**Warning signs in the design brief:** If the viz description includes "layout algorithm," "force-directed," "physics simulation," "recursive," or "projection" — treat as overambitious and apply a proxy pattern immediately.
 
 ## Design anti-patterns
 
