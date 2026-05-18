@@ -75,8 +75,11 @@ Save to: `default/data/ui/views/{{view_name}}.xml`
   "layout": {
     "globalInputs": ["input_time"],
     "tabs": {
-      "items": ["tab_overview", "tab_detail"],
-      "options": { "tabBarPosition": "top" }
+      "items": [
+        { "layoutId": "tab_overview", "label": "Overview" },
+        { "layoutId": "tab_detail", "label": "Detail" }
+      ],
+      "options": { "barPosition": "top", "showTabBar": true }
     },
     "layoutDefinitions": {
       "tab_overview": {
@@ -99,7 +102,9 @@ Save to: `default/data/ui/views/{{view_name}}.xml`
 ```
 WRONG: "layoutDefinitions": [...]         ← MUST be object, not array
 WRONG: "tabs": [...]                      ← MUST be object with items + options
-WRONG: "tabs": { "items": "tab1" }        ← items MUST be array of strings
+WRONG: "tabs": { "items": ["tab1"] }     ← items MUST be objects: [{"layoutId":"tab1","label":"Tab 1"}]
+WRONG: "tabBarPosition": "top"            ← MUST be "barPosition" (no "tab" prefix) + "showTabBar": true
+WRONG: "label" inside layoutDefinitions   ← labels go on tabs.items objects ONLY
 WRONG: "layout": { "type": "absolute", "tabs": {...} }  ← tabs and type are SIBLINGS, not nested
 WRONG: "type": "custom"                   ← use "{{app_id}}.{{viz_name}}" directly
 WRONG: "options": { "valueField": "x" }   ← use "{{app_id}}.{{viz_name}}.valueField": "x"
