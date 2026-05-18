@@ -51,7 +51,7 @@ only the `{FILL}` parts. Getting ANY attribute wrong causes silent failures.
 ### Accent intensity (D-07: controls glow and shadow strength only)
 
 ```html
-<splunk-control-group label="Accent intensity" help="Glow and shadow strength (0=off, 100=full)">
+<splunk-control-group label="Accent intensity" help="Highlight glow multiplier (0=off, 50=default, 100+=extreme). Values above 100 amplify glow beyond the standard range.">
     <splunk-text-input name="{{VIZ_NAMESPACE}}.accentIntensity" value="50">
     </splunk-text-input>
 </splunk-control-group>
@@ -255,7 +255,7 @@ using viz-blueprints.md Settings: list as your guide (D-01, D-04).
             <splunk-color>#0077B6</splunk-color>
         </splunk-color-picker>
     </splunk-control-group>
-    <splunk-control-group label="Accent intensity" help="Glow and shadow strength (0=off, 100=full)">
+    <splunk-control-group label="Accent intensity" help="Highlight glow multiplier (0=off, 50=default, 100+=extreme). Values above 100 amplify glow beyond the standard range.">
         <splunk-text-input name="{{VIZ_NAMESPACE}}.accentIntensity" value="50">
         </splunk-text-input>
     </splunk-control-group>
