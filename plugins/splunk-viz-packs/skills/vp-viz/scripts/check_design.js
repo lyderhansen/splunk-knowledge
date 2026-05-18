@@ -162,13 +162,13 @@ for (var fi = 0; fi < formatterKeys.length; fi++) {
     }
 }
 
-// Reverse: extract opt('key') and opt("key") calls from jsSrc
-var optPattern = /opt\((['"])([^'"]+)\1\)/g;
+// Reverse: extract opt('key') and getOption(config, ns, 'key') calls from jsSrc
+var optPattern = /(?:opt|getOption)\((?:[^,]*,\s*[^,]*,\s*)?(['"])([^'"]+)\1/g;
 var optMatch;
 while ((optMatch = optPattern.exec(jsSrc)) !== null) {
     var optKey = optMatch[2];
     if (formatterKeys.indexOf(optKey) === -1) {
-        emitWarn('D08', 'JS calls opt("' + optKey + '") but no matching formatter control found');
+        emitWarn('D08', 'JS calls opt/getOption("' + optKey + '") but no matching formatter control found');
     }
 }
 
