@@ -51,14 +51,16 @@ var whisperSize = Math.max(8, Math.min(11, Math.min(w, h) * 0.07));
 Let users dial glow/shadow effects from subtle to dramatic:
 
 ```javascript
-var gi = parseFloat(opt('accentIntensity', '50')) / 50;
+var gi = parseFloat(opt('accentIntensity', '50')) / 100;
+// ACC-03: UNCAPPED — do NOT clamp gi to 1.0. Values above 100 are intentional.
+gi = gi < 0 ? 0 : gi;
 ctx.shadowColor = accent;
 ctx.shadowBlur = 12 * gi;
 // ... draw element ...
 ctx.shadowBlur = 0; // ALWAYS reset
 ```
 
-Formatter: radio input with values `"25"`, `"50"`, `"75"`, `"100"`.
+Formatter: text input (not radio) — user can type any value (0, 50, 100, 200+).
 
 ### 4. Number formatting (compact + decimals)
 

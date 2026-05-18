@@ -60,7 +60,7 @@ Apply in `_render()` using `this._animPhase`.
 | Type | Apply in _render |
 |---|---|
 | `pulse` | `ctx.globalAlpha = 0.5 + 0.5 * Math.sin(this._animPhase)` |
-| `glow_pulse` | `blur * (0.5 + 0.5 * Math.sin(this._animPhase))` on `shadowBlur` |
+| `glow_pulse` (formatter: `flashCritical`) | `blur * (0.5 + 0.5 * Math.sin(this._animPhase))` on `shadowBlur` |
 | `breathe` | `var s = 1 + 0.03 * Math.sin(this._animPhase); ctx.scale(s, s)` |
 | `spin` | Add `this._animPhase * 2` to rotation angle |
 
