@@ -14,7 +14,7 @@
  *   stdout -- FAIL/WARN lines with two leading spaces (matching validate_viz.sh format)
  *   stderr -- FINDING: NDJSON for FAIL only (WARNs do NOT write to stderr)
  *
- * Checks (D01-D06, D08 -- DQG-01 through DQG-08, skipping DQG-07):
+ * Checks (D01-D06, D08-D11 -- DQG-01 through DQG-11, skipping DQG-07):
  *   D01 (WARN) -- visualization_source.js has no gradient calls
  *   D02 (WARN) -- visualization_source.js has no shadow effects
  *   D03 (FAIL) -- visualization_source.js has no hero sizing formula
@@ -22,6 +22,9 @@
  *   D05 (FAIL) -- formatter has fewer than 4 form[section-label] elements
  *   D06 (WARN) -- formatter has fewer than 2 splunk-color-picker elements
  *   D08 (FAIL forward, WARN reverse) -- bidirectional wiring check
+ *   D09 (FAIL) -- visualization_source.js caps accentIntensity (gi) at 1.0 (CQ-02)
+ *   D10 (FAIL) -- visualization_source.js missing @viz-type annotation on first line (CQ-05)
+ *   D11 (FAIL) -- _onMouseMove lacks showHoverEffect early-exit guard (CQ-03)
  *
  * Pure ES5 CJS -- no const/let/arrow functions/template literals/import.
  */
@@ -181,6 +184,66 @@ while ((optMatch = getOptPattern.exec(jsSrc)) !== null) {
     if (FALLBACK_STRINGS[optKey2]) continue;
     if (formatterKeys.indexOf(optKey2) === -1) {
         emitWarn('D08', 'JS calls getOption("' + optKey2 + '") but no matching formatter control found');
+    }
+}
+
+// ---- D09 (FAIL, CQ-02): accentIntensity (gi) capped at 1.0 ----
+// Values above 100 are intentional for extreme glow effects; a ceiling clamp silently truncates them.
+
+var d09_ternary = /gi\s*>\s*1\s*\?\s*1\s*:\s*gi/;
+var d09_mathMin1 = /Math\.min\s*\(\s*gi\s*,\s*1\s*\)/;
+var d09_mathMin2 = /Math\.min\s*\(\s*1\s*,\s*gi\s*\)/;
+var d09_doubleTernary = /gi\s*=\s*gi\s*<\s*0\s*\?\s*0\s*:\s*gi\s*>\s*1\s*\?\s*1\s*:\s*gi/;
+
+var d09MatchedPattern = null;
+if (d09_doubleTernary.test(jsSrc)) {
+    d09MatchedPattern = 'gi = gi < 0 ? 0 : gi > 1 ? 1 : gi';
+} else if (d09_ternary.test(jsSrc)) {
+    d09MatchedPattern = 'gi > 1 ? 1 : gi';
+} else if (d09_mathMin1.test(jsSrc)) {
+    d09MatchedPattern = 'Math.min(gi, 1)';
+} else if (d09_mathMin2.test(jsSrc)) {
+    d09MatchedPattern = 'Math.min(1, gi)';
+}
+
+if (d09MatchedPattern !== null) {
+    emitFail('D09', jsSrcPath,
+        'accentIntensity (gi) is capped at 1.0 -- values above 100 are intentional for extreme glow effects; remove the ceiling clamp (ACC-03/CQ-02)',
+        { pattern: d09MatchedPattern });
+}
+
+// ---- D10 (FAIL, CQ-05): @viz-type annotation on first line ----
+// Required for preview.png silhouette selection.
+
+var VALID_VIZ_TYPES = ['kpi', 'gauge', 'bars', 'grid', 'line', 'timeline', 'radar', 'progress', 'scatter', 'network'];
+var jsSrcFirstLine = jsSrc.split('\n')[0] || '';
+var d10AnnotationPattern = /^\/\/\s*@viz-type:\s*(\S+)/;
+var d10Match = d10AnnotationPattern.exec(jsSrcFirstLine);
+
+if (!d10Match) {
+    emitFail('D10', jsSrcPath,
+        'first line must be: // @viz-type: <type> (one of: ' + VALID_VIZ_TYPES.join(', ') + ') -- required for preview.png silhouette selection (CQ-05)',
+        { firstLine: jsSrcFirstLine });
+} else {
+    var d10VizType = d10Match[1];
+    if (VALID_VIZ_TYPES.indexOf(d10VizType) === -1) {
+        emitWarn('D10', 'unrecognized @viz-type: "' + d10VizType + '" -- valid types are: ' + VALID_VIZ_TYPES.join(', '));
+    }
+}
+
+// ---- D11 (FAIL, CQ-03): showHoverEffect early-exit guard in _onMouseMove ----
+// Ensures _onMouseMove exits early when user disables hover via the formatter setting.
+
+if (jsSrc.indexOf('_onMouseMove') !== -1) {
+    // Extract approximate block starting at _onMouseMove (heuristic: next 1500 chars covers most functions)
+    var mouseMovIdx = jsSrc.indexOf('_onMouseMove');
+    var mouseMovBlock = jsSrc.slice(mouseMovIdx, mouseMovIdx + 1500);
+
+    var d11GuardPattern = /(showHover|hoverEnabled|hoverEffect).*return|if\s*\(\s*!\s*(this\.)?_?showHover/;
+    if (!d11GuardPattern.test(mouseMovBlock)) {
+        emitFail('D11', jsSrcPath,
+            '_onMouseMove has no showHoverEffect early-exit guard -- add: if (!this._showHoverEffect) return; at the top of _onMouseMove (CQ-03)',
+            { functionStart: mouseMovIdx });
     }
 }
 
