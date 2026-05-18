@@ -43,6 +43,7 @@ var DARK = {
     s3: '{{DARK_S3}}',
     s4: '{{DARK_S4}}',
     s5: '{{DARK_S5}}',
+    series: ['{{DARK_S1}}', '{{DARK_S2}}', '{{DARK_S3}}', '{{DARK_S4}}', '{{DARK_S5}}'],
     accent: '{{DARK_ACCENT}}',
     success: '{{DARK_SUCCESS}}',
     warn: '{{DARK_WARN}}',
@@ -67,6 +68,7 @@ var LIGHT = {
     s3: '{{PLACEHOLDER}}',
     s4: '{{PLACEHOLDER}}',
     s5: '{{PLACEHOLDER}}',
+    series: ['{{PLACEHOLDER}}', '{{PLACEHOLDER}}', '{{PLACEHOLDER}}', '{{PLACEHOLDER}}', '{{PLACEHOLDER}}'],
     accent:      '{{PLACEHOLDER}}',    // brand-specific; may differ from dark accent
     success:     '#00875A',            // WCAG AA on white (#FFFFFF)
     warn:        '#A66200',            // WCAG AA on white
@@ -172,6 +174,19 @@ function getTypoScale(w, h) {
     };
 }
 
+// ACC-01: Data fills use series colors, not accent. DPR-03b.
+// Usage: var color = getSeriesColor(barIndex, t);   // indexed series color with wrap-around
+// Returns t.series[i] with wrap-around and alpha fade for overflow series.
+function getSeriesColor(i, t) {
+    var s = t.series || [t.s1, t.s2, t.s3, t.s4, t.s5];
+    var base = s[i % s.length];
+    // First pass: full opacity. Second+ pass: reduce alpha to distinguish.
+    var pass = Math.floor(i / s.length);
+    if (pass === 0) return base;
+    var alpha = Math.max(0.3, 1.0 - pass * 0.4);
+    return withAlpha(base, alpha);
+}
+
 module.exports = {
     getTheme: getTheme,
     withAlpha: withAlpha,
@@ -186,7 +201,8 @@ module.exports = {
     FONTS: FONTS,
     getSpacing: getSpacing,
     getHoverAlpha: getHoverAlpha,
-    getTypoScale: getTypoScale
+    getTypoScale: getTypoScale,
+    getSeriesColor: getSeriesColor
 };
 ```
 
