@@ -21,6 +21,9 @@
  *   B9  -- viz type starts with "custom." (wrong format; should be "app.viz")
  *   B10 -- custom viz has bare option keys (without "app.viz.key" namespace prefix)
  *   DS1 -- viz references undeclared data source
+ *   DS2 -- tab schema errors: array layoutDefinitions, tabBarPosition key, non-object tabs.items (DQ-01)
+ *   DS3 -- no splunk.image viz with bg_gradient in id or src (DQ-02/D-03)
+ *   DS4 -- no splunk.markdown title panel at y <= 200 (DQ-03/D-05/D-06)
  *
  * Pure ES5 CJS -- no const/let/arrow functions/template literals/import.
  */
@@ -177,6 +180,121 @@ function runDashChecks(filePathArg, dashJson) {
                 );
                 violations++;
             }
+        }
+    }
+
+    // ---- DS2: Tab schema correctness (DQ-01) ----
+    var layout = dashJson.layout || {};
+
+    // DS2 sub-check A: layoutDefinitions must be an object, not an array
+    if (layout.layoutDefinitions && Array.isArray(layout.layoutDefinitions)) {
+        emitFail('DS2', 'layout',
+            'layoutDefinitions must be an object (not array) -- wrong tab schema (DQ-01)',
+            { pattern: 'array layoutDefinitions' }
+        );
+        violations++;
+    }
+
+    // DS2 sub-check B: tabs.items entries must be objects with layoutId and label
+    var tabs = layout.tabs || null;
+    if (tabs && Array.isArray(tabs.items)) {
+        for (var ti = 0; ti < tabs.items.length; ti++) {
+            var tabItem = tabs.items[ti];
+            if (typeof tabItem !== 'object' || tabItem === null) {
+                emitFail('DS2', 'layout',
+                    'tabs.items entries must be objects with layoutId and label -- found bare string or null (DQ-01)',
+                    { pattern: 'string item in tabs.items', index: ti }
+                );
+                violations++;
+            }
+        }
+    }
+
+    // DS2 sub-check C: tabs.options must not use tabBarPosition key (use barPosition)
+    if (tabs && tabs.options && Object.prototype.hasOwnProperty.call(tabs.options, 'tabBarPosition')) {
+        emitFail('DS2', 'layout',
+            'use barPosition not tabBarPosition in tabs.options (DQ-01)',
+            { pattern: 'tabBarPosition key' }
+        );
+        violations++;
+    }
+
+    // ---- DS3: Background image (bg_gradient) must be present (DQ-02/D-03) ----
+    var bgGradientCount = 0;
+    for (var vi = 0; vi < vizIds.length; vi++) {
+        var bgVizId = vizIds[vi];
+        var bgViz = vizMap[bgVizId];
+        if (bgViz.type === 'splunk.image') {
+            var hasIdMatch = bgVizId.indexOf('bg_gradient') !== -1;
+            var hasSrcMatch = bgViz.options && bgViz.options.src &&
+                bgViz.options.src.indexOf('bg_gradient') !== -1;
+            if (hasIdMatch || hasSrcMatch) {
+                bgGradientCount++;
+            }
+        }
+    }
+    if (bgGradientCount === 0) {
+        emitFail('DS3', 'layout',
+            'dashboard has no bg_gradient background image -- add bg_gradient.png as first structure item (DQ-02/D-03)',
+            { count: 0 }
+        );
+        violations++;
+    }
+
+    // ---- DS4: Markdown title panel must exist at y <= 200 (DQ-03/D-05/D-06) ----
+    var markdownIds = [];
+    for (var mi = 0; mi < vizIds.length; mi++) {
+        var mdVizId = vizIds[mi];
+        if (vizMap[mdVizId].type === 'splunk.markdown') {
+            markdownIds.push(mdVizId);
+        }
+    }
+
+    if (markdownIds.length === 0) {
+        emitFail('DS4', 'layout',
+            'dashboard has no splunk.markdown viz -- add a branded title panel at the top (DQ-03/D-05)',
+            { count: 0 }
+        );
+        violations++;
+    } else {
+        // Helper: check if any structure item for a markdown viz is at y <= 200
+        function hasTitleAtTop(structureArray, mdIds) {
+            if (!Array.isArray(structureArray)) { return false; }
+            for (var si = 0; si < structureArray.length; si++) {
+                var item = structureArray[si];
+                if (!item || !item.position) { continue; }
+                if (mdIds.indexOf(item.vizId) !== -1 && item.position.y <= 200) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        var foundTitleAtTop = false;
+        var layoutDefs = layout.layoutDefinitions;
+
+        if (layoutDefs && !Array.isArray(layoutDefs) && typeof layoutDefs === 'object') {
+            // Tabbed layout: check all layoutDefinition structure arrays
+            var defKeys = Object.keys(layoutDefs);
+            for (var di = 0; di < defKeys.length; di++) {
+                var defKey = defKeys[di];
+                var def = layoutDefs[defKey];
+                if (def && hasTitleAtTop(def.structure, markdownIds)) {
+                    foundTitleAtTop = true;
+                    break;
+                }
+            }
+        } else {
+            // Simple layout: check layout.structure
+            foundTitleAtTop = hasTitleAtTop(layout.structure, markdownIds);
+        }
+
+        if (!foundTitleAtTop) {
+            emitFail('DS4', 'layout',
+                'no splunk.markdown panel found in top 200px of canvas -- title panel must be at y <= 200 (DQ-03/D-06)',
+                { markdownIds: markdownIds }
+            );
+            violations++;
         }
     }
 
