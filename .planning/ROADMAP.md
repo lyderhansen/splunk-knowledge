@@ -36,7 +36,7 @@ Full details: `.planning/milestones/v4.1.0-ROADMAP.md`
 **Milestone Goal:** Fix every bug found in test29, fill missing settings gaps, give Claude more creative freedom in viz design, and make generated dashboards look professionally composed — not just panels dumped on a canvas.
 
 - [x] **Phase 10: Foundation Fixes** — Fix all confirmed test29 bugs: opt() two-path lookup, entrance-animation-off gauge stuck at zero, flashCritical LED pulse prominence, zone color wiring, hover toggle — completed 2026-05-18
-- [ ] **Phase 11: Blueprint Expansion & Creative Freedom** — Add missing settings (pagination, text placement, sparkline controls, flexible status values, cell label/header toggles); loosen KPI blueprint for brand-distinct tiles; improve drilldown field help text
+- [x] **Phase 11: Blueprint Expansion & Creative Freedom** — Add missing settings (pagination, text placement, sparkline controls, flexible status values, cell label/header toggles); loosen KPI blueprint for brand-distinct tiles; improve drilldown field help text — completed 2026-05-18
 - [ ] **Phase 12: Dashboard Composition** — Create dashboard-composition.md reference; establish branded background treatments, visual hierarchy, depth through card grouping, and story-first panel arrangement
 
 ## Phase Details
@@ -136,8 +136,8 @@ Plans:
   5. User reads the Drilldown Field formatter control and immediately understands what clicking a viz row will pass downstream — help text is unambiguous
 **Plans**: 2 plans
 Plans:
-- [ ] 11-01-PLAN.md — Expand viz-blueprints.md settings and creative freedom language
-- [ ] 11-02-PLAN.md — Add drilldown field template and comma-separated input pattern to formatter-patterns.md
+- [x] 11-01-PLAN.md — Expand viz-blueprints.md settings and creative freedom language
+- [x] 11-02-PLAN.md — Add drilldown field template and comma-separated input pattern to formatter-patterns.md
 **UI hint**: yes
 
 ### Phase 12: Dashboard Composition
@@ -151,8 +151,8 @@ Plans:
   4. A user reading a generated dashboard can identify the story from layout alone — the arrangement follows data narrative order (summary to detail, alert to root-cause, or KPI to trend)
 **Plans**: 2 plans
 Plans:
-- [ ] 11-01-PLAN.md — Expand viz-blueprints.md settings and creative freedom language
-- [ ] 11-02-PLAN.md — Add drilldown field template and comma-separated input pattern to formatter-patterns.md
+- [x] 11-01-PLAN.md — Expand viz-blueprints.md settings and creative freedom language
+- [x] 11-02-PLAN.md — Add drilldown field template and comma-separated input pattern to formatter-patterns.md
 **UI hint**: yes
 
 ## Progress
