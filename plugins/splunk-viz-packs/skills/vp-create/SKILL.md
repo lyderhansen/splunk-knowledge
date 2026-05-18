@@ -16,6 +16,8 @@ Task Progress:
 - [ ] Step 1: Build flat AMD bundles
 - [ ] Step 2: Validate all vizs
 - [ ] Step 3: Fix any failures
+- [ ] Step 3b: Generate assets (icons, previews, gradient background)
+- [ ] Step 3c: Generate dashboard with ALL vizs
 - [ ] Step 4: Package tarball
 - [ ] Step 5: Verify archive
 - [ ] Step 6: Report completion
@@ -60,6 +62,48 @@ Reads `shared/theme.js` for brand colors. Writes:
 - `appserver/static/images/bg_gradient.png` (1920x1080) — branded gradient background for dashboard composition
 
 If Node.js is unavailable, validation will report FAIL A01-A04 on missing/placeholder assets.
+
+## Step 3c: Generate dashboard with ALL vizs (MANDATORY)
+
+**STOP: Do NOT proceed to dashboard generation unless Step 2 (validate_viz.sh) exited with
+zero FAIL for ALL vizs. If any viz has outstanding FAIL codes, fix them first (Step 3),
+re-build (Step 1), and re-validate (Step 2) until clean.**
+
+MUST LOAD: `vp-design/references/dashboard-composition.md` before writing dashboard JSON.
+It contains background treatment options, visual hierarchy patterns, depth recipes, and a
+complete JSON skeleton.
+
+**Requirements:**
+
+1. **One panel per viz** — enumerate viz directories: `ls appserver/static/visualizations/`
+   Each directory is one viz panel. No viz may be omitted.
+2. **Panel viz type** — use `{app_id}.{viz_name}` format directly. NOT `"custom"` +
+   `customVizId`, NOT `"splunk.custom.{app_id}.{viz_name}"`.
+3. **Demo search** — each panel uses `| inputlookup {pack_id}_demo_{viz_name}.csv`
+   (matches the demo CSV created during vp-viz). NOT `| makeresults`.
+4. **Background** — use `bg_gradient.png` (generated in Step 3b) as `splunk.image` at z=0
+   in the structure array. Path: `/static/app/{app_id}/images/bg_gradient.png`.
+5. **Canvas size** — `"width": 1920, "height": 1080` minimum.
+
+**Output files:**
+- Dashboard JSON: `appserver/static/dashboards/{pack_id}_overview.json`
+- Dashboard XML wrapper: `default/data/ui/views/{pack_id}_overview.xml`
+
+XML wrapper format (Dashboard Studio v2):
+```xml
+<dashboard version="2" theme="dark">
+  <label>{Pack Display Name} Overview</label>
+  <definition><![CDATA[ { ... dashboard JSON here ... } ]]></definition>
+</dashboard>
+```
+
+**Panel count verification (DSB-02):** After writing the dashboard JSON, count viz
+directories in `appserver/static/visualizations/` and count panels with `{app_id}.*` type
+in the JSON. These two counts MUST be equal. If they differ, a viz was missed — add the
+missing panel before proceeding.
+
+**Nav bar update:** Set `default='true'` on `{pack_id}_overview` in
+`default/data/ui/nav/default.xml`.
 
 ## Step 4: Package
 
@@ -110,6 +154,7 @@ Viz pack ready for install
   Path: /full/absolute/path/to/{{PACK_ID}}.tar.gz
   Size: XX KB
   Vizs: viz1, viz2, viz3
+  Dashboard: {pack_id}_overview (contains all {N} vizs)
 
 Install: Upload via Splunk Web → Manage Apps → Install from File
 Restart: Required for static images to be served
@@ -140,5 +185,8 @@ Save to `default/data/ui/nav/default.xml`.
 - [ ] No src/ or node_modules/ in archive
 - [ ] No .DS_Store or ._* files
 - [ ] Nav bar exists (default.xml)
+- [ ] Dashboard exists (default/data/ui/views/{pack_id}_overview.xml present)
+- [ ] Dashboard references ALL vizs (panel count == viz directory count in appserver/static/visualizations/)
+- [ ] Nav bar default view set to dashboard ({pack_id}_overview)
 - [ ] Light theme tested (themeMode=light in formatter, verify text is readable)
 ```
