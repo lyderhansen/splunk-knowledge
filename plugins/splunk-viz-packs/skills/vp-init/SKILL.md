@@ -2,7 +2,7 @@
 name: vp-init
 description: "Starts a Splunk custom visualization pack build. Gathers app name, brand context, tone, font strategy, data source, viz inventory, then routes to the right workflow."
 when_to_use: "Use when starting a new viz pack from scratch. Triggers on 'new viz pack', 'start viz project', 'build splunk vizs', 'custom visualization app', 'themed viz suite'."
-disable-model-invocation: true
+disable-model-invocation: false
 arguments: [app-name, brand]
 argument-hint: "[app-name] [brand-description]"
 ---
