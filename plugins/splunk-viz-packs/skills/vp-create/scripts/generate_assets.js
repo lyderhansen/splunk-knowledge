@@ -14,6 +14,7 @@
  *   <app_dir>/static/appIcon.png      (36x36)  -- accent bg + white initial letter
  *   <app_dir>/static/appIcon_2x.png   (72x72)  -- same at 2x scale
  *   <app_dir>/appserver/static/visualizations/<viz>/preview.png (300x200 per viz)
+ *   <app_dir>/appserver/static/images/bg_gradient.png (1920x1080) -- branded gradient background
  *
  * theme.js is loaded via require() + getTheme('dark') -- no eval(), no regex parsing.
  * Zero external npm dependencies -- only built-in Node.js modules: fs, path, zlib.
@@ -114,8 +115,8 @@ function makePng(w, h, rgbRows) {
     }
 
     var rawData = Buffer.concat(scanlines);
-    // Use level 1 (fast) for larger images, level 0 (store) for small icons
-    // to guarantee file size > 500 bytes for correctness checks.
+    // level 0 (store, no compression) for small icons: guarantees output > 500 bytes even
+    // when a solid-color icon compresses to near-nothing. level 6 (default) for preview PNGs.
     var compressLevel = (w <= 72 && h <= 72) ? 0 : 6;
     var compressed = zlib.deflateSync(rawData, { level: compressLevel });
 
@@ -136,6 +137,43 @@ function makeRgbRows(w, h, r, g, b) {
     for (var y = 0; y < h; y++) {
         var row = [];
         for (var x = 0; x < w; x++) {
+            row.push(r, g, b);
+        }
+        rows.push(row);
+    }
+    return rows;
+}
+
+/*
+ * makeGradientRows(w, h, topLeftRgb, bottomRightRgb, accentRgb, accentCx, accentCy, accentR):
+ * Create a pixel grid with a diagonal gradient from topLeftRgb to bottomRightRgb,
+ * plus a radial accent glow overlay centered at (accentCx, accentCy) with radius accentR.
+ * The glow blends toward accentRgb at max 8% using quadratic falloff.
+ * Returns array of h arrays, each w*3 bytes (same format as makeRgbRows).
+ */
+function makeGradientRows(w, h, topLeftRgb, bottomRightRgb, accentRgb, accentCx, accentCy, accentR) {
+    var rows = [];
+    for (var y = 0; y < h; y++) {
+        var row = [];
+        var ty = y / (h - 1); // 0..1 vertical progress
+        for (var x = 0; x < w; x++) {
+            var tx = x / (w - 1); // 0..1 horizontal progress
+            // Diagonal linear interpolation: top-left to bottom-right
+            var t = (tx + ty) / 2;
+            var r = Math.round(topLeftRgb[0] + (bottomRightRgb[0] - topLeftRgb[0]) * t);
+            var g = Math.round(topLeftRgb[1] + (bottomRightRgb[1] - topLeftRgb[1]) * t);
+            var b = Math.round(topLeftRgb[2] + (bottomRightRgb[2] - topLeftRgb[2]) * t);
+            // Radial accent glow overlay: quadratic falloff, max 8% blend
+            var dx = x - accentCx;
+            var dy = y - accentCy;
+            var dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < accentR) {
+                var glow = 1 - (dist / accentR);
+                glow = glow * glow * 0.08;
+                r = Math.round(r + (accentRgb[0] - r) * glow);
+                g = Math.round(g + (accentRgb[1] - g) * glow);
+                b = Math.round(b + (accentRgb[2] - b) * glow);
+            }
             row.push(r, g, b);
         }
         rows.push(row);
@@ -413,7 +451,6 @@ function drawProgressSilhouette(rows, ar, ag, ab, bgr, bgg, bgb) {
     var barH    = 22;
     var maxW    = 240;
     var fills   = [0.82, 0.57, 0.95, 0.43];
-    var labelW  = [50, 50, 50, 50];
     for (var i = 0; i < 4; i++) {
         // Track (dim background behind bar)
         fillRect(rows, 50, barY[i], maxW, barH, ar, ag, ab);
@@ -523,6 +560,46 @@ function generatePreviews(appDir, dark) {
     }
 }
 
+/*
+ * generateGradientBg(appDir, dark):
+ * Creates appserver/static/images/bg_gradient.png (1920x1080).
+ * Gradient: diagonal from dark.bg (top-left) to dark.panel (bottom-right, 60% blend),
+ * with a radial accent glow from dark.accent at 30% left / 20% top, radius 600px.
+ * If dark.panel is not available, falls back to dark.bg (solid color, no gradient).
+ */
+function generateGradientBg(appDir, dark) {
+    var W = 1920, H = 1080;
+    var bgRgb = hexToRgb(dark.bg);
+
+    var bottomRightRgb;
+    if (dark.panel && isHex(dark.panel)) {
+        var panelRgb = hexToRgb(dark.panel);
+        bottomRightRgb = [
+            Math.round(bgRgb[0] + (panelRgb[0] - bgRgb[0]) * 0.6),
+            Math.round(bgRgb[1] + (panelRgb[1] - bgRgb[1]) * 0.6),
+            Math.round(bgRgb[2] + (panelRgb[2] - bgRgb[2]) * 0.6)
+        ];
+    } else {
+        // Fallback: no gradient endpoint -- solid color
+        bottomRightRgb = [bgRgb[0], bgRgb[1], bgRgb[2]];
+    }
+
+    var accentRgb = hexToRgb(dark.accent);
+    var accentCx = Math.round(W * 0.3);  // 30% from left (hero zone)
+    var accentCy = Math.round(H * 0.2);  // 20% from top
+    var accentR = 600;                    // large radius for subtle ambient glow
+
+    var rows = makeGradientRows(W, H, bgRgb, bottomRightRgb, accentRgb, accentCx, accentCy, accentR);
+    var pngBuf = makePng(W, H, rows);
+
+    var imagesDir = path.join(appDir, 'appserver', 'static', 'images');
+    fs.mkdirSync(imagesDir, { recursive: true });
+
+    var outPath = path.join(imagesDir, 'bg_gradient.png');
+    fs.writeFileSync(outPath, pngBuf);
+    process.stdout.write('  wrote: ' + outPath + '\n');
+}
+
 // ---- Main ----
 
 function main() {
@@ -568,6 +645,13 @@ function main() {
         generatePreviews(appDir, dark);
     } catch (e) {
         process.stderr.write('Error generating previews: ' + String(e) + '\n');
+        errors++;
+    }
+
+    try {
+        generateGradientBg(appDir, dark);
+    } catch (e) {
+        process.stderr.write('Error generating gradient background: ' + String(e) + '\n');
         errors++;
     }
 

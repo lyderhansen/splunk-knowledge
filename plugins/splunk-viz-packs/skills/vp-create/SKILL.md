@@ -57,6 +57,7 @@ node ${CLAUDE_SKILL_DIR}/scripts/generate_assets.js /path/to/app
 Reads `shared/theme.js` for brand colors. Writes:
 - `static/appIcon.png` (36x36) and `static/appIcon_2x.png` (72x72) — accent color background + white initial letter
 - `appserver/static/visualizations/<viz>/preview.png` (300x200) per viz — brand-colored silhouette per viz type
+- `appserver/static/images/bg_gradient.png` (1920x1080) — branded gradient background for dashboard composition
 
 If Node.js is unavailable, validation will report FAIL A01-A04 on missing/placeholder assets.
 
@@ -131,6 +132,7 @@ Save to `default/data/ui/nav/default.xml`.
 - [ ] validate_viz.sh passed (zero FAIL)
 - [ ] App icons generated (step 3b — run generate_assets.js; static/appIcon.png exists, 36x36, >100 bytes)
 - [ ] Preview.png generated per viz (step 3b — run generate_assets.js; each viz dir has preview.png at 300x200, >500 bytes)
+- [ ] Gradient background generated (step 3b — run generate_assets.js; appserver/static/images/bg_gradient.png exists, 1920x1080, > 1000 bytes)
 - [ ] Tarball > 1KB
 - [ ] No nested .tar.gz in archive
 - [ ] Top-level dir matches app name
