@@ -134,8 +134,12 @@ this._entranceDone = false;
 this._animating = false;
 
 // In updateView:
-if (prefersReducedMotion()) { this._entranceDone = true; }
+if (prefersReducedMotion()) { this._entranceDone = true; this._entranceProgress = 1; }
 var showEntrance = opt('showEntrance', 'true') === 'true';
+if (!showEntrance) {
+    this._entranceDone = true;
+    this._entranceProgress = 1;  // CRITICAL: render final state, not zero
+}
 if (showEntrance && !this._entranceDone) { this._startEntrance(config, ns); }
 
 _startEntrance: function(config, ns) {
@@ -196,7 +200,7 @@ _startPulse: function(cadenceMs) {
         if (!self._pulsing) { return; }
         if (!startTime) { startTime = timestamp; }
         var phase = ((timestamp - startTime) % cadenceMs) / cadenceMs;
-        self._pulseBlur = 4 + 8 * (0.5 + 0.5 * Math.sin(phase * Math.PI * 2));
+        self._pulseBlur = 8 + 16 * (0.5 + 0.5 * Math.sin(phase * Math.PI * 2));
         self.invalidateUpdateView();
         requestAnimationFrame(pulse);
     }
@@ -212,8 +216,16 @@ this._pulsing = false;
 **Apply in _render** — MUST use ctx.save()/ctx.restore() per ECR-05:
 
 ```javascript
-function drawPulsingIndicator(ctx, x, y, r, color, blurAmount) {
+function drawPulsingIndicator(ctx, x, y, r, color, blurAmount, innerAlpha) {
     ctx.save();
+    // Solid inner fill — visible at any panel size and on light theme (D-06)
+    if (innerAlpha > 0) {
+        ctx.fillStyle = theme.withAlpha(color, innerAlpha);
+        ctx.beginPath();
+        ctx.arc(x, y, r * 1.8, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    // Shadow glow pulse
     ctx.shadowColor = color;
     ctx.shadowBlur = blurAmount || 0;
     ctx.fillStyle = color;
@@ -222,6 +234,13 @@ function drawPulsingIndicator(ctx, x, y, r, color, blurAmount) {
     ctx.fill();
     ctx.restore();
 }
+```
+
+**Usage in _render — innerAlpha calculation:**
+
+```javascript
+var innerAlpha = 0.15 + 0.15 * Math.sin(phase * Math.PI * 2);
+drawPulsingIndicator(ctx, x, y, r, accentColor, this._pulseBlur, innerAlpha);
 ```
 
 **In updateView — severity check before starting pulse:**
@@ -357,6 +376,7 @@ function prefersReducedMotion() {
 // In updateView — before any _start calls:
 if (prefersReducedMotion()) {
     this._entranceDone = true;
+    this._entranceProgress = 1;
     this._stopPulse();
 }
 ```
