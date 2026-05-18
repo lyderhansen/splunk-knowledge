@@ -1,8 +1,8 @@
-# Domain Pitfalls: v5.1.0 Viz Hardening & Dashboard Wow-Factor
+# Domain Pitfalls: v5.2.0 Smart Vizs & Domain Identity
 
-**Domain:** Splunk custom visualizations (Canvas 2D, AMD, ES5) — adding formatter wiring fixes, new controls, animation toggle fixes, blueprint loosening, and unique preview.png generation to an existing system
+**Domain:** Splunk custom visualizations (Canvas 2D, AMD, ES5) — adding auto-field discovery, domain-specific creative viz types, accent-as-highlight architecture, and mandatory dashboard generation to an existing system
 **Researched:** 2026-05-18
-**Confidence:** HIGH — drawn from real bugs in tests 21-28 (HANDOVER.md), 23 B-series rules (broken-rules.md), 12 F-series rules (fatal-rules.md), animation-recipes.md, formatter-patterns.md, edge-cases.md, and v5.1.0 milestone goal analysis
+**Confidence:** HIGH — drawn from existing rule corpus (broken-rules.md, fatal-rules.md, edge-cases.md ECR-01 through ECR-07), test session HANDOVERs (test21-28), vp-viz SKILL.md template analysis, vp-design principles, and v5.2.0 milestone goal list in PROJECT.md
 
 ---
 
@@ -12,130 +12,216 @@ Mistakes that cause rewrites, silent renders, or complete feature failure.
 
 ---
 
-### CP-01: opt() misses short-key delivery path — new formatter controls silently ignored
+### CP-01: Auto-field discovery — hardcoded colIdx fallback still present after discovery refactor
 
-**What goes wrong:** A newly wired formatter control (`showZoneColor`, `pagination`, `flashCritical`) works when changed in the Format panel but has zero effect when set in dashboard JSON `"options"`, or vice versa.
+**What goes wrong:** A viz appears to work with dynamic field discovery, but when run against a different SPL search that returns different column order, the wrong field is plotted. The bug is invisible during development because test data always has the same column order.
 
-**Why it happens:** Splunk delivers config values via two distinct paths:
-- Dashboard JSON `"options"` block: full-namespaced keys — `"myapp.myviz.showZoneColor": "true"`
-- Format panel user changes: short keys — `"showZoneColor": "true"` (no namespace prefix)
-
-The `opt()` shorthand in the SKILL.md viz template only checks `config[ns + key]`. New controls wired using this shorthand miss the short-key path. The bug is invisible if you only test one path.
-
-**Root cause confirmed:** broken-rules.md B3: "Formatter settings ignored after first load — Config reads miss short-key path."
-
-**Prevention:** Every new formatter control read MUST use the two-path `getOption` pattern from formatter-patterns.md:
+**Why it happens:** The existing `formatData` pattern builds `colIdx` dynamically from `data.fields`:
 ```javascript
-function getOption(config, ns, key, defaultValue) {
-    var v = config[ns + key];
-    if (v !== undefined && v !== null) return v;
-    v = config[key];
-    if (v !== undefined && v !== null) return v;
-    return defaultValue;
+var colIdx = {};
+for (var i = 0; i < fields.length; i++) {
+    colIdx[fields[i].name] = i;
 }
 ```
-The inline `opt()` in vp-viz SKILL.md template is a convenience shorthand — it does NOT check both paths. For v5.1.0 wiring fixes, use `getOption` or verify the template `opt()` has been updated to check both paths.
+But then the `updateView` code reads a specific field by hardcoded string: `row[colIdx['value']]`. When refactoring to auto-discovery, the developer changes the colIdx build loop to be dynamic but leaves the specific field reads unchanged — or vice versa. The two halves become inconsistent.
 
-**Detection:** Test each new control (a) in dashboard JSON `"options"` and (b) in the Format panel — both paths must produce the expected visual change. If it works in one but not the other, the two-path pattern is missing.
+**Consequence:** Numeric fields plot with wrong values. String fields show `undefined` or `"null"`. The viz renders without errors (no crash), making the bug invisible in automated tests.
 
-**Phase:** Formatter wiring fixes phase — applies to every control being fixed or added.
+**Prevention:** Auto-field discovery must be fully consistent across three points:
+1. `formatData` — builds `colIdx` from `data.fields` (already dynamic in the template)
+2. `updateView` / formatter — `valueField` option reads the configured field name from formatter
+3. Row read — `row[colIdx[valueField]]` uses the dynamic name, never a hardcoded string
+
+The correct pattern:
+```javascript
+// In updateView — formatter-driven, never hardcoded
+var valueField = opt('valueField', data.fields[1] ? data.fields[1].name : 'value');
+var labelField = opt('labelField', data.fields[0] ? data.fields[0].name : '_time');
+
+// Row read — dynamic key, not hardcoded 'value' or 'label'
+var val = safeNum(row[data.colIdx[valueField]], 0);
+var lbl = safeStr(row[data.colIdx[labelField]]);
+```
+
+**Phase:** Auto-field discovery phase — applies to every viz refactored for dynamic field names.
 
 ---
 
-### CP-02: Animation entrance off-path leaves `_entranceProgress` at 0 — gauge stuck at zero
+### CP-02: Auto-field discovery — default field name falls back to wrong column when formatter is empty
 
-**What goes wrong:** Setting `showEntrance=false` in formatter makes the gauge render at 0 (or blank) instead of the actual data value. Disabling the animation appears to break the viz.
+**What goes wrong:** When no formatter configuration has been set (fresh viz install, `config` is empty), `opt('valueField', '')` returns `''`. Then `row[colIdx['']]` is `undefined`, `safeNum(undefined, 0)` returns `0`. Every row plots as zero. The viz renders a zero-bar chart or flat gauge with no error.
 
-**Why it happens:** The animation system sets `this._entranceProgress = 0` in `initialize()`. The rAF loop drives it from 0 to 1 during the entrance. The draw code multiplies arc angles (or bar heights) by `_entranceProgress`. When `showEntrance=false`, the rAF never starts — so `_entranceProgress` stays at 0 forever. The viz renders a gauge arc of 0 degrees.
+**Why it happens:** The formatter default value in `opt()` is an empty string, not a real field name. An empty colIdx key always returns `undefined` in JavaScript.
 
-**This is the specific bug named in the v5.1.0 milestone goal: "Fix entrance-animation-off breaks gauge rendering (stuck at 0)."**
+**Prevention:** Use a data-driven fallback that picks the first numeric column when no formatter value is set:
 
-The animation-recipes.md `rAF entrance pattern` shows the `if (showEntrance && !_entranceDone)` start path but does NOT show the else branch. The else branch must be made explicit.
-
-**Prevention:** When `showEntrance=false`, immediately set `this._entranceDone = true` AND `this._entranceProgress = 1` in `updateView` BEFORE any drawing:
 ```javascript
-if (prefersReducedMotion()) { this._entranceDone = true; }
-var showEntrance = opt('showEntrance', 'true') === 'true';
-if (!showEntrance) {
-    this._entranceDone = true;
-    this._entranceProgress = 1;  // REQUIRED: render final state, not zero state
+// Pick the first numeric field as default (scan first row)
+function firstNumericField(data) {
+    if (!data || !data.fields || !data.rows || !data.rows[0]) return null;
+    for (var i = 0; i < data.fields.length; i++) {
+        if (!isNaN(parseFloat(data.rows[0][i]))) return data.fields[i].name;
+    }
+    return data.fields[data.fields.length > 1 ? 1 : 0].name; // last fallback
 }
-// Only start entrance if not yet done AND enabled
-if (showEntrance && !this._entranceDone) { this._startEntrance(config, ns); }
+
+var valueField = opt('valueField', '') || firstNumericField(data) || 'value';
 ```
 
-**Detection:** Set `showEntrance=false` in formatter, reload panel. Viz MUST show actual data immediately. Grep for every use of `_entranceProgress` as a draw multiplier — each must be reachable with value 1 on the off-path.
+The `|| firstNumericField(data)` chain only runs if the formatter value is empty. This ensures the viz renders meaningful data by default even before the user has configured it.
 
-**Phase:** Animation toggle fixes phase — every viz with entrance animation needs this audit.
+**Detection:** Open a fresh viz with no formatter settings configured. Plot any multi-column SPL search. Bars/gauges must show the actual first numeric column — not all zeros.
+
+**Phase:** Auto-field discovery phase.
 
 ---
 
-### CP-03: Color picker reads missing hexFromSplunk — zone/hover colors ignored or wrong
+### CP-03: Auto-field discovery — _time field treated as a numeric series
 
-**What goes wrong:** New zone color controls (`detractorColor`, `passiveColor`, `promoterColor`) or hover color controls are wired in the formatter but produce wrong colors in the viz. The color picker shows the right swatch but the viz uses a garbled color or the theme default.
+**What goes wrong:** A viz configured to auto-discover numeric fields picks `_time` as a data series and plots epoch timestamps (e.g., `1716000000`) as bar heights or gauge values. The viz renders enormous values that overflow the chart or produce a full gauge on every row.
 
-**Why it happens:** Splunk delivers `<splunk-color-picker>` values as integers, not hex strings. The value `#0077B6` is delivered as `30646` (decimal). Reading it with `config[ns + 'detractorColor']` returns `"30646"`. Using this directly as `ctx.fillStyle` renders black (invalid color string). The fix — `hexFromSplunk(val, fallback)` — converts Splunk integer format to hex.
+**Why it happens:** `_time` in Splunk result sets is returned as a Unix epoch integer. `parseFloat("1716000000")` succeeds, so the `firstNumericField` scan includes it as a valid numeric field. Epoch timestamps are valid numbers but not meaningful data values.
 
-**Root cause confirmed:** broken-rules.md B22: "Color picker value ignored (reads as integer)."
+**Prevention:** Exclude `_time` and any field beginning with `_` (Splunk internal fields) from the auto-discovery scan:
 
-**Prevention:** Every `<splunk-color-picker>` control read MUST use `hexFromSplunk`:
 ```javascript
-var zoneColor = hexFromSplunk(opt('detractorColor', ''), t.error);
+function firstNumericField(data) {
+    if (!data || !data.fields || !data.rows || !data.rows[0]) return null;
+    for (var i = 0; i < data.fields.length; i++) {
+        var fname = data.fields[i].name;
+        if (fname.charAt(0) === '_') continue; // skip _time, _raw, _key, etc.
+        if (!isNaN(parseFloat(data.rows[0][i]))) return fname;
+    }
+    return null;
+}
 ```
-Never use `opt('detractorColor', '#FF0000')` directly as a color value. The B22 rule is the most commonly missed for any NEW color control added to an existing viz.
 
-**Detection:** In ad-hoc search mode, open Format panel, change a color picker value, observe the viz. If the color does not change to the selected value, `hexFromSplunk` is missing. The symptom can be subtle — Splunk integers that happen to produce valid (but wrong) hex colors.
+**Detection:** Run a viz against a SPL search that returns `_time` + numeric fields. The auto-selected field must NOT be `_time`. Epoch values in the range 1.7e9 are the symptom — any gauge that immediately pegs at 100% after fresh install is likely plotting `_time`.
 
-**Phase:** Formatter wiring fixes phase. Any phase adding color controls. Also applies when adding zone color controls to Ring Gauge per viz-blueprints.md.
+**Phase:** Auto-field discovery phase. Also applies to multi-series discovery.
 
 ---
 
-### CP-04: flashCritical LED pulse never stops when severity clears
+### CP-04: Auto-field discovery — mixed string/numeric fields make series-color assignment non-deterministic
 
-**What goes wrong:** Data updates and removes all critical rows, but the LED pulse animation continues indefinitely. The formatter `flashCritical` toggle cannot stop a pulse that started from real data.
+**What goes wrong:** A multi-series viz (spark strip, line chart) auto-discovers numeric columns and assigns series colors by column index. On one data shape it renders with blue/orange/green. On a slightly different SPL result (one fewer column, or columns in different order), it renders with orange/green — the color mapping shifts and the legend becomes wrong.
 
-**Why it happens:** The `_startPulse()` / `_stopPulse()` pattern from animation-recipes.md requires the severity check to run unconditionally on EVERY `updateView` call. If the check is inside a conditional block (e.g., `if (!this._entranceDone)`, or `if (data !== this._lastData)`), `_stopPulse()` is never called when severity drops.
+**Why it happens:** When numeric columns are discovered dynamically by scanning `data.fields`, the column order changes if SPL results change. Series color assignment by loop index `seriesColors[i % seriesColors.length]` produces a stable visual only when field order is stable. Ad-hoc search results have non-deterministic column order.
 
-**Prevention:** The severity check and the start/stop decision MUST be unconditional in `updateView`:
+**Prevention:** For multi-series vizs, assign colors by field name hash, not loop index:
+
 ```javascript
-// REQUIRED: runs on EVERY updateView, not inside any conditional
-var flashCritical = opt('flashCritical', 'false') === 'true';
-var hasCritical = false;
-for (var i = 0; i < data.rows.length; i++) {
-    var sev = safeStr(data.rows[i][severityIdx]).toLowerCase();
-    if (sev === 'critical' || sev === 'error') { hasCritical = true; break; }
-}
-if (flashCritical && hasCritical && !prefersReducedMotion()) {
-    this._startPulse(700);
-} else {
-    this._stopPulse();  // explicitly stops when condition no longer met
+function colorForField(fieldName, palette) {
+    var hash = 0;
+    for (var i = 0; i < fieldName.length; i++) {
+        hash = (hash * 31 + fieldName.charCodeAt(i)) & 0x7fffffff;
+    }
+    return palette[hash % palette.length];
 }
 ```
-`_startPulse` has `if (this._pulsing) { return; }` to prevent double-loop. The issue is that `_stopPulse` is never reached, not that `_startPulse` runs twice.
 
-**Detection:** Feed data with critical rows, observe pulse starts. Then update data to remove critical rows. Pulse must stop on the next `updateView`. If pulse continues, the stop path is inside a conditional.
+This ensures the same field always maps to the same color regardless of column discovery order. Update the legend to use field-name-to-color lookup, not positional lookup.
 
-**Phase:** Animation toggle fixes phase. Also applies to any new "critical indicator" feature in v5.1.0.
+**Detection:** Run the viz. Note color assignments. Change the SPL search to return the same fields in different order (swap two columns). Colors must remain consistent.
+
+**Phase:** Auto-field discovery phase — multi-series vizs only.
 
 ---
 
-### CP-05: Blueprint loosening produces formatter controls with no visual effect — passes D08 but does nothing
+### CP-05: Accent-as-highlight migration — DPR-03 gradient fills broken when accent removed from data elements
 
-**What goes wrong:** When viz-blueprints.md is made less prescriptive (KPI creative freedom), Claude generates novel formatter controls (e.g. `showMetricRing`, `labelPosition`) that pass D08 bidirectional wiring check but have zero visual effect. The `opt()` read exists; the variable is never passed to a draw call.
+**What goes wrong:** Changing from "accent everywhere" to "series colors for data, accent only for highlights" leaves DPR-03 (gradient fills on all data elements) broken. DPR-03 uses `t.accent` as the gradient start color. After the migration, data elements are supposed to use series colors — but if the gradient code still uses `t.accent`, bars/arcs look branded instead of data-colored, undermining the whole change.
 
-**Why it happens:** D08 (check_design.js) validates that formatter key strings appear somewhere in viz source — it cannot verify the variable is used on an active code path. When Claude invents a new control during blueprint loosening, it sometimes writes the `opt()` read but forgets to use the variable in the render code. The LLM treats "I read the setting" as equivalent to "I implemented the setting."
+**Why it happens:** DPR-03's minimum implementation in design-principles.md says:
+```javascript
+var grad = ctx.createLinearGradient(x, y, x, y + barH);
+grad.addColorStop(0, t.accent);
+grad.addColorStop(1, withAlpha(t.accent, 0.5));
+```
+This uses accent as both gradient stops. Migrating to accent-as-highlight requires updating gradient generation to use series colors as the primary color, with accent reserved for hover/selected state only. The DPR-03 template is the wrong starting point after this migration.
 
-**Prevention:**
-- Every `opt()` read for a new control must appear within visual proximity of the draw code it controls. A comment stating what the control affects is mandatory:
-  ```javascript
-  // labelPosition: 'top'/'center'/'bottom' — sets textY offset in _drawValue
-  var labelPosition = opt('labelPosition', 'center');
-  ```
-- After writing any new control, trace the variable: `opt() → variable → if/switch → affects ctx.*` — the chain must be complete. If the variable appears only in the `opt()` read, the wiring is incomplete.
+**Prevention:** After the accent-architecture change, DPR-03 gradient code for data elements must use the series color, not `t.accent`:
+```javascript
+var seriesColor = getSeriesColor(seriesIndex, t);  // NOT t.accent
+var grad = ctx.createLinearGradient(x, y, x, y + barH);
+grad.addColorStop(0, seriesColor);
+grad.addColorStop(1, withAlpha(seriesColor, 0.5));
+ctx.fillStyle = grad;
+```
+Accent is then used only for: hover highlight overlay, selected row/segment, threshold breach indicator, UI control fills.
 
-**Detection:** Open Format panel, change the new control, observe render. If nothing changes, the opt() read is a dead variable. This cannot be caught by automated tools.
+**Detection:** A multi-series bar chart in the migrated system must show different colors for different series. If all bars are the same accent color, the migration has a gap. grep for `t.accent` inside gradient `addColorStop` calls on data rendering paths — any found are candidates for review.
 
-**Phase:** Any phase that modifies viz-blueprints.md or loosens KPI/gauge creative constraints.
+**Phase:** Accent separation phase — any viz being migrated from accent-as-data to series-colors-for-data.
+
+---
+
+### CP-06: Accent-as-highlight — accentIntensity now controls highlight opacity, not data fill intensity, but formula not updated
+
+**What goes wrong:** After the accent migration, hover highlights and selected-row fills appear at fixed full intensity regardless of the `accentIntensity` formatter setting. Or worse, the intensity control was controlling data fill depth before the migration and now controls nothing (dead formatter key — see v5.1.0 CP-05).
+
+**Why it happens:** The v5.0.0 `accentIntensity` formula (`gi = parseFloat(opt('accentIntensity', '50')) / 100`) was designed to control glow and shadowBlur on data fills. After migrating accent to "highlights only," the meaning shifts: `gi` should now control the overlay alpha of hover highlights and selected states, not the data fill depth. The formula still computes correctly, but the call sites must be updated to use `gi` in the right context.
+
+**Prevention:** After migration, audit every use of `gi` in the viz:
+- Old use: `withAlpha(t.accent, gi)` applied to bar fills, arc fills, panel backgrounds — REMOVE these
+- New use: `withAlpha(t.accent, gi)` applied to hover overlays, selected-row fills, threshold breach indicators — KEEP these
+- The `accentIntensity` formatter label should also be updated to communicate its new meaning: "Highlight intensity" not "Accent intensity"
+
+**Phase:** Accent separation phase.
+
+---
+
+### CP-07: Domain-first ideation produces viz types with Canvas 2D rendering that is unboundedly complex
+
+**What goes wrong:** vp-design proposes a creative domain-specific viz (e.g., "topology map with force-directed node layout" for NOC, "track map with animated position markers" for F1, "MITRE ATT&CK heat matrix with drill-in" for SOC). Claude attempts to implement it in Canvas 2D ES5. The resulting code is 600+ lines with recursive layout algorithms, collision detection, or physics simulation — it cannot fit in one context, breaks the 500-line SKILL.md rule, and fails 3+ validate_viz.sh checks on the first build.
+
+**Why it happens:** The novelty scoring system (viz-novelty-scores.md) rewards high-novelty types like "Sankey/flow diagram," "topology map," and "geospatial grid" with scores of 4-5. These scores encourage Claude to propose and attempt them. But Canvas 2D ES5 rendering complexity is not capped by the scoring system. The jump from "propose it" to "implement it" reveals that some score-5 types require algorithmic complexity that exceeds what can be reliably generated in one pass.
+
+**Consequences:** First-build failure, multi-session repair loops, code that passes linting but produces wrong visual output.
+
+**Prevention:** Domain-specific creative types must pass a Canvas 2D complexity gate before being added to the inventory:
+
+| Complexity tier | Characteristics | Decision |
+|---|---|---|
+| Renderable | Iterates rows, draws primitives (rect, arc, line, text) | Proceed |
+| Stretched | Requires coordinate transform math or state machine | Proceed with caution — keep under 200 lines of draw code |
+| Overambitious | Requires graph layout, physics, or recursive algorithms | Reject or simplify to a proxy viz |
+
+Proxy patterns for over-ambitious types:
+- Topology map → Status health grid with "hop count" encoded as cell size
+- Force-directed graph → Node list with connection count as a bar, not spatial layout
+- Sankey flow → Horizontal bar list with flow amounts as widths (no crossing logic)
+- Geospatial grid → Regional heatmap with fixed rows/columns (no actual geo projection)
+
+The proxy pattern produces a viz that communicates the same insight with Canvas 2D primitives that fit within one generation pass.
+
+**Detection warning sign:** If the viz design brief includes words like "layout algorithm," "force-directed," "physics simulation," "recursive," or "projection" — treat as overambitious and apply a proxy pattern immediately.
+
+**Phase:** Domain viz ideation phase (vp-design). Also vp-viz step 2 (formatData) — abort if generating layout algorithm code.
+
+---
+
+### CP-08: Mandatory dashboard — dashboard JSON references vizs that failed to build
+
+**What goes wrong:** vp-create generates the dashboard JSON as part of the mandatory dashboard step. One of the vizs failed validation and was not packaged. The dashboard references that viz by `{app_id}.{failed_viz_name}`. The dashboard installs but shows an empty panel or a "visualization not found" error for that panel.
+
+**Why it happens:** The mandatory dashboard generation step runs after packaging. If vp-create's validation step is skipped or a failure was suppressed (e.g., "close enough, move on"), the viz is absent from the packaged tarball but the dashboard JSON still references it.
+
+**Consequences:** The dashboard cannot be fully demonstrated. The missing panel looks like a broken build even if the other vizs are perfect.
+
+**Prevention:** The mandatory dashboard generation step MUST be gated on a clean `validate_viz.sh` exit. The checklist in vp-create must include:
+
+```
+- [ ] ALL vizs passed validate_viz.sh (zero FAIL) before dashboard JSON is written
+- [ ] Dashboard viz type references match the exact viz names in appserver/static/visualizations/
+- [ ] verify: tar tzf app.tar.gz | grep "visualization.js" — count must match viz count in dashboard
+```
+
+The dashboard JSON must only reference vizs that are confirmed present in the tarball. If a viz failed and was excluded, that panel must be removed from the dashboard before shipping.
+
+**Detection:** After packaging, run: `tar tzf app.tar.gz | grep visualization.js | wc -l` and compare the count to the number of panels in the dashboard JSON that use `{app_id}.*` viz types. A mismatch means a referenced viz is missing.
+
+**Phase:** Mandatory dashboard phase.
 
 ---
 
@@ -143,112 +229,77 @@ if (flashCritical && hasCritical && !prefersReducedMotion()) {
 
 ---
 
-### MP-01: Identical preview.png across vizs in a pack — picker becomes useless
+### MP-01: Auto-field discovery — formatter `valueField` default doesn't match the demo CSV column name
 
-**What goes wrong:** All vizs in a generated pack have preview.png files that look identical — same color block, same stripe pattern, no shape distinction. The Splunk custom viz picker cannot be used to identify which viz is which.
+**What goes wrong:** The viz auto-discovers fields from live SPL data and works correctly. But when the user opens it in ad-hoc search mode using the bundled demo CSV (`| inputlookup pack_demo.csv`), the chart shows all zeros because the demo CSV column is named `count` and the formatter default is `value`.
 
-**Why it happens:** The v4.1.0 `generate_assets.js` generates brand-colored 300x200 rectangles with accent stripes for variety. Stripes are not shape-distinct. A gauge preview and a table preview look the same if both are "dark rectangle with orange diagonal stripe."
+**Why it happens:** Auto-field discovery falls back to the formatter `valueField` default. The demo CSV was written with column names that made sense for the original hardcoded field design. After migrating to auto-discovery, the demo CSV column names and the formatter defaults become misaligned.
 
-**This is a named v5.1.0 milestone goal: "Generate unique preview.png per viz (no duplicates)."**
+**Prevention:** When updating a viz for auto-discovery, also update the demo CSV column names to match the formatter defaults, or update the formatter defaults to match the demo CSV. These two must be consistent. Rule: the formatter `valueField` default string must be a column name that exists in the demo CSV.
 
-**Prevention:** Each preview.png must render a Canvas 2D silhouette recognizable as the viz type:
-- Gauge: arc shape in accent color
-- Bar chart: 3-5 vertical columns of varying height
-- Table: horizontal lines suggesting rows and header
-- KPI: large centered text block
-- Status grid: dot matrix arrangement
-
-The silhouette does not need real data. Use brand accent color on dark background. Minimum: two vizs in the same pack must not look like the same image.
-
-**Detection:** Load all generated preview.png files side by side. Any two that are visually indistinguishable (same composition, only hue shifted) fail this requirement.
-
-**Phase:** Preview.png phase. Also check generate_assets.js does not share a single template for all viz types.
+**Phase:** Auto-field discovery phase. Also demo data update phase.
 
 ---
 
-### MP-02: Dashboard absolute positioning breaks at non-1920 screen widths
+### MP-02: Accent-as-highlight — hover overlay alpha too low against series colors with high saturation
 
-**What goes wrong:** Generated dashboard JSON uses absolute `x`, `y`, `w`, `h` values designed for 1920x1080. At 1280px browser width, right-side panels fall off-canvas. At 4K, panels cluster in a small corner.
+**What goes wrong:** After migrating to series colors for data fills, the hover highlight (now using `withAlpha(t.accent, gi)` as an overlay) is barely visible when the series color under it is highly saturated. A hover over a bright-orange bar with a bright-blue accent at 0.2 alpha looks like nothing changed.
 
-**Why it happens:** Dashboard Studio v2 JSON uses absolute pixel coordinates. The 1920x1080 canvas minimum is enforced by the SKILL.md pre-code checklist, which prevents undersized canvases — but does not prevent panels placed at coordinates outside the visible region at other resolutions.
+**Why it happens:** The hover overlay was designed to sit on top of a neutral-tinted panel background (dark grey). When the underlying element is a fully saturated series color, the contrast between the series color and the accent overlay is reduced — the accent "washes out" against the saturated base.
 
-**Consequences:** Dashboard composition work ("story, depth, background, professional layout") looks broken on screens that are not exactly 1920px wide. The most common test machine — a MacBook at 1440px — will show obvious layout failures for panels near the right edge.
+**Prevention:** Increase the baseline hover alpha for the series-colors context. The previous hover alpha range (0.08-0.15, from CON-04) was designed for neutral backgrounds. For series-colored elements, use a higher range:
+```javascript
+// Over neutral panels: gi * 0.15
+// Over series-colored elements: gi * 0.30 minimum
+var hoverAlpha = Math.max(0.18, theme.getHoverAlpha() * gi);
+```
+Alternatively, use a blend-mode trick: draw the hover overlay in white (not accent) at lower alpha for maximum contrast against any underlying color.
+
+**Phase:** Accent separation phase — any viz with hover-on-series-color elements.
+
+---
+
+### MP-03: Domain creative viz — domain template name used directly as the Splunk viz name
+
+**What goes wrong:** domain-templates.md lists viz names like `topology_map`, `attack_flow`, `tyre_compound`, `patient_flow`. A new viz pack uses one of these names verbatim as the viz directory name (e.g., `appserver/static/visualizations/attack_flow/`). A second pack for a different brand also uses `attack_flow`. They conflict in Splunk because the app_id is different but the viz name collides in the user's Splunk picker.
+
+**Why it happens:** Domain template names are conceptual labels, not unique Splunk viz identifiers. The correct Splunk viz type is `{app_id}.{viz_name}` where `app_id` is unique per pack. But if two packs both have a viz named `attack_flow`, the Splunk formatter picker lists them with potentially confusing entries like `my_soc_pack.attack_flow` and `cloudflare_soc.attack_flow`. Users mistake them.
+
+**Prevention:** All domain creative viz names must be prefixed or uniquified within the app namespace. The domain template provides the semantic concept; the actual directory name should include the brand or pack identity. Example: `cf_attack_flow` not `attack_flow`.
+
+This is cosmetic in Splunk (the `app_id.` prefix disambiguates), but it matters for support and for the Splunk picker usability.
+
+**Phase:** Domain viz ideation phase.
+
+---
+
+### MP-04: Mandatory dashboard — search SPL uses `| makeresults` with fake data instead of the demo CSV
+
+**What goes wrong:** The mandatory dashboard is generated with searches like `| makeresults count=5 | eval value=random() % 100`. The dashboard installs and vizs populate. But the demo searches produce non-deterministic data and the viz formatting settings were tuned against the CSV lookup data. The dashboard looks visually inconsistent.
+
+**Why it happens:** When writing the mandatory dashboard quickly at the end of vp-create, the easiest SPL to write for demo data is `makeresults`. But vp-viz SKILL.md quick rule 6 (demo data section) explicitly requires `| inputlookup {pack_id}_demo_*.csv`, not `makeresults`.
+
+**Prevention:** The mandatory dashboard searches MUST use `| inputlookup {pack_id}_demo_{viz}.csv` to match the demo data the viz was designed for. The formatter settings in the dashboard JSON must also use `valueField` matching the CSV column names.
+
+If a demo CSV does not exist for a new domain viz, create it before writing the dashboard — not after.
+
+**Phase:** Mandatory dashboard phase.
+
+---
+
+### MP-05: Domain creative viz — over-constrained Canvas draw budget causes frame drops on multi-viz dashboard
+
+**What goes wrong:** A creative domain viz (e.g., a status health grid with 150 cells, or a flow diagram with 10 stages and animated connectors) performs well in isolation but causes visible frame drops on a dashboard with 6 vizs. The drag is from per-frame work in the viz's animation loop.
+
+**Why it happens:** Canvas 2D rendering of 150 cells is cheap when the viz is the only one painting. On a dashboard with 6 animated vizs, each viz runs its own rAF loop. If the creative viz does expensive per-frame work (node traversal, per-cell gradient creation, text measurement on every frame), the cumulative CPU cost causes jank.
 
 **Prevention:**
-- Keep all data panels within `x: 0-1820` (100px margin), `y: 0-980` (100px margin).
-- Background decorative elements (gradients, hero imagery, structural shapes) CAN bleed to full 1920x1080.
-- Treat 1820x980 as the safe zone for interactive panels.
+- Create gradients ONCE outside the animation loop and cache them: `this._barGrad = ctx.createLinearGradient(...)`
+- Text measurement for layout must run in `updateView`, not in the rAF draw tick
+- For high-cell-count vizs (status grid, heatmap), cap cells at 200 and skip cells smaller than 4px rather than drawing invisible elements
+- Any `getImageData`/`putImageData` (DPR-07 noise texture) MUST be cached to an offscreen canvas — regenerating per frame kills performance
 
-**Phase:** Dashboard composition phase. Applies to any new layout generated for v5.1.0.
-
----
-
-### MP-03: showHoverEffect=false — mousemove handler still calls invalidateUpdateView
-
-**What goes wrong:** When `showHoverEffect=false` is set in formatter, the hover highlight disappears from the render. But the `mousemove` handler still fires on every pixel movement and calls `invalidateUpdateView()`, causing 60fps redraws while the mouse moves. CPU spikes on vizs with hover disabled.
-
-**Why it happens:** The hover transition pattern in animation-recipes.md checks `showHoverEffect` inside `_startHoverTransition`. If `showHoverEffect=false`, the transition is skipped — but `_onMouseMove` still calls `_startHoverTransition`, and some implementations call `invalidateUpdateView()` before checking the flag.
-
-**Prevention:** Store the hover flag as an instance property in `updateView`, early-exit in `_onMouseMove`:
-```javascript
-// In updateView:
-this._showHoverEffect = opt('showHoverEffect', 'true') === 'true';
-
-// In _onMouseMove:
-_onMouseMove: function(e) {
-    if (!this._showHoverEffect) return;  // early exit, no invalidate
-    // ... hit test, update hover state, invalidate ...
-}
-```
-
-**Phase:** Animation toggle fixes phase. Any viz with hover logic.
-
----
-
-### MP-04: accentIntensity /100 vs /50 inconsistency in new code sections
-
-**What goes wrong:** After adding new rendering code, glow effects in the new sections are twice as strong as existing effects in the same viz. The viz looks inconsistent.
-
-**Why it happens:** v5.0.0 standardized on `/100` scaling (D-05), superseding the older `/50` pattern from mood-recipes.md. The supersession note exists in the SKILL.md template comment but is easy to miss when copying patterns from older files. Result: `gi = value / 50` (range 0-2) in old code, `gi = value / 100` (range 0-1) in new code.
-
-**Prevention:** The SKILL.md template has the canonical note:
-```
-// NOTE: mood-recipes.md shows /50 (gi range 0-2) — that pattern is SUPERSEDED by D-05.
-// Always use /100 in generated code.
-```
-Before committing any new rendering code that reads `accentIntensity`, grep the new code for `/50`. If found, change to `/100`.
-
-**Phase:** Any phase adding new rendering code alongside existing code.
-
----
-
-### MP-05: New formatter section with wrong section-label casing — entire section invisible
-
-**What goes wrong:** A new formatter section is added for pagination controls or sparkline controls. The section is syntactically valid but completely invisible in the Format panel.
-
-**Why it happens:** Splunk's formatter engine is case-sensitive on `section-label` values. The approved values are: `"Data configurations"`, `"Data display"`, `"Color and style"`, `"Effects"`, `"Animation"`. Any deviation — `"Data Display"` (capital D), `"Visual effects"`, `"Sparkline"` — causes silent section drop.
-
-**Root cause confirmed:** formatter-patterns.md wrong/right casing table documents exactly this pitfall.
-
-**Prevention:** Only use approved section labels. For new controls that do not fit existing sections, place them in `"Data display"` (behavioral toggles) or `"Effects"` (visual toggles). The B5 repair loop fixes `type="custom"` and `section-label` class attribute — it does NOT fix wrong label values.
-
-**Detection:** Only detectable by opening the Format panel in Splunk. Automated checks cannot validate label correctness.
-
-**Phase:** Any phase adding formatter controls.
-
----
-
-### MP-06: ctx.clearRect not called after canvas resize — ghost artifacts on re-render
-
-**What goes wrong:** When a new rendering path or animation branch is added, ghost artifacts from the previous render remain visible on panel resize or specific Splunk refresh cycles.
-
-**Why it happens:** `ctx.clearRect(0, 0, w, h)` must be called after canvas dimension setup and after `ctx.scale(dpr, dpr)` but before any draw calls. When new rendering code paths are added (especially for animation states), it is easy to enter a branch that skips back to a `_render()` sub-call, bypassing the clearRect at the top of `updateView`.
-
-**Root cause confirmed:** The SKILL.md template explicitly places `ctx.clearRect(0, 0, w, h)` after `ctx.scale(dpr, dpr)` — this position is load-bearing.
-
-**Prevention:** All rendering must flow from the single `updateView` entry point through one clearRect call. No sub-method should call clearRect independently. If adding a conditional render path, verify the path does not skip the canonical `updateView` setup block.
-
-**Phase:** Any phase modifying render paths.
+**Phase:** Domain viz generation phase. Especially for score-4/5 novelty vizs that are iterative.
 
 ---
 
@@ -256,130 +307,122 @@ Before committing any new rendering code that reads `accentIntensity`, grep the 
 
 ---
 
-### MIN-01: Preview PNG background transparent instead of dark — looks wrong in Splunk dark UI
+### MIN-01: Auto-field discovery — field name contains dot notation, colIdx lookup fails silently
 
-**What goes wrong:** Generated preview.png files look correct in an image viewer but appear with a white background when displayed in Splunk's custom viz picker (which is dark-themed).
+**What goes wrong:** Splunk returns a field named `host.status` or `src.ip`. The viz builds `colIdx['host.status'] = 3`. Then in `updateView`, `opt('valueField', 'host.status')` returns `'host.status'`. `row[colIdx['host.status']]` returns `undefined` because the key with a dot is not found in the object — it was stored but looked up with the wrong key structure.
 
-**Why it happens:** The pure-JS PNG encoder in `generate_assets.js` defaults to RGB without alpha. Splunk's viz picker does not fill transparent areas with a matching dark color.
+**Why it happens:** JavaScript object keys with dots are valid as string keys but can be created inconsistently. In `colIdx`, the key `'host.status'` IS stored correctly as a string. The lookup `colIdx['host.status']` should work. The actual failure is that `colIdx[fieldName]` returns `undefined` when `fieldName` has been trimmed or has extra whitespace from formatter input. Splunk field names returned from `data.fields` are exact, but formatter text inputs may include trailing spaces.
 
-**Prevention:** Always paint an explicit dark background (brand dark background color) as the bottom layer in the preview canvas. Do not rely on alpha compositing with the Splunk UI.
-
-**Phase:** Preview.png phase.
-
----
-
-### MIN-02: Sparkline height formatter control interpreted as pixels — overflows small panels
-
-**What goes wrong:** New `sparklineHeight` control is set to 30. Sparkline renders correctly at 300px panel height but overflows at 150px.
-
-**Why it happens:** The control value is treated as raw pixels instead of percentage of panel height. All sizing must follow `Math.max(floor, h * ratio)` pattern (pre-code checklist item, and B8 rule).
-
-**Prevention:** Interpret sparkline size controls as percentage of panel height (0-100), not pixels:
+**Prevention:** Trim all formatter field name reads:
 ```javascript
-var sparkH = Math.max(20, h * (safeNum(opt('sparklineHeight', '25'), 25) / 100));
+var valueField = (opt('valueField', '') || '').trim() || firstNumericField(data) || 'value';
+```
+Also handle the case where `colIdx[valueField]` is `undefined` — guard before row access:
+```javascript
+var valIdx = data.colIdx[valueField];
+var val = (valIdx !== undefined) ? safeNum(row[valIdx], 0) : 0;
 ```
 
-**Phase:** New controls phase.
+**Phase:** Auto-field discovery phase.
 
 ---
 
-### MIN-03: Text placement controls — y offset not clamped — text exits panel bounds
+### MIN-02: Domain creative viz — data contract in design brief specifies fields that don't exist in demo CSV
 
-**What goes wrong:** New `textPlacement` formatter option (top/center/bottom) on a KPI viz. Choosing "top" at a very small panel size causes the value text to render above the panel top edge.
+**What goes wrong:** vp-design writes a design brief with data contract "requires `kill_chain_stage`, `severity`, `count`." The demo CSV is created with columns `stage`, `sev`, `n`. The viz code references `kill_chain_stage` but the CSV has `stage` — every row shows empty or zero.
 
-**Why it happens:** Text placement logic adjusts `y` coordinates without verifying the result stays within panel bounds. `measureText()` prevents text overflow at the draw position but does not prevent out-of-bounds placement when offsets are applied.
+**Why it happens:** The design brief writes semantically meaningful field names. The demo CSV author uses abbreviated column names. These are written in different steps (vp-design vs vp-create) with no cross-check.
 
-**Prevention:** Clamp all placement-derived y coordinates:
-```javascript
-var textY = placement === 'top' ? pad + heroSize
-          : placement === 'bottom' ? h - pad - heroSize
-          : h / 2;
-textY = Math.max(heroSize + pad, Math.min(h - pad, textY));
+**Prevention:** The vp-create demo CSV creation step must verify CSV column names against the design brief data contract. A naming mismatch is a build blocker, not a post-install fix. When vp-design writes the data contract, it must also specify the exact CSV column names that will be used in the demo data.
+
+**Phase:** Domain viz brief phase and demo CSV creation phase.
+
+---
+
+### MIN-03: Mandatory dashboard — dashboard JSON written before all vizs are validated, then never regenerated
+
+**What goes wrong:** Claude writes the dashboard JSON midway through the vp-create workflow (after 3 of 5 vizs are built). The remaining vizs fail validation and are fixed. The dashboard JSON was written before the fixes and still contains the old (now wrong) formatter option names or viz type strings.
+
+**Why it happens:** Dashboard JSON is treated as "write once at end" but the vp-create workflow allows validation and fixing to interleave. If the dashboard is written early for convenience, later fixes to viz option names or app_id do not propagate back to the dashboard JSON.
+
+**Prevention:** The mandatory dashboard generation step must be the LAST step after ALL vizs have passed validation. The vp-create checklist must enforce this ordering explicitly:
+
+```
+- [ ] ALL vizs pass validate_viz.sh (zero FAIL)
+- [ ] Step 3b: generate_assets.js run (previews exist)
+- [ ] Package tarball
+- [ ] THEN: Write dashboard JSON (not before)
 ```
 
-**Phase:** New controls phase.
+**Phase:** Mandatory dashboard phase — ordering enforcement.
 
 ---
 
-### MIN-04: Flexible status values — case-sensitive match misses user-configured variants
+### MIN-04: Multi-series auto-discovery — discovered series count varies between Splunk searches, causing legend overflow
 
-**What goes wrong:** User configures `criticalLabel=CRITICAL` (uppercase). Data contains `critical` (lowercase). Match fails, no LED pulse, no color coding.
+**What goes wrong:** A multi-series spark strip auto-discovers 3 numeric columns in development and renders a clean 3-series legend. In production, the SPL search returns 8 numeric columns. The legend overflows the panel and overlaps the data.
 
-**Why it happens:** The animation-recipes.md LED pulse pattern normalizes severity with `.toLowerCase()` for built-in values (`'critical'`, `'error'`). New configurable label matching skips normalization, breaking case-insensitive user input.
+**Why it happens:** Auto-discovery without a cap will include every numeric column. The viz layout calculates legend positions assuming a fixed number of series. 8 series at the same layout formula overflows.
 
-**Prevention:** Always normalize both the configured label and the data value to lowercase before matching:
+**Prevention:** Cap auto-discovered series at a formatter-configurable maximum with a sensible default:
 ```javascript
-var criticalLabel = opt('criticalLabel', 'critical').toLowerCase();
-var sev = safeStr(row[severityIdx]).toLowerCase();
-if (sev === criticalLabel) { hasCritical = true; }
+var maxSeries = Math.max(1, safeNum(opt('maxSeries', '6'), 6));
+var numericFields = getAllNumericFields(data); // returns array of field names
+numericFields = numericFields.slice(0, maxSeries); // enforce cap
 ```
+Always cap at the maximum the layout algorithm was designed for. Show a "N more fields hidden" whisper-text indicator when series are truncated.
 
-**Phase:** New controls phase (flexible status values feature).
-
----
-
-### MIN-05: Animation timer cleanup missing from destroy() — memory leak as panels accumulate
-
-**What goes wrong:** CPU usage increases as more animated panels are opened in a dashboard session. Console errors appear after navigating away.
-
-**Why it happens:** `requestAnimationFrame` requires a flag pattern to cancel, not a direct ID (unlike `clearInterval`). When adding new animation loops, the corresponding `destroy()` cleanup is easy to omit. The animation-recipes.md rAF pattern shows the cancel flag but relies on the developer remembering to set it in `destroy()`.
-
-**Root cause confirmed:** broken-rules.md does not list this directly, but animation-recipes.md explicitly requires `this._animating = false` in `destroy()`.
-
-**Prevention:** Every new animation loop (`_startPulse`, `_startEntrance`, `_startHoverTransition`) must have a corresponding cancel line in `destroy()`. Make this a checklist item when adding any animation: "Did I add `this._[flag] = false` to destroy()?"
-
-**Phase:** Animation toggle fixes phase. Any phase adding new animation patterns.
+**Phase:** Auto-field discovery phase — multi-series vizs only.
 
 ---
 
 ## Phase-Specific Warning Table
 
 | Phase Topic | Likely Pitfall | Mitigation |
-|-------------|---------------|------------|
-| Formatter wiring bug fixes (zone color, hover toggle, accentIntensity) | CP-01 (two-path opt), CP-03 (hexFromSplunk missing for color pickers) | Use getOption pattern; audit every color picker read for hexFromSplunk |
-| Animation toggle-off fixes (entrance animation, flashCritical) | CP-02 (entrance progress=1 when off), CP-04 (stop pulse unconditionally) | Explicit `_entranceProgress = 1` on off-path; unconditional stopPulse |
-| flashCritical LED pulse visual prominence | CP-04 | Severity check must be unconditional in updateView, not inside guards |
-| hover toggle wiring | MP-03 | Early-exit in _onMouseMove when _showHoverEffect is false |
-| New controls: pagination, text placement, sparkline | CP-05 (dead formatter key), MIN-02, MIN-03 | Trace opt() read to ctx.* call; percentage not pixels for sizing |
-| Flexible status values | MIN-04 | Lowercase normalization on both sides of comparison |
-| Loosening KPI blueprint | CP-05 | Mandatory comment above every new opt() read stating what it controls visually |
-| Unique preview.png generation | MP-01, MIN-01 | Shape silhouette per viz type; explicit dark background fill |
-| Dashboard composition / layout | MP-02 | Keep interactive panels within 1820x980 safe zone |
-| Any new code reading accentIntensity | MP-04 | Always /100; grep new code for /50 before committing |
-| Any new rendering paths (glow, shadow, effects) | MP-06, existing ECR-05 | Verify clearRect still runs; ctx.save/restore around every shadow block |
-| New formatter sections | MP-05 | Only use approved section-label values from formatter-patterns.md |
-| New animation loops | MIN-05 | Add cancel flag to destroy() for every new loop |
+|---|---|---|
+| Auto-field discovery (all vizs) | CP-01 (inconsistent colIdx use), CP-02 (empty default = zero render) | Consistent three-point pattern: formatter → dynamic colIdx → row read |
+| Auto-field discovery — default field selection | CP-03 (_time treated as numeric), MIN-01 (dot fields, whitespace trim) | Exclude `_` prefix fields; trim formatter inputs; guard `colIdx[field] !== undefined` |
+| Multi-series auto-discovery | CP-04 (color assignment non-deterministic), MIN-04 (series overflow) | Hash-based color assignment; maxSeries cap with truncation indicator |
+| Accent-as-highlight migration | CP-05 (DPR-03 still using t.accent), CP-06 (gi formula misapplied post-migration) | Audit all `t.accent` in data-element gradient calls; update accentIntensity semantics |
+| Hover on series-colored elements | MP-02 (hover overlay invisible against saturated series color) | Increase hover alpha baseline to 0.18+ for series-color contexts |
+| Domain viz ideation (vp-design) | CP-07 (overambitious Canvas rendering), MP-03 (non-unique viz names) | Complexity gate table; proxy patterns for graph/physics types; brand-prefix viz names |
+| Domain viz generation (vp-viz) | CP-07 (layout algorithm code generation), MP-05 (per-frame expense) | Abort if generating recursive layout; cache gradients; cap cell count at 200 |
+| Demo data alignment | MIN-02 (CSV column names don't match data contract) | vp-create CSV creation cross-checks against design brief field names |
+| Mandatory dashboard — ordering | MIN-03 (dashboard JSON written before validation complete) | Dashboard JSON is LAST step after all vizs pass validate_viz.sh |
+| Mandatory dashboard — search data | MP-04 (makeresults instead of CSV lookup) | Only `\| inputlookup {pack_id}_demo_*.csv` in dashboard searches |
+| Mandatory dashboard — missing vizs | CP-08 (dashboard references failed/excluded viz) | Count visualization.js in tarball must equal panel count using `{app_id}.*` types |
 
 ---
 
-## "Looks Done But Isn't" Checklist (v5.1.0 specific)
+## "Looks Done But Isn't" Checklist (v5.2.0 specific)
 
-- [ ] **Entrance animation off:** `showEntrance=false` in formatter → viz shows actual data (not zero/blank). `_entranceProgress` is 1 on off-path.
-- [ ] **Color picker wiring:** New zone color control changed in Format panel → viz uses that color. `hexFromSplunk` wraps every color picker read.
-- [ ] **Two-path opt:** New formatter control set in dashboard JSON `"options"` → viz responds. Also works from Format panel change.
-- [ ] **Pulse stops:** Critical data load → pulse starts. Remove critical data → pulse stops on next updateView.
-- [ ] **Hover toggle:** `showHoverEffect=false` → no CPU spike when moving mouse over viz. `_onMouseMove` early-exits.
-- [ ] **Preview distinctness:** All preview.png files in pack look different (different shapes, not just colors). No two are visually identical.
-- [ ] **accentIntensity scale:** New rendering code uses `/100` not `/50` for gi calculation.
-- [ ] **New section label:** Any new formatter section uses only approved `section-label` values.
-- [ ] **New animation loop:** `destroy()` has a cancel flag set for every animation started in the fix.
+- [ ] **Auto-field consistency:** Formatter `valueField` default, demo CSV column name, and formatter `value=` attribute are the same string. Not three different names.
+- [ ] **_time excluded:** Auto-discovery scan skips all fields beginning with `_`. No viz is plotting epoch timestamps as bar heights.
+- [ ] **Empty formatter guard:** With no formatter settings configured, the viz renders meaningful data (first numeric column), not all zeros.
+- [ ] **Series color stability:** For multi-series vizs, reordering the SPL result columns does not change which series gets which color.
+- [ ] **Accent-only highlights:** After migration, `t.accent` appears in hover overlays and threshold indicators — NOT in data-element gradient addColorStop calls. grep confirms this.
+- [ ] **gi formula sites updated:** `accentIntensity` / 100 is applied to highlight opacity, not to data fill depth. Any `gi` applied to data fill depth is a migration gap.
+- [ ] **Domain viz complexity gate:** Every new domain-specific viz type in the inventory was assessed against the complexity tier table. Overambitious types have a proxy pattern assigned.
+- [ ] **Mandatory dashboard last:** Dashboard JSON written after all vizs pass validate_viz.sh. Tarball viz count matches dashboard panel count.
+- [ ] **Dashboard uses CSV lookups:** All dashboard panel searches use `| inputlookup`, not `makeresults`.
+- [ ] **Preview distinctness:** All preview.png files show shape silhouettes distinct to their viz type. (Carried from v5.1.0 — applies to any new domain viz type added.)
 
 ---
 
 ## Sources
 
-- `plugins/splunk-viz-packs/skills/vp-debug/references/broken-rules.md` — B3, B6, B22 root causes
-- `plugins/splunk-viz-packs/skills/vp-debug/references/fatal-rules.md` — F-series fatal patterns
-- `plugins/splunk-viz-packs/skills/vp-viz/references/formatter-patterns.md` — two-path opt, section-label casing table, hexFromSplunk
-- `plugins/splunk-viz-packs/skills/vp-viz/references/edge-cases.md` — ECR-01 through ECR-05 (save/restore, pagination, null guards)
-- `plugins/splunk-viz-packs/skills/vp-recipes/references/animation-recipes.md` — LED pulse start/stop, rAF entrance flag pattern
-- `plugins/splunk-viz-packs/skills/vp-viz/SKILL.md` — pre-code checklist, D-05 accentIntensity /100 note, clearRect placement
-- `plugins/splunk-viz-packs/skills/vp-viz/references/viz-blueprints.md` — Ring Gauge zone colors, animation settings per type
-- `tests/test28_drilldown_tabs/HANDOVER.md` — real bugs: hardcoded field names in event handlers, 1x1 preview PNGs
-- `.planning/PROJECT.md` — v5.1.0 milestone goal list (named bugs)
-- `.planning/REQUIREMENTS.md` — ANI-01 through ANI-06 animation requirements
+- `plugins/splunk-viz-packs/skills/vp-viz/references/edge-cases.md` — ECR-01 through ECR-07 (field indexing, safeStr/safeNum, pagination, canvas state)
+- `plugins/splunk-viz-packs/skills/vp-viz/SKILL.md` — visualization_source.js template, formatData pattern, pre-code checklist
+- `plugins/splunk-viz-packs/skills/vp-debug/references/broken-rules.md` — B3, B22 root causes
+- `plugins/splunk-viz-packs/skills/vp-design/references/design-principles.md` — DPR-03 gradient fills, accent architecture
+- `plugins/splunk-viz-packs/skills/vp-design/references/domain-templates.md` — domain viz inventories, concept names vs. Splunk identifiers
+- `plugins/splunk-viz-packs/skills/vp-design/references/viz-novelty-scores.md` — score-5 overambitious types list, scoring examples
+- `plugins/splunk-viz-packs/skills/vp-create/SKILL.md` — packaging workflow, validate-first ordering, demo CSV lookup rule
+- `plugins/splunk-viz-packs/skills/vp-design/SKILL.md` — accent architecture, 60-30-10 rule, color principles
+- `.planning/PROJECT.md` — v5.2.0 milestone goals (auto-field discovery, creative viz types, accent-as-highlights, mandatory dashboard)
+- `tests/test28_drilldown_tabs/HANDOVER.md` — real evidence: hardcoded field names in event handlers
 
 ---
 
-*v5.1.0 pitfalls research*
+*v5.2.0 pitfalls research*
 *Researched: 2026-05-18*

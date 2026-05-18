@@ -1,4 +1,4 @@
-# Requirements: splunk-knowledge — v5.1.0 Viz Hardening & Dashboard Wow-Factor
+# Requirements: splunk-knowledge — v5.2.0 Smart Vizs & Domain Identity
 
 **Defined:** 2026-05-18
 **Core Value:** When a user runs `/vp-init`, the resulting viz pack installs in Splunk without errors and produces a dashboard that makes someone say "wait, that's Splunk?" — zero manual fixes, wow-factor by default.
@@ -9,66 +9,63 @@ Plugins must work with **zero external dependencies for end users**. All validat
 
 ## v1 Requirements
 
-### Bug Fixes (FIX)
+### Accent Architecture (ACC)
 
-- [ ] **FIX-01**: User changes any formatter setting and sees the change reflected immediately — opt() uses two-path lookup (namespaced + short key)
-- [ ] **FIX-02**: User sets showEntrance=false and sees the viz render at its final value immediately — no stuck-at-zero state
-- [ ] **FIX-03**: User sees flashCritical LED pulse clearly visible on critical cells — shadowBlur 8-24px with solid inner fill as secondary cue
-- [ ] **FIX-04**: User changes zone colors on ring gauge and sees the arc colors change — hexFromSplunk applied to all color picker opt() reads
-- [ ] **FIX-05**: User toggles showHoverEffect off on leaderboard/status matrix and hover highlight stops
+- [ ] **ACC-01**: Data element fills (bars, arcs, cells, area) use `t.series[i]` colors — never `t.accent`
+- [ ] **ACC-02**: `t.accent` is reserved for hover highlight, selection state, glow effects, and focus rings only
+- [ ] **ACC-03**: `accentIntensity` accepts values above 100 — uncapped multiplier for extreme glow
+- [ ] **ACC-04**: Preview.png silhouettes are visually distinct per viz type with high contrast against background
 
-### Settings Completeness (SET)
+### Smart Fields (SFD)
 
-- [ ] **SET-01**: User sees status matrix accept any status string value — not hardcoded to ok/warn/crit
-- [ ] **SET-02**: User sees leaderboard with pagination controls — next/prev page when rows exceed maxRows
-- [ ] **SET-03**: User can control KPI text placement — center/top/left/right positioning via formatter
-- [ ] **SET-04**: User can control KPI sparkline placement and size — bottom/right/background with configurable height
-- [ ] **SET-05**: User can show/hide cell value labels in status matrix via formatter toggle
-- [ ] **SET-06**: User can show/hide column headers in leaderboard via formatter toggle
+- [ ] **SFD-01**: Multi-series vizs (line, area, bar) auto-discover all numeric fields from `data.fields` and plot as series
+- [ ] **SFD-02**: Table/list vizs auto-discover all columns from `data.fields` — no hardcoded field name inputs
+- [ ] **SFD-03**: Fields prefixed with `_` (internal Splunk fields) are excluded from auto-discovery
+- [ ] **SFD-04**: User can override auto-discovered fields via formatter controls (xField, statusField, etc.)
 
-### Creative Freedom (CRE)
+### Domain Identity (DOM)
 
-- [ ] **CRE-01**: Claude generates visually distinct KPI tiles per brand — no default centered-number template, creative decisions driven by brand personality
-- [ ] **CRE-02**: All viz blueprints use "inspiration not template" language — Creative decisions section expanded, Technical rules section loosened
-- [ ] **CRE-03**: Drilldown Field formatter control has clear help text explaining it sets which field value is passed on click
+- [ ] **DOM-01**: vp-design researches the domain's visual language before choosing viz types — not after
+- [ ] **DOM-02**: Every pack includes at least 2 viz types that could not exist outside that domain
+- [ ] **DOM-03**: Domain-specific viz types have Canvas complexity gate — overambitious types get proxy patterns
+- [ ] **DOM-04**: domain-templates.md includes domain-unique viz entries for SOC, Energy, Healthcare with "no generic equivalent" annotation
 
-### Dashboard Composition (DSH)
+### Mandatory Dashboard (DSB)
 
-- [ ] **DSH-01**: Generated dashboard has a branded background treatment — gradient wash, radial accent glow, or generated pattern; never a plain single color
-- [ ] **DSH-02**: Generated dashboard has visual hierarchy — hero KPI strip at top, primary viz center, detail panels right
-- [ ] **DSH-03**: Generated dashboard has depth — background rectangles creating card groups and section separators
-- [ ] **DSH-04**: Generated dashboard tells a story — panel arrangement follows data narrative, not random grid placement
+- [ ] **DSB-01**: vp-create has mandatory Step 3c that generates a Dashboard Studio view with ALL vizs in the pack
+- [ ] **DSB-02**: Dashboard panel count equals viz directory count — verified before packaging
+- [ ] **DSB-03**: Dashboard generation is gated on clean validate_viz.sh exit — no dashboard if vizs fail
 
 ## Future Requirements
 
-- Preview.png uniqueness — shape-distinct silhouettes per viz type (gauge=arc, kpi=number, table=rows)
-- score_design.js automated aesthetic scoring (deferred — needs calibration against test packs)
+- Aviation and Fintech domain-specific viz types (deferred — need more test data)
+- score_design.js automated aesthetic scoring (deferred — needs calibration)
+- Auto-palette HSL derivation for series colors (deferred — needs visual validation)
+- showHoverEffect early-exit enforcement in check_design.js (new FAIL code)
 
 ## Out of Scope
 
 - Responsive dashboard layouts — Splunk Dashboard Studio uses absolute positioning only
-- Real-time animation sync across vizs — each viz manages its own rAF loop independently (D-12)
+- Real-time streaming vizs — standard Splunk polling is sufficient
 - Mobile-responsive viz rendering — Splunk dashboards are desktop/wall-display
+- Viz types requiring WebGL or SVG — Canvas 2D ES5 only
 
 ## Traceability
 
 | Requirement | Phase | Plan | Status |
 |-------------|-------|------|--------|
-| FIX-01 | Phase 10 | - | pending |
-| FIX-02 | Phase 10 | - | pending |
-| FIX-03 | Phase 10 | - | pending |
-| FIX-04 | Phase 10 | - | pending |
-| FIX-05 | Phase 10 | - | pending |
-| SET-01 | Phase 11 | - | pending |
-| SET-02 | Phase 11 | - | pending |
-| SET-03 | Phase 11 | - | pending |
-| SET-04 | Phase 11 | - | pending |
-| SET-05 | Phase 11 | - | pending |
-| SET-06 | Phase 11 | - | pending |
-| CRE-01 | Phase 11 | - | pending |
-| CRE-02 | Phase 11 | - | pending |
-| CRE-03 | Phase 11 | - | pending |
-| DSH-01 | Phase 12 | - | pending |
-| DSH-02 | Phase 12 | - | pending |
-| DSH-03 | Phase 12 | - | pending |
-| DSH-04 | Phase 12 | - | pending |
+| ACC-01 | Phase 13 | - | pending |
+| ACC-02 | Phase 13 | - | pending |
+| ACC-03 | Phase 13 | - | pending |
+| ACC-04 | Phase 13 | - | pending |
+| SFD-01 | Phase 14 | - | pending |
+| SFD-02 | Phase 14 | - | pending |
+| SFD-03 | Phase 14 | - | pending |
+| SFD-04 | Phase 14 | - | pending |
+| DOM-01 | Phase 14 | - | pending |
+| DOM-02 | Phase 14 | - | pending |
+| DOM-03 | Phase 14 | - | pending |
+| DOM-04 | Phase 14 | - | pending |
+| DSB-01 | Phase 15 | - | pending |
+| DSB-02 | Phase 15 | - | pending |
+| DSB-03 | Phase 15 | - | pending |

@@ -54,18 +54,26 @@ When a user runs `/vp-init`, the resulting viz pack installs in Splunk without e
 - Mobile-responsive viz rendering — Splunk dashboards are desktop/wall-display
 - Multi-tenant viz sharing — each pack is a standalone Splunk app
 
-## Current Milestone: v5.1.0 Viz Hardening & Dashboard Wow-Factor
+## Current Milestone: v5.2.0 Smart Vizs & Domain Identity
 
-**Goal:** Fix every bug found in test29, fill missing settings gaps, give Claude more creative freedom in viz design, and make generated dashboards look professionally composed — not just panels dumped on a canvas.
+**Goal:** Generated vizs auto-discover data fields (no hardcoded column names), each pack includes domain-specific creative viz types (not just gauge/KPI/bar/line/heatmap/table), accent color is used correctly (highlights only), and the dashboard is mandatory with all vizs included.
 
 **Target features:**
-- Fix entrance-animation-off breaks gauge rendering (stuck at 0)
-- Fix zone color / hover toggle / accentIntensity wiring bugs
-- Make flashCritical LED pulse visually prominent
-- Add missing settings: pagination, text placement, sparkline controls, flexible status values
-- Loosen viz blueprints — creative freedom over rigid templates, especially KPI
-- Generate unique preview.png per viz (no duplicates)
-- Dashboard composition: story, depth, background, professional layout
+- Auto-field discovery — vizs read data.fields dynamically, plot all numeric columns as series
+- Creative viz types — force domain-first ideation, reject generic-only inventories
+- Accent = highlights only — series colors for data fills, uncapped intensity, position control
+- Mandatory dashboard with ALL vizs — add step + checklist to vp-create
+- Fix preview.png — expand keywords, add contrast, unique silhouettes per viz
+- showHoverEffect early-exit enforcement in generated code
+
+<details>
+<summary>v5.1.0 Viz Hardening & Dashboard Wow-Factor (shipped 2026-05-18)</summary>
+
+**Goal:** Fix bugs from test29, fill settings gaps, creative freedom, dashboard composition.
+
+**Delivered:** getOption two-path fix, entrance-off guard, flashCritical 8-24px, ECR-06/07, missing settings, creative latitude, dashboard-composition.md (599 lines), gradient PNG generator.
+
+</details>
 
 <details>
 <summary>v5.0.0 Design Awesomeness (shipped 2026-05-16)</summary>
@@ -127,4 +135,4 @@ When a user runs `/vp-init`, the resulting viz pack installs in Splunk without e
 This document evolves at phase transitions and milestone boundaries.
 
 ---
-*Last updated: 2026-05-17 after v5.1.0 milestone start*
+*Last updated: 2026-05-18 after v5.2.0 milestone start*

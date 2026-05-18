@@ -4,7 +4,8 @@
 
 - ✅ **v4.1.0 splunk-viz-packs Hardening** — Phases 1-5 (shipped 2026-05-15)
 - ✅ **v5.0.0 Design Awesomeness** — Phases 6-9 (shipped 2026-05-16)
-- 🚧 **v5.1.0 Viz Hardening & Dashboard Wow-Factor** — Phases 10-12 (in progress)
+- ✅ **v5.1.0 Viz Hardening & Dashboard Wow-Factor** — Phases 10-12 (shipped 2026-05-18)
+- 🚧 **v5.2.0 Smart Vizs & Domain Identity** — Phases 13-15 (in progress)
 
 ## Phases
 
@@ -31,13 +32,22 @@ Full details: `.planning/milestones/v4.1.0-ROADMAP.md`
 
 </details>
 
-### 🚧 v5.1.0 Viz Hardening & Dashboard Wow-Factor (In Progress)
+<details>
+<summary>✅ v5.1.0 Viz Hardening & Dashboard Wow-Factor (Phases 10-12) — SHIPPED 2026-05-18</summary>
 
-**Milestone Goal:** Fix every bug found in test29, fill missing settings gaps, give Claude more creative freedom in viz design, and make generated dashboards look professionally composed — not just panels dumped on a canvas.
+- [x] Phase 10: Foundation Fixes (2/2 plans) — completed 2026-05-18
+- [x] Phase 11: Blueprint Expansion & Creative Freedom (2/2 plans) — completed 2026-05-18
+- [x] Phase 12: Dashboard Composition (2/2 plans) — completed 2026-05-18
 
-- [x] **Phase 10: Foundation Fixes** — Fix all confirmed test29 bugs: opt() two-path lookup, entrance-animation-off gauge stuck at zero, flashCritical LED pulse prominence, zone color wiring, hover toggle — completed 2026-05-18
-- [x] **Phase 11: Blueprint Expansion & Creative Freedom** — Add missing settings (pagination, text placement, sparkline controls, flexible status values, cell label/header toggles); loosen KPI blueprint for brand-distinct tiles; improve drilldown field help text — completed 2026-05-18
-- [x] **Phase 12: Dashboard Composition** — Create dashboard-composition.md reference; establish branded background treatments, visual hierarchy, depth through card grouping, and story-first panel arrangement — completed 2026-05-18
+</details>
+
+### 🚧 v5.2.0 Smart Vizs & Domain Identity (In Progress)
+
+**Milestone Goal:** Generated vizs auto-discover data fields (no hardcoded column names), each pack includes domain-specific creative viz types (not just gauge/KPI/bar/line/heatmap/table), accent color is used correctly (highlights only), and the dashboard is mandatory with all vizs included.
+
+- [ ] **Phase 13: Accent Architecture Foundation** — Fix color model: series fills use t.series[i], accent reserved for highlight/glow/focus, accentIntensity uncapped, preview.png silhouettes distinct per viz type
+- [ ] **Phase 14: Smart Fields & Domain Ideation** — Auto-discover numeric and column fields from data.fields dynamically; exclude _ fields; domain-first viz type ideation with proxy patterns for complex types
+- [ ] **Phase 15: Mandatory Dashboard Packaging** — vp-create Step 3c generates Dashboard Studio view with all vizs; panel count verified against viz directory count; dashboard gated on clean validation
 
 ## Phase Details
 
@@ -155,6 +165,40 @@ Plans:
 - [x] 12-02-PLAN.md — Extend generate_assets.js with gradient background PNG generation
 **UI hint**: yes
 
+### Phase 13: Accent Architecture Foundation
+**Goal**: The color model is correct by default — data element fills use series colors, accent is reserved for glow/highlight/focus only, accentIntensity is uncapped for extreme effects, and preview.png silhouettes are shape-distinct per viz type
+**Depends on**: Phase 12
+**Requirements**: ACC-01, ACC-02, ACC-03, ACC-04
+**Success Criteria** (what must be TRUE):
+  1. A generated bar chart uses t.series[0], t.series[1], etc. for bar fills — t.accent does not appear as a fill color for any data element
+  2. User sets accentIntensity above 100 and sees glow radius and shadowBlur scale beyond their previous maximum — no capping at 100 occurs in the generated JS
+  3. Two preview.png thumbnails from the same pack are visually distinguishable by silhouette shape alone — a gauge preview shows an arc, a bar chart shows columns, a table shows rows
+  4. t.accent appears only in hover highlight, selection ring, glow halo, or focus indicator code — no ctx.fillStyle = t.accent calls are present outside those contexts
+**Plans**: TBD
+
+### Phase 14: Smart Fields & Domain Ideation
+**Goal**: Generated vizs read field names from data.fields at runtime instead of relying on hardcoded formatter inputs, and every pack includes at least two viz types that are domain-specific with Canvas complexity guardrails for overambitious types
+**Depends on**: Phase 13
+**Requirements**: SFD-01, SFD-02, SFD-03, SFD-04, DOM-01, DOM-02, DOM-03, DOM-04
+**Success Criteria** (what must be TRUE):
+  1. A generated multi-series viz (line, area, bar) fed a search result with 4 numeric columns plots all 4 as distinct series — no hardcoded field name input required from the user
+  2. A generated table viz auto-renders all columns present in data.fields — no xField/yField formatter controls are pre-required for the viz to show data
+  3. Fields prefixed with _ (e.g., _time, _raw, _indextime) never appear as auto-discovered series or columns in any generated viz
+  4. User adds an xField formatter control and its value overrides the auto-discovered field for that role — auto-discovery is the default, manual override takes precedence
+  5. A generated viz pack for a specific domain (e.g., SOC, Energy, Healthcare) contains at least 2 viz types that could not exist outside that domain, drawn from domain-templates.md entries annotated "no generic equivalent"
+  6. When a domain-specific viz type exceeds Canvas 2D complexity budget, the generated code uses the documented proxy pattern — not a blank panel or a JS error
+**Plans**: TBD
+
+### Phase 15: Mandatory Dashboard Packaging
+**Goal**: Every generated viz pack ships with a Dashboard Studio view containing all vizs — the dashboard is generated automatically as the final packaging step and is blocked if any viz fails validation
+**Depends on**: Phase 14
+**Requirements**: DSB-01, DSB-02, DSB-03
+**Success Criteria** (what must be TRUE):
+  1. User runs vp-create and a Dashboard Studio JSON file is produced without any additional prompting — dashboard generation is Step 3c, not an optional extra
+  2. The generated dashboard contains one panel per viz in the pack — a pack with 5 vizs produces a dashboard with exactly 5 panels
+  3. vp-create refuses to generate the dashboard and reports an error if validate_viz.sh exits non-zero for any viz — the dashboard is never produced from broken vizs
+**Plans**: TBD
+
 
 ## Progress
 
@@ -169,6 +213,9 @@ Plans:
 | 7. Generation Quality & Theme Parity | v5.0.0 | 4/4 | Complete | 2026-05-16 |
 | 8. Design Quality Gate & Edge Case Resilience | v5.0.0 | 3/3 | Complete | 2026-05-16 |
 | 9. Animation & Motion | v5.0.0 | 3/3 | Complete | 2026-05-16 |
-| 10. Foundation Fixes | v5.1.0 | 0/? | Not started | - |
-| 11. Blueprint Expansion & Creative Freedom | v5.1.0 | 0/2 | Not started | - |
-| 12. Dashboard Composition | v5.1.0 | 0/2 | Not started | - |
+| 10. Foundation Fixes | v5.1.0 | 2/2 | Complete | 2026-05-18 |
+| 11. Blueprint Expansion & Creative Freedom | v5.1.0 | 2/2 | Complete | 2026-05-18 |
+| 12. Dashboard Composition | v5.1.0 | 2/2 | Complete | 2026-05-18 |
+| 13. Accent Architecture Foundation | v5.2.0 | 0/? | Not started | - |
+| 14. Smart Fields & Domain Ideation | v5.2.0 | 0/? | Not started | - |
+| 15. Mandatory Dashboard Packaging | v5.2.0 | 0/? | Not started | - |

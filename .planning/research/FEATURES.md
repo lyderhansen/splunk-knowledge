@@ -1,218 +1,247 @@
-# Feature Landscape: v5.1.0 Viz Hardening & Dashboard Wow-Factor
+# Feature Landscape: v5.2.0 Smart Vizs & Domain Identity
 
-**Domain:** Splunk Dashboard Studio — branded Canvas 2D custom visualization packs
+**Domain:** Splunk custom visualization generation — auto-field discovery, domain-specific viz ideation, accent/series color separation
 **Researched:** 2026-05-18
-**Sources:** PROJECT.md (v5.1.0 target features), REQUIREMENTS.md, ROADMAP.md,
-vp-viz/references/viz-blueprints.md, vp-design/references/*, ds-ref-archetypes,
-ds-ref-layout-grid, ds-ref-anti-patterns, ds-ref-color, ds-couture
-
----
-
-## Context: What Ships vs What's Broken
-
-v5.0.0 shipped design principles (Phase 6), design quality gates (Phase 8), and
-animation recipes (Phase 9). Phase 7 (generation quality / theme parity) is also
-marked complete in ROADMAP.md. The milestone target for v5.1.0 is three things:
-
-1. **Bug fixes** found in test29 — entrance-animation-off breaks gauge; zone color /
-   hover toggle / accentIntensity wiring bugs; flashCritical LED not visually prominent
-2. **Settings gaps** — pagination controls, text placement, sparkline controls, flexible
-   status values (not just "ok"/"warning"/"critical")
-3. **New capability** — dashboard composition story/depth/background/professional layout,
-   creative freedom in KPI viz design, unique preview.png per viz
+**Milestone context:** Tests 30-32 (Cloudflare SOC, Tesla Energy, Avinor Airport) all produced the same 5-6 viz type inventory with different colors. The viz TYPE is what makes a pack feel branded, not the colors.
 
 ---
 
 ## Table Stakes
 
-Features users expect from this domain. Missing any of these means the generated output
-is not usable or not professional.
-
-### Category 1: Dashboard Composition
+Features users expect. Missing = pack feels like a color-swapped template, not a brand artifact.
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| Background color set explicitly | Default Splunk canvas = grey = "untouched AI output". Every professional dashboard has an explicit backgroundColor. | Low | Absolute must — no-bgcolor is slop reflex #3 in ds-ref-anti-patterns |
-| Shadow rectangles behind panel groups | Dashboard Studio has no box-shadow. Depth requires `splunk.rectangle` layers BEHIND panels in structure order. Without them, everything looks flat. | Low | Already documented in ds-ref-layout-grid; auto-generation must emit them |
-| Asymmetric column widths (60/40 or 70/30) | 50/50 symmetric panels = spreadsheet, not dashboard. The primary side must be wider. | Low | Absolute ban in ds-ref-anti-patterns; auto-generation must pick asymmetry |
-| Visual hierarchy in KPI row (anchor hero) | A flat row of 4 identical-sized KPIs has no focal point. One KPI must be 1.5x the others. | Low | Slop reflex #2 in ds-ref-anti-patterns |
-| Archetype commitment (not auto-template) | "4 KPIs + 1 line + 1 table" is the LLM default. SOC, executive, operational, analytical each have distinct compositions. | Medium | ds-ref-archetypes has the 4 patterns with ASCII layouts |
-| F-pattern reading flow | Top-left = most important. The primary KPI / hero metric must be positioned top-left, not centered. | Low | ds-ref-layout-grid: F-pattern is the first layout principle |
-| Time-bounded searches | Unbounded full-index scans as default for demo data makes dashboards slow. | Low | Absolute ban #4 in ds-ref-anti-patterns |
-| Panel titles 40 chars max, Title Case | Long panel titles wrap and break layout. All-caps panel titles read as machine-generated. | Low | Slop Test item in ds-ref-anti-patterns |
-
-### Category 2: Viz Formatter Settings Completeness
-
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| Entrance animation OFF does not break rendering | Toggling showEntrance=false must not corrupt a gauge or any other viz. This is a live bug. | Medium | Cited in PROJECT.md v5.1.0 target features |
-| Zone color + hover toggle + accentIntensity wiring | Settings that exist in the formatter but do nothing in JS feel broken. Users discover these immediately. | Medium | Wiring bugs confirmed in test29 per PROJECT.md |
-| accentIntensity (0-100) actually scales glow | A setting that claims to control intensity but produces identical output at 10 vs 90 is worthless. | Medium | CFG-06 requirement; wiring confirmed as broken |
-| Flexible status field values | Status chip/badge hard-coded to "ok"/"warning"/"critical" breaks when data returns "active"/"inactive" or numeric severities. | Medium | Cited in PROJECT.md v5.1.0 — "flexible status values" |
-| Pagination formatter control for tables | Tables without pagination controls force the user to edit JS. A maxRows setting must control rows-per-page. | Low | Already in viz-blueprints.md Data Table spec; gap is that it is not always generated |
-| Sparkline controls | Spark Strip has sparkHeight, showArea settings but no control over line smoothing or fill opacity. | Low | Cited in PROJECT.md v5.1.0 — "sparkline controls" |
-| Text placement settings for KPI | Label position (above/below/beside value), unit position (after/superscript/suppressed). Users expect these to be configurable. | Low | viz-blueprints.md KPI has unitPosition but generation skips it |
-| themeMode default is "auto" | Any viz shipping with themeMode default="dark" fails on light dashboards. | Low | B20 rule already enforced by validate_viz.sh; must be correct at generation time |
-
-### Category 3: Creative Viz Design
-
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| KPI viz is not just "big number centered" | Every AI-generated KPI is identical. Users who have seen DataDrivers-quality work expect branded creativity. | Medium | PROJECT.md: "loosen viz blueprints — creative freedom over rigid templates, especially KPI" |
-| Gradient fills on all data elements | Flat solid fills look unfinished. Users expect gradients on bars, arcs, and panel fills. | Low | DPR-03 requirement already codified; gap is enforcement and generation discipline |
-| flashCritical LED pulse visually prominent | A "critical alert" effect that produces a barely-visible flicker is worse than nothing. | Medium | PROJECT.md: "make flashCritical LED pulse visually prominent" |
-| Unique preview.png per viz | When 4 vizs in a pack share the same placeholder silhouette, the pack looks unfinished in the Splunk app browser. | Low | PROJECT.md: "generate unique preview.png per viz (no duplicates)" |
-
----
+| Dynamic field reading | Hardcoded `colIdx['location']` breaks on any real dataset; users expect vizs to work with their actual SPL output | Med | `data.fields` array already populated in `formatData()`; colIdx map already built — just not used dynamically |
+| Domain-first viz ideation gate | Three consecutive packs (Cloudflare/Tesla/Avinor) shipped identical inventories — current vp-design workflow does not enforce a domain-lookup step before choosing viz types | Low | Checklist item + hard requirement in vp-design workflow, not a code change |
+| Accent color restricted to highlights only | Accent color bleeds into data series fills in current generated code — violates 60/30/10 rule stated in vp-design SKILL.md but not enforced in vp-viz | Low | Instruction change + formatter default separation |
+| Domain-specific viz names | "threat_gauge" vs "ring_gauge" communicates intent; named types prevent fallback to the generic blueprint list | Low | Naming convention in domain-templates.md, no code change |
+| Dashboard that includes every viz | vp-create already references a dashboard step but it is not mandatory; packs ship without a dashboard that exercises all vizs | Med | Step enforcement in vp-create workflow |
 
 ## Differentiators
 
-Features not expected, but that significantly raise the bar above comparable outputs.
-
-### Category 1: Dashboard Composition Story
+Features that set this milestone apart from v5.1.0. Not expected, but make the pack feel alive.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| Gradient background wash (canvas-level depth) | Flat black / flat white canvas reads as "default". A 2-3 layer gradient wash (accent color at 0.04 opacity + brand tint at 0.08) adds immediate depth without distracting from data. | Low | ds-ref-layout-grid "Gradient background" recipe is already written with exact JSON; gap is auto-generation not emitting it |
-| Faux glow on panel groups (stacked rects) | 2-3 rectangles at decreasing opacity behind a card simulate soft shadow. Makes panels feel lifted off the canvas — the Vercel / Linear feel. | Low | ds-ref-layout-grid "Faux glow" recipe is documented with exact JSON; gap is auto-generation |
-| Story-first layout (one question per zone) | A professionally composed dashboard answers one question per visual zone. Each zone has a heading, not just panels floating in space. | High | Requires vp-init to capture "primary question" and vp-design to structure zones around it |
-| Zone dividers (section labels via rectangle + markdown) | Operators on a busy NOC do not read panel titles — they read zone headers. A thin horizontal rectangle with a markdown label ("Service Health", "Recent Incidents") zones the canvas clearly. | Medium | Requires generating splunk.rectangle + splunk.markdown pairs per section |
-| Background accent wash derived from brand palette | The gradient wash uses the brand accent color, not a generic dark blue. Makes the canvas feel brand-specific instead of Splunk-generic. | Low | Requires reading brand accent from vp-design Visual Language output before emitting dashboard JSON |
-
-### Category 2: Viz Design Depth
-
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| KPI creative variants (badge, progress, streak, delta card) | The same data can be a counter, a progress bar with target, a win-streak indicator, or a delta card with directional arrow. Brand-appropriate variant selection dramatically raises wow-factor. | High | viz-blueprints.md already lists KPI creative decisions; gap is Claude defaulting to centered number instead of choosing among them |
-| Brand-specific arc sweep angle for gauges | F1 expects 270-degree sweeps. Healthcare expects 180-degree semicircles. Gauge arc angle should follow brand personality. | Low | Already a creative decision in viz-blueprints.md Ring Gauge; gap is generation defaulting to one shape |
-| Glass panel effect on Luxury / Futuristic mood | Semi-transparent fill with a highlight edge on the panel background. Visually distinctive from flat panels. | Medium | DPR-06 requirement already codified in design-principles.md; gap is conditional application by mood |
-| Domain-appropriate viz inventory | A security pack should default to threat gauge + kill chain flow + severity grid + alert ticker. A retail pack: revenue gauge + conversion funnel + category ring + live ticker. | Medium | domain-templates.md in vp-design/references/ already has F1, SOC, Retail, Healthcare, NOC inventories; gap is vp-design not consulting them |
-
-### Category 3: Formatter Design Quality
-
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| 3-section formatter structure (Data, Appearance, Interaction) | A flat list of 10-14 options is hard to navigate. Section-labels with logical grouping make the formatter feel professional. | Low | DQG-05 requires 3+ section-labels; formatter-patterns.md has the pattern; gap is generation |
-| Bidirectional formatter-to-JS wiring | Every formatter option must be read in the JS and every JS opt() call must have a formatter control. Dead controls make settings feel broken. | Medium | DQG-08 already a check; gap is wiring being incomplete when generated |
-| Accent color preset swatches | The accentColor picker with 3-5 brand-appropriate preset swatches lets users quickly try alternatives without typing hex codes. | Low | formatter-patterns.md color picker supports splunk-color swatches; gap is generation not populating them |
-
----
+| Auto numeric column detection | Viz reads ALL numeric columns and plots them as series — no formatter wiring required for common multi-series vizs | Med | Loop `data.fields`, detect numeric via `!isNaN(safeNum(row[i], NaN))`, store detected series list in `formatData()` result |
+| Domain viz expansion: SOC/Security | kill-chain stage flow, threat-volume-by-tactic heatmap, dwell-time distribution, MITRE coverage matrix — none appear in current domain-templates.md | Med | New entries in domain-templates.md, new blueprint stubs in viz-blueprints.md |
+| Domain viz expansion: Energy/Utilities | generation-mix Sankey, grid-frequency deviation band chart, state-of-charge thermometer, energy-flow directional arrow chart | Med | Same as above |
+| Domain viz expansion: Aviation/Transport | gate-status matrix (departure boards), on-time performance radial burst, delay-cascade waterfall, runway throughput timeline | Med | Same as above |
+| Domain viz expansion: Healthcare/Clinical | bed-occupancy fill bars per ward, patient-flow Sankey (ED to ward to discharge), triage-queue horizon chart, vital-signs sparkline matrix | Med | Same as above |
+| Domain viz expansion: Fintech/Trading | P&L waterfall, candlestick with volume profile, order-book depth chart (bid/ask stacked bar), drawdown area | High | Candlestick requires OHLC data contract — complex but score-5 novelty |
+| Accent vs series color separation in theme.js | theme.js already exposes `accent` but no `series[]` array; current generated vizs reuse accent for data fills — correct separation requires a series palette in the design brief and theme | Low-Med | Add `series` array to theme.js template; update vp-design brief format to require series colors distinct from accent |
+| Series auto-palette generation | When designer only provides one accent, auto-derive 4-6 series colors using HSL rotation (shift hue 60deg per step, reduce saturation 15% per step) | Med | Pure JS utility function in theme.js; no external dep required |
+| "Domain lock" checklist in vp-design | Before finalizing viz inventory, force a domain lookup: (1) check domain-templates.md, (2) check viz-novelty-scores.md, (3) assert at least one domain-unique type is present | Low | Instruction + checklist change only |
 
 ## Anti-Features
 
-Features to explicitly NOT build.
+Features to explicitly NOT build for v5.2.0.
 
 | Anti-Feature | Why Avoid | What to Do Instead |
 |--------------|-----------|-------------------|
-| Dashboard grid layout ("type": "grid") | splunk.rectangle depth cards and splunk.singlevalueicon silently fail in grid layout. Absolute layout is the only mode that supports the full design system. | Always emit "type": "absolute" with explicit x/y/w/h per ds-ref-layout-grid |
-| fontColor / bgColor as formatter controls | Dashboard Studio owns panel-level colors. A viz formatter color picker for background color fights the dashboard theme. | accentColor is the only color formatter control per formatter-patterns.md D-03 rule |
-| 4 identical-size KPI tiles without hierarchy | No visual anchor. The eye has nowhere to go. | One hero KPI (1.5x size) + supporting KPIs; use semantic polarity for status vs informational |
-| Same preview.png silhouette for all vizs in a pack | Looks unfinished in Splunk's app browser. Erodes trust before the viz is even used. | generate_assets.js already has per-viz-type silhouette generation — must be called with viz-type parameter, not a generic shape |
-| Entrance animation that corrupts gauge state | showEntrance=false must be a clean no-op. A broken animation is worse than no animation. | Guard with if (!opt('showEntrance', 'true')) before the animation entry point; render directly at final state |
-| Status values hard-coded to "ok"/"warning"/"critical" | Splunk data varies enormously. "active"/"inactive", "1"/"2"/"3", "healthy"/"degraded"/"down" are all common. | statusOkValues, statusWarningValues, statusCriticalValues as comma-separated formatter inputs |
-| Pie chart with >6 slices | Slice angles below ~30 degrees are indistinguishable. | Sorted horizontal bar chart or aggregate to Top 5 + "Other" in SPL |
-| Dashboard JSON without canvas backgroundColor | Default Splunk canvas grey reads as "untouched AI output". | Always set layout.options.backgroundColor per ds-ref-anti-patterns absolute ban list |
-| 50/50 symmetric column layout | Mechanical, feels like a spreadsheet. No visual hierarchy. | 60/40 or 70/30 asymmetry; primary panel always wider |
-| Solid-color rectangle as dashboard header banner | Flat single-color rectangle banner reads as PowerPoint 2010. | Use gradient (2-3 stops at low opacity), a brand image, or no banner at all |
+| Generic field-name auto-detection wizard (UI prompt asking user to map fields) | Adds friction at install time; users expect the viz to just work with standard SPL output | Use configurable formatter defaults that match domain conventions (e.g., `host`, `count`, `severity` for SOC); auto-detect by position as fallback |
+| Per-domain SKILL.md files | Would fragment the skill system and blow the 500-line budget; domain knowledge belongs in reference files loaded on demand | Extend domain-templates.md and viz-blueprints.md with domain-specific sections |
+| Webpack or npm for auto-palette generation | Zero user deps constraint; adds install friction | Implement HSL rotation as ES5 utility in shared theme.js — pure math, no library needed |
+| Forcing every pack to use domain-unique-only vizs | Some universal viz types (KPI tile, data table) are domain-agnostic and still needed | Require minimum 2 domain-specific types out of 5-8 total; universal types allowed as supporting vizs |
+| Removing formatter field-name inputs | Field discovery reduces required wiring but should not eliminate configurability | Keep formatter inputs as overrides; auto-detect by position/name as defaults when formatter input is blank |
+
+---
+
+## Feature Deep-Dives
+
+### 1. Auto-Field Discovery
+
+**Problem:** Current `formatData()` builds `colIdx` from `data.fields`, but `updateView()` hardcodes lookups: `var host = safeStr(row[colIdx['host']])`. When the user's SPL output has a column named `src_host` or `device`, the viz shows nothing.
+
+**Solution architecture — three resolver tiers:**
+
+Tier 1 (formatter override): check formatter config first (`opt('hostField', '')`) — if set, use it explicitly.
+
+Tier 2 (domain convention scan): if blank, scan `data.fields` for name match against a domain-convention list. For SOC: try `['host', 'src', 'device', 'src_host']` in order. For energy: try `['asset', 'device_id', 'meter_id']`. This list lives in the domain-templates.md entry for each viz type.
+
+Tier 3 (position fallback): if still no match, use field by position — first string column as label field, first numeric column as value field.
+
+**Multi-series auto-detection (for line, bar, sparkline vizs):**
+
+In `formatData()`, after building `colIdx`, detect ALL numeric columns not already reserved as label/x fields:
+
+```javascript
+var numericCols = [];
+for (var i = 0; i < fields.length; i++) {
+    if (fields[i].name === '_time' || fields[i].name === '_raw') continue;
+    var testVal = rows[0] ? rows[0][i] : null;
+    if (!isNaN(safeNum(testVal, NaN))) {
+        numericCols.push({ name: fields[i].name, idx: i });
+    }
+}
+result.numericCols = numericCols;
+```
+
+The viz then iterates `numericCols` to render each as a series with `theme.series[i % seriesLen]` coloring.
+
+**This is table-stakes.** Every multi-series viz blueprint must include this pattern. Single-value vizs (KPI, gauge) only need the Tier 1 + Tier 2 resolver.
+
+**Complexity assessment:** Medium. The pattern is straightforward but must be added to every affected viz blueprint's Technical rules section and to the vp-viz template's `formatData()` block so Claude applies it consistently. The primary risk is that Claude forgets to apply it to newly written vizs — the vp-viz pre-code checklist needs a checkbox.
+
+### 2. Domain-Specific Viz Ideation
+
+**Root cause of tests 30-32 failure:** The current vp-design workflow calls domain-templates.md but that file's five domain sections (F1, SOC, Retail, Healthcare, NOC) only list viz names that all map to existing blueprints in viz-blueprints.md. Claude reads "threat_gauge" as Ring Gauge, "alert_ticker" as Live Ticker — they are just rebranded generics. The domain-templates entries need to include 2-3 types per domain that have no generic blueprint equivalent.
+
+**What makes a viz domain-specific (not just domain-named):**
+
+1. Shape metaphor matches the domain's mental model. A departure board is a fixed-column grid with runway-style horizontal bands — not a repurposed status matrix. A SOC analyst looking at a MITRE tactic matrix should recognize it as an ATT&CK heatmap without reading the label.
+
+2. Data contract reflects domain data structures. A kill-chain stage flow expects `mitre_tactic + count` with stages in a fixed canonical order (Recon → Weaponize → Deliver → Exploit → Install → C2 → Act). A generic process flow has no fixed stage ordering.
+
+3. At least one viz in the pack has no generic equivalent — something that could only exist in this domain.
+
+**Rule to add to vp-design:** The domain lock assertion. Before finalizing the inventory, the agent must assert: "Could this inventory come from a different domain with different colors?" If yes, require at least one viz replacement that is domain-locked.
+
+**New domain viz types needed in domain-templates.md:**
+
+SOC/Security:
+- `kill_chain_stage_flow` — horizontal stage band chart with fixed stage ordering (Recon through Act), band width encodes alert volume. Data: `stage + count`. Distinct from process flow: stages are fixed MITRE categories, not user-defined pipeline steps.
+- `threat_tactic_heatmap` — MITRE ATT&CK tactic (x) by severity (y) cell grid. Data: `tactic + severity + count`. Distinct from generic heatmap: tactic column ordering is fixed to ATT&CK spec, not alphabetical.
+- `dwell_time_histogram` — detection gap distribution in days (log-scale x-axis). Data: `dwell_days + count`. Domain concept with no generic equivalent: "dwell time" is a specific SOC measurement.
+- `attack_velocity_sparklines` — per-tactic attack rate over time, one sparkline row per tactic. Data: `_time + tactic + count`. Multi-series sparkline matrix with fixed row labels from ATT&CK taxonomy.
+
+Energy/Utilities:
+- `generation_mix_sankey` — directional flow from source (solar/wind/gas/nuclear) to load type. Data: `source + destination + mwh`. Domain-unique visual: energy flows require directional arrows; bars cannot encode directionality.
+- `grid_frequency_band` — frequency deviation chart with colored tolerance bands as horizontal gradient fills. Data: `_time + freq_hz`. Domain-unique: the ±0.2Hz amber and ±0.5Hz red bands ARE the story; a generic line chart with threshold lines misses the band-fill encoding.
+- `soc_thermometer` — vertical fill bar styled as a battery (top cap, segmented fill, bottom base). Data: `soc_pct`. Distinct from ring gauge: battery shape is domain-specific visual language for state of charge.
+- `asset_health_floor_plan` — spatial grid with assets in fixed positions, color-coded by health status. Data: `asset_id + status + position`. Distinct from status matrix: positions are not alphabetical, they mirror physical plant/substation layout.
+
+Aviation/Transport:
+- `departure_board` — monospace fixed-column display: Flight | Destination | Scheduled | Actual | Status. Data: `flight + dest + sched_time + status`. Distinct from data table: fixed-width columns, high-contrast, status encoding matches real airport display conventions.
+- `on_time_radial_burst` — polar bar chart, each spoke = a route, spoke length = on-time %, color = terminal or carrier. Data: `route + pct_on_time`. Domain-unique: circular because routes have no natural linear ranking; ATC engineers think in terms of route coverage not ranked lists.
+- `delay_cascade_waterfall` — additive waterfall showing how a mechanical delay becomes a gate delay becomes a turnaround delay. Data: `delay_type + minutes`. The data contract and label conventions are aviation-specific.
+- `runway_throughput_timeline` — horizontal lane chart: each lane = a runway, each time slot = a movement (arrival/departure). Data: `_time + runway + movement_type`. Domain-unique: lane metaphor mirrors physical runway layout.
+
+Healthcare/Clinical:
+- `ward_occupancy_bars` — one bar per ward, fill = occupancy %, reference line = target capacity, zone colors = safe/amber/critical. Data: `ward + occupied + capacity`. Distinct from horizontal bar list: reference lines and zone colors are clinical-requirement driven, not optional decoration.
+- `patient_flow_sankey` — patient movement: ED to observation to ward to ICU to discharge/transfer. Data: `from_location + to_location + patient_count`. Domain-unique: flow encoding with band width = patient volume mirrors how clinical operators think about throughput.
+- `triage_horizon_chart` — horizon chart of wait time by triage category over the day. Data: `hour + triage_cat + avg_wait_min`. Horizon chart is a distinct chart type (stacked area chart folded at a horizon baseline) not in the current blueprint catalog; domain match is strong.
+- `vital_sparkline_matrix` — grid of patient rows x vital columns (HR, SpO2, BP, Temp), each cell a tiny sparkline, critical cells pulsing. Data: `patient_id + hr + spo2 + bp + temp + _time`. Domain-unique: the grid shape mirrors ICU whiteboard; no generic blueprint produces this layout.
+
+Fintech/Trading:
+- `pnl_waterfall` — positive (green) and negative (red) bars from period-start to period-end with running total. Data: `category + value`. Standard waterfall but with strict domain conventions: green = gain, red = loss, total bar always last.
+- `candlestick_volume` — OHLC bars with volume histogram below. Data: `_time + open + high + low + close + volume`. Score-5 novelty; data contract requires all five fields; signals domain expertise immediately.
+- `drawdown_area` — area chart with the "underwater" region (below peak) filled in a loss-red gradient. Data: `_time + value`. Domain-unique rendering: the underwater shading IS the visual language of drawdown; a generic area chart does not have this.
+- `order_book_depth` — bid/ask stacked horizontal bars from mid-price outward. Data: `price + bid_qty + ask_qty`. Highly specific; no generic equivalent; immediately recognizable to any trading floor analyst.
+
+### 3. Accent vs Series Color Separation
+
+**Current state:** vp-design produces a design brief with `accent={hex}`. vp-viz reads `opt('accentColor', ...)` and uses this color for bar fills, arc fills, sparkline lines, gauge fills — essentially all data rendering. Accent intensity (`gi`) controls how vivid everything appears.
+
+**The problem:** Accent color is semantically a highlight / call-to-action color. In all major production design systems (Atlassian 94-token data viz system, AWS Cloudscape, USWDS 60/30/10 model) accent color is reserved for interactive affordances, critical thresholds, and focus indicators — NOT data series fills. Data series need a separate multi-step categorical palette.
+
+**Correct token model:**
+- `accent` — one color, high saturation, reserved for: threshold breach highlights, focus rings, interactive hover states, critical alert flashes (`flashCritical`), call-to-action markers. 10% of visual weight.
+- `series[]` — 4-6 colors, moderate saturation, ordered for visual distinctness at adjacent positions. Used for: bar fills, arc segments, line colors, legend swatches. Derive from brand primary hue using HSL rotation.
+- `neutral` — used to de-emphasize non-highlighted data when one series needs to stand out (Atlassian pattern: set non-highlighted series to `color.chart.neutral`).
+
+**60/30/10 rule application (already stated in vp-design SKILL.md but not enforced in vp-viz):**
+- 60% = background/panel neutrals (t.bg, t.panel)
+- 30% = brand primary fills (series[0] and series[1], derived from brand primary hue)
+- 10% = accent highlights only (threshold lines, hover focus, critical states)
+
+**Changes needed:**
+
+theme.js template additions in getTheme() return object:
+```javascript
+series: [
+    '#BRAND_PRIMARY',         // series[0] — dominant, derived from brand primary
+    '#BRAND_PRIMARY_60',      // series[1] — 60% saturation variant
+    '#BRAND_COMPLEMENTARY',   // series[2] — complementary hue (+180deg)
+    '#BRAND_ANALOGOUS_1',     // series[3] — analogous (+60deg)
+    '#BRAND_ANALOGOUS_2',     // series[4] — analogous (-60deg)
+    '#NEUTRAL_HIGHLIGHT'      // series[5] — muted, for de-emphasis
+]
+```
+
+vp-design brief format additions:
+```
+Dark palette:  bg=#0a0d14 card=#12172a text=#e8ecf5 accent=#FF6B35 series=#3A86FF,#52B788,#FFB703,#F72585,#4CC9F0
+Light palette: bg=#f5f7fa card=#ffffff text=#1a1a2e accent=#FF6B35 series=#2563eb,#16a34a,#d97706,#dc2626,#7c3aed
+```
+
+vp-viz generated code pattern for data fills:
+```javascript
+// Data fills: use series[], NOT accent
+var t = theme.getTheme(isDark ? 'dark' : 'light');
+var seriesColors = t.series || [hexFromSplunk(opt('accentColor', '#3A86FF'), '#3A86FF')];
+ctx.fillStyle = seriesColors[barIdx % seriesColors.length];
+
+// Accent reserved for:
+ctx.strokeStyle = accent;                        // threshold / reference line
+ctx.shadowColor = accent;                        // flashCritical glow
+ctx.fillStyle = theme.withAlpha(accent, 0.15);   // hover highlight tint
+```
+
+**Accent IS appropriate for:**
+- `flashCritical` LED pulse fill and glow
+- Threshold / reference lines on charts
+- Hover highlight tint (semi-transparent fill behind hovered row)
+- Focus ring on interactive elements
+- Zone breach coloring (value exceeds danger threshold)
+- Single-series vizs where there is only ONE data series (it is the primary visual — accent emphasis is correct)
+
+**Accent is NOT appropriate for:**
+- Multi-series fills where each series needs its own distinct color
+- Default bar/arc/segment fill when no threshold context applies
+- Background fills or decorative gradients (use brand-derived neutrals)
+
+**Auto-derive series palette (when designer provides only one accent):**
+
+Pure ES5, no library dependency, lives in shared theme.js as a build-time utility:
+```javascript
+function deriveSeriesPalette(baseHex, count) {
+    var hsl = hexToHSL(baseHex);
+    var colors = [];
+    for (var i = 0; i < count; i++) {
+        var h = (hsl.h + i * 60) % 360;
+        var s = Math.max(30, hsl.s - i * 10);
+        colors.push(hslToHex(h, s, hsl.l));
+    }
+    return colors;
+}
+```
+
+This is Medium complexity overall. The math is straightforward; the change surface is: (1) theme.js template, (2) vp-design brief format string, (3) code examples in affected viz blueprints, (4) one new checklist item in vp-viz pre-code checklist.
 
 ---
 
 ## Feature Dependencies
 
 ```
-Dashboard composition with depth →
-  Requires: vp-init Q7 (dashboard included?) answered YES
-  Requires: brand accent color known (from vp-design Visual Language output)
-  Requires: archetype chosen (executive / operational / analytical / SOC)
-  Unlocks: gradient background wash, faux glow, zone dividers, shadow rects
-
-Entrance animation fix (animation OFF does not break gauge) →
-  Requires: animation-recipes.md lifecycle section (Phase 9 complete)
-  Pattern: guard showEntrance check at render entry, render at final state when false
-
-flashCritical LED pulse prominence →
-  Requires: animation-recipes.md LED pulse recipe (Phase 9 complete)
-  Fix: increase shadowBlur range (current 4-12 too subtle); use brand accent color for glow
-
-Flexible status values →
-  Requires: formatter-patterns.md text input template (exists)
-  Requires: viz-blueprints.md Status Chip settings list to replace hard-coded labels
-  Blocks: any viz using statusField until resolved
-
-Unique preview.png per viz →
-  Requires: generate_assets.js per-viz-type silhouette rendering (exists in vp-create)
-  Fix: ensure each viz type maps to a distinct shape in the generator
-
-3-section formatter structure →
-  Requires: formatter-patterns.md section wrapper template (exists)
-  Requires: generation step in vp-viz SKILL.md to group options into Data / Appearance / Interaction
-
-Domain-appropriate viz inventory →
-  Requires: domain-templates.md (exists in vp-design/references/)
-  Requires: vp-design SKILL.md to consult domain-templates.md before choosing types
-
-KPI creative variants →
-  Requires: viz-blueprints.md KPI "Creative decisions YOU make" section (exists)
-  Fix: remove implicit default from generation instructions; force explicit choice among variants
+Auto-field discovery → no upstream change required (data.fields already available)
+Domain viz expansion → domain-templates.md + viz-blueprints.md additions
+Accent/series separation → theme.js template + vp-design brief format + vp-viz blueprint code examples
+Auto-palette derivation → depends on series separation (series array must exist first)
+Domain lock checklist → depends on domain viz expansion (new domain types must be in domain-templates.md)
+Mandatory dashboard step → independent; vp-create workflow only
 ```
 
 ---
 
-## MVP Recommendation
+## MVP Recommendation for v5.2.0
 
-**P0 — Bugs (break trust immediately):**
+**Phase ordering rationale:** Fix the color model first (accent separation) because it is the root cause of the "generic look despite different colors" problem — a pack can have domain-specific viz types but still feel wrong if data fills use an intense accent color instead of a harmonious series palette. Then expand domain viz types for the two documented failing domains. Field discovery is orthogonal but should land in the same milestone since hardcoded field names prevent real-world deployment.
 
-1. Fix entrance-animation-off breaking gauge rendering — users who turn off animation get a broken viz
-2. Fix zone color / accentIntensity / hover toggle wiring — settings that do nothing break the formatter UX
-3. Fix flashCritical to be visually prominent — a "critical alert" effect that barely flickers is worse than nothing
+1. **Accent vs series color separation** — highest impact per effort. Changes: theme.js template, design brief format, viz blueprint code examples, pre-code checklist. Low-Med complexity.
 
-**P1 — Table stakes (completeness gaps):**
+2. **Domain viz expansion: SOC + Energy** — two documented failing test domains. Add 3-4 domain-unique viz types per domain to domain-templates.md and brief stubs to viz-blueprints.md. Med complexity.
 
-4. Flexible status values (comma-separated formatter inputs for ok/warning/critical label matching)
-5. Dashboard composition: explicit backgroundColor + shadow rectangles + asymmetric column layout — the three changes that most visibly separate professional from AI-generated
-6. Unique preview.png silhouettes per viz type
+3. **Auto-field discovery (Tier 1 formatter + Tier 3 position fallback)** — adds two-step resolver to all viz blueprints and the vp-viz template. Full multi-series auto-detection can follow as Phase 2. Med complexity.
 
-**P2 — Differentiators (wow factor):**
+4. **Domain lock checklist in vp-design** — one assertion: "Does at least one viz in this inventory have no generic equivalent?" Low complexity, prevents regression.
 
-7. KPI creative variants — loosen viz-blueprints.md so Claude must choose a treatment, not default to centered number
-8. Gradient background wash in auto-generated dashboard JSON
-9. Zone labels (splunk.rectangle + splunk.markdown pairs) in generated dashboard
-10. Brand-specific arc sweep angle for gauges driven by mood
-
-**Defer to v5.2.0:**
-
-- Glass panel effect on Luxury/Futuristic mood: medium complexity, already in recipe files, can be applied manually in the interim
-- Domain viz inventory auto-selection: high value but requires vp-design prompt changes with uncertain scope
-- sparkline fill opacity granularity: low user impact relative to bugs above
-- Story-first zone layout: high complexity, requires new vp-init question and layout generation logic
-
----
-
-## User Expectations by Persona
-
-### The Brand Designer receiving the pack
-
-Expects: "I can display this on a screen next to our brand guidelines and it will not be embarrassing."
-Sees first: the generated preview PNGs in the Splunk app browser.
-Deal-breaker: identical preview images, flat unbranded panel colors, no visual depth.
-
-### The Splunk Admin installing the pack
-
-Expects: "It installs without errors and the formatter options actually do something."
-Sees first: the formatter sidebar when configuring a viz.
-Deal-breaker: settings that produce no visible change (accentIntensity slider changes nothing), animation breaking the render on toggle-off.
-
-### The SOC Operator using the dashboard
-
-Expects: "I can read this from 3 meters away at 2am and know immediately what is wrong."
-Sees first: the primary KPI zone in the top-left.
-Deal-breaker: all panels the same size and weight, no semantic color discipline, status colors leaking into series charts.
-
-### The Executive reviewing the dashboard
-
-Expects: "This looks designed, not auto-generated."
-Sees first: the overall composition — does it have depth, does it tell a story.
-Deal-breaker: default grey canvas, uniform panel grid, 4 identical KPI tiles with no hierarchy.
+**Defer to later milestone:**
+- Aviation domain expansion (Avinor = test32) — lower-frequency domain; add after SOC/Energy patterns validated
+- Fintech candlestick — OHLC data contract is high complexity; low user frequency
+- Auto-palette derivation — convenient but series colors can be manually specified in brief; correctness fix first
+- Mandatory dashboard step — independent of domain identity goal; own phase
 
 ---
 
@@ -220,8 +249,29 @@ Deal-breaker: default grey canvas, uniform panel grid, 4 identical KPI tiles wit
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Bug list (what is broken) | HIGH | Explicitly listed in PROJECT.md v5.1.0 target features |
-| Table stakes for viz formatter settings | HIGH | Derived directly from viz-blueprints.md + formatter-patterns.md + REQUIREMENTS.md |
-| Dashboard composition table stakes | HIGH | Sourced from ds-ref-anti-patterns, ds-ref-layout-grid, ds-ref-archetypes — these encode real Splunk production patterns |
-| Creative differentiators | MEDIUM | Based on domain-templates.md and mood-and-design.md patterns; reference bar is DataDrivers F1 app cited in PROJECT.md |
-| Priority ordering | MEDIUM | Based on impact/complexity judgment; actual user pain ranking from test29 session notes would sharpen P1/P2 boundary |
+| Auto-field discovery pattern | HIGH | Splunk custom viz API confirmed; `data.fields` in ROW_MAJOR_OUTPUT_MODE is documented; pattern is straightforward |
+| Domain-specific viz inventory: SOC | HIGH | MITRE ATT&CK stage flow and tactic heatmap confirmed by multiple authoritative sources (Exabeam, MITRE, SOC design literature) |
+| Domain-specific viz inventory: Energy | MEDIUM | Generation-mix Sankey and grid frequency band confirmed; battery SOC thermometer is inferred from domain conventions, not from a specific authoritative source |
+| Domain-specific viz inventory: Aviation | MEDIUM | Departure board and radial burst confirmed; runway timeline is inferred from domain knowledge and one aviation KPI article |
+| Domain-specific viz inventory: Healthcare | HIGH | Patient-flow Sankey, ward occupancy bars, vital sparkline matrix confirmed in ICU dashboard literature (including peer-reviewed PMC study) |
+| Domain-specific viz inventory: Fintech | HIGH | Candlestick, order book depth, P&L waterfall, drawdown area are industry-standard types confirmed by trading platform research |
+| Accent vs series color separation | HIGH | Atlassian, Cloudscape, USWDS all implement this separation explicitly; 60/30/10 rule already stated in vp-design SKILL.md |
+| Auto-palette HSL rotation algorithm | MEDIUM | HSL rotation is a standard technique; specific step parameters (60deg hue, 10% sat reduction) are reasonable defaults but need visual validation against test packs |
+
+---
+
+## Sources
+
+- [Splunk Custom Visualization API Reference](https://help.splunk.com/en/splunk-cloud-platform/developing-views-and-apps-for-splunk-web/10.0.2503/custom-visualizations/custom-visualization-api-reference) — ROW_MAJOR_OUTPUT_MODE data structure confirmation
+- [Atlassian Data Visualization Color Overview](https://atlassian.design/foundations/color-new/data-visualization-color) — 94-token system, categorical vs accent token separation
+- [Cloudscape Design System Data Visualization Colors](https://cloudscape.design/foundation/visual-foundation/data-vis-colors/) — series vs accent vs neutral token roles
+- [Designing the Perfect SOC Security Dashboard — Medium](https://medium.com/@adarshpandey180/designing-the-perfect-soc-security-dashboard-a8deea653eb0) — SOC viz type requirements
+- [SOC Overview Dashboard — Exabeam](https://docs.exabeam.com/en/dashboard/all/dashboard-guide/pre-built-dashboards/security-operations-center-management-dashboards/soc-overview.html) — canonical SOC dashboard structure
+- [MITRE ATT&CK Framework](https://attack.mitre.org/) — tactic/technique ordering for kill-chain and matrix vizs
+- [Air Traffic Data Visualization — LightningChart](https://lightningchart.com/blog/python/air-traffic-data-visualization/) — aviation-specific chart patterns
+- [23 Visuals to Boost Your Airline KPI Dashboard](https://www.informationdesign.io/2020/03/10/23-visuals-to-boost-your-airline-kpi-dashboard/) — departure board and route radial patterns
+- [Healthcare Data Visualization — CleanChart 2026](https://www.cleanchart.app/blog/healthcare-data-visualization) — patient flow Sankey, ward occupancy, vital sparkline matrix
+- [ICU Dashboard Design — PMC/NCBI](https://pmc.ncbi.nlm.nih.gov/articles/PMC10565627/) — peer-reviewed ICU dashboard study; sparkline matrix and ward overview confirmed
+- [Order Book Heatmap — Bookmap](https://bookmap.com/blog/heatmap-in-trading-the-complete-guide-to-market-depth-visualization) — fintech-specific viz types
+- [Bold BI Energy Dashboard Examples](https://www.boldbi.com/dashboard-examples/energy/) — energy domain viz inventory
+- [USWDS Theme Color Tokens](https://designsystem.digital.gov/design-tokens/color/theme-tokens/) — 60/30/10 and accent role separation
