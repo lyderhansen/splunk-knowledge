@@ -45,13 +45,13 @@ Example: "Barlow Condensed for display, monospace for values" or "system sans-se
 - Recommended only if you already know your data schema
 
 ### 6. Viz inventory
-Which vizs does this pack need? Can be specific names or general categories.
-Example: "KPI hero, severity strip, trend chart, data table, geo map"
-Recommended: 3-5 for a balanced suite, max 8.
+Which vizs does this pack need? Can be specific names, general categories, or "let Claude decide."
+vp-design step 3b will research the domain's visual language and propose domain-unique viz types — at least 2 vizs that could not exist outside this industry.
+Example: "KPI hero + whatever fits the domain" or "6 vizs, you pick"
+Recommended: 4-6 for a balanced suite, max 8.
 
 ### 7. Dashboard included?
-- **Yes:** a Dashboard Studio JSON dashboard will be built alongside the vizs
-- **No:** viz pack only, user creates dashboards manually
+- **Always yes.** Every viz pack ships with a Dashboard Studio JSON dashboard that showcases all vizs. This is mandatory — vp-create Step 3c generates it automatically.
 
 ## Routing
 
@@ -65,8 +65,8 @@ Multi-viz pack (inventory > 1):
 Production data (any count):
   → Add: spl-gotchas before savedsearches.conf
 
-Dashboard included (question 7 = yes):
-  → Add: ds-create from splunk-dashboard-studio
+Dashboard (always included):
+  → vp-create Step 3c generates dashboard automatically
   → If tabs: also add ds-int-tabs
   → If drilldowns: also add ds-int-drilldowns
 ```

@@ -163,12 +163,24 @@ for (var fi = 0; fi < formatterKeys.length; fi++) {
 }
 
 // Reverse: extract opt('key') and getOption(config, ns, 'key') calls from jsSrc
-var optPattern = /(?:opt|getOption)\((?:[^,]*,\s*[^,]*,\s*)?(['"])([^'"]+)\1/g;
+// For opt('key', 'fallback') — capture only the first quoted arg (the key, not the fallback)
+// For getOption(config, ns, 'key', fallback) — capture the third arg (after two non-string args)
+var optPattern = /\bopt\(\s*(['"])([^'"]+)\1/g;
+var getOptPattern = /\bgetOption\([^,]+,\s*[^,]+,\s*(['"])([^'"]+)\1/g;
+var FALLBACK_STRINGS = {'true':1,'false':1,'auto':1,'dark':1,'light':1,'normal':1,'slow':1,'fast':1,'center':1,'top':1,'left':1,'right':1,'none':1,'default':1,'0':1,'1':1,'50':1,'100':1,'-1':1,'':1};
 var optMatch;
 while ((optMatch = optPattern.exec(jsSrc)) !== null) {
     var optKey = optMatch[2];
+    if (FALLBACK_STRINGS[optKey]) continue;
     if (formatterKeys.indexOf(optKey) === -1) {
-        emitWarn('D08', 'JS calls opt/getOption("' + optKey + '") but no matching formatter control found');
+        emitWarn('D08', 'JS calls opt("' + optKey + '") but no matching formatter control found');
+    }
+}
+while ((optMatch = getOptPattern.exec(jsSrc)) !== null) {
+    var optKey2 = optMatch[2];
+    if (FALLBACK_STRINGS[optKey2]) continue;
+    if (formatterKeys.indexOf(optKey2) === -1) {
+        emitWarn('D08', 'JS calls getOption("' + optKey2 + '") but no matching formatter control found');
     }
 }
 
