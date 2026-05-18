@@ -5,7 +5,7 @@
 - ✅ **v4.1.0 splunk-viz-packs Hardening** — Phases 1-5 (shipped 2026-05-15)
 - ✅ **v5.0.0 Design Awesomeness** — Phases 6-9 (shipped 2026-05-16)
 - ✅ **v5.1.0 Viz Hardening & Dashboard Wow-Factor** — Phases 10-12 (shipped 2026-05-18)
-- 🚧 **v5.2.0 Smart Vizs & Domain Identity** — Phases 13-15 (in progress)
+- ✅ **v5.2.0 Smart Vizs & Domain Identity** — Phases 13-15 (shipped 2026-05-18)
 
 ## Phases
 
@@ -41,13 +41,16 @@ Full details: `.planning/milestones/v4.1.0-ROADMAP.md`
 
 </details>
 
-### 🚧 v5.2.0 Smart Vizs & Domain Identity (In Progress)
+<details>
+<summary>✅ v5.2.0 Smart Vizs & Domain Identity (Phases 13-15) — SHIPPED 2026-05-18</summary>
 
-**Milestone Goal:** Generated vizs auto-discover data fields (no hardcoded column names), each pack includes domain-specific creative viz types (not just gauge/KPI/bar/line/heatmap/table), accent color is used correctly (highlights only), and the dashboard is mandatory with all vizs included.
+- [x] Phase 13: Accent Architecture Foundation (3/3 plans) — completed 2026-05-18
+- [x] Phase 14: Smart Fields & Domain Ideation (2/2 plans) — completed 2026-05-18
+- [x] Phase 15: Mandatory Dashboard Packaging (1/1 plans) — completed 2026-05-18
 
-- [x] **Phase 13: Accent Architecture Foundation** — Fix color model: series fills use t.series[i], accent reserved for highlight/glow/focus, accentIntensity uncapped, preview.png silhouettes distinct per viz type, continuous animations use setInterval 30fps (not rAF 60fps) — completed 2026-05-18
-- [x] **Phase 14: Smart Fields & Domain Ideation** — Auto-discover numeric and column fields from data.fields dynamically; exclude _ fields; domain-first viz type ideation with proxy patterns for complex types — completed 2026-05-18
-- [x] **Phase 15: Mandatory Dashboard Packaging** — vp-create Step 3c generates Dashboard Studio view with all vizs; panel count verified against viz directory count; dashboard gated on clean validation — completed 2026-05-18
+Full details: `.planning/milestones/v5.2.0-ROADMAP.md`
+
+</details>
 
 ## Phase Details
 
