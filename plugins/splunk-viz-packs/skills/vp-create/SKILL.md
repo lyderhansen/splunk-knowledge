@@ -154,6 +154,7 @@ Viz pack ready for install
   Path: /full/absolute/path/to/{{PACK_ID}}.tar.gz
   Size: XX KB
   Vizs: viz1, viz2, viz3
+  Dashboard: {pack_id}_overview (contains all {N} vizs)
 
 Install: Upload via Splunk Web → Manage Apps → Install from File
 Restart: Required for static images to be served
@@ -184,5 +185,8 @@ Save to `default/data/ui/nav/default.xml`.
 - [ ] No src/ or node_modules/ in archive
 - [ ] No .DS_Store or ._* files
 - [ ] Nav bar exists (default.xml)
+- [ ] Dashboard exists (default/data/ui/views/{pack_id}_overview.xml present)
+- [ ] Dashboard references ALL vizs (panel count == viz directory count in appserver/static/visualizations/)
+- [ ] Nav bar default view set to dashboard ({pack_id}_overview)
 - [ ] Light theme tested (themeMode=light in formatter, verify text is readable)
 ```
