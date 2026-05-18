@@ -72,6 +72,7 @@ re-build (Step 1), and re-validate (Step 2) until clean.**
 MUST LOAD before writing dashboard JSON:
 1. **[references/dashboard-json-template.md](references/dashboard-json-template.md)** — exact JSON structure, WRONG patterns, viz type format, z-order rules. Read this FIRST.
 2. **`vp-design/references/dashboard-composition.md`** — visual hierarchy, depth recipes, background treatment.
+3. **Conditional — ds-int-tabs** (`plugins/splunk-dashboard-studio/skills/ds-int-tabs/SKILL.md`) — Load this before writing ANY dashboard JSON if EITHER condition is true: (a) the viz inventory from vp-design has 7 or more vizs, OR (b) the user explicitly requested a tabbed layout. The condition is evaluated from the viz inventory established in vp-design — do not recount at generation time. (per D-07/D-08)
 
 **Requirements:**
 
@@ -189,4 +190,6 @@ Save to `default/data/ui/nav/default.xml`.
 - [ ] Dashboard references ALL vizs (panel count == viz directory count in appserver/static/visualizations/)
 - [ ] Nav bar default view set to dashboard ({pack_id}_overview)
 - [ ] Light theme tested (themeMode=light in formatter, verify text is readable)
+- [ ] Dashboard has branded title panel (splunk.markdown viz_title at y <= 200 in structure)
+- [ ] ds-int-tabs loaded before dashboard JSON if pack has 7+ vizs or tabs requested
 ```
