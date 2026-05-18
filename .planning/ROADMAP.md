@@ -56,7 +56,7 @@ Full details: `.planning/milestones/v5.2.0-ROADMAP.md`
 ### v5.3.0 Production Polish & Interactive Dashboards
 
 - [x] **Phase 16: Code Quality & Reference Cleanup** — Trim canvas-recipes.md and fix generated code patterns (accentIntensity cap, hover early-exit, KPI sparkline, preview silhouettes) (completed 2026-05-18)
-- [ ] **Phase 17: Dashboard Schema & Composition** — Fix tab schema enforcement, upgrade background treatment, mandate branded titles, auto-load ds-int-tabs
+- [x] **Phase 17: Dashboard Schema & Composition** — Fix tab schema enforcement, upgrade background treatment, mandate branded titles, auto-load ds-int-tabs (completed 2026-05-18)
 - [ ] **Phase 18: Interactive Dashboard Features** — Drilldown token flows, input filter controls, default tokens so dashboard works before any click
 
 ## Phase Details
@@ -245,8 +245,8 @@ Plans:
   4. When a user requests a dashboard with 7 or more vizs or explicitly requests tabs, ds-int-tabs is loaded before any dashboard JSON is written — no manual reminder required
 **Plans**: 2 plans
 Plans:
-- [ ] 17-01-PLAN.md — Add DS2/DS3/DS4 checks to validate_dash.js + tests (tab schema, background, title panel)
-- [ ] 17-02-PLAN.md — Update dashboard-json-template.md with mandatory title section + vp-create SKILL.md ds-int-tabs conditional load
+- [x] 17-01-PLAN.md — Add DS2/DS3/DS4 checks to validate_dash.js + tests (tab schema, background, title panel)
+- [x] 17-02-PLAN.md — Update dashboard-json-template.md with mandatory title section + vp-create SKILL.md ds-int-tabs conditional load
 **UI hint**: yes
 
 ### Phase 18: Interactive Dashboard Features
@@ -280,5 +280,5 @@ Plans:
 | 14. Smart Fields & Domain Ideation | v5.2.0 | 0/2 | Not started | - |
 | 15. Mandatory Dashboard Packaging | v5.2.0 | 0/1 | Not started | - |
 | 16. Code Quality & Reference Cleanup | v5.3.0 | 2/2 | Complete    | 2026-05-18 |
-| 17. Dashboard Schema & Composition | v5.3.0 | 0/? | Not started | - |
+| 17. Dashboard Schema & Composition | v5.3.0 | 2/2 | Complete    | 2026-05-18 |
 | 18. Interactive Dashboard Features | v5.3.0 | 0/? | Not started | - |

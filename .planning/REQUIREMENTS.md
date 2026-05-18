@@ -7,18 +7,18 @@
 
 ### Code Quality (CQ)
 
-- [ ] **CQ-01**: canvas-recipes.md trimmed from 998 to under 500 lines — duplicate sections removed, remaining content cross-references split files
-- [ ] **CQ-02**: Generated viz code never clamps accentIntensity to 1.0 — verified by grep across test output
-- [ ] **CQ-03**: Every generated viz has showHoverEffect early-exit in _onMouseMove — no exceptions
-- [ ] **CQ-04**: KPI viz blueprint includes sparkline as a standard feature — sparkPlacement and sparkHeight in Settings
-- [ ] **CQ-05**: Preview.png uses @viz-type annotation from source file — unique silhouette per viz, no duplicates in same pack
+- [x] **CQ-01**: canvas-recipes.md trimmed from 998 to under 500 lines — duplicate sections removed, remaining content cross-references split files
+- [x] **CQ-02**: Generated viz code never clamps accentIntensity to 1.0 — verified by grep across test output
+- [x] **CQ-03**: Every generated viz has showHoverEffect early-exit in _onMouseMove — no exceptions
+- [x] **CQ-04**: KPI viz blueprint includes sparkline as a standard feature — sparkPlacement and sparkHeight in Settings
+- [x] **CQ-05**: Preview.png uses @viz-type annotation from source file — unique silhouette per viz, no duplicates in same pack
 
 ### Dashboard Quality (DQ)
 
-- [ ] **DQ-01**: Tabbed dashboard JSON uses correct schema — tabs.items are objects with layoutId+label, barPosition not tabBarPosition, no "Layout undefined" errors
-- [ ] **DQ-02**: Dashboard background is visually dramatic — not just a dark gradient, uses depth layers and brand-specific treatment
-- [ ] **DQ-03**: Dashboard always has a visible branded title — splunk.markdown panel at top
-- [ ] **DQ-04**: ds-int-tabs skill is automatically loaded when dashboard has 7+ vizs or user requests tabs
+- [x] **DQ-01**: Tabbed dashboard JSON uses correct schema — tabs.items are objects with layoutId+label, barPosition not tabBarPosition, no "Layout undefined" errors
+- [x] **DQ-02**: Dashboard background is visually dramatic — not just a dark gradient, uses depth layers and brand-specific treatment
+- [x] **DQ-03**: Dashboard always has a visible branded title — splunk.markdown panel at top
+- [x] **DQ-04**: ds-int-tabs skill is automatically loaded when dashboard has 7+ vizs or user requests tabs
 
 ### Interactive Features (INT)
 
