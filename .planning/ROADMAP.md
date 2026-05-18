@@ -151,9 +151,10 @@ Plans:
   4. A user reading a generated dashboard can identify the story from layout alone — the arrangement follows data narrative order (summary to detail, alert to root-cause, or KPI to trend)
 **Plans**: 2 plans
 Plans:
-- [x] 11-01-PLAN.md — Expand viz-blueprints.md settings and creative freedom language
-- [x] 11-02-PLAN.md — Add drilldown field template and comma-separated input pattern to formatter-patterns.md
+- [ ] 12-01-PLAN.md — Create dashboard-composition.md reference and wire into vp-design SKILL.md
+- [ ] 12-02-PLAN.md — Extend generate_assets.js with gradient background PNG generation
 **UI hint**: yes
+
 
 ## Progress
 
@@ -170,4 +171,4 @@ Plans:
 | 9. Animation & Motion | v5.0.0 | 3/3 | Complete | 2026-05-16 |
 | 10. Foundation Fixes | v5.1.0 | 0/? | Not started | - |
 | 11. Blueprint Expansion & Creative Freedom | v5.1.0 | 0/2 | Not started | - |
-| 12. Dashboard Composition | v5.1.0 | 0/? | Not started | - |
+| 12. Dashboard Composition | v5.1.0 | 0/2 | Not started | - |
