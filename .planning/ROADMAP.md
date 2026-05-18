@@ -134,7 +134,10 @@ Plans:
   3. User moves KPI text placement (center/top/left/right) via the formatter and sees the label and value reposition accordingly
   4. Two KPI tiles generated for different brands look visually distinct — different label position, trend indicator shape, or background treatment per brand personality
   5. User reads the Drilldown Field formatter control and immediately understands what clicking a viz row will pass downstream — help text is unambiguous
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 11-01-PLAN.md — Expand viz-blueprints.md settings and creative freedom language
+- [ ] 11-02-PLAN.md — Add drilldown field template and comma-separated input pattern to formatter-patterns.md
 **UI hint**: yes
 
 ### Phase 12: Dashboard Composition
@@ -146,7 +149,10 @@ Plans:
   2. A generated dashboard has an identifiable hero zone — at least one KPI or primary viz occupies 40-60% of canvas width at the top, visually larger than secondary panels
   3. A generated dashboard shows card-group depth — background rectangles establish section separators between hero, primary, and detail zones
   4. A user reading a generated dashboard can identify the story from layout alone — the arrangement follows data narrative order (summary to detail, alert to root-cause, or KPI to trend)
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 11-01-PLAN.md — Expand viz-blueprints.md settings and creative freedom language
+- [ ] 11-02-PLAN.md — Add drilldown field template and comma-separated input pattern to formatter-patterns.md
 **UI hint**: yes
 
 ## Progress
@@ -163,5 +169,5 @@ Plans:
 | 8. Design Quality Gate & Edge Case Resilience | v5.0.0 | 3/3 | Complete | 2026-05-16 |
 | 9. Animation & Motion | v5.0.0 | 3/3 | Complete | 2026-05-16 |
 | 10. Foundation Fixes | v5.1.0 | 0/? | Not started | - |
-| 11. Blueprint Expansion & Creative Freedom | v5.1.0 | 0/? | Not started | - |
+| 11. Blueprint Expansion & Creative Freedom | v5.1.0 | 0/2 | Not started | - |
 | 12. Dashboard Composition | v5.1.0 | 0/? | Not started | - |
