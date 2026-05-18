@@ -202,7 +202,7 @@ destroy: function() {
 }
 ```
 
-PREFER: For production animations, use the rAF timestamp-based pattern in [animation-recipes.md](../../vp-recipes/references/animation-recipes.md) which provides smooth 60fps, auto-pauses on hidden tabs, and is cancelable via a single flag. The setInterval pattern above is retained as a simple reference for non-animated vizs that just need a timer.
+PREFER: For one-shot entrance animations, use the rAF timestamp-based pattern in [animation-recipes.md](../../vp-recipes/references/animation-recipes.md) — smooth, auto-pauses on hidden tabs, cancelable via a single flag. For continuous animations (LED pulse, breathing effects), use setInterval at 30fps per ACC-05 — rAF at 60fps is too CPU-intensive for dashboards with multiple animated vizs.
 
 ## Common mistakes
 
