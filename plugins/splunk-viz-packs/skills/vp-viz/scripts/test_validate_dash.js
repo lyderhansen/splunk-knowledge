@@ -862,6 +862,83 @@ console.log('\n-- DS5: no eventHandlers (no spurious DS5) --');
 r = run(['--xml', XML_DS_OK]);
 assertNotIncludes('DS5 no handlers: no FAIL DS5', r.stdout, 'FAIL DS5');
 
+// ---- DS4: structure item with "item" property (not "vizId") ----
+
+console.log('\n-- DS4: splunk.markdown at y=10 using "item" key (PASS, VF-01) --');
+var XML_DS4_ITEM_KEY = tmpFile('ds4_item_key.xml', wrapXml({
+    dataSources: {},
+    visualizations: {
+        viz_bg_gradient: {
+            type: 'splunk.image',
+            options: { src: '/static/app/myapp/bg_gradient.png', preserveAspectRatio: 'none' }
+        },
+        viz_title: {
+            type: 'splunk.markdown',
+            options: { markdown: '# Dashboard' }
+        }
+    },
+    layout: {
+        structure: [
+            { item: 'viz_bg_gradient', position: { x: 0, y: 0, w: 1920, h: 1080 } },
+            { item: 'viz_title', position: { x: 20, y: 10, w: 800, h: 80 } }
+        ]
+    }
+}));
+r = run(['--xml', XML_DS4_ITEM_KEY]);
+assertNotIncludes('DS4 item key: no FAIL DS4 in stdout', r.stdout, 'FAIL DS4');
+assert('DS4 item key exits 0', r.code, 0, r.stdout + r.stderr);
+
+// ---- DS5w: drilldown token with non-wildcard default value (WARN, VF-03) ----
+
+var XML_DS5_NONWILDCARD = tmpFile('ds5_nonwildcard.xml', wrapXml({
+    dataSources: {
+        ds_main: { type: 'ds.search', options: { query: '| makeresults' } }
+    },
+    visualizations: {
+        viz_bg_gradient: {
+            type: 'splunk.image',
+            options: { src: '/static/app/myapp/bg_gradient.png', preserveAspectRatio: 'none' }
+        },
+        viz_title: {
+            type: 'splunk.markdown',
+            options: { markdown: '# Dashboard' }
+        },
+        viz_kpi: {
+            type: 'myapp.kpi',
+            dataSources: { primary: 'ds_main' },
+            options: { 'myapp.kpi.valueField': 'value' },
+            eventHandlers: [
+                {
+                    type: 'drilldown.setToken',
+                    options: {
+                        tokens: [{ token: 'selected_host', key: 'click.value' }]
+                    }
+                }
+            ]
+        }
+    },
+    defaults: {
+        tokens: {
+            default: {
+                selected_host: { value: 'all_hosts' }
+            }
+        }
+    },
+    layout: {
+        structure: [
+            { vizId: 'viz_bg_gradient', position: { x: 0, y: 0, w: 1920, h: 1080 } },
+            { vizId: 'viz_title', position: { x: 20, y: 10, w: 800, h: 80 } },
+            { vizId: 'viz_kpi', position: { x: 20, y: 120, w: 400, h: 300 } }
+        ]
+    }
+}));
+
+console.log('\n-- DS5w: setToken handler with non-wildcard default (WARN, VF-03) --');
+r = run(['--xml', XML_DS5_NONWILDCARD]);
+assertIncludes('DS5w non-wildcard WARN: stdout contains WARN DS5w', r.stdout, 'WARN DS5w');
+assert('DS5w exits 0 (WARN does not fail)', r.code, 0, r.stdout + r.stderr);
+assertNotIncludes('DS5w no FAIL DS5: stdout does not contain FAIL DS5', r.stdout, 'FAIL DS5');
+
 // ---- Cleanup temp files ----
 tmpFiles.forEach(function(p) {
     try { fs.unlinkSync(p); } catch (e) {}
