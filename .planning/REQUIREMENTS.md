@@ -22,9 +22,9 @@
 
 ### Interactive Features (INT)
 
-- [ ] **INT-01**: Generated dashboards have working drilldown token flows — click a viz panel, downstream panels filter
-- [ ] **INT-02**: Generated dashboards have input dropdowns for common filters (time range, category)
-- [ ] **INT-03**: Drilldown tokens have default values so dashboard works before any click
+- [x] **INT-01**: Generated dashboards have working drilldown token flows — click a viz panel, downstream panels filter
+- [x] **INT-02**: Generated dashboards have input dropdowns for common filters (time range, category)
+- [x] **INT-03**: Drilldown tokens have default values so dashboard works before any click
 
 ## Future Requirements
 

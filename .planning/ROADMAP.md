@@ -57,7 +57,7 @@ Full details: `.planning/milestones/v5.2.0-ROADMAP.md`
 
 - [x] **Phase 16: Code Quality & Reference Cleanup** — Trim canvas-recipes.md and fix generated code patterns (accentIntensity cap, hover early-exit, KPI sparkline, preview silhouettes) (completed 2026-05-18)
 - [x] **Phase 17: Dashboard Schema & Composition** — Fix tab schema enforcement, upgrade background treatment, mandate branded titles, auto-load ds-int-tabs (completed 2026-05-18)
-- [ ] **Phase 18: Interactive Dashboard Features** — Drilldown token flows, input filter controls, default tokens so dashboard works before any click
+- [x] **Phase 18: Interactive Dashboard Features** — Drilldown token flows, input filter controls, default tokens so dashboard works before any click (completed 2026-05-19)
 
 ## Phase Details
 
@@ -259,9 +259,9 @@ Plans:
   3. Every drilldown token in a generated dashboard has a default value defined in defaults.tokens — the dashboard displays meaningful data before any click, not an empty or broken panel
 **Plans**: 3 plans
 Plans:
-- [ ] 18-01-PLAN.md — Create dashboard-interactivity.md reference + wire MUST LOAD gate into vp-create SKILL.md
-- [ ] 18-02-PLAN.md — Add DS5 check (setToken without token default) to validate_dash.js + tests
-- [ ] 18-03-PLAN.md — Series color formatter overhaul, conf flags, SKILL.md cleanup, viz-blueprints _onClick template
+- [x] 18-01-PLAN.md — Create dashboard-interactivity.md reference + wire MUST LOAD gate into vp-create SKILL.md
+- [x] 18-02-PLAN.md — Add DS5 check (setToken without token default) to validate_dash.js + tests
+- [x] 18-03-PLAN.md — Series color formatter overhaul, conf flags, SKILL.md cleanup, viz-blueprints _onClick template
 **UI hint**: yes
 
 ## Progress
@@ -285,4 +285,4 @@ Plans:
 | 15. Mandatory Dashboard Packaging | v5.2.0 | 0/1 | Not started | - |
 | 16. Code Quality & Reference Cleanup | v5.3.0 | 2/2 | Complete    | 2026-05-18 |
 | 17. Dashboard Schema & Composition | v5.3.0 | 2/2 | Complete    | 2026-05-18 |
-| 18. Interactive Dashboard Features | v5.3.0 | 0/3 | Not started | - |
+| 18. Interactive Dashboard Features | v5.3.0 | 3/3 | Complete    | 2026-05-19 |
