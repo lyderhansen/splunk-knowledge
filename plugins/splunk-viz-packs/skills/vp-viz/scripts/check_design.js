@@ -15,7 +15,7 @@
  *   stderr -- FINDING: NDJSON for FAIL only (WARNs do NOT write to stderr)
  *
  * Checks (D01-D06, D08-D11 -- DQG-01 through DQG-11, skipping DQG-07):
- *   D01 (WARN) -- visualization_source.js has no gradient calls
+ *   D01 (WARN or FAIL) -- WARN when no gradient calls; FAIL when fillTechnique:gradient declared in theme.js but no gradient calls found
  *   D02 (WARN) -- visualization_source.js has no shadow effects
  *   D03 (FAIL) -- visualization_source.js has no hero sizing formula
  *   D04 (WARN) -- theme.js has no rgba() or tint references
@@ -91,10 +91,20 @@ function emitWarn(code, message) {
     // No stderr write for WARN (only FAIL writes FINDING: NDJSON)
 }
 
-// ---- D01 (WARN, DQG-01): Gradient usage in visualization_source.js ----
+// ---- D01 (WARN or FAIL, DQG-01): Gradient usage in visualization_source.js ----
+// FAIL when theme.js declares fillTechnique containing 'gradient' — design commitment enforced.
+// WARN when fillTechnique is absent or non-gradient — older packs not broken.
 
 if (jsSrc.indexOf('createLinearGradient') === -1 && jsSrc.indexOf('createRadialGradient') === -1) {
-    emitWarn('D01', 'visualization_source.js has no gradient calls (createLinearGradient or createRadialGradient); consider adding depth via gradients');
+    var d01GradientRequired = themeContent.indexOf('fillTechnique') !== -1 &&
+        themeContent.toLowerCase().indexOf('gradient') !== -1;
+    if (d01GradientRequired) {
+        emitFail('D01', jsSrcPath,
+            'theme.js declares fillTechnique:gradient but visualization_source.js has no gradient calls (createLinearGradient or createRadialGradient); add gradient fills to match the declared visual language',
+            { fillTechniqueGradient: true });
+    } else {
+        emitWarn('D01', 'visualization_source.js has no gradient calls (createLinearGradient or createRadialGradient); consider adding depth via gradients');
+    }
 }
 
 // ---- D02 (WARN, DQG-02): Shadow effects in visualization_source.js ----
