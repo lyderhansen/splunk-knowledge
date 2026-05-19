@@ -396,11 +396,11 @@ In `updateView`, after the theme/opt setup, read series color controls:
 
 ```javascript
 // Series colors — hexFromSplunk() required on ALL color picker reads
-var s1 = hexFromSplunk(opt('series1Color', ''), theme.SERIES[0] || t.accent);
-var s2 = hexFromSplunk(opt('series2Color', ''), theme.SERIES[1] || t.accent);
-var s3 = hexFromSplunk(opt('series3Color', ''), theme.SERIES[2] || t.accent);
-var s4 = hexFromSplunk(opt('series4Color', ''), theme.SERIES[3] || t.accent);
-var s5 = hexFromSplunk(opt('series5Color', ''), theme.SERIES[4] || t.accent);
+var s1 = hexFromSplunk(opt('series1Color', ''), t.series[0] || t.accent);
+var s2 = hexFromSplunk(opt('series2Color', ''), t.series[1] || t.accent);
+var s3 = hexFromSplunk(opt('series3Color', ''), t.series[2] || t.accent);
+var s4 = hexFromSplunk(opt('series4Color', ''), t.series[3] || t.accent);
+var s5 = hexFromSplunk(opt('series5Color', ''), t.series[4] || t.accent);
 
 // Overflow colors (comma-separated, for series 6+)
 var overflowRaw = opt('seriesColorsOverflow', '');

@@ -311,10 +311,11 @@ function runDashChecks(filePathArg, dashJson) {
         if (!Array.isArray(handlers)) { continue; }
         for (var hi = 0; hi < handlers.length; hi++) {
             var handler = handlers[hi];
-            if (handler.type !== 'drilldown.setToken') { continue; }
+            if (!handler || handler.type !== 'drilldown.setToken') { continue; }
             var toks = (handler.options && Array.isArray(handler.options.tokens))
                 ? handler.options.tokens : [];
             for (var ti2 = 0; ti2 < toks.length; ti2++) {
+                if (!toks[ti2]) { continue; }
                 var tokName = toks[ti2].token;
                 if (tokName && setTokenNames.indexOf(tokName) === -1) {
                     setTokenNames.push(tokName);
