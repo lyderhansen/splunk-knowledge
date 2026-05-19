@@ -27,6 +27,13 @@ function lerpColor(a, b, t) {
     return '#' + ((1 << 24) + (rr << 16) + (gg << 8) + bl).toString(16).slice(1);
 }
 
+// Visual Language — set these values to match the brand's design language.
+// fillTechnique: 'gradient' | 'flat' | 'textured'
+// Used by check_design.js D01: 'gradient' escalates missing gradient calls to FAIL.
+var VISUAL_LANG = {
+    fillTechnique: '{{FILL_TECHNIQUE}}'  // 'gradient' | 'flat' | 'textured'
+};
+
 var DARK = {
     name: 'dark',
     bg: '{{DARK_BG}}',
@@ -199,6 +206,7 @@ module.exports = {
     parseColors: parseColors,
     parseInts: parseInts,
     FONTS: FONTS,
+    VISUAL_LANG: VISUAL_LANG,
     getSpacing: getSpacing,
     getHoverAlpha: getHoverAlpha,
     getTypoScale: getTypoScale,
