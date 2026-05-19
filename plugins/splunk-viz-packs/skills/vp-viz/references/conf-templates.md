@@ -38,6 +38,14 @@ default_height = {{HEIGHT}}
 allow_user_selection = true
 disabled = 0
 search_fragment = {{FRAGMENT_80}}
+
+> **Data contract:** `search_fragment` MUST contain a realistic SPL shape showing the expected
+> columns by name — e.g. `| table rank, driver, team, points, delta` or
+> `| stats count by host status`. This is the user-facing contract: users know exactly what
+> columns to provide from their search. Do NOT leave `{{FRAGMENT_80}}` as a bare placeholder;
+> replace it with an example `| table ...` or `| stats ...` matching the viz's Expected columns
+> (see viz-blueprints.md).
+
 supports_drilldown = true
 supports_trellis = true
 ```

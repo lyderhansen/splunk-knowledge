@@ -116,12 +116,18 @@ WRONG: hardcoded if (status === 'ok') → MUST read comma-separated statusOkValu
 
 ## Section structure
 
-Every viz gets a minimum of 4 sections with these EXACT `section-label` values (casing matters):
+Every viz gets a minimum of 3 sections with these EXACT `section-label` values (casing matters):
 
-1. `Data configurations` — field name mappings (text inputs)
+1. **NO `Data configurations` section for most vizs.** Field binding is via `formatData()` column-index map. Only single-value and generic table vizs get a single optional field input with empty default.
 2. `Data display` — labels, units, toggles, decimals
 3. `Color and style` — themeMode, series color pickers (1-5), seriesColorsOverflow, fieldColorMap, accentIntensity
 4. `Effects` — individual mood effect toggles (showAmbientLight, showVignette, showGlow, showGlassPanel). Default all to "true"; user can disable per effect.
+
+> **Data binding rule (D-01):** Most vizs do NOT have a "Data configurations" formatter section.
+> The `formatData()` method builds a `colIdx` map from `data.fields` — vizs access columns by
+> name, not position. The data contract is `search_fragment` in visualizations.conf (see conf-templates.md).
+> EXCEPTION: single-value and generic table vizs may include ONE optional `field` text input
+> with an empty `value=""` default.
 
 Add `help=` text only on non-obvious controls (accentIntensity, effect toggles). Self-explanatory controls (Theme, Accent color) do not need help text. (D-13)
 
@@ -201,24 +207,15 @@ function getNS(viz) {
 
 ## Full formatter example
 
-A complete formatter.html for a KPI viz (4 sections, 12 controls). This shows the
+A complete formatter.html for a KPI viz (3 sections, 10 controls). This shows the
 target pattern — add or remove controls per viz type using viz-blueprints.md Settings:
 list as your guide (D-01, D-04).
 
-Note: This example shows 12 controls (4 sections). Add or remove controls per viz type
+Note: This example shows 10 controls (3 sections). Add or remove controls per viz type
 using viz-blueprints.md Settings: list as your guide (D-01, D-04).
 
 ```html
-<form class="splunk-formatter-section" section-label="Data configurations">
-    <splunk-control-group label="Value field" help="SPL column with the KPI value">
-        <splunk-text-input name="{{VIZ_NAMESPACE}}.valueField" value="value">
-        </splunk-text-input>
-    </splunk-control-group>
-    <splunk-control-group label="Delta field" help="SPL column with the comparison value">
-        <splunk-text-input name="{{VIZ_NAMESPACE}}.deltaField" value="delta">
-        </splunk-text-input>
-    </splunk-control-group>
-</form>
+<!-- No Data configurations section — KPI uses formatData() column indexing. search_fragment is the data contract. -->
 
 <form class="splunk-formatter-section" section-label="Data display">
     <splunk-control-group label="Label" help="Display label for this KPI">

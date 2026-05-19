@@ -145,13 +145,13 @@ WRONG: themeMode value="dark"          → MUST be value="auto"
 
 ### Formatter structure
 
-Every viz gets a minimum of 4 sections:
-1. **Data configurations** — field name mappings (text inputs)
+Every viz gets a minimum of 3 sections:
+1. **NO Data configurations section for most vizs** — field binding via `formatData()` colIdx map (per D-01). Only single-value/generic table get one optional field input.
 2. **Data display** — labels, units, toggles, decimals
 3. **Color and style** — themeMode, series color pickers (1-5), seriesColorsOverflow, fieldColorMap, accentIntensity
 4. **Effects** — individual mood effect toggles (showAmbientLight, showVignette, showGlow, showGlassPanel)
 
-Minimum 10 controls. See formatter-patterns.md for the 4-section full example.
+Minimum 10 controls. See formatter-patterns.md for the 3-section full example and data binding note.
 
 ### Per-viz option derivation (CFG-08)
 
