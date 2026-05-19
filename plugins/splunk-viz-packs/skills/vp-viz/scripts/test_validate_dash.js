@@ -760,7 +760,107 @@ var XML_DS4_PASS = tmpFile('ds4_pass.xml', wrapXml({
 r = run(['--xml', XML_DS4_PASS]);
 assertNotIncludes('DS4 markdown at y=10: no FAIL DS4 in stdout', r.stdout, 'FAIL DS4');
 
-// DS2/DS3/DS4 tests: 10 added
+// DS2/DS3/DS4/DS5 tests: 13 added
+
+// ---- DS5: Drilldown token default enforcement ----
+
+var XML_DS5_MISSING_DEFAULT = tmpFile('ds5_missing_default.xml', wrapXml({
+    dataSources: {
+        ds_main: { type: 'ds.search', options: { query: '| makeresults' } }
+    },
+    visualizations: {
+        viz_bg_gradient: {
+            type: 'splunk.image',
+            options: { src: '/static/app/myapp/bg_gradient.png', preserveAspectRatio: 'none' }
+        },
+        viz_title: {
+            type: 'splunk.markdown',
+            options: { markdown: '# Dashboard' }
+        },
+        viz_kpi: {
+            type: 'myapp.kpi',
+            dataSources: { primary: 'ds_main' },
+            options: { 'myapp.kpi.valueField': 'value' },
+            eventHandlers: [
+                {
+                    type: 'drilldown.setToken',
+                    options: {
+                        tokens: [{ token: 'selected_host', key: 'click.value' }]
+                    }
+                }
+            ]
+        }
+    },
+    defaults: {},
+    layout: {
+        structure: [
+            { vizId: 'viz_bg_gradient', position: { x: 0, y: 0, w: 1920, h: 1080 } },
+            { vizId: 'viz_title', position: { x: 20, y: 10, w: 800, h: 80 } },
+            { vizId: 'viz_kpi', position: { x: 20, y: 120, w: 400, h: 300 } }
+        ]
+    }
+}));
+
+var XML_DS5_HAS_DEFAULT = tmpFile('ds5_has_default.xml', wrapXml({
+    dataSources: {
+        ds_main: { type: 'ds.search', options: { query: '| makeresults' } }
+    },
+    visualizations: {
+        viz_bg_gradient: {
+            type: 'splunk.image',
+            options: { src: '/static/app/myapp/bg_gradient.png', preserveAspectRatio: 'none' }
+        },
+        viz_title: {
+            type: 'splunk.markdown',
+            options: { markdown: '# Dashboard' }
+        },
+        viz_kpi: {
+            type: 'myapp.kpi',
+            dataSources: { primary: 'ds_main' },
+            options: { 'myapp.kpi.valueField': 'value' },
+            eventHandlers: [
+                {
+                    type: 'drilldown.setToken',
+                    options: {
+                        tokens: [{ token: 'selected_host', key: 'click.value' }]
+                    }
+                }
+            ]
+        }
+    },
+    defaults: {
+        tokens: {
+            default: {
+                selected_host: { value: '*' }
+            }
+        }
+    },
+    layout: {
+        structure: [
+            { vizId: 'viz_bg_gradient', position: { x: 0, y: 0, w: 1920, h: 1080 } },
+            { vizId: 'viz_title', position: { x: 20, y: 10, w: 800, h: 80 } },
+            { vizId: 'viz_kpi', position: { x: 20, y: 120, w: 400, h: 300 } }
+        ]
+    }
+}));
+
+console.log('\n-- DS5: setToken handler with no defaults entry --');
+r = run(['--xml', XML_DS5_MISSING_DEFAULT]);
+assert('DS5 missing default: expect exit 1', r.code, 1, r.stdout + r.stderr);
+assertIncludes('DS5 missing default: expect FAIL DS5 in stdout', r.stdout, 'FAIL DS5');
+assertIncludes('DS5 missing default: expect token name in message', r.stdout, 'selected_host');
+var ds5finding = parseFinding(r.stderr, 'DS5');
+assert('DS5 missing default: emits FINDING with code DS5', ds5finding !== null, true);
+if (ds5finding) { assert('DS5 finding has tokenName in context', ds5finding.context && ds5finding.context.tokenName === 'selected_host', true); }
+
+console.log('\n-- DS5: setToken handler with wildcard default (PASS) --');
+r = run(['--xml', XML_DS5_HAS_DEFAULT]);
+assertNotIncludes('DS5 has default: no FAIL DS5 in stdout', r.stdout, 'FAIL DS5');
+assert('DS5 has default: exits 0', r.code, 0, r.stdout + r.stderr);
+
+console.log('\n-- DS5: no eventHandlers (no spurious DS5) --');
+r = run(['--xml', XML_DS_OK]);
+assertNotIncludes('DS5 no handlers: no FAIL DS5', r.stdout, 'FAIL DS5');
 
 // ---- Cleanup temp files ----
 tmpFiles.forEach(function(p) {
