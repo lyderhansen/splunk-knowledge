@@ -56,6 +56,7 @@ CRITICAL SUBSET (10 most-failed rules):
 □ JS: hexFromSplunk() wraps ALL color picker reads (Splunk returns integers, not hex)
 □ JS accent role: t.accent ONLY for hover/glow/selection. Data fills use getSeriesColor(i, t)
 □ JS: safeStr()/safeNum() on ALL row field reads + formatData returns fields: data.fields
+□ JS: every viz has _onClick with hit-test + this.drilldown({action: FIELD_VALUE_DRILLDOWN, field: this._clickField, value: clickedVal}). Simple vizs (KPI, gauge): whole-canvas click, no hit-test needed.
 □ Dashboard JSON type: {app_id}.{viz_name} — NEVER custom.* or splunk.custom.*
 □ JS light theme: hero text uses t.text, NEVER t.textDim (ghost-text bug)
 □ Formatter: minimum 10 controls, themeMode defaults to "auto"

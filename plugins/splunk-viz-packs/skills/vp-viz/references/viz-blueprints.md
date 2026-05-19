@@ -127,6 +127,8 @@ These rules are guardrails, not a blueprint. Within these constraints, design a 
 Sparkline rendering: use the drawSparkline() recipe from [canvas-recipes.md](canvas-recipes.md) for the sparkline implementation. The sparkline reads trend data from the search result (multiple rows or a trend field). When sparkPlacement is 'background', draw the sparkline at full panel width with 8-12% opacity as an ambient element behind the hero value.
 
 **Data contract:** configurable field (default: `value`). Reads last row. Optional: `delta` field.
+**Expected columns:** `| table value [delta]` — value is required, delta is optional
+**Drilldown:** simple — entire canvas is one click target. Store primary field in `this._clickField`. `_onClick` passes the displayed value regardless of mx/my position.
 
 ### Ring Gauge
 
@@ -163,6 +165,8 @@ These rules are guardrails, not a blueprint. Within these constraints, design a 
 Zone thresholds and zone colors MUST be independently configurable — never hardcode boundaries like 0-30/31-60/61-100 or use only theme severity colors.
 
 **Data contract:** configurable numeric field (default: `value`). Reads last row.
+**Expected columns:** `| table value` — single numeric field
+**Drilldown:** simple — entire canvas is one click target. Store field in `this._clickField`. `_onClick` passes the numeric arc value.
 
 ### Status Chip / Badge
 
@@ -182,6 +186,8 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 Status matching: compare the statusField value against each comma-separated list (case-insensitive). This allows any SPL output (e.g. 'degraded', 'maintenance', '1', '2', '3') to map to the three status tiers. Unmatched values render as neutral/informational.
 
 **Data contract:** requires severity field and label field. Reads last row.
+**Expected columns:** `| table status label` — status field + display label
+**Drilldown:** simple — whole chip click. Store statusField in `this._clickField`. `_onClick` passes the status string value.
 
 ### Live Ticker
 
@@ -205,6 +211,8 @@ These rules are guardrails, not a blueprint. Within these constraints, design a 
 **Settings:** `title`, `scrollSpeed`, `field1`, `field2`, `field3`, `field4`, `label1`, `label2`, `label3`, `label4`, `accentIntensity`, `themeMode`, `showEntrance`, `flashCritical`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** requires `_time` + 1-4 configurable fields. Multi-row.
+**Expected columns:** `| table _time field1 [field2] [field3] [field4]` — _time + 1-4 configurable event fields
+**Drilldown:** row-based — each visible row is a click target. Hit-test: use stored row y-positions array. `_onClick` finds row where my falls in [rowY, rowY+rowH], passes field1 value of that row.
 
 ### Leaderboard
 
@@ -226,9 +234,10 @@ Pagination: when showPagination is ON and row count exceeds maxRows, draw prev/n
 
 `showHeaders` controls whether the column header row (rank/name/score labels) is visible. Useful for compact dashboard panels where the leaderboard meaning is obvious from context.
 
-**Drilldown:** use _onClick template from header section. Hit-test by row index in this._rows array (row y-coordinate divided by row height).
+**Drilldown:** row-based — each row is a click target. Hit-test: `rowIndex = Math.floor((my - headerH) / rowH)`. Clamp to valid range. Pass name-column value of clicked row.
 
 **Data contract:** requires rank, name, score fields. Multi-row.
+**Expected columns:** `| table rank name score [delta]` — positional columns; formatData reads by name
 
 ### Process Flow / Pipeline
 
@@ -248,6 +257,8 @@ These rules are guardrails, not a blueprint. Within these constraints, design a 
 **Settings:** `labelField`, `valueField`, `statusField`, `palette`, `showArrows`, `showValues`, `showGlow`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** requires label + value, optional status. Multi-row.
+**Expected columns:** `| table label value [status]` — step label + metric + optional status
+**Drilldown:** segment-based — each pipeline stage is a click target. Store stage bounding boxes during render. `_onClick` iterates stored boxes to find hit; passes stage label value.
 
 ### Donut / Ring
 
@@ -264,9 +275,10 @@ These rules are guardrails, not a blueprint. Within these constraints, design a 
 
 **Settings:** `categoryField`, `valueField`, `innerRadius`, `showLegend`, `showTotal`, `showGlow`, `colors`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
-**Drilldown:** use _onClick template from header section. Hit-test by arc segment using Math.atan2(my - cy, mx - cx) angle comparison.
+**Drilldown:** arc-based — each segment is a click target. Hit-test: `Math.atan2(my-cy, mx-cx)` to get angle, map angle to segment index. Pass category value of hit segment.
 
 **Data contract:** category + value. Multi-row.
+**Expected columns:** `| table category value` — category name + numeric value
 
 ### Heat Grid / Matrix
 
@@ -284,6 +296,8 @@ These rules are guardrails, not a blueprint. Within these constraints, design a 
 **Settings:** `rowField`, `colField`, `valueField`, `lowColor`, `highColor`, `showValues`, `cellRadius`, `showGlow`, `accentIntensity`, `themeMode`, `showEntrance`, `flashCritical`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** row label, column label, numeric value. Multi-row.
+**Expected columns:** `| table row_label col_label value` — row, column, numeric cell value
+**Drilldown:** cell-based — each cell is a click target. Hit-test: `colIndex = Math.floor((mx - leftPad) / cellW)`, `rowIndex = Math.floor((my - topPad) / cellH)`. Pass row_label+col_label composite or row_label value.
 
 ### Spark Strip
 
@@ -303,6 +317,8 @@ These rules are guardrails, not a blueprint. Within these constraints, design a 
 `sparkMode`: line draws a simple polyline trend; area fills below the line with a gradient. Default is line.
 
 **Data contract:** time series with multiple value columns. Multi-row.
+**Expected columns:** `| timechart span=1h value [series2] [series3]` — time-series columns, multiple series allowed
+**Drilldown:** simple — entire strip is one click target per series. If single series, whole canvas click passes the series name. If multi-series, store strip row bounds and hit-test rowIndex.
 
 ### Line Chart
 
@@ -321,6 +337,8 @@ These rules are guardrails, not a blueprint. Within these constraints, design a 
 **Settings:** `lineField`, `xField`, `lineColor`, `showFill`, `showDots`, `lineWidth`, `unit`, `thresholdValue`, `thresholdColor`, `themeMode`, `accentIntensity`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** time-series rows. `xField` (default `_time`), `lineField` (configurable value). Multi-row.
+**Expected columns:** `| timechart span=1h value` — _time + one or more value columns; xField defaults to _time
+**Drilldown:** nearest-point — hit-test finds closest data point within threshold pixels (e.g. 20px). Store rendered point positions. Pass value of nearest point or _time string.
 
 ### Radar / Spider Chart
 
@@ -338,6 +356,8 @@ These rules are guardrails, not a blueprint. Within these constraints, design a 
 **Settings:** `fields`, `labels`, `maxValue`, `fillOpacity`, `showGrid`, `showGlow`, `colors`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** one row per entity, one column per dimension.
+**Expected columns:** `| table dimension value` — one row per axis dimension
+**Drilldown:** axis-based — each axis spoke is a click target. Hit-test: `Math.atan2` from center to mx/my, map angle to nearest axis. Pass dimension value of hit axis.
 
 ### Needle Gauge (Speedometer)
 
@@ -355,6 +375,8 @@ These rules are guardrails, not a blueprint. Within these constraints, design a 
 **Settings:** `field`, `maxValue`, `minValue`, `zones`, `zoneColors`, `label`, `unit`, `showGlow`, `accentIntensity`, `themeMode`, `showEntrance`, `flashCritical`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** single numeric value.
+**Expected columns:** `| table value` — single numeric field
+**Drilldown:** simple — entire canvas is one click target. `_onClick` passes the numeric gauge value.
 
 ### Status Matrix / Health Grid
 
@@ -376,9 +398,10 @@ These rules are guardrails, not a blueprint. Within these constraints, design a 
 
 Status matching: compare the statusField value against each comma-separated list (case-insensitive). This allows any SPL output (e.g. 'degraded', 'maintenance', '1', '2', '3') to map to the three status tiers. Unmatched values render as neutral/informational.
 
-**Drilldown:** use _onClick template from header section. Hit-test by grid cell using Math.floor(my / cellH) and Math.floor(mx / cellW).
+**Drilldown:** cell-based — each entity cell is a click target. Hit-test same as Heat Grid: `Math.floor((my - topPad) / cellH)` and `Math.floor((mx - leftPad) / cellW)`. Pass the name field value of clicked entity.
 
 **Data contract:** name + status field. Multi-row.
+**Expected columns:** `| table name status` — entity name + status string
 
 ### Waterfall Chart
 
@@ -396,6 +419,8 @@ Status matching: compare the statusField value against each comma-separated list
 **Settings:** `categoryField`, `valueField`, `positiveColor`, `negativeColor`, `totalColor`, `showConnectors`, `showValues`, `showGlow`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** category + value. Multi-row.
+**Expected columns:** `| table category value` — ordered category + value (positive = gain, negative = loss)
+**Drilldown:** bar-based — each bar is a click target. Store bar x-ranges during render. Hit-test: find bar where mx falls in [barX, barX+barW]. Pass category value.
 
 ### Horizontal Bar List
 
@@ -413,9 +438,10 @@ Status matching: compare the statusField value against each comma-separated list
 
 **Settings:** `labelField`, `valueField`, `maxBars`, `showValues`, `unit`, `showGlow`, `barColor`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
-**Drilldown:** use _onClick template from header section. Hit-test by bar index: Math.floor(my / barSlotH).
+**Drilldown:** row-based — each bar row is a click target. Hit-test: `rowIndex = Math.floor((my - topPad) / rowH)`. Pass label value of clicked row.
 
 **Data contract:** label + value. Multi-row sorted by value.
+**Expected columns:** `| table label value` — label + numeric value, sorted descending
 
 ### Data Table (Canvas)
 
@@ -458,9 +484,10 @@ var pageRows = rows.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
 
 **Settings:** `columns`, `hiddenColumns`, `columnWidths`, `defaultSortColumn`, `defaultSortDirection`, `maxRows`, `showHeader`, `showPosition`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
-**Drilldown:** use _onClick template from header section. Hit-test by row index: Math.floor((my - headerH) / rowH).
+**Drilldown:** row-based — each data row is a click target. Hit-test: `rowIndex = Math.floor((my - headerH) / rowH) + scrollOffset`. Pass drilldownField value of clicked row (stored in `this._clickField`).
 
 **Data contract:** multi-column, multi-row. Field names from formatter.
+**Expected columns:** `| table col1 col2 col3 ...` — arbitrary multi-column; formatData reads all fields dynamically
 
 ---
 
