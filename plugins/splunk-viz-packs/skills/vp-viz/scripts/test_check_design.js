@@ -647,6 +647,56 @@ var D11_NO_MM_THEME = tmpFile('d11_no_mm_theme.js', THEME_WITH_RGBA);
 r = run(D11_NO_MM_FORMATTER, D11_NO_MOUSEMOVE_JS, D11_NO_MM_THEME);
 assertNotIncludes('D11 PASS no _onMouseMove: no FAIL D11 in stdout', r.stdout, 'FAIL D11');
 
+// --- D11 PASS: comment mentions _onMouseMove before actual definition with guard ---
+// Proves lastIndexOf fix (VF-02): indexOf returns the comment position; the guard is
+// beyond the 1500-char scan window from the comment, so indexOf would report FAIL D11.
+// lastIndexOf returns the actual method definition where the guard IS present -- PASS.
+// The comment and definition are separated by > 1500 chars of filler code.
+console.log('\n-- D11 PASS comment before definition: no FAIL D11 (VF-02 regression) --');
+var D11_COMMENT_FIRST_JS = tmpFile('d11_comment_first.js', [
+    '// @viz-type: kpi',
+    '// delegated from _onMouseMove when hover is active',
+    '// (the above comment mentions _onMouseMove but the method definition is far below)',
+    'var vis = {',
+    '  updateView: function(data, config) {',
+    '    var w = Math.min(this.el.clientWidth, 1920);',
+    '    var h = Math.max(this.el.clientHeight, 100);',
+    '    var grad = ctx.createLinearGradient(0, 0, w, h);',
+    '    ctx.shadowBlur = 8;',
+    '    ctx.shadowColor = "rgba(0,0,0,0.5)";',
+    '    var gi = opt("accentIntensity", 1.5);',
+    '    var color1 = opt("primaryColor", "#007bff");',
+    '    var mode = opt("themeMode", "auto");',
+    '    var accent = opt("accentColor", "#ff6b00");',
+    // Filler: > 1500 chars between comment and definition to expose the indexOf bug.
+    '    var _filler = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";',
+    '    var _filler2 = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";',
+    '    var _filler3 = "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc";',
+    '    var _filler4 = "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd";',
+    '    var _filler5 = "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";',
+    '    var _filler6 = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";',
+    '    var _filler7 = "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg";',
+    '    var _filler8 = "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh";',
+    '    var _filler9 = "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii";',
+    '    var _filler10 = "jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj";',
+    '    var _filler11 = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk";',
+    '    var _filler12 = "llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll";',
+    '    detectTheme();',
+    '  },',
+    '  _onMouseMove: function(e) {',
+    '    if (!this._showHoverEffect) return;',
+    '    var x = e.offsetX;',
+    '    var y = e.offsetY;',
+    '    this._render(x, y);',
+    '  }',
+    '};',
+    'module.exports = vis;'
+].join('\n'));
+var D11_COMMENT_FORMATTER = tmpFile('d11_comment_formatter.html', D_BASE_FORMATTER);
+var D11_COMMENT_THEME = tmpFile('d11_comment_theme.js', THEME_WITH_RGBA);
+r = run(D11_COMMENT_FORMATTER, D11_COMMENT_FIRST_JS, D11_COMMENT_THEME);
+assertNotIncludes('D11 PASS comment before definition: no FAIL D11', r.stdout, 'FAIL D11');
+
 // ---- Cleanup temp files ----
 tmpFiles.forEach(function(p) {
     try { fs.unlinkSync(p); } catch (e) {}

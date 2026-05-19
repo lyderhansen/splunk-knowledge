@@ -106,6 +106,11 @@ function emitFail(code, vizId, detail, context) {
     }) + '\n');
 }
 
+function emitWarn(code, vizId, detail) {
+    process.stdout.write('  WARN ' + code + ': ' + detail + '\n');
+    // No FINDING: NDJSON for WARNs (only FAIL writes structured output)
+}
+
 // ---- Type prefix helpers ----
 
 function isBuiltinType(vizType) {
@@ -266,7 +271,7 @@ function runDashChecks(filePathArg, dashJson) {
             for (var si = 0; si < structureArray.length; si++) {
                 var item = structureArray[si];
                 if (!item || !item.position) { continue; }
-                if (mdIds.indexOf(item.vizId) !== -1 && item.position.y <= 200) {
+                if (mdIds.indexOf(item.item || item.vizId) !== -1 && item.position.y <= 200) {
                     return true;
                 }
             }
@@ -334,6 +339,11 @@ function runDashChecks(filePathArg, dashJson) {
                 { tokenName: stn }
             );
             violations++;
+        } else if (defaultTokens[stn].value !== '*') {
+            emitWarn('DS5w', 'defaults',
+                'drilldown token "' + stn + '" default is "' + defaultTokens[stn].value + '" not "*" -- confirm this is intentional; wildcard "*" renders all data before first click (INT-03)'
+            );
+            // WARN does not increment violations -- exit 0 on WARN only
         }
     }
 

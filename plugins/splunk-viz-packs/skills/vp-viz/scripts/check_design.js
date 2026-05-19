@@ -236,7 +236,7 @@ if (!d10Match) {
 
 if (jsSrc.indexOf('_onMouseMove') !== -1) {
     // Extract approximate block starting at _onMouseMove (heuristic: next 1500 chars covers most functions)
-    var mouseMovIdx = jsSrc.indexOf('_onMouseMove');
+    var mouseMovIdx = jsSrc.lastIndexOf('_onMouseMove');
     var mouseMovBlock = jsSrc.slice(mouseMovIdx, mouseMovIdx + 1500);
 
     var d11GuardPattern = /(showHover|hoverEnabled|hoverEffect).*return|if\s*\(\s*!\s*(this\.)?_?showHover/;
