@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A marketplace of Claude Code plugins for Splunk development — custom visualizations, dashboards, SPL queries, and admin tasks. The primary focus is **splunk-viz-packs** (v5.0.0): a plugin that generates branded Splunk custom visualization apps from a brand brief. v4.1.0 shipped validation/repair infrastructure. v5.0.0 focuses on design awesomeness — making every generated viz look like a professional designer made it, with depth, glow, premium typography, intelligent configuration, and bulletproof rendering.
+A marketplace of Claude Code plugins for Splunk development — custom visualizations, dashboards, SPL queries, and admin tasks. The primary focus is **splunk-viz-packs** (v5.3.0): a plugin that generates branded Splunk custom visualization apps from a brand brief. v4.1.0 shipped validation/repair. v5.0.0 added design awesomeness. v5.1.0 hardened vizs and dashboard composition. v5.2.0 added smart fields and domain identity. v5.3.0 polished code quality and added interactive dashboard features — drilldown flows, input controls, and token defaults.
 
 ## Core Value
 
@@ -42,8 +42,6 @@ When a user runs `/vp-init`, the resulting viz pack installs in Splunk without e
 
 ### Deferred
 
-- [ ] Dashboard drilldown working end-to-end in generated dashboards
-- [ ] Dashboard JSON `"title"` field populated in generated output
 - [ ] Harden splunk-dashboard-studio plugin (ds-* skills)
 - [ ] Harden splunk-spl and splunk-admin plugins
 
@@ -54,16 +52,18 @@ When a user runs `/vp-init`, the resulting viz pack installs in Splunk without e
 - Mobile-responsive viz rendering — Splunk dashboards are desktop/wall-display
 - Multi-tenant viz sharing — each pack is a standalone Splunk app
 
-## Current Milestone: v5.3.0 Production Polish & Interactive Dashboards
+## Current State
 
-**Goal:** Trim bloated reference files, fix remaining generated code quality issues, and add interactive dashboard features — drilldown flows, input filters, tabbed navigation that actually works.
+v5.3.0 shipped 2026-05-19. All 5 milestones (v4.1.0 through v5.3.0) complete. Next milestone TBD.
 
-**Target features:**
-- canvas-recipes.md trim from 998 to ~500 lines
-- Generated code quality: accentIntensity never capped, hover toggle always wired, KPI sparkline
-- Background treatment more dramatic
-- Interactive dashboards: drilldown token flows, input filters, cross-panel filtering
-- Tabbed dashboards with correct schema (fix recurring "Layout undefined" errors)
+<details>
+<summary>v5.3.0 Production Polish & Interactive Dashboards (shipped 2026-05-19)</summary>
+
+**Goal:** Trim bloated reference files, fix generated code quality issues, add interactive dashboard features.
+
+**Delivered:** canvas-recipes.md halved (998→498), DS2-DS5 dashboard validators (tab schema, background, title, token defaults), dashboard-interactivity.md reference (drilldown flows, input controls, defaults block wiring), series color pickers replacing accentColor, _onClick drilldown template, supports_drilldown/trellis conf flags.
+
+</details>
 
 <details>
 <summary>v5.2.0 Smart Vizs & Domain Identity (shipped 2026-05-18)</summary>
@@ -143,4 +143,4 @@ When a user runs `/vp-init`, the resulting viz pack installs in Splunk without e
 This document evolves at phase transitions and milestone boundaries.
 
 ---
-*Last updated: 2026-05-18 after v5.3.0 milestone start*
+*Last updated: 2026-05-19 after v5.3.0 milestone completion*
