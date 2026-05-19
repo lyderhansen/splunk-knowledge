@@ -106,9 +106,8 @@ WRONG: default="value"                 → MUST be value="value"
 WRONG: <splunk-color-picker value=     → MUST add type="custom"
 WRONG: <form>                          → MUST add class="splunk-formatter-section" section-label="..."
 WRONG: themeMode value="dark"          → MUST be value="auto"
-WRONG: fontColor or bgColor controls  → Dashboard Studio owns panel-level colors (D-03).
-                                         Only accentColor is a viz formatter color control.
-                                         CFG-07 is satisfied by accentColor alone.
+WRONG: accentColor picker in Color and style  → removed in Phase 18 (D-10). Use series color pickers instead.
+NOTE:  fontColor/bgColor controls ARE correct here (Phase 18 D-11 overrides the older D-03 guidance in this file)
 WRONG: hardcoded if (status === 'ok') → MUST read comma-separated statusOkValues from formatter
                                          and match case-insensitively. Hardcoded status strings
                                          break when SPL returns 'active', 'healthy', or numeric
@@ -121,7 +120,7 @@ Every viz gets a minimum of 4 sections with these EXACT `section-label` values (
 
 1. `Data configurations` — field name mappings (text inputs)
 2. `Data display` — labels, units, toggles, decimals
-3. `Color and style` — themeMode, accentColor, accentIntensity, series colors
+3. `Color and style` — themeMode, series color pickers (1-5), seriesColorsOverflow, fieldColorMap, accentIntensity
 4. `Effects` — individual mood effect toggles (showAmbientLight, showVignette, showGlow, showGlassPanel). Default all to "true"; user can disable per effect.
 
 Add `help=` text only on non-obvious controls (accentIntensity, effect toggles). Self-explanatory controls (Theme, Accent color) do not need help text. (D-13)
@@ -146,7 +145,7 @@ Structure rules:
     <!-- labels, units, toggles, decimals -->
 </form>
 <form class="splunk-formatter-section" section-label="Color and style">
-    <!-- themeMode, accentColor, accentIntensity, series colors -->
+    <!-- themeMode, series color pickers (1-5), seriesColorsOverflow, fieldColorMap, accentIntensity -->
 </form>
 <form class="splunk-formatter-section" section-label="Effects">
     <!-- individual mood effect toggles: showAmbientLight, showVignette, showGlow, showGlassPanel -->
@@ -250,10 +249,48 @@ using viz-blueprints.md Settings: list as your guide (D-01, D-04).
             <option value="light">Light</option>
         </splunk-radio-input>
     </splunk-control-group>
-    <splunk-control-group label="Accent color" help="Primary brand color">
-        <splunk-color-picker name="{{VIZ_NAMESPACE}}.accentColor" type="custom" value="#0077B6">
+    <splunk-control-group label="Background color" help="Panel background color">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.backgroundColor" type="custom" value="#1A1D24">
+            <splunk-color>#1A1D24</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Text color" help="Primary text color for labels and values">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.fontColor" type="custom" value="#FFFFFF">
+            <splunk-color>#FFFFFF</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Series 1" help="Color for first data series">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.series1Color" type="custom" value="#0077B6">
             <splunk-color>#0077B6</splunk-color>
         </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Series 2" help="Color for second data series">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.series2Color" type="custom" value="#00B4D8">
+            <splunk-color>#00B4D8</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Series 3" help="Color for third data series">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.series3Color" type="custom" value="#90E0EF">
+            <splunk-color>#90E0EF</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Series 4" help="Color for fourth data series">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.series4Color" type="custom" value="#CAF0F8">
+            <splunk-color>#CAF0F8</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Series 5" help="Color for fifth data series">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.series5Color" type="custom" value="#ADE8F4">
+            <splunk-color>#ADE8F4</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Additional series colors" help="Comma-separated hex colors for series 6+ (e.g. #FF6600,#33AA00)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.seriesColorsOverflow" value="">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Field color map" help="field=color pairs (e.g. critical=#FF4444,warning=#FFB800)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.fieldColorMap" value="">
+        </splunk-text-input>
     </splunk-control-group>
     <splunk-control-group label="Accent intensity" help="Highlight glow multiplier (0=off, 50=default, 100+=extreme). Values above 100 amplify glow beyond the standard range.">
         <splunk-text-input name="{{VIZ_NAMESPACE}}.accentIntensity" value="50">
@@ -352,3 +389,45 @@ if (reducedMotion) {
     // showHoverEffect stays ON — functional feedback, not decorative
 }
 ```
+
+### Series color opt() read patterns (Phase 18 D-10/D-12/D-13)
+
+In `updateView`, after the theme/opt setup, read series color controls:
+
+```javascript
+// Series colors — hexFromSplunk() required on ALL color picker reads
+var s1 = hexFromSplunk(opt('series1Color', ''), theme.SERIES[0] || t.accent);
+var s2 = hexFromSplunk(opt('series2Color', ''), theme.SERIES[1] || t.accent);
+var s3 = hexFromSplunk(opt('series3Color', ''), theme.SERIES[2] || t.accent);
+var s4 = hexFromSplunk(opt('series4Color', ''), theme.SERIES[3] || t.accent);
+var s5 = hexFromSplunk(opt('series5Color', ''), theme.SERIES[4] || t.accent);
+
+// Overflow colors (comma-separated, for series 6+)
+var overflowRaw = opt('seriesColorsOverflow', '');
+var overflowColors = overflowRaw
+    ? overflowRaw.split(',').map(function(c) { return hexFromSplunk(c.trim(), ''); }).filter(Boolean)
+    : [];
+
+// Field color map (key=value pairs — e.g. critical=#FF4444,warning=#FFB800)
+// T-18-05: hexFromSplunk() on the color half strips invalid chars
+var fieldMapRaw = opt('fieldColorMap', '');
+var fieldColorMap = {};
+if (fieldMapRaw) {
+    fieldMapRaw.split(',').forEach(function(pair) {
+        var parts = pair.split('=');
+        if (parts.length === 2) {
+            fieldColorMap[parts[0].trim().toLowerCase()] = hexFromSplunk(parts[1].trim(), '');
+        }
+    });
+}
+
+// Helper: get color for series index i (uses series pickers then overflow)
+function getSeriesColor(i, fallback) {
+    var pickers = [s1, s2, s3, s4, s5];
+    if (i < pickers.length) return pickers[i] || fallback;
+    var oi = i - pickers.length;
+    return (overflowColors[oi]) || fallback;
+}
+```
+
+**Note on default colors:** The hex values shown in the formatter HTML template above (`#0077B6`, `#00B4D8`, etc.) are placeholder defaults. At generation time, fill them with brand palette values from `shared/theme.js`. The template shows the control structure; brand colors replace the hex values.

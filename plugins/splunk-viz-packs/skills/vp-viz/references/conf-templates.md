@@ -38,7 +38,13 @@ default_height = {{HEIGHT}}
 allow_user_selection = true
 disabled = 0
 search_fragment = {{FRAGMENT_80}}
+supports_drilldown = true
+supports_trellis = true
 ```
+
+> **supports_trellis note:** Setting this flag makes the Trellis UI option appear in Splunk.
+> Trellis internal rendering in Canvas vizs is deferred — users enabling trellis will see
+> repeated panels, not field-split panels. Flag is set for future compatibility only.
 
 ## default.meta
 

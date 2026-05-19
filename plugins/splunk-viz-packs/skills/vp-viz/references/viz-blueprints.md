@@ -37,6 +37,51 @@ Every viz type includes these animation controls. Add them to the formatter Anim
 
 Note: `flashCritical` CAN be added to any viz type based on brand personality — the status-bearing types below mark it as the default recommendation, but Claude has discretion.
 
+### Drilldown — _onClick template (D-03)
+
+Custom vizs support drilldown by implementing `_onClick`. The field name MUST be stored in `updateView` — `_onClick` cannot access config directly (memory: feedback_viz_store_config_fields.md).
+
+**In updateView (store field name before rendering):**
+```javascript
+this._clickField = opt('drilldownField', 'value');
+```
+
+**In the `extend({})` object literal (alongside _onMouseMove):**
+```javascript
+_onClick: function(e) {
+    if (!this._clickField) { return; }
+    var mx = e.offsetX;
+    var my = e.offsetY;
+    // Hit-test: identify which row/segment was clicked using mx, my
+    // (implementation varies by viz type — see per-viz section)
+    var clickedVal = /* value from identified row or segment */;
+    if (!clickedVal) { return; }
+    this.drilldown({
+        action: SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN,
+        field: this._clickField,
+        value: clickedVal
+    });
+},
+```
+
+**In initialize (register click listener alongside mousemove):**
+```javascript
+var self = this;
+this._canvas.addEventListener('click', function(e) {
+    self._onClick(e);
+});
+```
+
+**Dashboard JSON wiring (per dashboard-interactivity.md):**
+Add `"options": {"drilldown": "all"}` to the viz panel and `"eventHandlers"` with `drilldown.setToken` to route the click to a token. The viz JS fires `this.drilldown({})`; Dashboard Studio intercepts and routes per `eventHandlers`.
+
+**Formatter control to add:**
+```
+drilldownField | text | "value" | Which field's value is passed on click
+```
+
+Note: `SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN` — if the constant is unavailable at runtime, use integer value `1` as fallback.
+
 ### Single Value Tile (KPI)
 
 **Expresses:** the single most important number. Hero metric.
@@ -181,6 +226,8 @@ Pagination: when showPagination is ON and row count exceeds maxRows, draw prev/n
 
 `showHeaders` controls whether the column header row (rank/name/score labels) is visible. Useful for compact dashboard panels where the leaderboard meaning is obvious from context.
 
+**Drilldown:** use _onClick template from header section. Hit-test by row index in this._rows array (row y-coordinate divided by row height).
+
 **Data contract:** requires rank, name, score fields. Multi-row.
 
 ### Process Flow / Pipeline
@@ -216,6 +263,8 @@ These rules are guardrails, not a blueprint. Within these constraints, design a 
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
 **Settings:** `categoryField`, `valueField`, `innerRadius`, `showLegend`, `showTotal`, `showGlow`, `colors`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
+
+**Drilldown:** use _onClick template from header section. Hit-test by arc segment using Math.atan2(my - cy, mx - cx) angle comparison.
 
 **Data contract:** category + value. Multi-row.
 
@@ -327,6 +376,8 @@ These rules are guardrails, not a blueprint. Within these constraints, design a 
 
 Status matching: compare the statusField value against each comma-separated list (case-insensitive). This allows any SPL output (e.g. 'degraded', 'maintenance', '1', '2', '3') to map to the three status tiers. Unmatched values render as neutral/informational.
 
+**Drilldown:** use _onClick template from header section. Hit-test by grid cell using Math.floor(my / cellH) and Math.floor(mx / cellW).
+
 **Data contract:** name + status field. Multi-row.
 
 ### Waterfall Chart
@@ -361,6 +412,8 @@ Status matching: compare the statusField value against each comma-separated list
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
 **Settings:** `labelField`, `valueField`, `maxBars`, `showValues`, `unit`, `showGlow`, `barColor`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
+
+**Drilldown:** use _onClick template from header section. Hit-test by bar index: Math.floor(my / barSlotH).
 
 **Data contract:** label + value. Multi-row sorted by value.
 
@@ -404,6 +457,8 @@ var pageRows = rows.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
 ```
 
 **Settings:** `columns`, `hiddenColumns`, `columnWidths`, `defaultSortColumn`, `defaultSortDirection`, `maxRows`, `showHeader`, `showPosition`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
+
+**Drilldown:** use _onClick template from header section. Hit-test by row index: Math.floor((my - headerH) / rowH).
 
 **Data contract:** multi-column, multi-row. Field names from formatter.
 
