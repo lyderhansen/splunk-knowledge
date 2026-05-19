@@ -52,20 +52,18 @@ When a user runs `/vp-init`, the resulting viz pack installs in Splunk without e
 - Mobile-responsive viz rendering — Splunk dashboards are desktop/wall-display
 - Multi-tenant viz sharing — each pack is a standalone Splunk app
 
-## Current Milestone: v5.4.0 Runtime Robustness & Visual Polish
+## Current State
 
-**Goal:** A generated viz pack works correctly out of the box and looks premium in both themes — zero hardcoded fields, drilldown on every clickable panel, animations that function, light theme verified.
+v5.4.0 shipped 2026-05-19. All 6 milestones (v4.1.0 through v5.4.0) complete. Next milestone TBD.
 
-**Target features:**
-- Auto-field discovery enforced — vizs read data.fields at runtime, formatter inputs are optional overrides
-- Drilldown wired on ALL clickable panels — both JS _onClick and dashboard JSON eventHandlers
-- vizId/item mismatch fixed in validate_dash.js DS4 check
-- Animation controls actually implemented or removed
-- D11 validator fix — method definition scanning
-- Gradient fills enforced when visual language specifies fillTechnique: gradient
-- Light theme verified — contrast meets WCAG AA
-- seriesColors/seriesColorsByField for built-in panels in mixed dashboards
-- Data config section labels use generic naming
+<details>
+<summary>v5.4.0 Runtime Robustness & Visual Polish (shipped 2026-05-19)</summary>
+
+**Goal:** Generated viz packs work correctly out of the box and look premium in both themes.
+
+**Delivered:** DS4 item.item fix, D11 lastIndexOf fix, DS5w non-wildcard WARN. Removed Data configurations formatter section (DataDrivers pattern — formatData() field indexing + search_fragment). Mandatory drilldown on all vizs. seriesColors/seriesColorsByField for built-in panels. D01 conditional FAIL for gradient enforcement. Animation enforcement checklist. Light theme contrast checklist.
+
+</details>
 
 <details>
 <summary>v5.3.0 Production Polish & Interactive Dashboards (shipped 2026-05-19)</summary>
@@ -154,4 +152,4 @@ When a user runs `/vp-init`, the resulting viz pack installs in Splunk without e
 This document evolves at phase transitions and milestone boundaries.
 
 ---
-*Last updated: 2026-05-19 after v5.4.0 milestone start*
+*Last updated: 2026-05-19 after v5.4.0 milestone completion*

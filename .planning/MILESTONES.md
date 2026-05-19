@@ -1,5 +1,17 @@
 # Milestones
 
+## v5.4.0 Runtime Robustness & Visual Polish (Shipped: 2026-05-19)
+
+**Phases completed:** 3 phases, 5 plans, 9 tasks
+
+**Key accomplishments:**
+
+- Three false-positive/false-negative bugs fixed in validate_dash.js and check_design.js — DS4 now accepts Dashboard Studio spec-correct item property, DS5 distinguishes missing default (FAIL) from non-wildcard default (WARN DS5w), D11 scans from method definition not first comment mention
+- One-liner:
+- Added mandatory animation JS branching requirements to vp-viz SKILL.md CRITICAL SUBSET and "NOT decorative" enforcement paragraph to viz-blueprints.md, closing the gap where animation controls were documented but not enforced.
+
+---
+
 ## v5.3.0 Production Polish & Interactive Dashboards (Shipped: 2026-05-19)
 
 **Phases completed:** 3 phases, 7 plans, 8 tasks
