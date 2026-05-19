@@ -257,7 +257,11 @@ Plans:
   1. User clicks a panel in a generated dashboard and a downstream panel's search updates to show filtered data — the drilldown token is set, referenced in a downstream search, and the panel refreshes
   2. A generated dashboard contains at least one input control (time range picker or dropdown) that filters one or more panels — the input's token is referenced in a search query
   3. Every drilldown token in a generated dashboard has a default value defined in defaults.tokens — the dashboard displays meaningful data before any click, not an empty or broken panel
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 18-01-PLAN.md — Create dashboard-interactivity.md reference + wire MUST LOAD gate into vp-create SKILL.md
+- [ ] 18-02-PLAN.md — Add DS5 check (setToken without token default) to validate_dash.js + tests
+- [ ] 18-03-PLAN.md — Series color formatter overhaul, conf flags, SKILL.md cleanup, viz-blueprints _onClick template
 **UI hint**: yes
 
 ## Progress
@@ -281,4 +285,4 @@ Plans:
 | 15. Mandatory Dashboard Packaging | v5.2.0 | 0/1 | Not started | - |
 | 16. Code Quality & Reference Cleanup | v5.3.0 | 2/2 | Complete    | 2026-05-18 |
 | 17. Dashboard Schema & Composition | v5.3.0 | 2/2 | Complete    | 2026-05-18 |
-| 18. Interactive Dashboard Features | v5.3.0 | 0/? | Not started | - |
+| 18. Interactive Dashboard Features | v5.3.0 | 0/3 | Not started | - |
