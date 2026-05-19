@@ -37,6 +37,14 @@ Every viz type includes these animation controls. Add them to the formatter Anim
 
 Note: `flashCritical` CAN be added to any viz type based on brand personality — the status-bearing types below mark it as the default recommendation, but Claude has discretion.
 
+**These are NOT decorative settings.** If a control is in the formatter, the JS MUST implement the behavior:
+
+- `showEntrance`: JS MUST contain an `rAF` entrance loop (use `requestAnimationFrame`) with a `this._entranceDone` flag. When `showEntrance` is false, set `this._entranceDone = true` and `this._entranceProgress = 1` immediately — no animation plays but the viz renders at its final state.
+- `flashCritical`: JS MUST contain a `setInterval` pulse loop that oscillates `shadowBlur` between 8px and 24px at 500-800ms cadence on critical-state elements. When false, the interval is not started (or is cleared if previously running).
+- `animationSpeed`: JS MUST multiply all animation durations and intervals by a speed multiplier: `slow` = 1.5x, `normal` = 1.0x, `fast` = 0.6x. Hardcode the three multiplier values, apply at the point the duration is used.
+
+D08 catches unread formatter controls; D08 does NOT catch controls that are read but have no effect. The responsibility for correct branching is yours.
+
 ### Drilldown — _onClick template (D-03)
 
 Custom vizs support drilldown by implementing `_onClick`. The field name MUST be stored in `updateView` — `_onClick` cannot access config directly (memory: feedback_viz_store_config_fields.md).

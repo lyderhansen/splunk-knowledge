@@ -49,7 +49,7 @@ RIGHT: "options": { "myapp.myviz.scoreField": "score" }
 **Read [references/pre-code-checklist.md](references/pre-code-checklist.md)** — 43 items covering formatter syntax, JS patterns, accent/series roles, auto-field discovery, dashboard JSON, and mandatory interactivity. Verify every item before writing visualization_source.js or formatter.html.
 
 ```
-CRITICAL SUBSET (10 most-failed rules):
+CRITICAL SUBSET (12 most-failed rules):
 □ JS: first line MUST be: // @viz-type: <type> (kpi, gauge, bars, grid, line, timeline, radar, progress, scatter, network)
 □ Formatter: {{VIZ_NAMESPACE}}.key in ALL name= attrs — NEVER hardcoded namespace
 □ JS: pure ES5 — no const/let/arrow/template literals
@@ -61,6 +61,8 @@ CRITICAL SUBSET (10 most-failed rules):
 □ JS light theme: hero text uses t.text, NEVER t.textDim (ghost-text bug)
 □ Formatter: minimum 10 controls, themeMode defaults to "auto"
 □ JS: require()/module.exports — NEVER define()
+□ JS animation: showEntrance MUST drive an rAF entrance loop that checks this._entranceDone — toggling Off sets this._entranceDone=true immediately. flashCritical MUST drive a setInterval pulse loop. animationSpeed MUST scale the duration/interval: slow=1.5x, normal=1.0x, fast=0.6x. These are NOT optional — a formatter control with no JS effect is a broken control.
+□ JS light theme contrast: after writing theme.js LIGHT object, verify hero value color is t.text (full opacity) — NEVER textFaint or textDim for hero values. If it looks "ghostly" in light mode, replace with t.text. (See: feedback_light_theme_contrast.md)
 ```
 
 **Full checklist (43 items):** [references/pre-code-checklist.md](references/pre-code-checklist.md)
