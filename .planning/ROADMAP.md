@@ -68,7 +68,7 @@ Full details: `.planning/milestones/v5.3.0-ROADMAP.md`
 **v5.4.0 Runtime Robustness & Visual Polish (Phases 19-21)**
 
 - [x] **Phase 19: Validator Fixes** - Fix three false-positive/false-negative bugs in validate_dash.js and check_design.js (completed 2026-05-19)
-- [ ] **Phase 20: Data Binding & Drilldown** - Auto-field discovery enforced in generated vizs; drilldown wired on all clickable panels
+- [x] **Phase 20: Data Binding & Drilldown** - Auto-field discovery enforced in generated vizs; drilldown wired on all clickable panels (completed 2026-05-19)
 - [ ] **Phase 21: Animation & Visual Polish** - Animation controls implemented correctly; gradient fills and light theme contrast verified
 
 ## Phase Details
@@ -300,8 +300,8 @@ Plans:
   5. Every panel with _onClick in a generated pack has matching dashboard JSON with "drilldown": "all" in options and an eventHandlers entry with drilldown.setToken — neither half is present without the other
 **Plans**: 2 plans
 Plans:
-- [ ] 20-01-PLAN.md — Data binding: remove Data configurations section, add formatData() note, Expected columns + drilldown notes per viz type
-- [ ] 20-02-PLAN.md — Drilldown enforcement: vp-create Step 3c all-panel wiring, Section 8 seriesColors in dashboard-interactivity.md
+- [x] 20-01-PLAN.md — Data binding: remove Data configurations section, add formatData() note, Expected columns + drilldown notes per viz type
+- [x] 20-02-PLAN.md — Drilldown enforcement: vp-create Step 3c all-panel wiring, Section 8 seriesColors in dashboard-interactivity.md
 
 ### Phase 21: Animation & Visual Polish
 **Goal**: Animation controls produce the visible behaviors they promise, gradient fills appear when the visual language specifies them, and the light theme passes WCAG AA contrast — the pack looks premium and correct in both themes out of the box
@@ -313,7 +313,10 @@ Plans:
   3. User sets animationSpeed to "slow" and back to "fast" and measures a perceptible timing difference — the control actually changes the interval or duration used in JS
   4. A generated viz pack with fillTechnique: gradient in its visual language contains at least one createLinearGradient or createRadialGradient call per viz — no flat fill substitutes appear
   5. User switches a generated viz to light themeMode and hero text (value/score/label) renders at full opacity with 4.5:1 contrast or better against the panel background — verified by check_contrast.js
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 21-01-PLAN.md — D01 conditional FAIL for gradient enforcement (check_design.js + tests + theme-template.md)
+- [ ] 21-02-PLAN.md — Animation enforcement + light theme contrast in SKILL.md + viz-blueprints.md
 **UI hint**: yes
 
 ## Progress
@@ -339,5 +342,5 @@ Plans:
 | 17. Dashboard Schema & Composition | v5.3.0 | 2/2 | Complete | 2026-05-18 |
 | 18. Interactive Dashboard Features | v5.3.0 | 3/3 | Complete | 2026-05-19 |
 | 19. Validator Fixes | v5.4.0 | 1/1 | Complete    | 2026-05-19 |
-| 20. Data Binding & Drilldown | v5.4.0 | 0/2 | In progress | - |
-| 21. Animation & Visual Polish | v5.4.0 | 0/0 | Not started | - |
+| 20. Data Binding & Drilldown | v5.4.0 | 2/2 | Complete    | 2026-05-19 |
+| 21. Animation & Visual Polish | v5.4.0 | 0/2 | Not started | - |
