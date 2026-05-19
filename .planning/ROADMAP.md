@@ -67,7 +67,7 @@ Full details: `.planning/milestones/v5.3.0-ROADMAP.md`
 
 **v5.4.0 Runtime Robustness & Visual Polish (Phases 19-21)**
 
-- [ ] **Phase 19: Validator Fixes** - Fix three false-positive/false-negative bugs in validate_dash.js and check_design.js
+- [x] **Phase 19: Validator Fixes** - Fix three false-positive/false-negative bugs in validate_dash.js and check_design.js (completed 2026-05-19)
 - [ ] **Phase 20: Data Binding & Drilldown** - Auto-field discovery enforced in generated vizs; drilldown wired on all clickable panels
 - [ ] **Phase 21: Animation & Visual Polish** - Animation controls implemented correctly; gradient fills and light theme contrast verified
 
@@ -286,7 +286,7 @@ Plans:
   3. Running validate_dash.js against a dashboard with a defaults.tokens.default entry of "*" produces a DS5 pass — only non-wildcard or missing entries trigger the check
 **Plans**: 1 plan
 Plans:
-- [ ] 19-01-PLAN.md -- Fix DS4 vizId/item, add DS5w WARN, fix D11 lastIndexOf in validate_dash.js and check_design.js
+- [x] 19-01-PLAN.md -- Fix DS4 vizId/item, add DS5w WARN, fix D11 lastIndexOf in validate_dash.js and check_design.js
 
 ### Phase 20: Data Binding & Drilldown
 **Goal**: Every generated viz reads field names from data.fields at runtime and every clickable panel has complete drilldown wiring — both the JS _onClick and the dashboard JSON eventHandlers are present and correctly paired
@@ -298,7 +298,10 @@ Plans:
   3. Formatter section labels read "Data configurations" (or equivalent generic text using {{VIZ_NAMESPACE}}) — no domain-baked labels like "Artist Leaderboard: Data configurations" appear in any generated formatter.html
   4. Every clickable viz in a generated pack has _onClick implemented with hit-test logic and this.drilldown() call — verified by inspecting visualization_source.js
   5. Every panel with _onClick in a generated pack has matching dashboard JSON with "drilldown": "all" in options and an eventHandlers entry with drilldown.setToken — neither half is present without the other
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 20-01-PLAN.md — Data binding: remove Data configurations section, add formatData() note, Expected columns + drilldown notes per viz type
+- [ ] 20-02-PLAN.md — Drilldown enforcement: vp-create Step 3c all-panel wiring, Section 8 seriesColors in dashboard-interactivity.md
 
 ### Phase 21: Animation & Visual Polish
 **Goal**: Animation controls produce the visible behaviors they promise, gradient fills appear when the visual language specifies them, and the light theme passes WCAG AA contrast — the pack looks premium and correct in both themes out of the box
@@ -335,6 +338,6 @@ Plans:
 | 16. Code Quality & Reference Cleanup | v5.3.0 | 2/2 | Complete | 2026-05-18 |
 | 17. Dashboard Schema & Composition | v5.3.0 | 2/2 | Complete | 2026-05-18 |
 | 18. Interactive Dashboard Features | v5.3.0 | 3/3 | Complete | 2026-05-19 |
-| 19. Validator Fixes | v5.4.0 | 0/1 | In progress | - |
-| 20. Data Binding & Drilldown | v5.4.0 | 0/0 | Not started | - |
+| 19. Validator Fixes | v5.4.0 | 1/1 | Complete    | 2026-05-19 |
+| 20. Data Binding & Drilldown | v5.4.0 | 0/2 | In progress | - |
 | 21. Animation & Visual Polish | v5.4.0 | 0/0 | Not started | - |
