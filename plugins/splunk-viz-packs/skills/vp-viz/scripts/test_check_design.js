@@ -16,6 +16,9 @@
  *   - D05 FAIL (< 4 sections): formatter has only 2 form[section-label]
  *   - D05 PASS: formatter has exactly 4 form[section-label]
  *   - D01 WARN (no gradient): exits 0 (WARN only), stdout has WARN D01
+ *   - D01 FAIL gradient-required: theme.js has fillTechnique:'gradient', JS has no gradient calls, exits 1 FAIL D01
+ *   - D01 WARN no-fillTechnique declared: theme.js has no fillTechnique, JS has no gradient calls, exits 0 WARN D01
+ *   - D01 PASS gradient-required with gradient calls: theme.js has fillTechnique:'gradient', JS has createLinearGradient, no D01
  *   - D02 WARN (no shadow): exits 0 (WARN only), stdout has WARN D02
  *   - D08 FAIL forward (formatter key not in JS): exits 1, stdout has FAIL D08
  *   - D08 PASS forward: formatter key referenced in JS, no FAIL D08
@@ -322,6 +325,91 @@ var THEME_D01 = tmpFile('theme_d01.js', THEME_WITH_RGBA);
 r = run(FORMATTER_D01, NO_GRAD_JS, THEME_D01);
 assert('D01 WARN exits 0 (WARN does not cause exit 1)', r.code, 0, r.stdout + r.stderr);
 assertIncludes('D01 WARN stdout contains WARN D01', r.stdout, 'WARN D01');
+
+// --- D01 FAIL gradient-required: theme declares fillTechnique:'gradient', JS has no gradient calls ---
+// Theme has fillTechnique set to 'gradient'; JS has no createLinearGradient or createRadialGradient.
+// Expected: exit 1, stdout contains 'FAIL D01'.
+console.log('\n-- D01 FAIL gradient-required: fillTechnique:gradient in theme, no gradient calls in JS --');
+var THEME_FILL_GRADIENT = [
+    'var VISUAL_LANG = { fillTechnique: \'gradient\' };',
+    'var DARK = { bg:"#0D0D1F", panel:rgba(22,22,48,1), text:"#E8ECF0" };',
+    'var LIGHT = { bg:"#F0F2F5", panel:rgba(255,255,255,0.9), text:"#1B1B3A" };',
+    'function getTheme(n) { return n === "light" ? LIGHT : DARK; }',
+    'module.exports = { getTheme: getTheme, VISUAL_LANG: VISUAL_LANG };'
+].join('\n');
+var D01_GRAD_REQ_JS = tmpFile('d01_grad_req.js', [
+    '// @viz-type: kpi',
+    'var vis = {',
+    '  updateView: function(data, config) {',
+    '    var w = Math.min(this.el.clientWidth, 1920);',
+    '    var h = Math.max(this.el.clientHeight, 100);',
+    '    ctx.shadowBlur = 8;',
+    '    ctx.shadowColor = "rgba(0,0,0,0.5)";',
+    '    var label = opt("myLabel", "default");',
+    '    var color = opt("primaryColor", "#007bff");',
+    '    var bg = opt("bgColor", "#28a745");',
+    '    var mode = opt("themeMode", "auto");',
+    '    detectTheme();',
+    '  }',
+    '};'
+].join('\n'));
+var D01_GRAD_REQ_FORMATTER = tmpFile('formatter_d01_grad_req.html', FORMATTER_MINIMAL);
+var D01_GRAD_REQ_THEME = tmpFile('theme_d01_grad_req.js', THEME_FILL_GRADIENT);
+r = run(D01_GRAD_REQ_FORMATTER, D01_GRAD_REQ_JS, D01_GRAD_REQ_THEME);
+assert('D01 FAIL gradient-required exits 1', r.code, 1, r.stdout + r.stderr);
+assertIncludes('D01 FAIL gradient-required stdout contains FAIL D01', r.stdout, 'FAIL D01');
+
+// --- D01 WARN no-fillTechnique declared: theme has no fillTechnique, JS has no gradient calls ---
+// Confirms existing WARN behavior is unchanged when fillTechnique is not declared.
+// Expected: exit 0, stdout contains 'WARN D01'.
+console.log('\n-- D01 WARN no-fillTechnique declared: no fillTechnique in theme, no gradient calls in JS --');
+var D01_NO_FT_JS = tmpFile('d01_no_ft.js', [
+    '// @viz-type: kpi',
+    'var vis = {',
+    '  updateView: function(data, config) {',
+    '    var w = Math.min(this.el.clientWidth, 1920);',
+    '    var h = Math.max(this.el.clientHeight, 100);',
+    '    ctx.shadowBlur = 8;',
+    '    ctx.shadowColor = "rgba(0,0,0,0.5)";',
+    '    var label = opt("myLabel", "default");',
+    '    var color = opt("primaryColor", "#007bff");',
+    '    var bg = opt("bgColor", "#28a745");',
+    '    var mode = opt("themeMode", "auto");',
+    '    detectTheme();',
+    '  }',
+    '};'
+].join('\n'));
+var D01_NO_FT_FORMATTER = tmpFile('formatter_d01_no_ft.html', FORMATTER_MINIMAL);
+var D01_NO_FT_THEME = tmpFile('theme_d01_no_ft.js', THEME_WITH_RGBA);
+r = run(D01_NO_FT_FORMATTER, D01_NO_FT_JS, D01_NO_FT_THEME);
+assert('D01 WARN no-fillTechnique exits 0 (stays WARN, not FAIL)', r.code, 0, r.stdout + r.stderr);
+assertIncludes('D01 WARN no-fillTechnique stdout contains WARN D01', r.stdout, 'WARN D01');
+
+// --- D01 PASS gradient-required with gradient calls ---
+// Theme has fillTechnique:'gradient'; JS has createLinearGradient. D01 not emitted.
+// Expected: stdout does NOT contain 'D01'.
+console.log('\n-- D01 PASS gradient-required with gradient calls: fillTechnique:gradient + createLinearGradient in JS --');
+var D01_GRAD_PASS_JS = tmpFile('d01_grad_pass.js', [
+    '// @viz-type: kpi',
+    'var vis = {',
+    '  updateView: function(data, config) {',
+    '    var w = Math.min(this.el.clientWidth, 1920);',
+    '    var h = Math.max(this.el.clientHeight, 100);',
+    '    var grad = ctx.createLinearGradient(0, 0, w, h);',
+    '    ctx.shadowBlur = 8;',
+    '    ctx.shadowColor = "rgba(0,0,0,0.5)";',
+    '    var label = opt("myLabel", "default");',
+    '    var color = opt("primaryColor", "#007bff");',
+    '    var bg = opt("bgColor", "#28a745");',
+    '    var mode = opt("themeMode", "auto");',
+    '    detectTheme();',
+    '  }',
+    '};'
+].join('\n'));
+var D01_GRAD_PASS_FORMATTER = tmpFile('formatter_d01_grad_pass.html', FORMATTER_MINIMAL);
+var D01_GRAD_PASS_THEME = tmpFile('theme_d01_grad_pass.js', THEME_FILL_GRADIENT);
+r = run(D01_GRAD_PASS_FORMATTER, D01_GRAD_PASS_JS, D01_GRAD_PASS_THEME);
+assertNotIncludes('D01 PASS gradient-required with gradient calls: no D01 in stdout', r.stdout, 'D01');
 
 // --- D02 WARN: no shadow effects ---
 // The JS has Math.min/Math.max (D03 pass) and gradient (D01 pass) but no shadow.
