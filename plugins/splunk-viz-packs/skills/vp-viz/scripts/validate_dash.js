@@ -151,12 +151,14 @@ function runDashChecks(filePathArg, dashJson) {
 
         // Check 2: B10 -- bare option keys in custom viz options{}
         // Only flag custom vizs (not splunk.* or input.*)
+        // DS v2 built-in keys are bare by design — whitelist them
+        var DS2_BUILTIN_KEYS = ['drilldown', 'context', 'encoding'];
         if (!isBuiltinType(vizType) && !isCustomDotPrefix(vizType)) {
             var options = viz.options || {};
             var optKeys = Object.keys(options);
             for (var j = 0; j < optKeys.length; j++) {
                 var key = optKeys[j];
-                if (key.indexOf('.') === -1) {
+                if (key.indexOf('.') === -1 && DS2_BUILTIN_KEYS.indexOf(key) === -1) {
                     emitFail('B10',
                         vizId,
                         'viz "' + vizId + '" option key "' + key + '" is bare -- use "' + vizType + '.' + key + '" format',

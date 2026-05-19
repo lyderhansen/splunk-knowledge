@@ -118,7 +118,7 @@ These rules are guardrails, not a blueprint. Within these constraints, design a 
 
 **Brand-distinct KPI is mandatory.** Two KPI tiles generated for different brands MUST look visually different -- not just recolored. Vary at least 3 of: layout archetype, container shape, font weight, label position, trend indicator, and background treatment. A 'Luxury' brand KPI and a 'Clinical' brand KPI should be immediately distinguishable even without reading the data.
 
-**Settings:** `valueField`, `labelField`, `unit`, `unitPosition`, `textPlacement`, `sparkPlacement`, `sparkHeight`, `decimals`, `showDelta`, `deltaField`, `showGlow`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
+**Settings:** `valueField`, `labelField`, `unit`, `unitPosition`, `textPlacement`, `sparkPlacement`, `sparkHeight`, `decimals`, `showDelta`, `deltaField`, `showGlow`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
 `textPlacement` controls the label-value-trend stack position within the panel. center=vertically and horizontally centered (default). top=anchored to top with breathing room below. left=left-aligned with value. right=right-aligned. Claude should choose the default that best fits the brand personality.
 
@@ -158,7 +158,7 @@ These rules are guardrails, not a blueprint. Within these constraints, design a 
 - Cap style (round, butt, arrow tip)
 - Whether arc has drop shadow, glow, or bevel
 
-**Settings:** `field`, `maxValue`, `unit`, `label`, `showTicks`, `showGlow`, `displayMode`, `themeMode`, `accentColor`, `accentIntensity`, `zoneLow` (threshold where red→amber), `zoneHigh` (threshold where amber→green), `detractorColor`, `passiveColor`, `promoterColor`, `showEntrance`, `flashCritical`, `showHoverEffect`, `animationSpeed`
+**Settings:** `field`, `maxValue`, `unit`, `label`, `showTicks`, `showGlow`, `displayMode`, `themeMode`, `accentIntensity`, `zoneLow` (threshold where red→amber), `zoneHigh` (threshold where amber→green), `detractorColor`, `passiveColor`, `promoterColor`, `showEntrance`, `flashCritical`, `showHoverEffect`, `animationSpeed`
 
 Zone thresholds and zone colors MUST be independently configurable — never hardcode boundaries like 0-30/31-60/61-100 or use only theme severity colors.
 
@@ -177,7 +177,7 @@ Zone thresholds and zone colors MUST be independently configurable — never har
 - DPR-03 (gradient fills) — all data elements use createLinearGradient
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
-**Settings:** `statusField`, `labelField`, `criticalLabel`, `warningLabel`, `okLabel`, `statusOkValues`, `statusWarnValues`, `statusCritValues`, `showGlow`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `flashCritical`, `showHoverEffect`, `animationSpeed`
+**Settings:** `statusField`, `labelField`, `criticalLabel`, `warningLabel`, `okLabel`, `statusOkValues`, `statusWarnValues`, `statusCritValues`, `showGlow`, `accentIntensity`, `themeMode`, `showEntrance`, `flashCritical`, `showHoverEffect`, `animationSpeed`
 
 Status matching: compare the statusField value against each comma-separated list (case-insensitive). This allows any SPL output (e.g. 'degraded', 'maintenance', '1', '2', '3') to map to the three status tiers. Unmatched values render as neutral/informational.
 
@@ -202,7 +202,7 @@ These rules are guardrails, not a blueprint. Within these constraints, design a 
 - DPR-03 (gradient fills) — all data elements use createLinearGradient
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
-**Settings:** `title`, `scrollSpeed`, `field1`, `field2`, `field3`, `field4`, `label1`, `label2`, `label3`, `label4`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `flashCritical`, `showHoverEffect`, `animationSpeed`
+**Settings:** `title`, `scrollSpeed`, `field1`, `field2`, `field3`, `field4`, `label1`, `label2`, `label3`, `label4`, `accentIntensity`, `themeMode`, `showEntrance`, `flashCritical`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** requires `_time` + 1-4 configurable fields. Multi-row.
 
@@ -220,7 +220,7 @@ These rules are guardrails, not a blueprint. Within these constraints, design a 
 - DPR-06 (glass panel) — Luxury mood row highlight
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
-**Settings:** `title`, `maxRows`, `showPagination`, `showHeaders`, `scoreDigits`, `rankField`, `nameField`, `scoreField`, `showGlow`, `showMedals`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
+**Settings:** `title`, `maxRows`, `showPagination`, `showHeaders`, `scoreDigits`, `rankField`, `nameField`, `scoreField`, `showGlow`, `showMedals`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
 Pagination: when showPagination is ON and row count exceeds maxRows, draw prev/next page controls at the bottom. Store _currentPage on this. Calculate totalPages as Math.ceil(rows.length / maxRows). Draw 'Page N of M' with clickable arrows.
 
@@ -245,7 +245,7 @@ These rules are guardrails, not a blueprint. Within these constraints, design a 
 - DPR-03 (gradient fills) — all data elements use createLinearGradient
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
-**Settings:** `labelField`, `valueField`, `statusField`, `palette`, `showArrows`, `showValues`, `showGlow`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
+**Settings:** `labelField`, `valueField`, `statusField`, `palette`, `showArrows`, `showValues`, `showGlow`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** requires label + value, optional status. Multi-row.
 
@@ -262,7 +262,7 @@ These rules are guardrails, not a blueprint. Within these constraints, design a 
 - DPR-03 (gradient fills) — all data elements use createLinearGradient
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
-**Settings:** `categoryField`, `valueField`, `innerRadius`, `showLegend`, `showTotal`, `showGlow`, `colors`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
+**Settings:** `categoryField`, `valueField`, `innerRadius`, `showLegend`, `showTotal`, `showGlow`, `colors`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
 **Drilldown:** use _onClick template from header section. Hit-test by arc segment using Math.atan2(my - cy, mx - cx) angle comparison.
 
@@ -281,7 +281,7 @@ These rules are guardrails, not a blueprint. Within these constraints, design a 
 - DPR-03 (gradient fills) — all data elements use createLinearGradient
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
-**Settings:** `rowField`, `colField`, `valueField`, `lowColor`, `highColor`, `showValues`, `cellRadius`, `showGlow`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `flashCritical`, `showHoverEffect`, `animationSpeed`
+**Settings:** `rowField`, `colField`, `valueField`, `lowColor`, `highColor`, `showValues`, `cellRadius`, `showGlow`, `accentIntensity`, `themeMode`, `showEntrance`, `flashCritical`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** row label, column label, numeric value. Multi-row.
 
@@ -298,7 +298,7 @@ These rules are guardrails, not a blueprint. Within these constraints, design a 
 - DPR-03 (gradient fills) — all data elements use createLinearGradient
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
-**Settings:** `metrics`, `labels`, `sparkHeight`, `sparkMode`, `showValue`, `showArea`, `showGlow`, `colors`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
+**Settings:** `metrics`, `labels`, `sparkHeight`, `sparkMode`, `showValue`, `showArea`, `showGlow`, `colors`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
 `sparkMode`: line draws a simple polyline trend; area fills below the line with a gradient. Default is line.
 
@@ -318,7 +318,7 @@ These rules are guardrails, not a blueprint. Within these constraints, design a 
 - DPR-10 (accent lines) — Precision mood decorative elements
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
-**Settings:** `lineField`, `xField`, `lineColor`, `showFill`, `showDots`, `lineWidth`, `unit`, `thresholdValue`, `thresholdColor`, `themeMode`, `accentColor`, `accentIntensity`, `showEntrance`, `showHoverEffect`, `animationSpeed`
+**Settings:** `lineField`, `xField`, `lineColor`, `showFill`, `showDots`, `lineWidth`, `unit`, `thresholdValue`, `thresholdColor`, `themeMode`, `accentIntensity`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** time-series rows. `xField` (default `_time`), `lineField` (configurable value). Multi-row.
 
@@ -335,7 +335,7 @@ These rules are guardrails, not a blueprint. Within these constraints, design a 
 - DPR-03 (gradient fills) — all data elements use createLinearGradient
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
-**Settings:** `fields`, `labels`, `maxValue`, `fillOpacity`, `showGrid`, `showGlow`, `colors`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
+**Settings:** `fields`, `labels`, `maxValue`, `fillOpacity`, `showGrid`, `showGlow`, `colors`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** one row per entity, one column per dimension.
 
@@ -352,7 +352,7 @@ These rules are guardrails, not a blueprint. Within these constraints, design a 
 - DPR-03 (gradient fills) — all data elements use createLinearGradient
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
-**Settings:** `field`, `maxValue`, `minValue`, `zones`, `zoneColors`, `label`, `unit`, `showGlow`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `flashCritical`, `showHoverEffect`, `animationSpeed`
+**Settings:** `field`, `maxValue`, `minValue`, `zones`, `zoneColors`, `label`, `unit`, `showGlow`, `accentIntensity`, `themeMode`, `showEntrance`, `flashCritical`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** single numeric value.
 
@@ -370,7 +370,7 @@ These rules are guardrails, not a blueprint. Within these constraints, design a 
 - DPR-05 (vignette) — dark theme status grids benefit from edge darkening
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
-**Settings:** `nameField`, `statusField`, `columns`, `cellSize`, `showLabels`, `showCellLabels`, `showCounts`, `statusColors`, `statusOkValues`, `statusWarnValues`, `statusCritValues`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `flashCritical`, `showHoverEffect`, `animationSpeed`
+**Settings:** `nameField`, `statusField`, `columns`, `cellSize`, `showLabels`, `showCellLabels`, `showCounts`, `statusColors`, `statusOkValues`, `statusWarnValues`, `statusCritValues`, `accentIntensity`, `themeMode`, `showEntrance`, `flashCritical`, `showHoverEffect`, `animationSpeed`
 
 `showCellLabels` controls the value text rendered inside each grid cell. When OFF, cells show color-only status indicators (useful for dense 100+ entity grids).
 
@@ -393,7 +393,7 @@ Status matching: compare the statusField value against each comma-separated list
 - DPR-03 (gradient fills) — all data elements use createLinearGradient
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
-**Settings:** `categoryField`, `valueField`, `positiveColor`, `negativeColor`, `totalColor`, `showConnectors`, `showValues`, `showGlow`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
+**Settings:** `categoryField`, `valueField`, `positiveColor`, `negativeColor`, `totalColor`, `showConnectors`, `showValues`, `showGlow`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
 **Data contract:** category + value. Multi-row.
 
@@ -411,7 +411,7 @@ Status matching: compare the statusField value against each comma-separated list
 - DPR-10 (accent lines) — Precision mood decorative elements
 **Consistency:** `theme.getSpacing(w)` for padding/gaps; `theme.getTypoScale(w,h)` for font sizes.
 
-**Settings:** `labelField`, `valueField`, `maxBars`, `showValues`, `unit`, `showGlow`, `barColor`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
+**Settings:** `labelField`, `valueField`, `maxBars`, `showValues`, `unit`, `showGlow`, `barColor`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
 **Drilldown:** use _onClick template from header section. Hit-test by bar index: Math.floor(my / barSlotH).
 
@@ -456,7 +456,7 @@ var totalPages = Math.ceil(rows.length / rowsPerPage);
 var pageRows = rows.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
 ```
 
-**Settings:** `columns`, `hiddenColumns`, `columnWidths`, `defaultSortColumn`, `defaultSortDirection`, `maxRows`, `showHeader`, `showPosition`, `accentColor`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
+**Settings:** `columns`, `hiddenColumns`, `columnWidths`, `defaultSortColumn`, `defaultSortDirection`, `maxRows`, `showHeader`, `showPosition`, `accentIntensity`, `themeMode`, `showEntrance`, `showHoverEffect`, `animationSpeed`
 
 **Drilldown:** use _onClick template from header section. Hit-test by row index: Math.floor((my - headerH) / rowH).
 
