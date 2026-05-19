@@ -8,6 +8,11 @@ Use `drilldown.setToken` to capture a click value and set a named token. Downstr
 
 The panel itself MUST have `"options": { "drilldown": "all" }` — omitting it means clicks fire nothing (invisible failure).
 
+> **Mandatory for every panel:** Apply this pattern to EVERY custom viz panel in the dashboard,
+> not just one example. A single viz panel without `"drilldown": "all"` silently disables click
+> interaction on that panel. Iterate all `{app_id}.*` type panels and confirm each has both
+> `options.drilldown: "all"` and an `eventHandlers` entry.
+
 ```json
 {
   "visualizations": {
@@ -208,6 +213,58 @@ If using the defaults block (Section 5), the `earliest`/`latest` parameters are 
 ```
 
 The `|s` suffix formats a comma-separated multi-select value into an IN list. This is for `input.multiselect` inputs only — the standard `input.dropdown` above is single-select.
+
+## 8. Built-in Viz Panel Colors — DR-03
+
+Built-in Dashboard Studio vizs (splunk.area, splunk.line, splunk.column, splunk.bar, etc.) do NOT
+use formatter color pickers. Their series colors are set via JSON `options` in the panel definition.
+
+Two complementary options available:
+
+**`seriesColors` — positional array (maps to series in alphabetical category order):**
+
+```json
+{
+  "visualizations": {
+    "viz_trend": {
+      "type": "splunk.area",
+      "dataSources": { "primary": "ds_trend" },
+      "options": {
+        "seriesColors": ["#0077B6", "#00B4D8", "#90E0EF", "#ADE8F4"],
+        "backgroundColor": "transparent",
+        "seriesColorsByField": {}
+      }
+    }
+  }
+}
+```
+
+**`seriesColorsByField` — locks color to a specific field/category value (recommended — refactor-safe):**
+
+```json
+{
+  "visualizations": {
+    "viz_column": {
+      "type": "splunk.column",
+      "dataSources": { "primary": "ds_by_status" },
+      "options": {
+        "seriesColorsByField": {
+          "critical": "#E63946",
+          "warning":  "#F4A261",
+          "ok":       "#2A9D8F"
+        }
+      }
+    }
+  }
+}
+```
+
+Rules:
+- Use `seriesColors` for time-series or numeric series where category names are unknown at design time.
+- Use `seriesColorsByField` for categorical fields where values are known (status, tier, region). It is refactor-safe — adding a new series does not shift all colors.
+- Both can coexist: `seriesColorsByField` overrides specific fields; `seriesColors` fills remaining series.
+- Source the hex values from `shared/theme.js` brand palette — use the same series colors defined there for brand consistency across custom and built-in panels.
+- Custom vizs use formatter color pickers (series1Color–series5Color). Built-in vizs use this JSON options approach. Do NOT mix the two.
 
 ---
 

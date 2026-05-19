@@ -86,6 +86,14 @@ MUST LOAD before writing dashboard JSON:
 4. **Background** — use `bg_gradient.png` (generated in Step 3b) as `splunk.image` at z=0
    in the structure array. Path: `/static/app/{app_id}/images/bg_gradient.png`.
 5. **Canvas size** — `"width": 1920, "height": 1080` minimum.
+6. **Drilldown wiring — ALL viz panels** — For every custom viz panel (`{app_id}.{viz_name}` type),
+   add BOTH of the following (omitting either causes clicks to fail silently):
+   - `"drilldown": "all"` inside the panel's `options` block
+   - An `eventHandlers` array with a `drilldown.setToken` handler mapping `click.value` to a
+     named token (e.g. `selected_item`). Wire that token to a `defaults.tokens.default` entry
+     with value `"*"` (per INT-03).
+   Built-in viz panels (splunk.area, splunk.line, etc.) also get `"drilldown": "all"` in options
+   if they are meant to be interactive. See references/dashboard-interactivity.md Section 1.
 
 **Output files:**
 - Dashboard JSON: `appserver/static/dashboards/{pack_id}_overview.json`
@@ -194,5 +202,6 @@ Save to `default/data/ui/nav/default.xml`.
 - [ ] Dashboard has branded title panel (splunk.markdown viz_title at y <= 200 in structure)
 - [ ] ds-int-tabs loaded before dashboard JSON if pack has 7+ vizs or tabs requested
 - [ ] Drilldown tokens have defaults (INT-03 — every token set via eventHandlers has a defaults.tokens.default entry with value "*")
+- [ ] Drilldown wired on every custom viz panel (options.drilldown: "all" + eventHandlers setToken — not just example panels)
 - [ ] Time range input declared and placed in layout.globalInputs
 ```
