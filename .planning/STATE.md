@@ -1,34 +1,35 @@
 ---
 gsd_state_version: 1.0
-milestone: v5.3.0
-milestone_name: Production Polish & Interactive Dashboards
-status: Awaiting next milestone
-stopped_at: Phase 18 context gathered
-last_updated: "2026-05-19T13:29:28.686Z"
-last_activity: 2026-05-19 — Milestone v5.3.0 completed and archived
+milestone: v5.4.0
+milestone_name: Runtime Robustness & Visual Polish
+status: planning
+last_updated: "2026-05-19T18:14:52.430Z"
+last_activity: 2026-05-19
 progress:
-  total_phases: 13
-  completed_phases: 3
-  total_plans: 7
-  completed_plans: 7
-  percent: 100
+  total_phases: 3
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-18)
+See: .planning/PROJECT.md (updated 2026-05-19)
 
 **Core value:** Zero-fix first builds AND wow-factor dashboards — reliable + beautiful every time
-**Current focus:** Phase 18 — interactive-dashboard-features
+**Current focus:** Phase 19 — validator-fixes
 
 ## Current Position
 
-Phase: Milestone v5.3.0 complete
+Phase: 19 — Validator Fixes
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-05-19 — Milestone v5.3.0 completed and archived
+Status: Roadmap defined, ready to plan
+Last activity: 2026-05-19 — v5.4.0 roadmap created (Phases 19-21)
+
+[==========================================================-----------] 85% (18/21 phases across all milestones)
 
 ## Performance Metrics
 
@@ -57,16 +58,22 @@ Last activity: 2026-05-19 — Milestone v5.3.0 completed and archived
 
 **v5.3.0 Velocity:**
 
+- Total plans completed: 7
+- Total phases completed: 3
+- Average duration: ~5 min/plan
+
+**v5.4.0 Velocity:**
+
 - Total plans completed: 0
 - Average duration: —
 
-**By Phase:**
+**By Phase (v5.4.0):**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 16 | 2 | - | - |
-| 17 | 2 | - | - |
-| 18 | 3 | - | - |
+| 19 | TBD | - | - |
+| 20 | TBD | - | - |
+| 21 | TBD | - | - |
 
 *Updated after each plan completion*
 
@@ -77,23 +84,26 @@ Last activity: 2026-05-19 — Milestone v5.3.0 completed and archived
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- [Roadmap]: Phase 16 first — canvas-recipes.md trim (CQ-01) and generated code pattern fixes (CQ-02 through CQ-05) are all reference/skill layer changes; they share the same target files (canvas-recipes.md, vp-viz SKILL.md, viz-blueprints.md, generate_assets.js) and must complete before downstream phases rely on a stable reference layer
-- [Roadmap]: Phase 17 depends on Phase 16 — DQ-01 tab schema fix and DQ-04 auto-load both modify ds-int-tabs and vp-design SKILL.md; those files should not be in flux during code quality cleanup
-- [Roadmap]: Phase 18 depends on Phase 17 — drilldown token flows (INT-01 through INT-03) require a working dashboard scaffold; DQ-01 tab schema and DQ-03 title panel must be correct first or drilldown patterns land on a broken foundation
-- [Architecture]: CQ-01 trim targets canvas-recipes.md specifically — split strategy should consolidate into existing split files (depth-recipes.md, typography-recipes.md, animation-recipes.md) already created in Phase 6; no new files needed
-- [Architecture]: CQ-02 accentIntensity uncap is a SKILL.md template change — remove Math.min() cap from glow calculation; companion to ACC-03 work already noted in v5.2.0 context
-- [Architecture]: CQ-03 hover early-exit is a viz-blueprints.md enforcement change — add a mandatory guard pattern to the _onMouseMove section of every viz type entry
-- [Architecture]: CQ-05 preview silhouette uniqueness is a generate_assets.js change — each @viz-type annotation must map to a distinct drawing routine; cross-references Phase 13 ACC-04 work
-- [Architecture]: INT-01 drilldown token flows require three parts: setToken call in formatter.html, token reference in downstream SPL, and defaults.tokens.default in dashboard JSON — all three must be documented in ds-int-tabs or a new interactivity reference
-- [Architecture]: INT-02 input controls live in the Dashboard Studio inputs section — reference ds-int-tabs or create a new dashboard-interactivity.md; keep vp-design SKILL.md under 500 lines
+- [Roadmap]: Phase 19 first — VF-01/VF-02/VF-03 fix false-positive and false-negative bugs in validate_dash.js (DS4, DS5) and check_design.js (D11); all downstream phases rely on accurate validator output, so fixes must land before new patterns are generated
+- [Roadmap]: Phase 20 groups DB and DR together — field discovery (DB-01/DB-02/DB-03) and drilldown wiring (DR-01/DR-02/DR-03) are functionally coupled; correct _onClick drilldown hits depend on field names being dynamic, not hardcoded. DR-03 (seriesColors doc) is documentation, grouped here as it belongs to drilldown output
+- [Roadmap]: Phase 21 handles animation and visual polish last — AN-01/AN-02/AN-03 fix animation controls that currently do nothing, VP-01/VP-02/VP-03 enforce gradient fills and light theme contrast; neither group blocks Phase 19 or 20
+- [Architecture]: VF-01 fix is in validate_dash.js DS4 check — accept item.vizId as valid in addition to item.item; straightforward conditional change
+- [Architecture]: VF-02 fix is in check_design.js D11 — scan for _onMouseMove method definition position (indexOf), not first string occurrence; prevents comment-based false positives
+- [Architecture]: VF-03 fix is in validate_dash.js DS5 check — wildcard value "*" should pass as a valid default, not trigger the missing-default warning
+- [Architecture]: DB-01/DB-02 changes land in vp-viz SKILL.md and auto-field-patterns.md — field name fallbacks change from domain strings to empty/placeholder values; formatter defaults change to empty string with help text
+- [Architecture]: DB-03 changes land in formatter-patterns.md — section label template must use {{VIZ_NAMESPACE}} pattern, not domain-baked text
+- [Architecture]: DR-01/DR-02 changes land in viz-blueprints.md (JS _onClick template) and dashboard-interactivity.md (dashboard JSON eventHandlers pairing) — both halves must be documented together
+- [Architecture]: AN-01/AN-02/AN-03 changes land in animation-recipes.md and canvas-recipes.md — animation control patterns must actually implement the behavior (rAF loop, setInterval oscillation, duration parameter)
+- [Architecture]: VP-01 change lands in check_design.js or vp-viz SKILL.md — gradient enforcement can be a generator-side reminder or a validator check
+- [Architecture]: VP-02 change lands in theme-template.md LIGHT object and check_contrast.js — light theme text colors must pass WCAG AA before the pack is packaged
 
 ### Pending Todos
 
-- [ ] Run /gsd-plan-phase 16 to begin Phase 16 planning
+- [ ] Run /gsd-plan-phase 19 to begin Phase 19 planning
 
 ### Blockers/Concerns
 
-None blocking. Phase 16 can start immediately.
+None blocking. Phase 19 can start immediately.
 
 ## Deferred Items
 
@@ -104,19 +114,19 @@ Items acknowledged and carried forward:
 | v6.0 scope | validate_dash.js automated dashboard JSON schema checker | deferred | 2026-05-18 |
 | v6.0 scope | Aviation and Fintech domain-specific viz types | deferred | 2026-05-18 |
 | v6.0 scope | Real Splunk data integration patterns (production SPL templates) | deferred | 2026-05-18 |
-| v5.3.0 | Aviation and Fintech domain-specific viz types | deferred | 2026-05-18 |
-| v5.3.0 | score_design.js automated aesthetic scoring | deferred | 2026-05-18 |
-| v5.3.0 | Auto-palette HSL derivation for series colors | deferred | 2026-05-18 |
-| v5.3.0 | showHoverEffect early-exit enforcement in check_design.js | deferred | 2026-05-18 |
+| v5.4.0 future | Aviation and Fintech domain-specific viz types | deferred | 2026-05-18 |
+| v5.4.0 future | score_design.js automated aesthetic scoring | deferred | 2026-05-18 |
+| v5.4.0 future | Auto-palette HSL derivation for series colors | deferred | 2026-05-18 |
+| v5.4.0 future | showHoverEffect early-exit enforcement in check_design.js | deferred | 2026-05-18 |
 | v2 scope | Dashboard drilldown end-to-end | deferred | 2026-05-15 |
 | v2 scope | Dashboard JSON "title" field | deferred | 2026-05-15 |
 
 ## Session Continuity
 
-Last session: 2026-05-19T12:05:28.362Z
-Stopped at: Phase 18 context gathered
-Resume: Run /gsd-plan-phase 16
+Last session: 2026-05-19
+Stopped at: v5.4.0 roadmap defined (Phases 19-21, 14 requirements mapped)
+Resume: Run /gsd-plan-phase 19
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Run /gsd-plan-phase 19 to begin Phase 19: Validator Fixes

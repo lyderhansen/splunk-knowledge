@@ -7,6 +7,7 @@
 - ✅ **v5.1.0 Viz Hardening & Dashboard Wow-Factor** — Phases 10-12 (shipped 2026-05-18)
 - ✅ **v5.2.0 Smart Vizs & Domain Identity** — Phases 13-15 (shipped 2026-05-18)
 - ✅ **v5.3.0 Production Polish & Interactive Dashboards** — Phases 16-18 (shipped 2026-05-19)
+- **v5.4.0 Runtime Robustness & Visual Polish** — Phases 19-21 (in progress)
 
 ## Phases
 
@@ -63,6 +64,12 @@ Full details: `.planning/milestones/v5.2.0-ROADMAP.md`
 Full details: `.planning/milestones/v5.3.0-ROADMAP.md`
 
 </details>
+
+**v5.4.0 Runtime Robustness & Visual Polish (Phases 19-21)**
+
+- [ ] **Phase 19: Validator Fixes** - Fix three false-positive/false-negative bugs in validate_dash.js and check_design.js
+- [ ] **Phase 20: Data Binding & Drilldown** - Auto-field discovery enforced in generated vizs; drilldown wired on all clickable panels
+- [ ] **Phase 21: Animation & Visual Polish** - Animation controls implemented correctly; gradient fills and light theme contrast verified
 
 ## Phase Details
 
@@ -269,6 +276,41 @@ Plans:
 - [x] 18-03-PLAN.md — Series color formatter overhaul, conf flags, SKILL.md cleanup, viz-blueprints _onClick template
 **UI hint**: yes
 
+### Phase 19: Validator Fixes
+**Goal**: The three known false-positive and false-negative bugs in validate_dash.js and check_design.js are corrected so the validation pipeline reports accurate findings on generated output
+**Depends on**: Phase 18
+**Requirements**: VF-01, VF-02, VF-03
+**Success Criteria** (what must be TRUE):
+  1. Running validate_dash.js against a valid dashboard JSON that uses vizId (not item.item) produces zero DS4 findings — the check accepts both property names
+  2. Running check_design.js against a viz that defines _onMouseMove after a comment block produces zero false-positive D11 findings — the scan starts from the method definition, not the first string occurrence
+  3. Running validate_dash.js against a dashboard with a defaults.tokens.default entry of "*" produces a DS5 pass — only non-wildcard or missing entries trigger the check
+**Plans**: TBD
+
+### Phase 20: Data Binding & Drilldown
+**Goal**: Every generated viz reads field names from data.fields at runtime and every clickable panel has complete drilldown wiring — both the JS _onClick and the dashboard JSON eventHandlers are present and correctly paired
+**Depends on**: Phase 19
+**Requirements**: DB-01, DB-02, DB-03, DR-01, DR-02, DR-03
+**Success Criteria** (what must be TRUE):
+  1. A generated viz fed a search result with a differently-named field than the formatter default auto-discovers and renders that field — no hardcoded domain-specific fallback strings appear in JS
+  2. A generated formatter's "Data configurations" text input shows an empty default with placeholder "Auto-detected from data. Override if needed." — not a pre-filled domain string like "artist_name"
+  3. Formatter section labels read "Data configurations" (or equivalent generic text using {{VIZ_NAMESPACE}}) — no domain-baked labels like "Artist Leaderboard: Data configurations" appear in any generated formatter.html
+  4. Every clickable viz in a generated pack has _onClick implemented with hit-test logic and this.drilldown() call — verified by inspecting visualization_source.js
+  5. Every panel with _onClick in a generated pack has matching dashboard JSON with "drilldown": "all" in options and an eventHandlers entry with drilldown.setToken — neither half is present without the other
+**Plans**: TBD
+
+### Phase 21: Animation & Visual Polish
+**Goal**: Animation controls produce the visible behaviors they promise, gradient fills appear when the visual language specifies them, and the light theme passes WCAG AA contrast — the pack looks premium and correct in both themes out of the box
+**Depends on**: Phase 20
+**Requirements**: AN-01, AN-02, AN-03, VP-01, VP-02, VP-03
+**Success Criteria** (what must be TRUE):
+  1. User toggles showEntrance to On in a generated viz and sees a visible entrance animation (arc fill, row cascade, or opacity fade) within the first render — toggling Off stops it with no other visual change
+  2. User enables flashCritical on a critical-status element and sees shadowBlur oscillating visibly at 500-800ms — the pulse is legible without reading source code
+  3. User sets animationSpeed to "slow" and back to "fast" and measures a perceptible timing difference — the control actually changes the interval or duration used in JS
+  4. A generated viz pack with fillTechnique: gradient in its visual language contains at least one createLinearGradient or createRadialGradient call per viz — no flat fill substitutes appear
+  5. User switches a generated viz to light themeMode and hero text (value/score/label) renders at full opacity with 4.5:1 contrast or better against the panel background — verified by check_contrast.js
+**Plans**: TBD
+**UI hint**: yes
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -288,6 +330,9 @@ Plans:
 | 13. Accent Architecture Foundation | v5.2.0 | 0/3 | Not started | - |
 | 14. Smart Fields & Domain Ideation | v5.2.0 | 0/2 | Not started | - |
 | 15. Mandatory Dashboard Packaging | v5.2.0 | 0/1 | Not started | - |
-| 16. Code Quality & Reference Cleanup | v5.3.0 | 2/2 | Complete    | 2026-05-18 |
-| 17. Dashboard Schema & Composition | v5.3.0 | 2/2 | Complete    | 2026-05-18 |
-| 18. Interactive Dashboard Features | v5.3.0 | 3/3 | Complete    | 2026-05-19 |
+| 16. Code Quality & Reference Cleanup | v5.3.0 | 2/2 | Complete | 2026-05-18 |
+| 17. Dashboard Schema & Composition | v5.3.0 | 2/2 | Complete | 2026-05-18 |
+| 18. Interactive Dashboard Features | v5.3.0 | 3/3 | Complete | 2026-05-19 |
+| 19. Validator Fixes | v5.4.0 | 0/0 | Not started | - |
+| 20. Data Binding & Drilldown | v5.4.0 | 0/0 | Not started | - |
+| 21. Animation & Visual Polish | v5.4.0 | 0/0 | Not started | - |
