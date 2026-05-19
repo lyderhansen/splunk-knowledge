@@ -24,6 +24,7 @@
  *   DS2 -- tab schema errors: array layoutDefinitions, tabBarPosition key, non-object tabs.items (DQ-01)
  *   DS3 -- no splunk.image viz with bg_gradient in id or src (DQ-02/D-03)
  *   DS4 -- no splunk.markdown title panel at y <= 200 (DQ-03/D-05/D-06)
+ *   DS5 -- drilldown token set via setToken has no defaults.tokens.default entry (INT-03)
  *
  * Pure ES5 CJS -- no const/let/arrow functions/template literals/import.
  */
@@ -293,6 +294,41 @@ function runDashChecks(filePathArg, dashJson) {
             emitFail('DS4', 'layout',
                 'no splunk.markdown panel found in top 200px of canvas -- title panel must be at y <= 200 (DQ-03/D-06)',
                 { markdownIds: markdownIds }
+            );
+            violations++;
+        }
+    }
+
+    // ---- DS5: drilldown tokens must have defaults.tokens.default entries ----
+    var defaults = dashJson.defaults || {};
+    var defaultTokens = (defaults.tokens && defaults.tokens.default) ? defaults.tokens.default : {};
+    var setTokenNames = [];
+
+    for (var dvi = 0; dvi < vizIds.length; dvi++) {
+        var dvizId = vizIds[dvi];
+        var dviz = vizMap[dvizId];
+        var handlers = dviz.eventHandlers;
+        if (!Array.isArray(handlers)) { continue; }
+        for (var hi = 0; hi < handlers.length; hi++) {
+            var handler = handlers[hi];
+            if (handler.type !== 'drilldown.setToken') { continue; }
+            var toks = (handler.options && Array.isArray(handler.options.tokens))
+                ? handler.options.tokens : [];
+            for (var ti2 = 0; ti2 < toks.length; ti2++) {
+                var tokName = toks[ti2].token;
+                if (tokName && setTokenNames.indexOf(tokName) === -1) {
+                    setTokenNames.push(tokName);
+                }
+            }
+        }
+    }
+
+    for (var si2 = 0; si2 < setTokenNames.length; si2++) {
+        var stn = setTokenNames[si2];
+        if (!Object.prototype.hasOwnProperty.call(defaultTokens, stn)) {
+            emitFail('DS5', 'defaults',
+                'drilldown token "' + stn + '" is set via setToken but has no defaults.tokens.default entry -- dashboard will render empty before first click (INT-03)',
+                { tokenName: stn }
             );
             violations++;
         }
