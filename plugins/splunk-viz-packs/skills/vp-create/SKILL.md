@@ -73,6 +73,7 @@ MUST LOAD before writing dashboard JSON:
 1. **[references/dashboard-json-template.md](references/dashboard-json-template.md)** — exact JSON structure, WRONG patterns, viz type format, z-order rules. Read this FIRST.
 2. **`vp-design/references/dashboard-composition.md`** — visual hierarchy, depth recipes, background treatment.
 3. **Conditional — ds-int-tabs** (`plugins/splunk-dashboard-studio/skills/ds-int-tabs/SKILL.md`) — Load this before writing ANY dashboard JSON if EITHER condition is true: (a) the viz inventory from vp-design has 7 or more vizs, OR (b) the user explicitly requested a tabbed layout. The condition is evaluated from the viz inventory established in vp-design — do not recount at generation time. (per D-07/D-08)
+4. **[references/dashboard-interactivity.md](references/dashboard-interactivity.md)** — drilldown token flows, input controls, defaults block wiring, domain time defaults. Load before writing ANY dashboard JSON. (per INT-01/INT-02/INT-03)
 
 **Requirements:**
 
@@ -192,4 +193,6 @@ Save to `default/data/ui/nav/default.xml`.
 - [ ] Light theme tested (themeMode=light in formatter, verify text is readable)
 - [ ] Dashboard has branded title panel (splunk.markdown viz_title at y <= 200 in structure)
 - [ ] ds-int-tabs loaded before dashboard JSON if pack has 7+ vizs or tabs requested
+- [ ] Drilldown tokens have defaults (INT-03 — every token set via eventHandlers has a defaults.tokens.default entry with value "*")
+- [ ] Time range input declared and placed in layout.globalInputs
 ```
