@@ -284,7 +284,9 @@ Plans:
   1. Running validate_dash.js against a valid dashboard JSON that uses vizId (not item.item) produces zero DS4 findings — the check accepts both property names
   2. Running check_design.js against a viz that defines _onMouseMove after a comment block produces zero false-positive D11 findings — the scan starts from the method definition, not the first string occurrence
   3. Running validate_dash.js against a dashboard with a defaults.tokens.default entry of "*" produces a DS5 pass — only non-wildcard or missing entries trigger the check
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 19-01-PLAN.md -- Fix DS4 vizId/item, add DS5w WARN, fix D11 lastIndexOf in validate_dash.js and check_design.js
 
 ### Phase 20: Data Binding & Drilldown
 **Goal**: Every generated viz reads field names from data.fields at runtime and every clickable panel has complete drilldown wiring — both the JS _onClick and the dashboard JSON eventHandlers are present and correctly paired
@@ -333,6 +335,6 @@ Plans:
 | 16. Code Quality & Reference Cleanup | v5.3.0 | 2/2 | Complete | 2026-05-18 |
 | 17. Dashboard Schema & Composition | v5.3.0 | 2/2 | Complete | 2026-05-18 |
 | 18. Interactive Dashboard Features | v5.3.0 | 3/3 | Complete | 2026-05-19 |
-| 19. Validator Fixes | v5.4.0 | 0/0 | Not started | - |
+| 19. Validator Fixes | v5.4.0 | 0/1 | In progress | - |
 | 20. Data Binding & Drilldown | v5.4.0 | 0/0 | Not started | - |
 | 21. Animation & Visual Polish | v5.4.0 | 0/0 | Not started | - |
