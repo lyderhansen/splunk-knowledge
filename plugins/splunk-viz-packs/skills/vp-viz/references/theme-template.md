@@ -31,7 +31,9 @@ function lerpColor(a, b, t) {
 // fillTechnique: 'gradient' | 'flat' | 'textured'
 // Used by check_design.js D01: 'gradient' escalates missing gradient calls to FAIL.
 var VISUAL_LANG = {
-    fillTechnique: '{{FILL_TECHNIQUE}}'  // 'gradient' | 'flat' | 'textured'
+    fillTechnique:     '{{FILL_TECHNIQUE}}',  // 'gradient' | 'flat' | 'textured'
+    backgroundType:    '{{BG_TYPE}}',         // 'gradient' | 'pattern' | 'solid' | 'photo'
+    backgroundPattern: '{{BG_PATTERN}}'       // 'hex_grid' | 'topo' | 'circuit' | 'dot_matrix' (used when backgroundType='pattern')
 };
 
 var DARK = {

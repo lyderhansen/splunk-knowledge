@@ -186,6 +186,8 @@ strokeStyle:       none | subtle (0.5-1px) | bold (2px+)
 spacing:           tight | balanced | airy
 shadowDepth:       none | subtle | dramatic
 dataPresentation:  dense | focused | minimal
+backgroundType:    gradient | pattern | solid | photo  (mood defaults: luxury→gradient, futuristic→pattern/hex_grid, organic→pattern/topo, corporate→pattern/dot_matrix, athletic→photo)
+backgroundPattern: hex_grid | topo | circuit | dot_matrix  (used only when backgroundType=pattern)
 ```
 
 **Brand reference mappings** (from tests 21-28):
