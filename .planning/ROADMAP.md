@@ -80,7 +80,7 @@ Full details: `.planning/milestones/v5.3.0-ROADMAP.md`
 - [x] **Phase 22: Validator Feedback Loop** - check_design.js names the failing viz in D01/D08 output; vp-viz pipeline loops on XFILE/D08 before handoff to vp-create (completed 2026-05-20)
 - [x] **Phase 23: Color Palette & Accent Foundation** - Every generated formatter has 6-8 brand swatches; light textFaint passes WCAG AA; accentColor restored with correct usage rules (completed 2026-05-20)
 - [x] **Phase 24: Animation Boilerplate** - Generic copy-paste ES5 entrance and LED pulse boilerplates in animation-recipes.md; viz-blueprints.md specifies which boilerplate per viz type (completed 2026-05-20)
-- [ ] **Phase 25: Backgrounds & Preview Assets** - generate_assets.js produces background variant matching visual language backgroundType; preview.png at 116x76 (official spec); branded appIcon symbol
+- [x] **Phase 25: Backgrounds & Preview Assets** - generate_assets.js produces background variant matching visual language backgroundType; preview.png at 116x76 (official spec); branded appIcon symbol (completed 2026-05-20)
 - [ ] **Phase 26: Multi-Channel Archetype** - viz-blueprints.md includes Multi-Channel Composite archetype; domain-templates.md data-rich domain entries reference it
 - [ ] **Phase 27: API Correctness** - Fix drilldown payload shape to official spec; splunkCategorical color pickers; threshold 3-band RAG template; escapeHtml() for XSS prevention
 
@@ -392,7 +392,7 @@ Plans:
 - [x] 25-01-PLAN.md — BG track: add backgroundType/backgroundPattern to vp-design schema + theme-template; implement 4-type background dispatcher + light variants in generate_assets.js; tests T11-T16
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 25-02-PLAN.md — PA track: resize all preview silhouettes to 116x76 with 2-color mini-renders; extend appIcon with 15-symbol domain cascade; update validate_viz.sh A02 check; T8 update + T17
+- [x] 25-02-PLAN.md — PA track: resize all preview silhouettes to 116x76 with 2-color mini-renders; extend appIcon with 15-symbol domain cascade; update validate_viz.sh A02 check; T8 update + T17
 
 ### Phase 26: Multi-Channel Archetype
 **Goal**: The Multi-Channel Composite archetype is documented in viz-blueprints.md as a first-class pattern, and data-rich domain entries in domain-templates.md reference it with concrete channel configurations for F1/motorsport, healthcare monitoring, and network ops
@@ -436,5 +436,5 @@ Plans:
 | 22. Validator Feedback Loop | v5.5.0 | 2/2 | Complete    | 2026-05-20 |
 | 23. Color Palette & Accent Foundation | v5.5.0 | 2/2 | Complete    | 2026-05-20 |
 | 24. Animation Boilerplate | v5.5.0 | 2/2 | Complete    | 2026-05-20 |
-| 25. Backgrounds & Preview Assets | v5.5.0 | 1/2 | In Progress|  |
+| 25. Backgrounds & Preview Assets | v5.5.0 | 2/2 | Complete    | 2026-05-20 |
 | 26. Multi-Channel Archetype | v5.5.0 | 0/2 | Not started | - |

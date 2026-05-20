@@ -9,9 +9,9 @@
 
 ### Background & Visual Identity (BG)
 
-- [ ] **BG-01**: Dashboard background supports multiple types: gradient (current), geometric pattern, brand photo overlay, solid with texture — selected by visual language `backgroundType` field
-- [ ] **BG-02**: generate_assets.js produces background type matching the visual language — not always the same dark radial gradient
-- [ ] **BG-03**: Light mode background variant generated alongside dark mode — bg_gradient_light.png or Dashboard Studio backgroundColor property
+- [x] **BG-01**: Dashboard background supports multiple types: gradient (current), geometric pattern, brand photo overlay, solid with texture — selected by visual language `backgroundType` field
+- [x] **BG-02**: generate_assets.js produces background type matching the visual language — not always the same dark radial gradient
+- [x] **BG-03**: Light mode background variant generated alongside dark mode — bg_gradient_light.png or Dashboard Studio backgroundColor property
 
 ### Color Palette (CP)
 
@@ -26,14 +26,14 @@
 
 ### Animation Behavior (AB)
 
-- [ ] **AB-01**: animation-recipes.md provides a generic 15-line ES5 entrance boilerplate that works for ANY viz type — Claude copies verbatim, customizes only the draw call
-- [ ] **AB-02**: animation-recipes.md provides a generic LED pulse boilerplate (setInterval 30fps, shadowBlur oscillation) that works for ANY viz type with status values
-- [ ] **AB-03**: viz-blueprints.md per-viz animation notes specify which boilerplate to use — not "implement varies by viz type"
+- [x] **AB-01**: animation-recipes.md provides a generic 15-line ES5 entrance boilerplate that works for ANY viz type — Claude copies verbatim, customizes only the draw call
+- [x] **AB-02**: animation-recipes.md provides a generic LED pulse boilerplate (setInterval 30fps, shadowBlur oscillation) that works for ANY viz type with status values
+- [x] **AB-03**: viz-blueprints.md per-viz animation notes specify which boilerplate to use — not "implement varies by viz type"
 
 ### Preview Assets (PA)
 
-- [ ] **PA-01**: generate_assets.js preview.png uses 116x76 pixels (official Splunk spec), brand gradient fills, recognizable viz silhouette shapes — not 300x200 flat outlines
-- [ ] **PA-02**: generate_assets.js appIcon.png uses brand primary color with a recognizable symbol — not a generic colored circle
+- [x] **PA-01**: generate_assets.js preview.png uses 116x76 pixels (official Splunk spec), brand gradient fills, recognizable viz silhouette shapes — not 300x200 flat outlines
+- [x] **PA-02**: generate_assets.js appIcon.png uses brand primary color with a recognizable symbol — not a generic colored circle
 
 ### API Correctness (AC)
 
