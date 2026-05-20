@@ -30,12 +30,31 @@ only the `{FILL}` parts. Getting ANY attribute wrong causes silent failures.
 ```html
 <splunk-control-group label="{FILL}" help="{FILL}">
     <splunk-color-picker name="{{VIZ_NAMESPACE}}.{FILL}" type="custom" value="{FILL}">
-        <splunk-color>{FILL}</splunk-color>
-        <splunk-color>{FILL}</splunk-color>
+        <!-- Populate 6-8 brand colors from theme.js DARK: accent, series[0-4], bg, panel. Min 6 per picker. -->
+        <splunk-color>#FILL_ACCENT</splunk-color>
+        <splunk-color>#FILL_S1</splunk-color>
+        <splunk-color>#FILL_S2</splunk-color>
+        <splunk-color>#FILL_S3</splunk-color>
+        <splunk-color>#FILL_S4</splunk-color>
+        <splunk-color>#FILL_S5</splunk-color>
+        <splunk-color>#FILL_BG</splunk-color>
+        <splunk-color>#FILL_PANEL</splunk-color>
     </splunk-color-picker>
 </splunk-control-group>
 ```
-
+```html
+<!-- Example: theme.js DARK hex values filled in (Spotify-inspired) -->
+<splunk-color-picker name="{{VIZ_NAMESPACE}}.series1Color" type="custom" value="#1DB954">
+    <splunk-color>#1DB954</splunk-color><!-- accent -->
+    <splunk-color>#2D46B9</splunk-color><!-- series[0] -->
+    <splunk-color>#E91E8C</splunk-color><!-- series[1] -->
+    <splunk-color>#FF6437</splunk-color><!-- series[2] -->
+    <splunk-color>#FAE62D</splunk-color><!-- series[3] -->
+    <splunk-color>#27856A</splunk-color><!-- series[4] -->
+    <splunk-color>#121212</splunk-color><!-- bg -->
+    <splunk-color>#282828</splunk-color><!-- panel -->
+</splunk-color-picker>
+```
 ### Theme selector (MUST default to "auto")
 
 ```html
@@ -427,4 +446,4 @@ function getSeriesColor(i, fallback) {
 }
 ```
 
-**Note on default colors:** The hex values shown in the formatter HTML template above (`#0077B6`, `#00B4D8`, etc.) are placeholder defaults. At generation time, fill them with brand palette values from `shared/theme.js`. The template shows the control structure; brand colors replace the hex values.
+**Note on brand swatches (6-8 rule):** Every `<splunk-color-picker>` MUST ship with 6-8 `<splunk-color>` elements from `theme.js` DARK: `accent`, `series[0]-[4]`, `bg`, `panel`. The Series 1-5 pickers in the Full formatter example also need 6-8 swatches each at generation time. Replace placeholder hex values with real brand palette values.
