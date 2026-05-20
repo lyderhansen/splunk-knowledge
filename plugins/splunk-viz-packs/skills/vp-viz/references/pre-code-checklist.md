@@ -10,6 +10,7 @@ Verify EVERY item before writing visualization code. This is the gate between "r
 □ Formatter: class="splunk-formatter-section" section-label="..." on every <form>
 □ Formatter: themeMode defaults to "auto" (NEVER "dark")
 □ Formatter: minimum 10 controls (4 sections required when mood effects present)
+□ Formatter: Color pickers — read theme.js DARK palette, populate 6-8 brand swatches as <splunk-color> elements (accent, series[0-4], bg or panel)
 □ JS light theme: hero text uses t.text, NEVER t.textDim (ghost-text on white — D-08)
 □ JS light theme: glow scaled by isDark ? 1.0 : 0.4 (THM-03)
 □ JS light theme: inner shadow replaced by 1px t.edge border on panels (THM-04)
