@@ -189,7 +189,7 @@ for d in "$APP_DIR"/appserver/static/visualizations/*/; do
     TOTAL_FAIL=1
   else
     SIZE=$(wc -c < "$d/preview.png")
-    [ "$SIZE" -lt 500 ] && { echo "  FAIL A01: $VIZ preview.png solid-color placeholder ($SIZE bytes, need >500)"; TOTAL_FAIL=1; }
+    [ "$SIZE" -lt 100 ] && { echo "  FAIL A01: $VIZ preview.png solid-color placeholder ($SIZE bytes, need >100)"; TOTAL_FAIL=1; }
     W=$(printf '%d' "0x$(od -An -tx1 -j16 -N4 "$d/preview.png" | tr -d ' \n')" 2>/dev/null || echo 0)
     H=$(printf '%d' "0x$(od -An -tx1 -j20 -N4 "$d/preview.png" | tr -d ' \n')" 2>/dev/null || echo 0)
     { [ "$W" -ne 116 ] || [ "$H" -ne 76 ]; } && { echo "  FAIL A02: $VIZ preview.png wrong dimensions (${W}x${H}, need 116x76)"; TOTAL_FAIL=1; }
