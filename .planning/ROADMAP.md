@@ -79,7 +79,7 @@ Full details: `.planning/milestones/v5.3.0-ROADMAP.md`
 
 - [x] **Phase 22: Validator Feedback Loop** - check_design.js names the failing viz in D01/D08 output; vp-viz pipeline loops on XFILE/D08 before handoff to vp-create (completed 2026-05-20)
 - [x] **Phase 23: Color Palette & Accent Foundation** - Every generated formatter has 6-8 brand swatches; light textFaint passes WCAG AA; accentColor restored with correct usage rules (completed 2026-05-20)
-- [ ] **Phase 24: Animation Boilerplate** - Generic copy-paste ES5 entrance and LED pulse boilerplates in animation-recipes.md; viz-blueprints.md specifies which boilerplate per viz type
+- [x] **Phase 24: Animation Boilerplate** - Generic copy-paste ES5 entrance and LED pulse boilerplates in animation-recipes.md; viz-blueprints.md specifies which boilerplate per viz type (completed 2026-05-20)
 - [ ] **Phase 25: Backgrounds & Preview Assets** - generate_assets.js produces background variant matching visual language backgroundType; preview.png at 116x76 (official spec); branded appIcon symbol
 - [ ] **Phase 26: Multi-Channel Archetype** - viz-blueprints.md includes Multi-Channel Composite archetype; domain-templates.md data-rich domain entries reference it
 - [ ] **Phase 27: API Correctness** - Fix drilldown payload shape to official spec; splunkCategorical color pickers; threshold 3-band RAG template; escapeHtml() for XSS prevention
@@ -369,8 +369,11 @@ Plans:
   3. Every viz type entry in viz-blueprints.md that previously said "animation varies by type" or equivalent now says "use Generic Entrance Boilerplate" or "use Generic LED Pulse Boilerplate" with a direct section reference
 **Plans**: 2 plans
 Plans:
-- [ ] 24-01-PLAN.md — Write Generic Entrance Boilerplate and Generic LED Pulse Boilerplate sections in animation-recipes.md
-- [ ] 24-02-PLAN.md — Update viz-blueprints.md animation notes to reference specific boilerplates by section name
+**Wave 1**
+- [x] 24-01-PLAN.md — Write Generic Entrance Boilerplate and Generic LED Pulse Boilerplate sections in animation-recipes.md
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 24-02-PLAN.md — Update viz-blueprints.md animation notes to reference specific boilerplates by section name
 
 ### Phase 25: Backgrounds & Preview Assets
 **Goal**: generate_assets.js produces a background image that matches the visual language backgroundType (not always the same dark radial gradient), generates a light mode background variant, and preview.png thumbnails use brand gradient fills with recognizable viz silhouette shapes and a 2x variant
@@ -381,12 +384,12 @@ Plans:
   2. Running generate_assets.js for a brand with backgroundType: "solid_texture" produces a different background PNG than a brand with backgroundType: "gradient" — the two are visually distinct
   3. generate_assets.js produces a bg_gradient_light.png (or sets Dashboard Studio backgroundColor) alongside the dark background — the light background is white or near-white with a subtle brand accent, not a darkened color
   4. A generated preview.png uses at least two brand palette colors as gradient fills on the silhouette shapes — not a single flat fill or monochrome outline
-  5. generate_assets.js produces a preview_2x.png at 600x400 alongside the standard 300x200 preview.png — both files are present in the generated app's appserver/static/ directory
+  5. A generated preview.png is 116x76 pixels (official Splunk viz picker spec) — validate_viz.sh A02 passes on the generated file
   6. A generated appIcon.png displays a recognizable domain symbol (e.g., heartbeat line for healthcare, shield for security) using the brand primary color — not a generic colored circle
 **Plans**: 2 plans
 Plans:
-- [ ] 25-01-PLAN.md — Extend visual language schema with backgroundType field; update generate_assets.js to branch on backgroundType for background generation; add light background variant output
-- [ ] 25-02-PLAN.md — Upgrade generate_assets.js preview.png: gradient fills, 2x variant at 600x400; upgrade appIcon.png: domain symbol lookup from @viz-type or brand keywords
+- [ ] 25-01-PLAN.md — BG track: add backgroundType/backgroundPattern to vp-design schema + theme-template; implement 4-type background dispatcher + light variants in generate_assets.js; tests T11-T16
+- [ ] 25-02-PLAN.md — PA track: resize all preview silhouettes to 116x76 with 2-color mini-renders; extend appIcon with 15-symbol domain cascade; update validate_viz.sh A02 check; T8 update + T17
 
 ### Phase 26: Multi-Channel Archetype
 **Goal**: The Multi-Channel Composite archetype is documented in viz-blueprints.md as a first-class pattern, and data-rich domain entries in domain-templates.md reference it with concrete channel configurations for F1/motorsport, healthcare monitoring, and network ops
@@ -429,6 +432,6 @@ Plans:
 | 21. Animation & Visual Polish | v5.4.0 | 2/2 | Complete | 2026-05-19 |
 | 22. Validator Feedback Loop | v5.5.0 | 2/2 | Complete    | 2026-05-20 |
 | 23. Color Palette & Accent Foundation | v5.5.0 | 2/2 | Complete    | 2026-05-20 |
-| 24. Animation Boilerplate | v5.5.0 | 0/2 | Not started | - |
+| 24. Animation Boilerplate | v5.5.0 | 2/2 | Complete    | 2026-05-20 |
 | 25. Backgrounds & Preview Assets | v5.5.0 | 0/2 | Not started | - |
 | 26. Multi-Channel Archetype | v5.5.0 | 0/2 | Not started | - |
