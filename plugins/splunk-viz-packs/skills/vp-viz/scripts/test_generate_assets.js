@@ -16,7 +16,7 @@
  *   T5  appIcon_2x dimensions: readPngDimensions(appIcon_2x.png) -> {width:72, height:72}
  *   T6  appIcon size: fs.statSync(appIcon.png).size > 500
  *   T7  preview created: preview.png exists at appserver/static/visualizations/kpi_tile/preview.png
- *   T8  preview dimensions: readPngDimensions(preview.png) -> {width:300, height:200}
+ *   T8  preview dimensions: readPngDimensions(preview.png) -> {width:116, height:76}
  *   T9  preview size: fs.statSync(preview.png).size > 500
  *   T10 bars silhouette differs from kpi: preview.png for bar_chart vs kpi_tile differ (different pixel data)
  *
@@ -210,14 +210,14 @@ assertGt('T6 appIcon.png size > 500 bytes', iconSize, 500);
 var previewPath = path.join(testApp, 'appserver', 'static', 'visualizations', 'kpi_tile', 'preview.png');
 assert('T7 kpi_tile/preview.png exists', fs.existsSync(previewPath), true);
 
-// T8: preview dimensions 300x200
+// T8: preview dimensions 116x76
 var previewDims = readPngDimensions(previewPath);
-assert('T8 preview.png width=300', previewDims ? previewDims.width : null, 300, previewPath);
-assert('T8 preview.png height=200', previewDims ? previewDims.height : null, 200, previewPath);
+assert('T8 preview.png width=116', previewDims ? previewDims.width : null, 116, previewPath);
+assert('T8 preview.png height=76', previewDims ? previewDims.height : null, 76, previewPath);
 
-// T9: preview size > 500 bytes
+// T9: preview size > 100 bytes (116x76 compressed PNG with silhouette data is well over 100 bytes)
 var previewSize = fs.existsSync(previewPath) ? fs.statSync(previewPath).size : 0;
-assertGt('T9 preview.png size > 500 bytes', previewSize, 500);
+assertGt('T9 preview.png size > 100 bytes', previewSize, 100);
 
 // T10: bars silhouette differs from kpi silhouette
 console.log('\n-- T10: bar_chart silhouette differs from kpi_tile silhouette --');
@@ -357,6 +357,62 @@ if (fs.existsSync(bgT12light)) {
 } else {
     console.log('  FAIL: T16 bg_gradient_light.png missing from T12 run');
     failed += 2;
+}
+
+// T17: domain symbol appIcon differs from letter-only fallback
+// 'test_soc_security_viz' contains 'security' keyword -> should use shield symbol (not letter 'T')
+// 'zzz_nomatch_viz' has no domain match -> falls back to letter 'Z'
+// Their appIcon pixel data should differ.
+console.log('\n-- T17: domain symbol appIcon differs from letter fallback --');
+var appT17sec = makeTestApp('t17_security', '#F6821F', '#0D0D1F', []);
+// rename app dir so basename is 'test_soc_security_viz'
+var appT17secPath = path.join(os.tmpdir(), 'test_soc_security_viz_' + Date.now());
+fs.mkdirSync(appT17secPath, { recursive: true });
+// Copy shared/theme.js
+var sharedSrc = path.join(appT17sec, 'shared', 'theme.js');
+fs.mkdirSync(path.join(appT17secPath, 'shared'), { recursive: true });
+fs.writeFileSync(path.join(appT17secPath, 'shared', 'theme.js'), fs.readFileSync(sharedSrc));
+fs.mkdirSync(path.join(appT17secPath, 'static'), { recursive: true });
+fs.mkdirSync(path.join(appT17secPath, 'appserver', 'static', 'visualizations'), { recursive: true });
+tmpDirs.push(appT17secPath);
+
+var appT17nomatch = makeTestApp('t17_nomatch', '#F6821F', '#0D0D1F', []);
+var appT17nomatchPath = path.join(os.tmpdir(), 'zzz_nomatch_viz_' + Date.now());
+fs.mkdirSync(appT17nomatchPath, { recursive: true });
+var sharedSrc2 = path.join(appT17nomatch, 'shared', 'theme.js');
+fs.mkdirSync(path.join(appT17nomatchPath, 'shared'), { recursive: true });
+fs.writeFileSync(path.join(appT17nomatchPath, 'shared', 'theme.js'), fs.readFileSync(sharedSrc2));
+fs.mkdirSync(path.join(appT17nomatchPath, 'static'), { recursive: true });
+fs.mkdirSync(path.join(appT17nomatchPath, 'appserver', 'static', 'visualizations'), { recursive: true });
+tmpDirs.push(appT17nomatchPath);
+
+var rT17sec = run([appT17secPath]);
+var rT17nom = run([appT17nomatchPath]);
+
+if (rT17sec.code !== 0) {
+    console.log('  FAIL: T17 generate_assets.js failed on security app (exit ' + rT17sec.code + ')');
+    console.log('        stderr: ' + rT17sec.stderr.substring(0, 300));
+    failed++;
+} else if (rT17nom.code !== 0) {
+    console.log('  FAIL: T17 generate_assets.js failed on nomatch app (exit ' + rT17nom.code + ')');
+    console.log('        stderr: ' + rT17nom.stderr.substring(0, 300));
+    failed++;
+} else {
+    var iconSec = path.join(appT17secPath, 'static', 'appIcon.png');
+    var iconNom = path.join(appT17nomatchPath, 'static', 'appIcon.png');
+    if (fs.existsSync(iconSec) && fs.existsSync(iconNom)) {
+        var bufSec = fs.readFileSync(iconSec);
+        var bufNom = fs.readFileSync(iconNom);
+        // Compare entire PNG file -- symbol and letter produce different pixel data
+        var differsT17 = !bufSec.equals(bufNom);
+        assert('T17 security domain icon differs from letter-only icon', differsT17, true,
+            'secSize=' + bufSec.length + ' nomSize=' + bufNom.length);
+    } else {
+        console.log('  FAIL: T17 one or both appIcon.png files missing');
+        console.log('        iconSec exists: ' + fs.existsSync(iconSec));
+        console.log('        iconNom exists: ' + fs.existsSync(iconNom));
+        failed++;
+    }
 }
 
 // ---- Cleanup temp dirs ----

@@ -389,7 +389,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 **Wave 1**
-- [ ] 25-01-PLAN.md — BG track: add backgroundType/backgroundPattern to vp-design schema + theme-template; implement 4-type background dispatcher + light variants in generate_assets.js; tests T11-T16
+- [x] 25-01-PLAN.md — BG track: add backgroundType/backgroundPattern to vp-design schema + theme-template; implement 4-type background dispatcher + light variants in generate_assets.js; tests T11-T16
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 25-02-PLAN.md — PA track: resize all preview silhouettes to 116x76 with 2-color mini-renders; extend appIcon with 15-symbol domain cascade; update validate_viz.sh A02 check; T8 update + T17
@@ -436,5 +436,5 @@ Plans:
 | 22. Validator Feedback Loop | v5.5.0 | 2/2 | Complete    | 2026-05-20 |
 | 23. Color Palette & Accent Foundation | v5.5.0 | 2/2 | Complete    | 2026-05-20 |
 | 24. Animation Boilerplate | v5.5.0 | 2/2 | Complete    | 2026-05-20 |
-| 25. Backgrounds & Preview Assets | v5.5.0 | 0/2 | Not started | - |
+| 25. Backgrounds & Preview Assets | v5.5.0 | 1/2 | In Progress|  |
 | 26. Multi-Channel Archetype | v5.5.0 | 0/2 | Not started | - |

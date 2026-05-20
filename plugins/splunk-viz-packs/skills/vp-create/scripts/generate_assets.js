@@ -13,7 +13,7 @@
  * Outputs:
  *   <app_dir>/static/appIcon.png      (36x36)  -- accent bg + white initial letter
  *   <app_dir>/static/appIcon_2x.png   (72x72)  -- same at 2x scale
- *   <app_dir>/appserver/static/visualizations/<viz>/preview.png (300x200 per viz)
+ *   <app_dir>/appserver/static/visualizations/<viz>/preview.png (116x76 per viz)
  *   <app_dir>/appserver/static/images/bg_gradient.png (1920x1080) -- branded gradient background
  *
  * theme.js is loaded via require() + getTheme('dark') -- no eval(), no regex parsing.
@@ -344,214 +344,217 @@ function detectVizType(dirName) {
     return 'kpi';
 }
 
-// ---- Silhouette draw functions (300x200 canvas) ----
+// ---- Silhouette draw functions (116x76 canvas) ----
+// All coordinates are pre-scaled from the original 300x200 grid using
+// SCALE_X = 116/300 ~= 0.387, SCALE_Y = 76/200 = 0.38.
+// Each function accepts s1r, s1g, s1b as secondary color for contrast fills.
 
-function drawKpiSilhouette(rows, ar, ag, ab, bgr, bgg, bgb) {
-    var W = 300, H = 200;
-    // Large centered value rectangle
-    fillRect(rows, 60, 40, 180, 60, ar, ag, ab);
-    // Four label bars below value
-    fillRect(rows, 80, 120, 140, 8, ar, ag, ab);
-    fillRect(rows, 90, 136, 120, 6, ar, ag, ab);
-    fillRect(rows, 100, 150, 100, 6, ar, ag, ab);
-    fillRect(rows, 110, 163, 80, 6, ar, ag, ab);
+function drawKpiSilhouette(rows, ar, ag, ab, bgr, bgg, bgb, s1r, s1g, s1b) {
+    // Large centered value rectangle (scaled from 60,40,180,60)
+    fillRect(rows, 23, 15, 70, 23, ar, ag, ab);
+    // Label bars below value using secondary color
+    fillRect(rows, 31, 46, 54, 3, s1r, s1g, s1b);
+    fillRect(rows, 35, 52, 46, 2, s1r, s1g, s1b);
+    fillRect(rows, 39, 57, 39, 2, s1r, s1g, s1b);
+    fillRect(rows, 43, 62, 31, 2, s1r, s1g, s1b);
     // Two decorative side accents
-    fillRect(rows, 20, 50, 6, 40, ar, ag, ab);
-    fillRect(rows, W - 26, 50, 6, 40, ar, ag, ab);
+    fillRect(rows, 8, 19, 3, 15, s1r, s1g, s1b);
+    fillRect(rows, 105, 19, 3, 15, s1r, s1g, s1b);
 }
 
-function drawBarsSilhouette(rows, ar, ag, ab, bgr, bgg, bgb) {
-    var H = 200;
-    var baseY = H - 30;
+function drawBarsSilhouette(rows, ar, ag, ab, bgr, bgg, bgb, s1r, s1g, s1b) {
+    var baseY = 76 - 12;
     // Horizontal baseline
-    fillRect(rows, 30, baseY, 240, 4, ar, ag, ab);
-    // Six vertical bars of varying heights
-    var barW = 28;
-    var gaps = [30, 65, 100, 135, 170, 210];
-    var heights = [100, 70, 120, 55, 90, 80];
+    fillRect(rows, 12, baseY, 93, 2, ar, ag, ab);
+    // Six vertical bars of varying heights; alternate accent vs secondary color
+    var barW = 11;
+    var gaps = [12, 25, 39, 52, 66, 81];
+    var heights = [38, 27, 46, 21, 34, 30];
     for (var i = 0; i < 6; i++) {
-        fillRect(rows, gaps[i], baseY - heights[i], barW, heights[i], ar, ag, ab);
+        if (i % 2 === 0) {
+            fillRect(rows, gaps[i], baseY - heights[i], barW, heights[i], ar, ag, ab);
+        } else {
+            fillRect(rows, gaps[i], baseY - heights[i], barW, heights[i], s1r, s1g, s1b);
+        }
     }
 }
 
-function drawGaugeSilhouette(rows, ar, ag, ab, bgr, bgg, bgb) {
-    var cx = 150, cy = 120, outerR = 70, innerR = 45;
+function drawGaugeSilhouette(rows, ar, ag, ab, bgr, bgg, bgb, s1r, s1g, s1b) {
+    var cx = 58, cy = 46, outerR = 27, innerR = 17;
     // Approximate arc/ring with rectangular segments (top half of a ring)
-    // Draw as a series of small rectangles to approximate an arc
     var steps = 24;
     for (var i = 0; i <= steps; i++) {
         var angle = Math.PI + (Math.PI * i / steps);
         var cosA = Math.cos(angle);
         var sinA = Math.sin(angle);
-        // Outer arc point
         var ox = cx + cosA * outerR;
         var oy = cy + sinA * outerR;
-        // Inner arc point
         var ix = cx + cosA * innerR;
         var iy = cy + sinA * innerR;
-        // Fill a rect from inner to outer at this angle slice
         var px = Math.min(ox, ix);
         var py = Math.min(oy, iy);
         var pw = Math.max(1, Math.abs(ox - ix));
         var ph = Math.max(1, Math.abs(oy - iy));
-        fillRect(rows, Math.round(px), Math.round(py), Math.round(pw) + 4, Math.round(ph) + 4, ar, ag, ab);
+        fillRect(rows, Math.round(px), Math.round(py), Math.round(pw) + 2, Math.round(ph) + 2, ar, ag, ab);
     }
     // Center value stub
-    fillRect(rows, 120, 130, 60, 18, ar, ag, ab);
-    fillRect(rows, 130, 155, 40, 10, ar, ag, ab);
+    fillRect(rows, 46, 50, 23, 7, ar, ag, ab);
+    fillRect(rows, 50, 59, 15, 4, s1r, s1g, s1b);
     // Needle
-    fillRect(rows, 148, cy - outerR, 4, outerR - innerR + 8, ar, ag, ab);
+    fillRect(rows, 57, cy - outerR, 2, outerR - innerR + 3, 255, 255, 255);
 }
 
-function drawGridSilhouette(rows, ar, ag, ab, bgr, bgg, bgb) {
-    // 5 horizontal rows
-    var rowY = [30, 65, 100, 135, 165];
-    var rowH = 20;
+function drawGridSilhouette(rows, ar, ag, ab, bgr, bgg, bgb, s1r, s1g, s1b) {
+    // 5 horizontal rows; alternate accent vs secondary color
+    var rowY = [11, 25, 39, 51, 63];
+    var rowH = 8;
     for (var i = 0; i < rowY.length; i++) {
-        fillRect(rows, 20, rowY[i], 260, rowH, ar, ag, ab);
+        if (i % 2 === 0) {
+            fillRect(rows, 8, rowY[i], 100, rowH, ar, ag, ab);
+        } else {
+            fillRect(rows, 8, rowY[i], 100, rowH, s1r, s1g, s1b);
+        }
     }
-    // 3 vertical column dividers (hairlines)
-    fillRect(rows, 90, 30, 3, 155, bgr, bgg, bgb);
-    fillRect(rows, 170, 30, 3, 155, bgr, bgg, bgb);
-    fillRect(rows, 240, 30, 3, 155, bgr, bgg, bgb);
+    // 3 vertical column dividers (hairlines in bg color)
+    fillRect(rows, 35, 11, 2, 60, bgr, bgg, bgb);
+    fillRect(rows, 70, 11, 2, 60, bgr, bgg, bgb);
+    fillRect(rows, 95, 11, 2, 60, bgr, bgg, bgb);
 }
 
-function drawLineSilhouette(rows, ar, ag, ab, bgr, bgg, bgb) {
-    // Zigzag polyline across full width (8-10 points)
+function drawLineSilhouette(rows, ar, ag, ab, bgr, bgg, bgb, s1r, s1g, s1b) {
+    // Zigzag polyline across full width (scaled from 300x200 coords)
     var points = [
-        {x: 20,  y: 150},
-        {x: 55,  y: 80},
-        {x: 90,  y: 120},
-        {x: 120, y: 50},
-        {x: 155, y: 90},
-        {x: 185, y: 60},
-        {x: 215, y: 100},
-        {x: 245, y: 70},
-        {x: 275, y: 110}
+        {x: 8,  y: 57},
+        {x: 21, y: 30},
+        {x: 35, y: 46},
+        {x: 46, y: 19},
+        {x: 60, y: 34},
+        {x: 72, y: 23},
+        {x: 83, y: 38},
+        {x: 95, y: 27},
+        {x: 107, y: 42}
     ];
-    // Draw line segments as thick rectangles
+    // Draw line segments as thick 2px rectangles
     for (var i = 0; i < points.length - 1; i++) {
         var p1 = points[i];
         var p2 = points[i + 1];
         var steps = Math.max(Math.abs(p2.x - p1.x), Math.abs(p2.y - p1.y));
         for (var s = 0; s <= steps; s++) {
-            var t = s / steps;
+            var t = steps > 0 ? s / steps : 0;
             var px = Math.round(p1.x + (p2.x - p1.x) * t);
             var py = Math.round(p1.y + (p2.y - p1.y) * t);
-            fillRect(rows, px - 1, py - 1, 4, 4, ar, ag, ab);
-        }
-    }
-    // Filled area under line (partial)
-    fillRect(rows, 20, 150, 255, 20, ar, ag, ab);
-    // Axis lines
-    fillRect(rows, 20, 170, 255, 3, ar, ag, ab);
-    fillRect(rows, 20, 30, 3, 140, ar, ag, ab);
-}
-
-function drawTimelineSilhouette(rows, ar, ag, ab, bgr, bgg, bgb) {
-    // 5 horizontal event bars of varying widths (event feed rows)
-    var yPositions = [30, 65, 100, 135, 165];
-    var widths     = [220, 140, 190, 110, 160];
-    var barH = 22;
-    for (var i = 0; i < yPositions.length; i++) {
-        fillRect(rows, 30, yPositions[i], widths[i], barH, ar, ag, ab);
-    }
-    // Left time indicator dots
-    for (var j = 0; j < yPositions.length; j++) {
-        fillRect(rows, 12, yPositions[j] + 6, 10, 10, ar, ag, ab);
-    }
-}
-
-function drawRadarSilhouette(rows, ar, ag, ab, bgr, bgg, bgb) {
-    // Approximate hexagonal radar with concentric rect outlines and spokes
-    var cx = 150, cy = 100;
-    var sizes = [70, 50, 30, 15];
-    // Concentric hexagonal approximation using rotated rects
-    for (var i = 0; i < sizes.length; i++) {
-        var s = sizes[i];
-        // Top/bottom horizontal bars of hexagon
-        fillRect(rows, cx - s, cy - Math.round(s * 0.6), s * 2, 4, ar, ag, ab);
-        fillRect(rows, cx - s, cy + Math.round(s * 0.6), s * 2, 4, ar, ag, ab);
-        // Left/right edges
-        fillRect(rows, cx - s - 2, cy - Math.round(s * 0.6), 4, Math.round(s * 1.2) + 4, ar, ag, ab);
-        fillRect(rows, cx + s - 2, cy - Math.round(s * 0.6), 4, Math.round(s * 1.2) + 4, ar, ag, ab);
-    }
-    // 6 spokes from center
-    var spokeAngles = [0, 60, 120, 180, 240, 300];
-    for (var k = 0; k < spokeAngles.length; k++) {
-        var rad = spokeAngles[k] * Math.PI / 180;
-        var spokeLen = 65;
-        var steps = spokeLen;
-        for (var s2 = 0; s2 <= steps; s2++) {
-            var t = s2 / steps;
-            var px = Math.round(cx + Math.cos(rad) * spokeLen * t);
-            var py = Math.round(cy + Math.sin(rad) * spokeLen * t);
             fillRect(rows, px, py, 2, 2, ar, ag, ab);
         }
     }
+    // Filled area at bottom using secondary color
+    fillRect(rows, 8, 57, 99, 8, s1r, s1g, s1b);
+    // Axis lines
+    fillRect(rows, 8, 65, 99, 1, ar, ag, ab);
+    fillRect(rows, 8, 11, 1, 54, ar, ag, ab);
 }
 
-function drawProgressSilhouette(rows, ar, ag, ab, bgr, bgg, bgb) {
+function drawTimelineSilhouette(rows, ar, ag, ab, bgr, bgg, bgb, s1r, s1g, s1b) {
+    // 5 horizontal event bars of varying widths; alternate accent vs secondary color
+    var yPositions = [11, 25, 38, 51, 63];
+    var widths     = [85, 54, 74, 43, 62];
+    var barH = 8;
+    for (var i = 0; i < yPositions.length; i++) {
+        if (i % 2 === 0) {
+            fillRect(rows, 12, yPositions[i], widths[i], barH, ar, ag, ab);
+        } else {
+            fillRect(rows, 12, yPositions[i], widths[i], barH, s1r, s1g, s1b);
+        }
+    }
+    // Left time indicator dots
+    for (var j = 0; j < yPositions.length; j++) {
+        fillRect(rows, 4, yPositions[j] + 2, 4, 4, ar, ag, ab);
+    }
+}
+
+function drawRadarSilhouette(rows, ar, ag, ab, bgr, bgg, bgb, s1r, s1g, s1b) {
+    // Approximate hexagonal radar (scaled from 300x200)
+    var cx = 58, cy = 38;
+    var sizes = [27, 19, 12, 6];
+    for (var i = 0; i < sizes.length; i++) {
+        var sv = sizes[i];
+        fillRect(rows, cx - sv, cy - Math.round(sv * 0.6), sv * 2, 2, ar, ag, ab);
+        fillRect(rows, cx - sv, cy + Math.round(sv * 0.6), sv * 2, 2, ar, ag, ab);
+        fillRect(rows, cx - sv - 1, cy - Math.round(sv * 0.6), 2, Math.round(sv * 1.2) + 2, ar, ag, ab);
+        fillRect(rows, cx + sv - 1, cy - Math.round(sv * 0.6), 2, Math.round(sv * 1.2) + 2, ar, ag, ab);
+    }
+    // 6 spokes from center (secondary color)
+    var spokeAngles = [0, 60, 120, 180, 240, 300];
+    for (var k = 0; k < spokeAngles.length; k++) {
+        var rad = spokeAngles[k] * Math.PI / 180;
+        var spokeLen = 25;
+        for (var sv2 = 0; sv2 <= spokeLen; sv2++) {
+            var t2 = sv2 / spokeLen;
+            var px2 = Math.round(cx + Math.cos(rad) * spokeLen * t2);
+            var py2 = Math.round(cy + Math.sin(rad) * spokeLen * t2);
+            fillRect(rows, px2, py2, 1, 1, s1r, s1g, s1b);
+        }
+    }
+}
+
+function drawProgressSilhouette(rows, ar, ag, ab, bgr, bgg, bgb, s1r, s1g, s1b) {
     // 4 horizontal progress bar segments at different fill percentages
-    var barY    = [30, 75, 120, 160];
-    var barH    = 22;
-    var maxW    = 240;
+    var barY    = [11, 29, 46, 62];
+    var barH    = 9;
+    var maxW    = 93;
     var fills   = [0.82, 0.57, 0.95, 0.43];
     for (var i = 0; i < 4; i++) {
-        // Track (dim background behind bar)
-        fillRect(rows, 50, barY[i], maxW, barH, ar, ag, ab);
-        // Filled portion (use brighter color -- overdraw with bg to show unfilled part)
-        var unfillX = 50 + Math.round(maxW * fills[i]);
+        fillRect(rows, 19, barY[i], maxW, barH, ar, ag, ab);
+        var unfillX = 19 + Math.round(maxW * fills[i]);
         var unfillW = Math.round(maxW * (1 - fills[i]));
         if (unfillW > 0) {
-            // Darken the unfilled section by drawing bg-blended rect
             fillRect(rows, unfillX, barY[i], unfillW, barH,
                 Math.round((ar + bgr * 3) / 4),
                 Math.round((ag + bgg * 3) / 4),
                 Math.round((ab + bgb * 3) / 4));
         }
-        // Label stub on left
-        fillRect(rows, 10, barY[i] + 4, 35, 10, ar, ag, ab);
+        // Label stub on left (secondary color)
+        fillRect(rows, 4, barY[i] + 2, 13, 4, s1r, s1g, s1b);
     }
 }
 
-function drawScatterSilhouette(rows, ar, ag, ab, bgr, bgg, bgb) {
+function drawScatterSilhouette(rows, ar, ag, ab, bgr, bgg, bgb, s1r, s1g, s1b) {
     // Axis lines
-    fillRect(rows, 25, 170, 250, 3, ar, ag, ab);  // x-axis
-    fillRect(rows, 25, 20, 3, 150, ar, ag, ab);   // y-axis
-    // 12 data points as filled squares (approximating circles)
+    fillRect(rows, 10, 65, 97, 2, ar, ag, ab);  // x-axis
+    fillRect(rows, 10, 8, 2, 57, ar, ag, ab);   // y-axis
+    // 12 data points as filled squares (scaled from 300x200)
     var points = [
-        {x: 60,  y: 140, r: 8},  {x: 90,  y: 100, r: 12},
-        {x: 130, y: 130, r: 6},  {x: 160, y: 70,  r: 10},
-        {x: 185, y: 50,  r: 14}, {x: 200, y: 110, r: 7},
-        {x: 220, y: 85,  r: 9},  {x: 75,  y: 60,  r: 5},
-        {x: 110, y: 45,  r: 11}, {x: 245, y: 40,  r: 8},
-        {x: 245, y: 120, r: 6},  {x: 145, y: 150, r: 7}
+        {x: 23, y: 53, r: 3},  {x: 35, y: 38, r: 4},
+        {x: 50, y: 49, r: 2},  {x: 62, y: 27, r: 3},
+        {x: 72, y: 19, r: 5},  {x: 77, y: 42, r: 3},
+        {x: 85, y: 32, r: 3},  {x: 29, y: 23, r: 2},
+        {x: 43, y: 17, r: 4},  {x: 95, y: 15, r: 3},
+        {x: 95, y: 46, r: 2},  {x: 56, y: 57, r: 2}
     ];
     for (var i = 0; i < points.length; i++) {
         var p = points[i];
-        fillRect(rows, p.x - p.r, p.y - p.r, p.r * 2, p.r * 2, ar, ag, ab);
+        var color = (i % 2 === 0) ? [ar, ag, ab] : [s1r, s1g, s1b];
+        fillRect(rows, p.x - p.r, p.y - p.r, p.r * 2, p.r * 2, color[0], color[1], color[2]);
     }
 }
 
-function drawNetworkSilhouette(rows, ar, ag, ab, bgr, bgg, bgb) {
+function drawNetworkSilhouette(rows, ar, ag, ab, bgr, bgg, bgb, s1r, s1g, s1b) {
+    // Scaled from 300x200: hub at center, spoke nodes around
     var nodes = [
-        {x: 150, y: 100},  // center hub
-        {x: 80,  y: 50},  {x: 220, y: 50},
-        {x: 60,  y: 130}, {x: 240, y: 130},
-        {x: 100, y: 165}, {x: 200, y: 165},
-        {x: 150, y: 170}
+        {x: 58, y: 38},  // center hub
+        {x: 31, y: 19},  {x: 85, y: 19},
+        {x: 23, y: 49},  {x: 93, y: 49},
+        {x: 39, y: 63},  {x: 77, y: 63},
+        {x: 58, y: 65}
     ];
-    // Edges from hub to spokes
     var hub = nodes[0];
     for (var i = 1; i < nodes.length; i++) {
         var n = nodes[i];
         var steps = Math.max(Math.abs(n.x - hub.x), Math.abs(n.y - hub.y));
-        for (var s = 0; s <= steps; s++) {
-            var t = s / steps;
+        for (var sv = 0; sv <= steps; sv++) {
+            var t = steps > 0 ? sv / steps : 0;
             var px = Math.round(hub.x + (n.x - hub.x) * t);
             var py = Math.round(hub.y + (n.y - hub.y) * t);
-            fillRect(rows, px, py, 2, 2, ar, ag, ab);
+            fillRect(rows, px, py, 1, 1, s1r, s1g, s1b);
         }
     }
     // Peripheral ring edges
@@ -560,82 +563,432 @@ function drawNetworkSilhouette(rows, ar, ag, ab, bgr, bgg, bgb) {
         var n1 = nodes[ring[j]], n2 = nodes[ring[j + 1]];
         var steps2 = Math.max(Math.abs(n2.x - n1.x), Math.abs(n2.y - n1.y));
         for (var k = 0; k <= steps2; k++) {
-            var t2 = k / steps2;
+            var t2 = steps2 > 0 ? k / steps2 : 0;
             var px2 = Math.round(n1.x + (n2.x - n1.x) * t2);
             var py2 = Math.round(n1.y + (n2.y - n1.y) * t2);
-            fillRect(rows, px2, py2, 2, 2, ar, ag, ab);
+            fillRect(rows, px2, py2, 1, 1, s1r, s1g, s1b);
         }
     }
-    // Node dots (hub larger)
+    // Node dots (hub larger, primary accent; spokes secondary)
     for (var ni = 0; ni < nodes.length; ni++) {
-        var r = (ni === 0) ? 8 : 5;
-        fillRect(rows, nodes[ni].x - r, nodes[ni].y - r, r * 2, r * 2, ar, ag, ab);
+        var r = (ni === 0) ? 4 : 2;
+        var nc = (ni === 0) ? [ar, ag, ab] : [s1r, s1g, s1b];
+        fillRect(rows, nodes[ni].x - r, nodes[ni].y - r, r * 2, r * 2, nc[0], nc[1], nc[2]);
     }
 }
 
-function drawSilhouette(rows, type, ar, ag, ab, bgr, bgg, bgb) {
-    if (type === 'bars')     { drawBarsSilhouette(rows, ar, ag, ab, bgr, bgg, bgb); return; }
-    if (type === 'gauge')    { drawGaugeSilhouette(rows, ar, ag, ab, bgr, bgg, bgb); return; }
-    if (type === 'grid')     { drawGridSilhouette(rows, ar, ag, ab, bgr, bgg, bgb); return; }
-    if (type === 'line')     { drawLineSilhouette(rows, ar, ag, ab, bgr, bgg, bgb); return; }
-    if (type === 'timeline') { drawTimelineSilhouette(rows, ar, ag, ab, bgr, bgg, bgb); return; }
-    if (type === 'radar')    { drawRadarSilhouette(rows, ar, ag, ab, bgr, bgg, bgb); return; }
-    if (type === 'progress') { drawProgressSilhouette(rows, ar, ag, ab, bgr, bgg, bgb); return; }
-    if (type === 'scatter')  { drawScatterSilhouette(rows, ar, ag, ab, bgr, bgg, bgb); return; }
-    if (type === 'network')  { drawNetworkSilhouette(rows, ar, ag, ab, bgr, bgg, bgb); return; }
+function drawSilhouette(rows, type, ar, ag, ab, bgr, bgg, bgb, s1r, s1g, s1b) {
+    if (type === 'bars')     { drawBarsSilhouette(rows, ar, ag, ab, bgr, bgg, bgb, s1r, s1g, s1b); return; }
+    if (type === 'gauge')    { drawGaugeSilhouette(rows, ar, ag, ab, bgr, bgg, bgb, s1r, s1g, s1b); return; }
+    if (type === 'grid')     { drawGridSilhouette(rows, ar, ag, ab, bgr, bgg, bgb, s1r, s1g, s1b); return; }
+    if (type === 'line')     { drawLineSilhouette(rows, ar, ag, ab, bgr, bgg, bgb, s1r, s1g, s1b); return; }
+    if (type === 'timeline') { drawTimelineSilhouette(rows, ar, ag, ab, bgr, bgg, bgb, s1r, s1g, s1b); return; }
+    if (type === 'radar')    { drawRadarSilhouette(rows, ar, ag, ab, bgr, bgg, bgb, s1r, s1g, s1b); return; }
+    if (type === 'progress') { drawProgressSilhouette(rows, ar, ag, ab, bgr, bgg, bgb, s1r, s1g, s1b); return; }
+    if (type === 'scatter')  { drawScatterSilhouette(rows, ar, ag, ab, bgr, bgg, bgb, s1r, s1g, s1b); return; }
+    if (type === 'network')  { drawNetworkSilhouette(rows, ar, ag, ab, bgr, bgg, bgb, s1r, s1g, s1b); return; }
     // Default: kpi
-    drawKpiSilhouette(rows, ar, ag, ab, bgr, bgg, bgb);
+    drawKpiSilhouette(rows, ar, ag, ab, bgr, bgg, bgb, s1r, s1g, s1b);
 }
 
 // ---- Asset generators ----
 
+// ---- Domain symbol cascade (D-09 / D-10) ----
+
+/*
+ * DOMAIN_SYMBOLS: maps domain name to keyword array for app basename matching.
+ * Keywords are matched case-insensitively against the app directory basename.
+ */
+var DOMAIN_SYMBOLS = {
+    'healthcare': ['hospital', 'health', 'medical', 'clinic', 'patient', 'pharma', 'nps', 'care'],
+    'security':   ['security', 'soc', 'cyber', 'threat', 'firewall', 'intrusion', 'siem', 'ips', 'ids',
+                   'cloudflare', 'fortinet', 'crowdstrike'],
+    'network':    ['network', 'topology', 'infra', 'router', 'switch', 'bgp', 'ospf', 'dns', 'bandwidth'],
+    'automotive': ['car', 'auto', 'vehicle', 'fleet', 'taycan', 'porsche', 'bmw', 'tesla', 'ev', 'driving'],
+    'energy':     ['energy', 'power', 'grid', 'solar', 'wind', 'electric', 'utility', 'kwh', 'watt'],
+    'finance':    ['finance', 'bank', 'payment', 'revenue', 'cost', 'billing', 'invoice', 'trading',
+                   'market', 'stock', 'crypto'],
+    'retail':     ['retail', 'store', 'shop', 'ecommerce', 'order', 'inventory', 'checkout', 'cart',
+                   'product', 'sku'],
+    'aviation':   ['aviation', 'airline', 'flight', 'airport', 'aircraft', 'pilot', 'runway', 'atc'],
+    'education':  ['education', 'school', 'university', 'course', 'student', 'learning', 'academy',
+                   'campus', 'lms'],
+    'tech':       ['saas', 'devops', 'api', 'microservice', 'kubernetes', 'docker', 'cloud', 'aws',
+                   'azure', 'gcp', 'ci', 'cd', 'engineering'],
+    'music':      ['music', 'audio', 'stream', 'spotify', 'podcast', 'playlist', 'artist', 'album',
+                   'track', 'strava'],
+    'sports':     ['sports', 'athlete', 'team', 'score', 'league', 'match', 'fitness', 'gym',
+                   'exercise', 'running', 'marathon'],
+    'food':       ['food', 'restaurant', 'menu', 'recipe', 'delivery', 'kitchen', 'chef', 'dining'],
+    'travel':     ['travel', 'hotel', 'booking', 'trip', 'destination', 'tourism', 'vacation',
+                   'passport', 'visa'],
+    'manufacturing': ['manufacturing', 'factory', 'production', 'assembly', 'iot', 'plc', 'scada',
+                      'supply', 'logistics', 'warehouse']
+};
+
+/*
+ * matchDomain(baseName): return domain name matching baseName keywords, or null.
+ */
+function matchDomain(baseName) {
+    var lower = baseName.toLowerCase();
+    for (var domain in DOMAIN_SYMBOLS) {
+        if (!DOMAIN_SYMBOLS.hasOwnProperty(domain)) { continue; }
+        var keywords = DOMAIN_SYMBOLS[domain];
+        for (var k = 0; k < keywords.length; k++) {
+            if (lower.indexOf(keywords[k]) !== -1) { return domain; }
+        }
+    }
+    return null;
+}
+
+/*
+ * drawSymbol(rows, symbolName, ox, oy, r, g, b):
+ * Draw a domain-specific icon in a 28x28 area starting at (ox, oy) using fillRect().
+ * All 15 symbols are pixel-art shapes using the specified RGB color.
+ */
+function drawSymbol(rows, symbolName, ox, oy, r, g, b) {
+    var x = ox, y = oy;
+    if (symbolName === 'healthcare') {
+        // White cross: horizontal bar (12x4, centered at y=12) + vertical bar (4x12, centered at x=12)
+        fillRect(rows, x + 8, y + 12, 12, 4, r, g, b);
+        fillRect(rows, x + 12, y + 8, 4, 12, r, g, b);
+    } else if (symbolName === 'security') {
+        // Shield: top bar (12px wide), left/right sides, bottom point
+        fillRect(rows, x + 8, y + 4, 12, 3, r, g, b);   // top bar
+        fillRect(rows, x + 8, y + 4, 3, 10, r, g, b);   // left side
+        fillRect(rows, x + 17, y + 4, 3, 10, r, g, b);  // right side
+        fillRect(rows, x + 10, y + 14, 8, 3, r, g, b);  // bottom bar
+        fillRect(rows, x + 12, y + 17, 4, 4, r, g, b);  // point
+    } else if (symbolName === 'network') {
+        // Hub and spoke: center dot + 3 nodes with connecting lines
+        fillRect(rows, x + 12, y + 12, 4, 4, r, g, b);   // hub
+        fillRect(rows, x + 4, y + 4, 4, 4, r, g, b);     // top-left node
+        fillRect(rows, x + 20, y + 4, 4, 4, r, g, b);    // top-right node
+        fillRect(rows, x + 12, y + 20, 4, 4, r, g, b);   // bottom node
+        // Connecting lines (2px wide)
+        fillRect(rows, x + 8, y + 8, 6, 2, r, g, b);     // hub to top-left (diagonal approx)
+        fillRect(rows, x + 16, y + 8, 6, 2, r, g, b);    // hub to top-right (diagonal approx)
+        fillRect(rows, x + 13, y + 14, 2, 8, r, g, b);   // hub to bottom
+    } else if (symbolName === 'automotive') {
+        // Checkered flag: 4x4 grid of alternating 3x3 squares in 12x12 area + pole
+        fillRect(rows, x + 4, y + 4, 2, 20, r, g, b);    // pole
+        for (var fy = 0; fy < 4; fy++) {
+            for (var fx = 0; fx < 4; fx++) {
+                if ((fx + fy) % 2 === 0) {
+                    fillRect(rows, x + 8 + fx * 3, y + 4 + fy * 3, 3, 3, r, g, b);
+                }
+            }
+        }
+    } else if (symbolName === 'energy') {
+        // Lightning bolt: Z-shape with 3 diagonal fillRects
+        fillRect(rows, x + 14, y + 4, 6, 3, r, g, b);    // top segment
+        fillRect(rows, x + 10, y + 11, 8, 4, r, g, b);   // middle diagonal
+        fillRect(rows, x + 8, y + 19, 6, 3, r, g, b);    // bottom segment
+        fillRect(rows, x + 12, y + 7, 4, 6, r, g, b);    // connector top-mid
+        fillRect(rows, x + 10, y + 15, 4, 6, r, g, b);   // connector mid-bot
+    } else if (symbolName === 'finance') {
+        // Rising chart line: 5 ascending points connected by 2px line segments
+        var fpts = [{x: 4, y: 20}, {x: 9, y: 16}, {x: 14, y: 12}, {x: 19, y: 8}, {x: 24, y: 4}];
+        for (var fi = 0; fi < fpts.length; fi++) {
+            fillRect(rows, x + fpts[fi].x, y + fpts[fi].y, 3, 3, r, g, b);
+        }
+        for (var fi2 = 0; fi2 < fpts.length - 1; fi2++) {
+            fillRect(rows, x + fpts[fi2].x + 1, y + fpts[fi2].y + 1,
+                fpts[fi2 + 1].x - fpts[fi2].x, 2, r, g, b);
+        }
+        // X and Y axes
+        fillRect(rows, x + 4, y + 4, 2, 18, r, g, b);
+        fillRect(rows, x + 4, y + 22, 20, 2, r, g, b);
+    } else if (symbolName === 'retail') {
+        // Shopping cart: base (14x2), back wall (2x8), handle (12x2), two wheels (3x3)
+        fillRect(rows, x + 6, y + 14, 14, 2, r, g, b);   // base
+        fillRect(rows, x + 6, y + 6, 2, 10, r, g, b);    // back wall
+        fillRect(rows, x + 6, y + 6, 12, 2, r, g, b);    // handle bar
+        fillRect(rows, x + 8, y + 19, 3, 3, r, g, b);    // wheel left
+        fillRect(rows, x + 16, y + 19, 3, 3, r, g, b);   // wheel right
+    } else if (symbolName === 'aviation') {
+        // Plane silhouette: fuselage + wing + tail
+        fillRect(rows, x + 6, y + 12, 16, 4, r, g, b);   // fuselage
+        fillRect(rows, x + 8, y + 10, 12, 2, r, g, b);   // wing top
+        fillRect(rows, x + 8, y + 16, 12, 2, r, g, b);   // wing bottom
+        fillRect(rows, x + 20, y + 8, 2, 12, r, g, b);   // tail fin
+        fillRect(rows, x + 4, y + 13, 3, 2, r, g, b);    // nose
+    } else if (symbolName === 'education') {
+        // Book: spine (2x12) + left page (8x12) + right page (8x12)
+        fillRect(rows, x + 13, y + 8, 2, 12, r, g, b);   // spine
+        fillRect(rows, x + 5, y + 8, 8, 12, r, g, b);    // left page
+        fillRect(rows, x + 15, y + 8, 8, 12, r, g, b);   // right page
+        fillRect(rows, x + 5, y + 20, 18, 2, r, g, b);   // bottom edge
+    } else if (symbolName === 'tech') {
+        // Circuit: 3 horizontal traces + 2 vertical vias
+        fillRect(rows, x + 4, y + 8, 20, 2, r, g, b);    // trace top
+        fillRect(rows, x + 4, y + 14, 20, 2, r, g, b);   // trace middle
+        fillRect(rows, x + 4, y + 20, 20, 2, r, g, b);   // trace bottom
+        fillRect(rows, x + 10, y + 8, 2, 6, r, g, b);    // via left
+        fillRect(rows, x + 18, y + 14, 2, 6, r, g, b);   // via right
+        // Pads
+        fillRect(rows, x + 4, y + 7, 4, 4, r, g, b);
+        fillRect(rows, x + 22, y + 13, 4, 4, r, g, b);
+    } else if (symbolName === 'music') {
+        // Quarter note: filled circle (6x6) + vertical stem (2x14)
+        fillRect(rows, x + 6, y + 16, 6, 6, r, g, b);    // note head
+        fillRect(rows, x + 12, y + 4, 2, 14, r, g, b);   // stem
+        fillRect(rows, x + 12, y + 4, 8, 2, r, g, b);    // flag top
+    } else if (symbolName === 'sports') {
+        // Trophy: cup (trapezoid via two rects), pedestal, base
+        fillRect(rows, x + 9, y + 4, 10, 6, r, g, b);    // cup top
+        fillRect(rows, x + 11, y + 10, 6, 4, r, g, b);   // cup bottom
+        fillRect(rows, x + 12, y + 14, 4, 4, r, g, b);   // pedestal
+        fillRect(rows, x + 10, y + 18, 8, 2, r, g, b);   // base
+        // Handles
+        fillRect(rows, x + 6, y + 5, 3, 4, r, g, b);
+        fillRect(rows, x + 19, y + 5, 3, 4, r, g, b);
+    } else if (symbolName === 'food') {
+        // Fork: three tines + handle
+        fillRect(rows, x + 8, y + 4, 2, 8, r, g, b);     // tine left
+        fillRect(rows, x + 12, y + 4, 2, 8, r, g, b);    // tine middle
+        fillRect(rows, x + 16, y + 4, 2, 8, r, g, b);    // tine right
+        fillRect(rows, x + 10, y + 12, 8, 3, r, g, b);   // tine base joining
+        fillRect(rows, x + 12, y + 15, 4, 10, r, g, b);  // handle
+    } else if (symbolName === 'travel') {
+        // Globe outline: equator bar + meridian bar + bounding box border
+        fillRect(rows, x + 7, y + 14, 14, 2, r, g, b);   // equator
+        fillRect(rows, x + 13, y + 7, 2, 14, r, g, b);   // meridian
+        fillRect(rows, x + 7, y + 7, 14, 2, r, g, b);    // top border
+        fillRect(rows, x + 7, y + 21, 14, 2, r, g, b);   // bottom border
+        fillRect(rows, x + 7, y + 7, 2, 16, r, g, b);    // left border
+        fillRect(rows, x + 19, y + 7, 2, 16, r, g, b);   // right border
+    } else {
+        // 'manufacturing': gear — center square + 4 teeth
+        fillRect(rows, x + 10, y + 10, 8, 8, r, g, b);   // center square
+        fillRect(rows, x + 12, y + 6, 4, 4, r, g, b);    // top tooth
+        fillRect(rows, x + 12, y + 18, 4, 4, r, g, b);   // bottom tooth
+        fillRect(rows, x + 6, y + 12, 4, 4, r, g, b);    // left tooth
+        fillRect(rows, x + 18, y + 12, 4, 4, r, g, b);   // right tooth
+    }
+}
+
+/*
+ * drawSymbol2x(rows, symbolName, ox, oy, r, g, b):
+ * Double-size variant of drawSymbol for 72x72 appIcon_2x (56x56 drawing area).
+ * All coordinates and dimensions doubled.
+ */
+function drawSymbol2x(rows, symbolName, ox, oy, r, g, b) {
+    var x = ox, y = oy;
+    if (symbolName === 'healthcare') {
+        fillRect(rows, x + 16, y + 24, 24, 8, r, g, b);
+        fillRect(rows, x + 24, y + 16, 8, 24, r, g, b);
+    } else if (symbolName === 'security') {
+        fillRect(rows, x + 16, y + 8, 24, 6, r, g, b);
+        fillRect(rows, x + 16, y + 8, 6, 20, r, g, b);
+        fillRect(rows, x + 34, y + 8, 6, 20, r, g, b);
+        fillRect(rows, x + 20, y + 28, 16, 6, r, g, b);
+        fillRect(rows, x + 24, y + 34, 8, 8, r, g, b);
+    } else if (symbolName === 'network') {
+        fillRect(rows, x + 24, y + 24, 8, 8, r, g, b);
+        fillRect(rows, x + 8, y + 8, 8, 8, r, g, b);
+        fillRect(rows, x + 40, y + 8, 8, 8, r, g, b);
+        fillRect(rows, x + 24, y + 40, 8, 8, r, g, b);
+        fillRect(rows, x + 16, y + 16, 12, 4, r, g, b);
+        fillRect(rows, x + 32, y + 16, 12, 4, r, g, b);
+        fillRect(rows, x + 26, y + 28, 4, 16, r, g, b);
+    } else if (symbolName === 'automotive') {
+        fillRect(rows, x + 8, y + 8, 4, 40, r, g, b);
+        for (var fy = 0; fy < 4; fy++) {
+            for (var fx = 0; fx < 4; fx++) {
+                if ((fx + fy) % 2 === 0) {
+                    fillRect(rows, x + 16 + fx * 6, y + 8 + fy * 6, 6, 6, r, g, b);
+                }
+            }
+        }
+    } else if (symbolName === 'energy') {
+        fillRect(rows, x + 28, y + 8, 12, 6, r, g, b);
+        fillRect(rows, x + 20, y + 22, 16, 8, r, g, b);
+        fillRect(rows, x + 16, y + 38, 12, 6, r, g, b);
+        fillRect(rows, x + 24, y + 14, 8, 12, r, g, b);
+        fillRect(rows, x + 20, y + 30, 8, 12, r, g, b);
+    } else if (symbolName === 'finance') {
+        var fpts2 = [{x: 8, y: 40}, {x: 18, y: 32}, {x: 28, y: 24}, {x: 38, y: 16}, {x: 48, y: 8}];
+        for (var fi3 = 0; fi3 < fpts2.length; fi3++) {
+            fillRect(rows, x + fpts2[fi3].x, y + fpts2[fi3].y, 6, 6, r, g, b);
+        }
+        for (var fi4 = 0; fi4 < fpts2.length - 1; fi4++) {
+            fillRect(rows, x + fpts2[fi4].x + 2, y + fpts2[fi4].y + 2,
+                fpts2[fi4 + 1].x - fpts2[fi4].x, 4, r, g, b);
+        }
+        fillRect(rows, x + 8, y + 8, 4, 36, r, g, b);
+        fillRect(rows, x + 8, y + 44, 40, 4, r, g, b);
+    } else if (symbolName === 'retail') {
+        fillRect(rows, x + 12, y + 28, 28, 4, r, g, b);
+        fillRect(rows, x + 12, y + 12, 4, 20, r, g, b);
+        fillRect(rows, x + 12, y + 12, 24, 4, r, g, b);
+        fillRect(rows, x + 16, y + 38, 6, 6, r, g, b);
+        fillRect(rows, x + 32, y + 38, 6, 6, r, g, b);
+    } else if (symbolName === 'aviation') {
+        fillRect(rows, x + 12, y + 24, 32, 8, r, g, b);
+        fillRect(rows, x + 16, y + 20, 24, 4, r, g, b);
+        fillRect(rows, x + 16, y + 32, 24, 4, r, g, b);
+        fillRect(rows, x + 40, y + 16, 4, 24, r, g, b);
+        fillRect(rows, x + 8, y + 26, 6, 4, r, g, b);
+    } else if (symbolName === 'education') {
+        fillRect(rows, x + 26, y + 16, 4, 24, r, g, b);
+        fillRect(rows, x + 10, y + 16, 16, 24, r, g, b);
+        fillRect(rows, x + 30, y + 16, 16, 24, r, g, b);
+        fillRect(rows, x + 10, y + 40, 36, 4, r, g, b);
+    } else if (symbolName === 'tech') {
+        fillRect(rows, x + 8, y + 16, 40, 4, r, g, b);
+        fillRect(rows, x + 8, y + 28, 40, 4, r, g, b);
+        fillRect(rows, x + 8, y + 40, 40, 4, r, g, b);
+        fillRect(rows, x + 20, y + 16, 4, 12, r, g, b);
+        fillRect(rows, x + 36, y + 28, 4, 12, r, g, b);
+        fillRect(rows, x + 8, y + 14, 8, 8, r, g, b);
+        fillRect(rows, x + 44, y + 26, 8, 8, r, g, b);
+    } else if (symbolName === 'music') {
+        fillRect(rows, x + 12, y + 32, 12, 12, r, g, b);
+        fillRect(rows, x + 24, y + 8, 4, 28, r, g, b);
+        fillRect(rows, x + 24, y + 8, 16, 4, r, g, b);
+    } else if (symbolName === 'sports') {
+        fillRect(rows, x + 18, y + 8, 20, 12, r, g, b);
+        fillRect(rows, x + 22, y + 20, 12, 8, r, g, b);
+        fillRect(rows, x + 24, y + 28, 8, 8, r, g, b);
+        fillRect(rows, x + 20, y + 36, 16, 4, r, g, b);
+        fillRect(rows, x + 12, y + 10, 6, 8, r, g, b);
+        fillRect(rows, x + 38, y + 10, 6, 8, r, g, b);
+    } else if (symbolName === 'food') {
+        fillRect(rows, x + 16, y + 8, 4, 16, r, g, b);
+        fillRect(rows, x + 24, y + 8, 4, 16, r, g, b);
+        fillRect(rows, x + 32, y + 8, 4, 16, r, g, b);
+        fillRect(rows, x + 20, y + 24, 16, 6, r, g, b);
+        fillRect(rows, x + 24, y + 30, 8, 20, r, g, b);
+    } else if (symbolName === 'travel') {
+        fillRect(rows, x + 14, y + 28, 28, 4, r, g, b);
+        fillRect(rows, x + 26, y + 14, 4, 28, r, g, b);
+        fillRect(rows, x + 14, y + 14, 28, 4, r, g, b);
+        fillRect(rows, x + 14, y + 42, 28, 4, r, g, b);
+        fillRect(rows, x + 14, y + 14, 4, 32, r, g, b);
+        fillRect(rows, x + 38, y + 14, 4, 32, r, g, b);
+    } else {
+        // manufacturing (2x)
+        fillRect(rows, x + 20, y + 20, 16, 16, r, g, b);
+        fillRect(rows, x + 24, y + 12, 8, 8, r, g, b);
+        fillRect(rows, x + 24, y + 36, 8, 8, r, g, b);
+        fillRect(rows, x + 12, y + 24, 8, 8, r, g, b);
+        fillRect(rows, x + 36, y + 24, 8, 8, r, g, b);
+    }
+}
+
 /*
  * generateAppIcon(appDir, dark):
  * Creates static/appIcon.png (36x36) and static/appIcon_2x.png (72x72).
- * Icon: accent background + white initial letter from basename(appDir).
+ * Icon: accent background + domain symbol (3-tier cascade: domain keyword → @viz-type → letter).
  */
 function generateAppIcon(appDir, dark) {
     var accentRgb = hexToRgb(dark.accent);
     var ar = accentRgb[0], ag = accentRgb[1], ab = accentRgb[2];
 
     var baseName = path.basename(appDir);
-    var initial = baseName[0] ? baseName[0].toUpperCase() : 'S';
-    if (!FONT_GLYPHS[initial]) { initial = '*'; }
+
+    // Tier 1: domain keyword match
+    var domain = matchDomain(baseName);
+
+    // Tier 2: @viz-type annotation from first viz source file
+    var vizType = null;
+    if (!domain) {
+        var vizRoot = path.join(appDir, 'appserver', 'static', 'visualizations');
+        if (fs.existsSync(vizRoot)) {
+            var vizEntries = fs.readdirSync(vizRoot);
+            for (var ve = 0; ve < vizEntries.length; ve++) {
+                var vizDir = path.join(vizRoot, vizEntries[ve]);
+                try {
+                    if (!fs.statSync(vizDir).isDirectory()) { continue; }
+                } catch (e) { continue; }
+                var srcPath = path.join(vizDir, 'src', 'visualization_source.js');
+                if (!fs.existsSync(srcPath)) { srcPath = path.join(vizDir, 'visualization_source.js'); }
+                if (fs.existsSync(srcPath)) {
+                    try {
+                        var firstLine = fs.readFileSync(srcPath, 'utf8').split('\n')[0];
+                        var vtMatch = firstLine.match(/\/\/\s*@viz-type:\s*(\S+)/);
+                        if (vtMatch) { vizType = vtMatch[1].toLowerCase(); break; }
+                    } catch (e) {}
+                }
+            }
+        }
+        // Map viz type to a domain symbol
+        if (vizType) {
+            var VIZ_TO_DOMAIN = {
+                'gauge': 'finance', 'kpi': 'finance', 'bar': 'finance',
+                'bars': 'finance', 'line': 'finance', 'scatter': 'finance',
+                'table': 'tech', 'grid': 'tech',
+                'leaderboard': 'sports', 'timeline': 'tech',
+                'network': 'network', 'progress': 'energy'
+            };
+            domain = VIZ_TO_DOMAIN[vizType] || null;
+        }
+    }
 
     var iconDir = path.join(appDir, 'static');
     if (!fs.existsSync(iconDir)) { fs.mkdirSync(iconDir, { recursive: true }); }
 
-    // 36x36 icon (scale=4: glyph is 20x28px, centered in 36x36)
+    // 36x36 icon: drawing area 28x28 centered at (4,4)
     var W1 = 36, H1 = 36, scale1 = 4;
-    var glyphW1 = 5 * scale1, glyphH1 = 7 * scale1; // 20x28
-    var ox1 = Math.round((W1 - glyphW1) / 2);
-    var oy1 = Math.round((H1 - glyphH1) / 2);
     var rows1 = makeRgbRows(W1, H1, ar, ag, ab);
-    drawLetter(rows1, initial, ox1, oy1, scale1, 255, 255, 255);
+    if (domain) {
+        drawSymbol(rows1, domain, 4, 4, 255, 255, 255);
+    } else {
+        // Tier 3: letter fallback
+        var initial = baseName[0] ? baseName[0].toUpperCase() : 'S';
+        if (!FONT_GLYPHS[initial]) { initial = '*'; }
+        var glyphW1 = 5 * scale1, glyphH1 = 7 * scale1; // 20x28
+        var ox1 = Math.round((W1 - glyphW1) / 2);
+        var oy1 = Math.round((H1 - glyphH1) / 2);
+        drawLetter(rows1, initial, ox1, oy1, scale1, 255, 255, 255);
+    }
     var png1 = makePng(W1, H1, rows1);
     fs.writeFileSync(path.join(iconDir, 'appIcon.png'), png1);
 
-    // 72x72 icon (scale=8: glyph is 40x56px, centered in 72x72)
+    // 72x72 icon: drawing area 56x56 centered at (8,8)
     var W2 = 72, H2 = 72, scale2 = 8;
-    var glyphW2 = 5 * scale2, glyphH2 = 7 * scale2; // 40x56
-    var ox2 = Math.round((W2 - glyphW2) / 2);
-    var oy2 = Math.round((H2 - glyphH2) / 2);
     var rows2 = makeRgbRows(W2, H2, ar, ag, ab);
-    drawLetter(rows2, initial, ox2, oy2, scale2, 255, 255, 255);
+    if (domain) {
+        drawSymbol2x(rows2, domain, 8, 8, 255, 255, 255);
+    } else {
+        var initial2 = baseName[0] ? baseName[0].toUpperCase() : 'S';
+        if (!FONT_GLYPHS[initial2]) { initial2 = '*'; }
+        var glyphW2 = 5 * scale2, glyphH2 = 7 * scale2; // 40x56
+        var ox2 = Math.round((W2 - glyphW2) / 2);
+        var oy2 = Math.round((H2 - glyphH2) / 2);
+        drawLetter(rows2, initial2, ox2, oy2, scale2, 255, 255, 255);
+    }
     var png2 = makePng(W2, H2, rows2);
     fs.writeFileSync(path.join(iconDir, 'appIcon_2x.png'), png2);
 }
 
 /*
  * generatePreviews(appDir, dark):
- * Creates appserver/static/visualizations/<viz>/preview.png (300x200) for each viz subdirectory.
+ * Creates appserver/static/visualizations/<viz>/preview.png (116x76) for each viz subdirectory.
  * Silhouette style is determined by viz directory name.
+ * Uses two fill colors: primary accent and a secondary derived from dark.s1 (or computed fallback).
  */
 function generatePreviews(appDir, dark) {
     var previewRgb = previewContrastAccent(dark.accent, dark.bg);
     var ar = previewRgb[0], ag = previewRgb[1], ab = previewRgb[2];
     var bgRgb = hexToRgb(dark.bg);
     var bgr = bgRgb[0], bgg = bgRgb[1], bgb = bgRgb[2];
+
+    // Secondary color: prefer dark.s1 series color, otherwise derive from accent
+    var s1r, s1g, s1b;
+    if (dark.series && isHex(dark.series[0])) {
+        var s1Rgb = hexToRgb(dark.series[0]);
+        s1r = s1Rgb[0]; s1g = s1Rgb[1]; s1b = s1Rgb[2];
+    } else if (dark.s1 && isHex(dark.s1)) {
+        var s1Rgb2 = hexToRgb(dark.s1);
+        s1r = s1Rgb2[0]; s1g = s1Rgb2[1]; s1b = s1Rgb2[2];
+    } else {
+        // Derive secondary by shifting hue: darken red/green, keep blue component
+        s1r = Math.min(255, Math.round(ar * 0.7 + 80));
+        s1g = Math.min(255, Math.round(ag * 0.7 + 80));
+        s1b = Math.min(255, Math.round(ab * 0.7));
+    }
 
     var vizRoot = path.join(appDir, 'appserver', 'static', 'visualizations');
     if (!fs.existsSync(vizRoot)) {
@@ -666,9 +1019,9 @@ function generatePreviews(appDir, dark) {
             } catch (e) {}
         }
         if (!type) { type = detectVizType(name); }
-        var W = 300, H = 200;
+        var W = 116, H = 76;
         var rows = makeRgbRows(W, H, bgr, bgg, bgb);
-        drawSilhouette(rows, type, ar, ag, ab, bgr, bgg, bgb);
+        drawSilhouette(rows, type, ar, ag, ab, bgr, bgg, bgb, s1r, s1g, s1b);
 
         var pngBuf = makePng(W, H, rows);
         var outPath = path.join(vizDir, 'preview.png');
