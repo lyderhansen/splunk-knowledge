@@ -89,7 +89,7 @@ ctx.fill();
 
 ### DPR-03b: Accent vs series color separation
 
-**Rule:** `t.accent` is the HIGHLIGHT color — used for the single element that must pop on each frame. Data series fills use `t.series[i]` (brand-derived palette), NEVER `t.accent`.
+**Rule:** `t.accent` (or `accentColor` from the Effects formatter, read via `opt('accentColor', t.accent)`) is the HIGHLIGHT color — used for the single element that must pop on each frame. Data series fills use `t.series[i]` (brand-derived palette), NEVER accent.
 
 **Accent IS appropriate for (10% of visual weight):**
 - Hover highlight overlay (semi-transparent fill behind hovered row/bar)
@@ -98,6 +98,7 @@ ctx.fill();
 - Focus indicator on interactive elements
 - Threshold breach indicator (value exceeds danger zone)
 - Single-value vizs where ONE data element is the entire story (KPI hero, single gauge arc)
+- accentColor from Effects formatter — read via `opt('accentColor', t.accent)` then `hexFromSplunk()`; this value overrides `t.accent` as the glow/highlight color when set in the Format panel
 
 **Accent is NOT appropriate for:**
 - Multi-series bar fills, arc segments, line strokes, area fills
