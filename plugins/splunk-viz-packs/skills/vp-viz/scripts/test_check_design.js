@@ -15,12 +15,12 @@
  *   - D03 PASS via Math.min+Math.max: exits 0, no FAIL D03
  *   - D05 FAIL (< 4 sections): formatter has only 2 form[section-label]
  *   - D05 PASS: formatter has exactly 4 form[section-label]
- *   - D01 WARN (no gradient): exits 0 (WARN only), stdout has WARN D01
- *   - D01 FAIL gradient-required: theme.js has fillTechnique:'gradient', JS has no gradient calls, exits 1 FAIL D01
+ *   - D01 WARN (no gradient): exits 0 (WARN only), stdout has WARN D01, [test_kpi] prefix
+ *   - D01 FAIL gradient-required: theme.js has fillTechnique:'gradient', JS has no gradient calls, exits 1 FAIL D01, [test_gauge] prefix
  *   - D01 WARN no-fillTechnique declared: theme.js has no fillTechnique, JS has no gradient calls, exits 0 WARN D01
  *   - D01 PASS gradient-required with gradient calls: theme.js has fillTechnique:'gradient', JS has createLinearGradient, no D01
  *   - D02 WARN (no shadow): exits 0 (WARN only), stdout has WARN D02
- *   - D08 FAIL forward (formatter key not in JS): exits 1, stdout has FAIL D08
+ *   - D08 FAIL forward (formatter key not in JS): exits 1, stdout has FAIL D08, [test_bar] prefix
  *   - D08 PASS forward: formatter key referenced in JS, no FAIL D08
  *   - D09 FAIL ternary cap: gi > 1 ? 1 : gi pattern detected
  *   - D09 FAIL Math.min cap: Math.min(gi, 1) pattern detected
@@ -55,9 +55,10 @@ function tmpFile(name, content) {
     return p;
 }
 
-function run(formatterPath, jsSrcPath, themePath) {
+function run(formatterPath, jsSrcPath, themePath, vizName) {
     try {
         var args = formatterPath ? [formatterPath, jsSrcPath, themePath] : [];
+        if (vizName) { args.push(vizName); }
         var result = child_process.spawnSync(
             'node',
             [SCRIPT].concat(args),
@@ -322,9 +323,10 @@ var NO_GRAD_JS = tmpFile('no_grad.js', [
 ].join('\n'));
 var FORMATTER_D01 = tmpFile('formatter_d01.html', FORMATTER_MINIMAL);
 var THEME_D01 = tmpFile('theme_d01.js', THEME_WITH_RGBA);
-r = run(FORMATTER_D01, NO_GRAD_JS, THEME_D01);
+r = run(FORMATTER_D01, NO_GRAD_JS, THEME_D01, 'test_kpi');
 assert('D01 WARN exits 0 (WARN does not cause exit 1)', r.code, 0, r.stdout + r.stderr);
 assertIncludes('D01 WARN stdout contains WARN D01', r.stdout, 'WARN D01');
+assertIncludes('D01 WARN includes viz name in stdout', r.stdout, '[test_kpi]');
 
 // --- D01 FAIL gradient-required: theme declares fillTechnique:'gradient', JS has no gradient calls ---
 // Theme has fillTechnique set to 'gradient'; JS has no createLinearGradient or createRadialGradient.
@@ -355,9 +357,10 @@ var D01_GRAD_REQ_JS = tmpFile('d01_grad_req.js', [
 ].join('\n'));
 var D01_GRAD_REQ_FORMATTER = tmpFile('formatter_d01_grad_req.html', FORMATTER_MINIMAL);
 var D01_GRAD_REQ_THEME = tmpFile('theme_d01_grad_req.js', THEME_FILL_GRADIENT);
-r = run(D01_GRAD_REQ_FORMATTER, D01_GRAD_REQ_JS, D01_GRAD_REQ_THEME);
+r = run(D01_GRAD_REQ_FORMATTER, D01_GRAD_REQ_JS, D01_GRAD_REQ_THEME, 'test_gauge');
 assert('D01 FAIL gradient-required exits 1', r.code, 1, r.stdout + r.stderr);
 assertIncludes('D01 FAIL gradient-required stdout contains FAIL D01', r.stdout, 'FAIL D01');
+assertIncludes('D01 FAIL includes viz name in stdout', r.stdout, '[test_gauge]');
 
 // --- D01 WARN no-fillTechnique declared: theme has no fillTechnique, JS has no gradient calls ---
 // Confirms existing WARN behavior is unchanged when fillTechnique is not declared.
@@ -477,9 +480,10 @@ var D08_JS_MISSING = tmpFile('js_d08_missing.js', [
     '};'
 ].join('\n'));
 var THEME_D08_FAIL = tmpFile('theme_d08_fail.js', THEME_WITH_RGBA);
-r = run(D08_FORMATTER, D08_JS_MISSING, THEME_D08_FAIL);
+r = run(D08_FORMATTER, D08_JS_MISSING, THEME_D08_FAIL, 'test_bar');
 assert('D08 FAIL forward exits 1', r.code, 1, r.stdout + r.stderr);
 assertIncludes('D08 FAIL forward stdout contains FAIL D08', r.stdout, 'FAIL D08');
+assertIncludes('D08 FAIL includes viz name in stdout', r.stdout, '[test_bar]');
 
 // --- D08 PASS forward: formatter key referenced in JS ---
 console.log('\n-- D08 PASS forward: all formatter keys referenced in JS --');
