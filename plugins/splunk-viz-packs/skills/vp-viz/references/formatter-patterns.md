@@ -106,7 +106,7 @@ WRONG: default="value"                 → MUST be value="value"
 WRONG: <splunk-color-picker value=     → MUST add type="custom"
 WRONG: <form>                          → MUST add class="splunk-formatter-section" section-label="..."
 WRONG: themeMode value="dark"          → MUST be value="auto"
-WRONG: accentColor picker in Color and style  → removed in Phase 18 (D-10). Use series color pickers instead.
+NOTE:  accentColor picker belongs in Effects section (not Color and style). Controls glow/highlight overlay only — never solid fill. (Phase 23 CP-03)
 NOTE:  fontColor/bgColor controls ARE correct here (Phase 18 D-11 overrides the older D-03 guidance in this file)
 WRONG: hardcoded if (status === 'ok') → MUST read comma-separated statusOkValues from formatter
                                          and match case-insensitively. Hardcoded status strings
@@ -121,7 +121,7 @@ Every viz gets a minimum of 3 sections with these EXACT `section-label` values (
 1. **NO `Data configurations` section for most vizs.** Field binding is via `formatData()` column-index map. Only single-value and generic table vizs get a single optional field input with empty default.
 2. `Data display` — labels, units, toggles, decimals
 3. `Color and style` — themeMode, series color pickers (1-5), seriesColorsOverflow, fieldColorMap, accentIntensity
-4. `Effects` — individual mood effect toggles (showAmbientLight, showVignette, showGlow, showGlassPanel). Default all to "true"; user can disable per effect.
+4. `Effects` — accentColor picker (FIRST), then mood effect toggles (showAmbientLight, showVignette, showGlow, showGlassPanel). accentColor is ONLY used inside withAlpha() — never ctx.fillStyle = accentColor directly. Default toggles to "true"; user can disable per effect.
 
 > **Data binding rule (D-01):** Most vizs do NOT have a "Data configurations" formatter section.
 > The `formatData()` method builds a `colIdx` map from `data.fields` — vizs access columns by
@@ -296,6 +296,19 @@ using viz-blueprints.md Settings: list as your guide (D-01, D-04).
 </form>
 
 <form class="splunk-formatter-section" section-label="Effects">
+    <splunk-control-group label="Accent color" help="Glow and highlight overlay color — used only in withAlpha() for hover, glow halo, and selection ring. Never a solid fill.">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.accentColor" type="custom" value="#FILL_ACCENT">
+            <!-- Populate 6-8 brand colors from theme.js DARK palette -->
+            <splunk-color>#FILL_ACCENT</splunk-color>
+            <splunk-color>#FILL_S1</splunk-color>
+            <splunk-color>#FILL_S2</splunk-color>
+            <splunk-color>#FILL_S3</splunk-color>
+            <splunk-color>#FILL_S4</splunk-color>
+            <splunk-color>#FILL_S5</splunk-color>
+            <splunk-color>#FILL_BG</splunk-color>
+            <splunk-color>#FILL_PANEL</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
     <splunk-control-group label="Ambient glow" help="Background light source effect">
         <splunk-radio-input name="{{VIZ_NAMESPACE}}.showAmbientLight" value="true">
             <option value="true">On</option>
