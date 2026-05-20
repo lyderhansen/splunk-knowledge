@@ -322,7 +322,8 @@ if [ "$HAS_NODE" -eq 1 ] && [ -f "$CHECK_DESIGN" ]; then
     else
       continue
     fi
-    DESIGN_OUT=$(node "$CHECK_DESIGN" "$f" "$JS_SRC" "$THEME_JS" 2>/tmp/design_err_$$)
+    echo "  $(basename "$vizdir"):"
+    DESIGN_OUT=$(node "$CHECK_DESIGN" "$f" "$JS_SRC" "$THEME_JS" "$(basename "$vizdir")" 2>/tmp/design_err_$$)
     DESIGN_EXIT=$?
     [ -n "$DESIGN_OUT" ] && echo "$DESIGN_OUT"
     grep '^FINDING:' /tmp/design_err_$$ >> "$FINDINGS_FILE" 2>/dev/null
