@@ -39,9 +39,14 @@ RIGHT: "options": { "myapp.myviz.scoreField": "score" }
 3. Write formatter.html   → use EXACT templates in this file
 4. Write source JS        → use EXACT template in this file
 5. Build (flat AMD)       → node ${CLAUDE_SKILL_DIR}/scripts/build_flat.js
-6. Validate               → bash ${CLAUDE_SKILL_DIR}/scripts/validate_viz.sh
-7. Fix any failures       → re-run steps 3-6
-8. Package                → see vp-create
+6. Validate and fix (max 2 iterations):
+   1. Run: bash ${CLAUDE_SKILL_DIR}/scripts/validate_viz.sh /path/to/app
+   2. If XFILE or D08 failures: read the error output, identify which viz + which control is missing
+   3. Edit the failing viz's visualization_source.js to add the missing opt() call
+   4. Run: node ${CLAUDE_SKILL_DIR}/scripts/build_flat.js /path/to/app
+   5. Re-run: bash ${CLAUDE_SKILL_DIR}/scripts/validate_viz.sh /path/to/app
+   6. If still failing after 2 iterations, report the remaining failures and continue to vp-create
+7. Package                → see vp-create
 ```
 
 ## Pre-code checklist — MUST READ before writing any code
