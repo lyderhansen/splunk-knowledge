@@ -244,6 +244,121 @@ if (r.code === 0) {
     failed++;
 }
 
+/**
+ * Create a minimal fake app with a VISUAL_LANG export in theme.js.
+ * bgType: 'gradient' | 'pattern' | 'solid' | 'photo'
+ * bgPattern: 'circuit' | 'hex_grid' | 'topo' | 'dot_matrix' (used when bgType='pattern')
+ */
+function makeTestAppWithVisualLang(name, accentHex, bgHex, vizNames, bgType, bgPattern) {
+    var dir = path.join(os.tmpdir(), 'generate_assets_test_' + name + '_' + Date.now());
+    fs.mkdirSync(dir, { recursive: true });
+
+    var sharedDir = path.join(dir, 'shared');
+    fs.mkdirSync(sharedDir, { recursive: true });
+
+    var visualLangStr = JSON.stringify({ backgroundType: bgType, backgroundPattern: bgPattern || 'circuit' });
+    var themeContent = [
+        'var DARK = {',
+        '  accent: "' + accentHex + '",',
+        '  bg: "' + bgHex + '",',
+        '  panel: "#161630",',
+        '  panelHi: "#1E1E42",',
+        '  text: "#E8ECF0"',
+        '};',
+        'var LIGHT = {',
+        '  accent: "' + accentHex + '",',
+        '  bg: "#F0F2F5",',
+        '  panel: "#FFFFFF",',
+        '  panelHi: "#F8F9FA",',
+        '  text: "#1B1B3A"',
+        '};',
+        'var VISUAL_LANG = ' + visualLangStr + ';',
+        'function getTheme(n) { return n === "light" ? LIGHT : DARK; }',
+        'module.exports = { getTheme: getTheme, VISUAL_LANG: VISUAL_LANG };'
+    ].join('\n');
+    fs.writeFileSync(path.join(sharedDir, 'theme.js'), themeContent, 'utf8');
+
+    fs.mkdirSync(path.join(dir, 'static'), { recursive: true });
+    var vizRoot = path.join(dir, 'appserver', 'static', 'visualizations');
+    fs.mkdirSync(vizRoot, { recursive: true });
+    for (var i = 0; i < vizNames.length; i++) {
+        fs.mkdirSync(path.join(vizRoot, vizNames[i]), { recursive: true });
+    }
+
+    tmpDirs.push(dir);
+    return dir;
+}
+
+// T11: theme.js without VISUAL_LANG -> exit 0, bg_gradient.png exists (backward compat)
+console.log('\n-- T11: No VISUAL_LANG in theme.js -> exit 0, bg_gradient.png exists --');
+var appT11 = makeTestApp('t11_no_visual_lang', '#F6821F', '#0D0D1F', ['kpi_tile']);
+var rT11 = run([appT11]);
+assert('T11 exits 0 (no VISUAL_LANG)', rT11.code, 0, rT11.stderr.substring(0, 200));
+var bgT11 = path.join(appT11, 'appserver', 'static', 'images', 'bg_gradient.png');
+assert('T11 bg_gradient.png exists', fs.existsSync(bgT11), true);
+
+// T12: backgroundType='gradient' -> bg_gradient.png and bg_gradient_light.png both exist
+console.log('\n-- T12: backgroundType=gradient -> both bg_gradient.png and bg_gradient_light.png exist --');
+var appT12 = makeTestAppWithVisualLang('t12_gradient', '#F6821F', '#0D0D1F', ['kpi_tile'], 'gradient', null);
+var rT12 = run([appT12]);
+assert('T12 exits 0 (gradient)', rT12.code, 0, rT12.stderr.substring(0, 200));
+var bgT12dark = path.join(appT12, 'appserver', 'static', 'images', 'bg_gradient.png');
+var bgT12light = path.join(appT12, 'appserver', 'static', 'images', 'bg_gradient_light.png');
+assert('T12 bg_gradient.png exists', fs.existsSync(bgT12dark), true);
+assert('T12 bg_gradient_light.png exists', fs.existsSync(bgT12light), true);
+
+// T13: backgroundType='pattern', backgroundPattern='circuit' -> both exist AND pixel data differs from gradient run
+console.log('\n-- T13: backgroundType=pattern/circuit -> both exist, pixel data differs from gradient --');
+var appT13 = makeTestAppWithVisualLang('t13_pattern', '#F6821F', '#0D0D1F', ['kpi_tile'], 'pattern', 'circuit');
+var rT13 = run([appT13]);
+assert('T13 exits 0 (pattern)', rT13.code, 0, rT13.stderr.substring(0, 200));
+var bgT13dark = path.join(appT13, 'appserver', 'static', 'images', 'bg_gradient.png');
+var bgT13light = path.join(appT13, 'appserver', 'static', 'images', 'bg_gradient_light.png');
+assert('T13 bg_gradient.png exists', fs.existsSync(bgT13dark), true);
+assert('T13 bg_gradient_light.png exists', fs.existsSync(bgT13light), true);
+// Compare pixel data: pattern vs gradient (skip header bytes 0-33, compare first 500 bytes of body)
+if (fs.existsSync(bgT12dark) && fs.existsSync(bgT13dark)) {
+    var bufGrad = fs.readFileSync(bgT12dark);
+    var bufPat  = fs.readFileSync(bgT13dark);
+    var gradSlice = bufGrad.slice(34, 534);
+    var patSlice  = bufPat.slice(34, 534);
+    var dataDiffers = !gradSlice.equals(patSlice);
+    assert('T13 pattern pixel data differs from gradient', dataDiffers, true,
+        'gradSize=' + bufGrad.length + ' patSize=' + bufPat.length);
+} else {
+    console.log('  FAIL: T13 comparison skipped -- one or both files missing');
+    failed++;
+}
+
+// T14: backgroundType='solid' -> bg_gradient.png and bg_gradient_light.png both exist
+console.log('\n-- T14: backgroundType=solid -> both bg_gradient.png and bg_gradient_light.png exist --');
+var appT14 = makeTestAppWithVisualLang('t14_solid', '#F6821F', '#0D0D1F', ['kpi_tile'], 'solid', null);
+var rT14 = run([appT14]);
+assert('T14 exits 0 (solid)', rT14.code, 0, rT14.stderr.substring(0, 200));
+var bgT14dark = path.join(appT14, 'appserver', 'static', 'images', 'bg_gradient.png');
+var bgT14light = path.join(appT14, 'appserver', 'static', 'images', 'bg_gradient_light.png');
+assert('T14 bg_gradient.png exists', fs.existsSync(bgT14dark), true);
+assert('T14 bg_gradient_light.png exists', fs.existsSync(bgT14light), true);
+
+// T15: backgroundType='photo' with no bg_photo.png -> exit 0, bg_gradient.png exists (fallback)
+console.log('\n-- T15: backgroundType=photo, no bg_photo.png -> exit 0, bg_gradient.png exists (fallback) --');
+var appT15 = makeTestAppWithVisualLang('t15_photo_fallback', '#F6821F', '#0D0D1F', ['kpi_tile'], 'photo', null);
+var rT15 = run([appT15]);
+assert('T15 exits 0 (photo fallback)', rT15.code, 0, rT15.stderr.substring(0, 200));
+var bgT15 = path.join(appT15, 'appserver', 'static', 'images', 'bg_gradient.png');
+assert('T15 bg_gradient.png exists (fallback from photo)', fs.existsSync(bgT15), true);
+
+// T16: bg_gradient_light.png dimensions are 1920x1080
+console.log('\n-- T16: bg_gradient_light.png dimensions are 1920x1080 --');
+if (fs.existsSync(bgT12light)) {
+    var lightDims = readPngDimensions(bgT12light);
+    assert('T16 bg_gradient_light.png width=1920', lightDims ? lightDims.width : null, 1920, bgT12light);
+    assert('T16 bg_gradient_light.png height=1080', lightDims ? lightDims.height : null, 1080, bgT12light);
+} else {
+    console.log('  FAIL: T16 bg_gradient_light.png missing from T12 run');
+    failed += 2;
+}
+
 // ---- Cleanup temp dirs ----
 tmpDirs.forEach(function(dir) {
     try { fs.rmSync(dir, { recursive: true, force: true }); } catch (e) {}
