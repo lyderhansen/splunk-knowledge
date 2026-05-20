@@ -69,7 +69,7 @@ var LIGHT = {
     grid:        'rgba(0,0,0,0.06)',   // very subtle gridlines
     text:        '#0B0E1A',            // near-black — D-08: ALWAYS use for hero text
     textDim:     '#3D4050',            // secondary text — readable on white
-    textFaint:   '#8A8FA0',            // whisper labels — 25-35% perceived on white
+    textFaint:   '#6B7080',            // whisper labels — WCAG AA 3:1 on #F0F2F5 bg (Phase 23 CP-02)
     s1: '{{PLACEHOLDER}}',             // brand-specific series colors — Claude fills per brand brief
     s2: '{{PLACEHOLDER}}',
     s3: '{{PLACEHOLDER}}',
