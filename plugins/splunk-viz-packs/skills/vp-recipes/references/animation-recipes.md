@@ -5,6 +5,129 @@ These patterns cover all Phase 9 animation requirements (ANI-01 through ANI-06).
 
 ---
 
+## Generic Entrance Boilerplate (AB-01)
+
+Copy-paste verbatim into any viz. Only substitute the `_drawFrame(progress)` call with your viz-specific render. The default renders via globalAlpha opacity fade-in — works for every viz type with zero modifications.
+
+```javascript
+// In initialize():
+this._entranceDone = false;
+this._animating = false;
+this._entranceProgress = 1;
+```
+
+```javascript
+// In updateView (before render call):
+if (prefersReducedMotion()) {
+    this._entranceDone = true;
+    this._entranceProgress = 1;
+}
+var showEntrance = opt('showEntrance', 'true') === 'true';
+if (!showEntrance) {
+    this._entranceDone = true;
+    this._entranceProgress = 1;
+}
+if (showEntrance && !this._entranceDone) { this._startEntrance(config, ns); }
+
+// Apply in render — inside _render(), before drawing anything:
+ctx.globalAlpha = easeOutQuart(this._entranceProgress);
+// ... draw everything ...
+ctx.globalAlpha = 1;
+```
+
+```javascript
+// Add _startEntrance method to the extend({}) object:
+_startEntrance: function(config, ns) {
+    if (this._animating) { return; }
+    var speedMult = getSpeedMult(config, ns);
+    var duration = 350 * speedMult;
+    this._animating = true;
+    var startTime = null;
+    var self = this;
+    function step(timestamp) {
+        if (!self._animating) { return; }
+        if (!startTime) { startTime = timestamp; }
+        var progress = Math.min((timestamp - startTime) / duration, 1);
+        self._entranceProgress = progress;
+        self.invalidateUpdateView();
+        if (progress < 1) {
+            requestAnimationFrame(step);
+        } else {
+            self._entranceDone = true;
+            self._animating = false;
+        }
+    }
+    requestAnimationFrame(step);
+},
+```
+
+```javascript
+// In destroy():
+this._animating = false;
+```
+
+> Override point: for vizs that benefit from partial-render entrance (arc fill for gauges, bar growth for bars, row stagger for tables), replace `ctx.globalAlpha = easeOutQuart(this._entranceProgress)` with a custom draw path using `this._entranceProgress` as the fill fraction. See 'rAF entrance pattern per viz type' section below for per-type examples.
+
+---
+
+## Generic LED Pulse Boilerplate (AB-02)
+
+Copy-paste verbatim into any viz that has status values. Only substitute the `_drawPulseTarget()` call with the element you want to highlight (a cell, a dot, a badge). Requires `flashCritical` formatter control to be present.
+
+```javascript
+// In initialize():
+this._pulseInterval = null;
+this._pulseBlur = 0;
+```
+
+```javascript
+// In updateView (severity check before render):
+var flashCritical = opt('flashCritical', 'false') === 'true';
+if (prefersReducedMotion()) { this._stopPulse(); }
+var hasCritical = false;
+for (var i = 0; i < data.rows.length; i++) {
+    var sev = safeStr(data.rows[i][statusIdx]).toLowerCase(); // replace statusIdx with your severity column index
+    if (sev === 'critical' || sev === 'error') { hasCritical = true; break; }
+}
+if (flashCritical && hasCritical && !prefersReducedMotion()) {
+    this._startPulse();
+} else {
+    this._stopPulse();
+}
+```
+
+```javascript
+// Add _startPulse and _stopPulse methods to the extend({}) object:
+_startPulse: function() {
+    if (this._pulseInterval) { return; }
+    var base = 4;
+    var amp = 8;
+    var cadenceMs = 700;
+    var startTime = Date.now();
+    var self = this;
+    this._pulseInterval = setInterval(function() {
+        var elapsed = Date.now() - startTime;
+        var phase = (elapsed % cadenceMs) / cadenceMs;
+        self._pulseBlur = base + amp * (0.5 + 0.5 * Math.sin(phase * Math.PI * 2));
+        self.invalidateUpdateView();
+    }, 33);
+},
+
+_stopPulse: function() {
+    if (this._pulseInterval) { clearInterval(this._pulseInterval); this._pulseInterval = null; }
+    this._pulseBlur = 0;
+},
+```
+
+```javascript
+// In destroy():
+if (this._pulseInterval) { clearInterval(this._pulseInterval); this._pulseInterval = null; }
+```
+
+> Apply in _render: use `ctx.shadowBlur = this._pulseBlur;` and `ctx.shadowColor = accentColor;` before drawing the target element. Always wrap in ctx.save()/ctx.restore() to prevent shadow bleed. See drawPulsingIndicator() helper in 'LED pulse pattern' section below for a reusable draw utility.
+
+---
+
 ### Timer lifecycle — continuous loop
 
 Uses setInterval at ~30fps for continuous animations (pulse, breathe).
