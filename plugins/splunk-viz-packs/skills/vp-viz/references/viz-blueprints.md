@@ -30,8 +30,12 @@
 
 Every viz type includes these animation controls. Add them to the formatter Animation section (see formatter-patterns.md):
 
-- **showEntrance** (ON by default, D-02): Entrance animation style varies by viz type — arc fill for gauges, bar growth for bars, count-up for KPIs, fade-in/stagger for tables and leaderboards.
-- **flashCritical** (OFF by default, D-06): LED pulse (shadowBlur 4-12px, 700ms cadence) on critical values. Opt-in only to prevent alarm fatigue. Recommended for status-bearing vizs; Claude may add to any type based on brand personality.
+- **showEntrance** (ON by default, D-02): Default: use **Generic Entrance Boilerplate** (opacity fade-in) from animation-recipes.md — copy verbatim, applies to every viz type. Per-viz override for richer entrance:
+  - **Gauge / Ring Gauge / Needle Gauge**: replace globalAlpha fade with arc fill from 0 to target angle using `this._entranceProgress` as fill fraction
+  - **Bar chart / Horizontal Bar List / Waterfall**: replace globalAlpha fade with bar height growth from 0 upward using `this._entranceProgress` as height fraction
+  - **Table / Leaderboard / Status Matrix**: replace globalAlpha fade with `_startStaggeredEntrance()` from animation-recipes.md
+  - **All other viz types**: use the generic boilerplate unchanged
+- **flashCritical** (OFF by default, D-06): Use **Generic LED Pulse Boilerplate** (shadowBlur 4-12px, 700ms cadence, setInterval 30fps) from animation-recipes.md — copy verbatim, applies to any viz type with status values. Opt-in only to prevent alarm fatigue. Recommended for status-bearing vizs; Claude may add to any type based on brand personality.
 - **showHoverEffect** (ON by default, D-10): Eased row/segment highlight with accent-tinted fill. Functional feedback, stays on even with prefers-reduced-motion.
 - **animationSpeed** (normal by default, D-13): Three-tier multiplier — slow=1.5x, normal=1.0x, fast=0.6x applied to all durations.
 
@@ -61,7 +65,7 @@ _onClick: function(e) {
     var mx = e.offsetX;
     var my = e.offsetY;
     // Hit-test: identify which row/segment was clicked using mx, my
-    // (implementation varies by viz type — see per-viz section)
+    // (see per-viz section below for hit-test implementation per viz type)
     var clickedVal = /* value from identified row or segment */;
     if (!clickedVal) { return; }
     this.drilldown({
