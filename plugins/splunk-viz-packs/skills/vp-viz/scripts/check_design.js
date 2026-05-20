@@ -3,7 +3,7 @@
  * check_design.js -- Design quality gate for Splunk viz pack formatter + JS + theme.
  *
  * Usage:
- *   node check_design.js <formatter.html> <visualization_source.js> <theme.js>
+ *   node check_design.js <formatter.html> <visualization_source.js> <theme.js> [viz_name]
  *
  * Exit codes:
  *   0 -- no FAIL findings (WARNs do not cause exit 1)
@@ -44,6 +44,7 @@ if (args.length < 3) {
 var formatterPath = args[0];
 var jsSrcPath     = args[1];
 var themeJsPath   = args[2];
+var vizName       = (args.length >= 4 && args[3]) ? args[3] : '';
 
 // Verify all three files exist before proceeding
 if (!fs.existsSync(formatterPath)) {
@@ -73,16 +74,13 @@ var $       = cheerio.load(html, null, false);  // false = no html/body wrapping
 // ---- Emit helpers ----
 
 var failures = 0;
+var vizNamePrefix = vizName ? '[' + vizName + '] ' : '';
 
 function emitFail(code, file, message, context) {
     process.stdout.write('  FAIL ' + code + ': ' + message + '\n');
-    process.stderr.write('FINDING:' + JSON.stringify({
-        type: 'FAIL',
-        code: code,
-        file: file,
-        message: message,
-        context: context
-    }) + '\n');
+    var finding = { type: 'FAIL', code: code, file: file, message: message, context: context };
+    if (vizName) { finding.vizName = vizName; }
+    process.stderr.write('FINDING:' + JSON.stringify(finding) + '\n');
     failures++;
 }
 
@@ -100,10 +98,10 @@ if (jsSrc.indexOf('createLinearGradient') === -1 && jsSrc.indexOf('createRadialG
         themeContent.toLowerCase().indexOf('gradient') !== -1;
     if (d01GradientRequired) {
         emitFail('D01', jsSrcPath,
-            'theme.js declares fillTechnique:gradient but visualization_source.js has no gradient calls (createLinearGradient or createRadialGradient); add gradient fills to match the declared visual language',
+            vizNamePrefix + 'theme.js declares fillTechnique:gradient but visualization_source.js has no gradient calls (createLinearGradient or createRadialGradient); add gradient fills to match the declared visual language',
             { fillTechniqueGradient: true });
     } else {
-        emitWarn('D01', 'visualization_source.js has no gradient calls (createLinearGradient or createRadialGradient); consider adding depth via gradients');
+        emitWarn('D01', vizNamePrefix + 'visualization_source.js has no gradient calls (createLinearGradient or createRadialGradient); consider adding depth via gradients');
     }
 }
 
@@ -170,7 +168,7 @@ for (var fi = 0; fi < formatterKeys.length; fi++) {
     var doubleQuoted = '"' + fkey + '"';
     if (jsSrc.indexOf(singleQuoted) === -1 && jsSrc.indexOf(doubleQuoted) === -1) {
         emitFail('D08', formatterPath,
-            'formatter control "' + fkey + '" not referenced in visualization_source.js',
+            vizNamePrefix + 'formatter control "' + fkey + '" not referenced in visualization_source.js',
             { key: fkey, direction: 'forward' });
     }
 }
@@ -186,14 +184,14 @@ while ((optMatch = optPattern.exec(jsSrc)) !== null) {
     var optKey = optMatch[2];
     if (FALLBACK_STRINGS[optKey]) continue;
     if (formatterKeys.indexOf(optKey) === -1) {
-        emitWarn('D08', 'JS calls opt("' + optKey + '") but no matching formatter control found');
+        emitWarn('D08', vizNamePrefix + 'JS calls opt("' + optKey + '") but no matching formatter control found');
     }
 }
 while ((optMatch = getOptPattern.exec(jsSrc)) !== null) {
     var optKey2 = optMatch[2];
     if (FALLBACK_STRINGS[optKey2]) continue;
     if (formatterKeys.indexOf(optKey2) === -1) {
-        emitWarn('D08', 'JS calls getOption("' + optKey2 + '") but no matching formatter control found');
+        emitWarn('D08', vizNamePrefix + 'JS calls getOption("' + optKey2 + '") but no matching formatter control found');
     }
 }
 
