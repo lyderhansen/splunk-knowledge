@@ -388,7 +388,10 @@ Plans:
   6. A generated appIcon.png displays a recognizable domain symbol (e.g., heartbeat line for healthcare, shield for security) using the brand primary color — not a generic colored circle
 **Plans**: 2 plans
 Plans:
+**Wave 1**
 - [ ] 25-01-PLAN.md — BG track: add backgroundType/backgroundPattern to vp-design schema + theme-template; implement 4-type background dispatcher + light variants in generate_assets.js; tests T11-T16
+
+**Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 25-02-PLAN.md — PA track: resize all preview silhouettes to 116x76 with 2-color mini-renders; extend appIcon with 15-symbol domain cascade; update validate_viz.sh A02 check; T8 update + T17
 
 ### Phase 26: Multi-Channel Archetype

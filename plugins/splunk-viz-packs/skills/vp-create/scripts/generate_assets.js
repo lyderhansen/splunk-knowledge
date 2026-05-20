@@ -678,16 +678,20 @@ function generatePreviews(appDir, dark) {
 }
 
 /*
- * generateGradientBg(appDir, dark):
- * Creates appserver/static/images/bg_gradient.png (1920x1080).
- * Gradient: diagonal from dark.bg (top-left) to dark.panel (bottom-right, 60% blend),
- * with a radial accent glow from dark.accent at 30% left / 20% top, radius 600px.
- * If dark.panel is not available, falls back to dark.bg (solid color, no gradient).
+ * generateGradientBg(appDir, dark, light):
+ * Creates appserver/static/images/bg_gradient.png (1920x1080) using dark theme.
+ * Also creates bg_gradient_light.png using light theme (or safe fallback if light is null).
+ * Gradient: diagonal from bg (top-left) to panel (bottom-right, 60% blend for dark / 0.4 for light),
+ * with a radial accent glow at 30% left / 20% top.
+ * If panel is not available, falls back to bg (solid color, no gradient).
  */
-function generateGradientBg(appDir, dark) {
+function generateGradientBg(appDir, dark, light) {
     var W = 1920, H = 1080;
-    var bgRgb = hexToRgb(dark.bg);
+    var imagesDir = path.join(appDir, 'appserver', 'static', 'images');
+    fs.mkdirSync(imagesDir, { recursive: true });
 
+    // --- dark variant ---
+    var bgRgb = hexToRgb(dark.bg);
     var bottomRightRgb;
     if (dark.panel && isHex(dark.panel)) {
         var panelRgb = hexToRgb(dark.panel);
@@ -697,24 +701,373 @@ function generateGradientBg(appDir, dark) {
             Math.round(bgRgb[2] + (panelRgb[2] - bgRgb[2]) * 0.6)
         ];
     } else {
-        // Fallback: no gradient endpoint -- solid color
         bottomRightRgb = [bgRgb[0], bgRgb[1], bgRgb[2]];
     }
-
     var accentRgb = hexToRgb(dark.accent);
-    var accentCx = Math.round(W * 0.3);  // 30% from left (hero zone)
-    var accentCy = Math.round(H * 0.2);  // 20% from top
-    var accentR = 600;                    // large radius for subtle ambient glow
-
+    var accentCx = Math.round(W * 0.3);
+    var accentCy = Math.round(H * 0.2);
+    var accentR = 600;
     var rows = makeGradientRows(W, H, bgRgb, bottomRightRgb, accentRgb, accentCx, accentCy, accentR);
     var pngBuf = makePng(W, H, rows);
-
-    var imagesDir = path.join(appDir, 'appserver', 'static', 'images');
-    fs.mkdirSync(imagesDir, { recursive: true });
-
     var outPath = path.join(imagesDir, 'bg_gradient.png');
     fs.writeFileSync(outPath, pngBuf);
     process.stdout.write('  wrote: ' + outPath + '\n');
+
+    // --- light variant ---
+    var lightTheme = light || { bg: '#F0F2F5', panel: '#FFFFFF', accent: dark.accent };
+    var lBgRgb = hexToRgb(lightTheme.bg || '#F0F2F5');
+    var lBottomRightRgb;
+    if (lightTheme.panel && isHex(lightTheme.panel)) {
+        var lPanelRgb = hexToRgb(lightTheme.panel);
+        lBottomRightRgb = [
+            Math.round(lBgRgb[0] + (lPanelRgb[0] - lBgRgb[0]) * 0.4),
+            Math.round(lBgRgb[1] + (lPanelRgb[1] - lBgRgb[1]) * 0.4),
+            Math.round(lBgRgb[2] + (lPanelRgb[2] - lBgRgb[2]) * 0.4)
+        ];
+    } else {
+        lBottomRightRgb = [lBgRgb[0], lBgRgb[1], lBgRgb[2]];
+    }
+    var lAccentRgb = hexToRgb(lightTheme.accent || dark.accent);
+    var lRows = makeGradientRows(W, H, lBgRgb, lBottomRightRgb, lAccentRgb, accentCx, accentCy, 400);
+    var lPngBuf = makePng(W, H, lRows);
+    var lOutPath = path.join(imagesDir, 'bg_gradient_light.png');
+    fs.writeFileSync(lOutPath, lPngBuf);
+    process.stdout.write('  wrote: ' + lOutPath + '\n');
+}
+
+/*
+ * generateSolidBg(appDir, dark, light):
+ * Creates bg_gradient.png (dark) and bg_gradient_light.png (light) as solid fills
+ * with subtle LCG noise (15% of pixels perturbed by delta in -7..+8 range).
+ */
+function generateSolidBg(appDir, dark, light) {
+    var W = 1920, H = 1080;
+    var imagesDir = path.join(appDir, 'appserver', 'static', 'images');
+    fs.mkdirSync(imagesDir, { recursive: true });
+
+    // Linear congruential generator: seed=12345, mult=1664525, inc=1013904223
+    function makeSolidRows(baseRgb) {
+        var rows = makeRgbRows(W, H, baseRgb[0], baseRgb[1], baseRgb[2]);
+        var lcg = 12345;
+        var noisePixels = Math.round(W * H * 0.15);
+        for (var i = 0; i < noisePixels; i++) {
+            lcg = ((Math.imul ? Math.imul(lcg, 1664525) : ((lcg * 1664525) | 0)) + 1013904223) | 0;
+            var idx = ((lcg >>> 0) % (W * H));
+            var px = idx % W;
+            var py = Math.floor(idx / W);
+            var row = rows[py];
+            lcg = ((Math.imul ? Math.imul(lcg, 1664525) : ((lcg * 1664525) | 0)) + 1013904223) | 0;
+            var delta = ((lcg >>> 0) & 0xF) - 7; // -7..+8
+            var base3 = px * 3;
+            row[base3]     = Math.max(0, Math.min(255, row[base3]     + delta));
+            row[base3 + 1] = Math.max(0, Math.min(255, row[base3 + 1] + delta));
+            row[base3 + 2] = Math.max(0, Math.min(255, row[base3 + 2] + delta));
+        }
+        return rows;
+    }
+
+    // dark variant
+    var dRows = makeSolidRows(hexToRgb(dark.bg));
+    fs.writeFileSync(path.join(imagesDir, 'bg_gradient.png'), makePng(W, H, dRows));
+    process.stdout.write('  wrote: ' + path.join(imagesDir, 'bg_gradient.png') + '\n');
+
+    // light variant
+    var lightTheme = light || { bg: '#F0F2F5' };
+    var lRows = makeSolidRows(hexToRgb(lightTheme.bg || '#F0F2F5'));
+    fs.writeFileSync(path.join(imagesDir, 'bg_gradient_light.png'), makePng(W, H, lRows));
+    process.stdout.write('  wrote: ' + path.join(imagesDir, 'bg_gradient_light.png') + '\n');
+}
+
+/*
+ * fillRectBlend(rows, rx, ry, rw, rh, accentRgb, alpha):
+ * Blend accentRgb into existing pixels at alpha (0..1) within the rectangle.
+ */
+function fillRectBlend(rows, rx, ry, rw, rh, accentRgb, alpha) {
+    var imgH = rows.length;
+    var imgW = imgH > 0 ? rows[0].length / 3 : 0;
+    var x1 = Math.max(0, rx);
+    var y1 = Math.max(0, ry);
+    var x2 = Math.min(imgW, rx + rw);
+    var y2 = Math.min(imgH, ry + rh);
+    var ar = accentRgb[0], ag = accentRgb[1], ab = accentRgb[2];
+    for (var py = y1; py < y2; py++) {
+        var row = rows[py];
+        for (var px = x1; px < x2; px++) {
+            var i3 = px * 3;
+            row[i3]     = Math.round(row[i3]     + (ar - row[i3])     * alpha);
+            row[i3 + 1] = Math.round(row[i3 + 1] + (ag - row[i3 + 1]) * alpha);
+            row[i3 + 2] = Math.round(row[i3 + 2] + (ab - row[i3 + 2]) * alpha);
+        }
+    }
+}
+
+/*
+ * generatePatternBg(appDir, dark, light, bgPattern):
+ * Creates bg_gradient.png (dark) and bg_gradient_light.png (light) with geometric pattern overlay.
+ * Pattern types: 'circuit' (default), 'dot_matrix', 'hex_grid', 'topo'.
+ */
+function generatePatternBg(appDir, dark, light, bgPattern) {
+    var W = 1920, H = 1080;
+    var imagesDir = path.join(appDir, 'appserver', 'static', 'images');
+    fs.mkdirSync(imagesDir, { recursive: true });
+
+    var pat = bgPattern || 'circuit';
+
+    function applyPattern(rows, accentRgb, alpha) {
+        var px, py;
+        if (pat === 'dot_matrix') {
+            // Grid of 4x4 squares at 60px spacing
+            for (py = 0; py < H; py += 60) {
+                for (px = 0; px < W; px += 60) {
+                    fillRectBlend(rows, px, py, 4, 4, accentRgb, alpha);
+                }
+            }
+        } else if (pat === 'hex_grid') {
+            // Hex grid using center calculation
+            var hexR = 40;
+            var hexH = Math.round(Math.sqrt(3) * hexR);
+            for (py = 0; py < H; py++) {
+                for (px = 0; px < W; px++) {
+                    // Find nearest hex center
+                    var col = Math.round(px / (hexR * 1.5));
+                    var row0 = Math.round((py - (col % 2) * hexH / 2) / hexH);
+                    var cx0 = col * hexR * 1.5;
+                    var cy0 = row0 * hexH + (col % 2) * hexH / 2;
+                    var dx = px - cx0;
+                    var dy = py - cy0;
+                    // Hex boundary: use angular distance
+                    var angle = Math.atan2(dy, dx);
+                    // Distance from hex edge at this angle (simplified: use distance to center vs hexR)
+                    var dist = Math.sqrt(dx * dx + dy * dy);
+                    var borderDist = hexR - dist;
+                    if (borderDist >= 0 && borderDist < 2) {
+                        fillRectBlend(rows, px, py, 1, 1, accentRgb, alpha);
+                    }
+                }
+            }
+        } else if (pat === 'topo') {
+            // Topographic lines using sine waves
+            for (py = 0; py < H; py++) {
+                for (px = 0; px < W; px++) {
+                    var elev = Math.sin(px * 0.02 + 3 * Math.sin(py * 0.015)) + 0.7 * Math.cos(px * 0.03 + py * 0.025);
+                    if (Math.abs(elev % 0.4) < 0.03) {
+                        fillRectBlend(rows, px, py, 1, 1, accentRgb, alpha);
+                    }
+                }
+            }
+        } else {
+            // 'circuit' (default): horizontal and vertical line segments on 80px grid
+            var spacing = 80;
+            for (py = 0; py < H; py += spacing) {
+                for (px = 0; px < W; px += spacing) {
+                    // Horizontal segment (40px wide, 2px tall)
+                    fillRectBlend(rows, px, py, 40, 2, accentRgb, alpha);
+                    // Vertical segment (2px wide, 40px tall)
+                    fillRectBlend(rows, px, py, 2, 40, accentRgb, alpha);
+                }
+            }
+        }
+    }
+
+    // dark variant: gradient base + pattern overlay at 12%
+    var darkBgRgb = hexToRgb(dark.bg);
+    var darkPanelRgb = dark.panel && isHex(dark.panel) ? hexToRgb(dark.panel) : darkBgRgb;
+    var darkBottomRight = [
+        Math.round(darkBgRgb[0] + (darkPanelRgb[0] - darkBgRgb[0]) * 0.6),
+        Math.round(darkBgRgb[1] + (darkPanelRgb[1] - darkBgRgb[1]) * 0.6),
+        Math.round(darkBgRgb[2] + (darkPanelRgb[2] - darkBgRgb[2]) * 0.6)
+    ];
+    var darkAccentRgb = hexToRgb(dark.accent);
+    var dRows = makeGradientRows(W, H, darkBgRgb, darkBottomRight, darkAccentRgb,
+        Math.round(W * 0.3), Math.round(H * 0.2), 600);
+    applyPattern(dRows, darkAccentRgb, 0.12);
+    fs.writeFileSync(path.join(imagesDir, 'bg_gradient.png'), makePng(W, H, dRows));
+    process.stdout.write('  wrote: ' + path.join(imagesDir, 'bg_gradient.png') + '\n');
+
+    // light variant: light base + pattern overlay at 8%
+    var lightTheme = light || { bg: '#F0F2F5', panel: '#FFFFFF', accent: dark.accent };
+    var lBgRgb = hexToRgb(lightTheme.bg || '#F0F2F5');
+    var lPanelRgb = lightTheme.panel && isHex(lightTheme.panel) ? hexToRgb(lightTheme.panel) : lBgRgb;
+    var lBottomRight = [
+        Math.round(lBgRgb[0] + (lPanelRgb[0] - lBgRgb[0]) * 0.4),
+        Math.round(lBgRgb[1] + (lPanelRgb[1] - lBgRgb[1]) * 0.4),
+        Math.round(lBgRgb[2] + (lPanelRgb[2] - lBgRgb[2]) * 0.4)
+    ];
+    var lAccentRgb = hexToRgb(lightTheme.accent || dark.accent);
+    var lRows = makeGradientRows(W, H, lBgRgb, lBottomRight, lAccentRgb,
+        Math.round(W * 0.3), Math.round(H * 0.2), 400);
+    applyPattern(lRows, lAccentRgb, 0.08);
+    fs.writeFileSync(path.join(imagesDir, 'bg_gradient_light.png'), makePng(W, H, lRows));
+    process.stdout.write('  wrote: ' + path.join(imagesDir, 'bg_gradient_light.png') + '\n');
+}
+
+/*
+ * generatePhotoBg(appDir, dark, light):
+ * Creates bg_gradient.png and bg_gradient_light.png using shared/bg_photo.png as overlay.
+ * Falls back to generateGradientBg() if:
+ *   - shared/bg_photo.png is absent
+ *   - PNG signature mismatch
+ *   - Any decode error
+ * T-25-02: zlib.inflateSync wrapped in try/catch — on any error, fall back to gradient.
+ */
+function generatePhotoBg(appDir, dark, light) {
+    var photoPath = path.join(appDir, 'shared', 'bg_photo.png');
+
+    // Check for photo file
+    if (!fs.existsSync(photoPath)) {
+        process.stdout.write('  INFO: shared/bg_photo.png not found; falling back to gradient\n');
+        generateGradientBg(appDir, dark, light);
+        return;
+    }
+
+    var photoBuf;
+    try {
+        photoBuf = fs.readFileSync(photoPath);
+    } catch (e) {
+        process.stderr.write('  WARN: could not read shared/bg_photo.png: ' + String(e) + '; falling back to gradient\n');
+        generateGradientBg(appDir, dark, light);
+        return;
+    }
+
+    // Check PNG signature
+    var SIG = [137, 80, 78, 71, 13, 10, 26, 10];
+    for (var si = 0; si < 8; si++) {
+        if (photoBuf[si] !== SIG[si]) {
+            process.stderr.write('  WARN: shared/bg_photo.png has invalid PNG signature; falling back to gradient\n');
+            generateGradientBg(appDir, dark, light);
+            return;
+        }
+    }
+
+    // Read IHDR chunk for dimensions (bytes 16-19=width, 20-23=height)
+    var photoW, photoH;
+    try {
+        photoW = photoBuf.readUInt32BE(16);
+        photoH = photoBuf.readUInt32BE(20);
+    } catch (e) {
+        process.stderr.write('  WARN: could not read photo dimensions; falling back to gradient\n');
+        generateGradientBg(appDir, dark, light);
+        return;
+    }
+
+    // Attempt minimal PNG decode — collect IDAT chunks and inflate
+    var photoData = null;
+    try {
+        var idatChunks = [];
+        var offset = 8; // skip signature
+        while (offset + 12 <= photoBuf.length) {
+            var chunkLen = photoBuf.readUInt32BE(offset);
+            var chunkType = photoBuf.slice(offset + 4, offset + 8).toString('ascii');
+            var chunkData = photoBuf.slice(offset + 8, offset + 8 + chunkLen);
+            if (chunkType === 'IDAT') { idatChunks.push(chunkData); }
+            if (chunkType === 'IEND') { break; }
+            offset += 12 + chunkLen;
+        }
+        if (idatChunks.length === 0) { throw new Error('no IDAT chunks'); }
+        var idatBuf = Buffer.concat(idatChunks);
+        // T-25-02: wrap inflate in try/catch
+        var inflated = zlib.inflateSync(idatBuf);
+        // Build pixel grid from scanlines (filter byte 0 = None assumed)
+        var bytesPerPixel = 3; // RGB
+        var scanlineLen = 1 + photoW * bytesPerPixel;
+        photoData = [];
+        for (var sy = 0; sy < photoH; sy++) {
+            var scanRow = [];
+            var scanOff = sy * scanlineLen + 1; // skip filter byte
+            for (var sx = 0; sx < photoW; sx++) {
+                scanRow.push(
+                    inflated[scanOff + sx * bytesPerPixel]     || 0,
+                    inflated[scanOff + sx * bytesPerPixel + 1] || 0,
+                    inflated[scanOff + sx * bytesPerPixel + 2] || 0
+                );
+            }
+            photoData.push(scanRow);
+        }
+    } catch (e) {
+        process.stderr.write('  WARN: PNG decode failed (' + String(e) + '); falling back to gradient\n');
+        generateGradientBg(appDir, dark, light);
+        return;
+    }
+
+    // Bilinear sample from photo data
+    function samplePhoto(px, py, data, srcW, srcH) {
+        var sx = Math.max(0, Math.min(srcW - 1, Math.round(px / 1919 * (srcW - 1))));
+        var sy = Math.max(0, Math.min(srcH - 1, Math.round(py / 1079 * (srcH - 1))));
+        var row = data[sy];
+        var i3 = sx * 3;
+        return [row[i3] || 0, row[i3 + 1] || 0, row[i3 + 2] || 0];
+    }
+
+    var W = 1920, H = 1080;
+    var imagesDir = path.join(appDir, 'appserver', 'static', 'images');
+    fs.mkdirSync(imagesDir, { recursive: true });
+
+    // dark variant: gradient base + 55% photo overlay
+    var darkBgRgb = hexToRgb(dark.bg);
+    var darkPanelRgb = dark.panel && isHex(dark.panel) ? hexToRgb(dark.panel) : darkBgRgb;
+    var darkBottomRight = [
+        Math.round(darkBgRgb[0] + (darkPanelRgb[0] - darkBgRgb[0]) * 0.6),
+        Math.round(darkBgRgb[1] + (darkPanelRgb[1] - darkBgRgb[1]) * 0.6),
+        Math.round(darkBgRgb[2] + (darkPanelRgb[2] - darkBgRgb[2]) * 0.6)
+    ];
+    var darkAccentRgb = hexToRgb(dark.accent);
+    var dRows = makeGradientRows(W, H, darkBgRgb, darkBottomRight, darkAccentRgb,
+        Math.round(W * 0.3), Math.round(H * 0.2), 600);
+    for (var dy = 0; dy < H; dy++) {
+        for (var dx = 0; dx < W; dx++) {
+            var photoPixel = samplePhoto(dx, dy, photoData, photoW, photoH);
+            var i3 = dx * 3;
+            dRows[dy][i3]     = Math.round(photoPixel[0] * 0.55 + dRows[dy][i3]     * 0.45);
+            dRows[dy][i3 + 1] = Math.round(photoPixel[1] * 0.55 + dRows[dy][i3 + 1] * 0.45);
+            dRows[dy][i3 + 2] = Math.round(photoPixel[2] * 0.55 + dRows[dy][i3 + 2] * 0.45);
+        }
+    }
+    fs.writeFileSync(path.join(imagesDir, 'bg_gradient.png'), makePng(W, H, dRows));
+    process.stdout.write('  wrote: ' + path.join(imagesDir, 'bg_gradient.png') + '\n');
+
+    // light variant: light base + 15% photo overlay
+    var lightTheme = light || { bg: '#F0F2F5', panel: '#FFFFFF', accent: dark.accent };
+    var lBgRgb = hexToRgb(lightTheme.bg || '#F0F2F5');
+    var lPanelRgb = lightTheme.panel && isHex(lightTheme.panel) ? hexToRgb(lightTheme.panel) : lBgRgb;
+    var lBottomRight = [
+        Math.round(lBgRgb[0] + (lPanelRgb[0] - lBgRgb[0]) * 0.4),
+        Math.round(lBgRgb[1] + (lPanelRgb[1] - lBgRgb[1]) * 0.4),
+        Math.round(lBgRgb[2] + (lPanelRgb[2] - lBgRgb[2]) * 0.4)
+    ];
+    var lAccentRgb = hexToRgb(lightTheme.accent || dark.accent);
+    var lRows = makeGradientRows(W, H, lBgRgb, lBottomRight, lAccentRgb,
+        Math.round(W * 0.3), Math.round(H * 0.2), 400);
+    for (var ly = 0; ly < H; ly++) {
+        for (var lx = 0; lx < W; lx++) {
+            var lPhotoPixel = samplePhoto(lx, ly, photoData, photoW, photoH);
+            var li3 = lx * 3;
+            lRows[ly][li3]     = Math.round(lPhotoPixel[0] * 0.15 + lRows[ly][li3]     * 0.85);
+            lRows[ly][li3 + 1] = Math.round(lPhotoPixel[1] * 0.15 + lRows[ly][li3 + 1] * 0.85);
+            lRows[ly][li3 + 2] = Math.round(lPhotoPixel[2] * 0.15 + lRows[ly][li3 + 2] * 0.85);
+        }
+    }
+    fs.writeFileSync(path.join(imagesDir, 'bg_gradient_light.png'), makePng(W, H, lRows));
+    process.stdout.write('  wrote: ' + path.join(imagesDir, 'bg_gradient_light.png') + '\n');
+}
+
+/*
+ * generateBackground(appDir, dark, light, visualLang):
+ * Dispatcher that routes to the appropriate background generator based on visualLang.backgroundType.
+ * Falls back to gradient if backgroundType is absent or unknown.
+ */
+function generateBackground(appDir, dark, light, visualLang) {
+    var bgType = (visualLang && visualLang.backgroundType) ? visualLang.backgroundType : 'gradient';
+    var bgPat  = (visualLang && visualLang.backgroundPattern) ? visualLang.backgroundPattern : 'circuit';
+    if (bgType === 'pattern') {
+        generatePatternBg(appDir, dark, light, bgPat);
+    } else if (bgType === 'solid') {
+        generateSolidBg(appDir, dark, light);
+    } else if (bgType === 'photo') {
+        generatePhotoBg(appDir, dark, light);
+    } else {
+        // 'gradient' and any unknown value
+        generateGradientBg(appDir, dark, light);
+    }
 }
 
 // ---- Main ----
@@ -747,6 +1100,20 @@ function main() {
         process.exit(1);
     }
 
+    // Load light theme -- fall back to safe defaults if getTheme('light') is unavailable or throws
+    var light;
+    try {
+        light = themeModule.getTheme('light');
+        if (!light || typeof light !== 'object') {
+            light = { bg: '#F0F2F5', panel: '#FFFFFF', accent: dark.accent, text: '#1D2033' };
+        }
+    } catch (e) {
+        light = { bg: '#F0F2F5', panel: '#FFFFFF', accent: dark.accent, text: '#1D2033' };
+    }
+
+    // Load visual language -- silently default to empty if not present (backward compat T11)
+    var visualLang = themeModule.VISUAL_LANG || {};
+
     var errors = 0;
 
     try {
@@ -766,9 +1133,9 @@ function main() {
     }
 
     try {
-        generateGradientBg(appDir, dark);
+        generateBackground(appDir, dark, light, visualLang);
     } catch (e) {
-        process.stderr.write('Error generating gradient background: ' + String(e) + '\n');
+        process.stderr.write('Error generating background: ' + String(e) + '\n');
         errors++;
     }
 
