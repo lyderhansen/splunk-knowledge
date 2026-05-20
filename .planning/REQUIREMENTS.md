@@ -15,9 +15,9 @@
 
 ### Color Palette (CP)
 
-- [ ] **CP-01**: Every `<splunk-color-picker>` in generated formatters includes 6-8 brand palette colors as `<splunk-color>` elements — populated from the brand research palette
-- [ ] **CP-02**: Light theme `textFaint` default in theme-template.md passes WCAG AA 3:1 minimum on light background — darker default (#6B7080 or similar)
-- [ ] **CP-03**: `accentColor` picker restored in formatter with full brand palette swatches. Accent color used ONLY for glow halo, hover highlight, selection ring, and threshold flash — always as transparent overlay (withAlpha), never solid fill. accentIntensity scales visibly (80 = dramatic glow). Intensity 0 = no accent effects, clean transparent background.
+- [x] **CP-01**: Every `<splunk-color-picker>` in generated formatters includes 6-8 brand palette colors as `<splunk-color>` elements — populated from the brand research palette
+- [x] **CP-02**: Light theme `textFaint` default in theme-template.md passes WCAG AA 3:1 minimum on light background — darker default (#6B7080 or similar)
+- [x] **CP-03**: `accentColor` picker restored in formatter with full brand palette swatches. Accent color used ONLY for glow halo, hover highlight, selection ring, and threshold flash — always as transparent overlay (withAlpha), never solid fill. accentIntensity scales visibly (80 = dramatic glow). Intensity 0 = no accent effects, clean transparent background.
 
 ### Multi-Channel Vizs (MC)
 
@@ -32,13 +32,20 @@
 
 ### Preview Assets (PA)
 
-- [ ] **PA-01**: generate_assets.js preview.png uses brand gradient fills, recognizable viz silhouette shapes, and 2x variant (preview_2x.png at 600x400) — not flat single-color outlines
+- [ ] **PA-01**: generate_assets.js preview.png uses 116x76 pixels (official Splunk spec), brand gradient fills, recognizable viz silhouette shapes — not 300x200 flat outlines
 - [ ] **PA-02**: generate_assets.js appIcon.png uses brand primary color with a recognizable symbol — not a generic colored circle
+
+### API Correctness (AC)
+
+- [ ] **AC-01**: Drilldown payload uses official `data: { fieldName: value }` shape — not `{ field, value }`. Pass `browserEvent` as second argument for keyboard modifier support (ctrl+click → new tab)
+- [ ] **AC-02**: Series color pickers use `type="splunkCategorical"` (gives full Splunk palette) with brand `<splunk-color>` additions — not `type="custom"` only
+- [ ] **AC-03**: Threshold colors section template added to formatter-patterns.md — 3-band RAG pattern (thresholdField, thresholdLow/High, direction toggle, 3 color pickers, per-element toggles) for status-bearing vizs
+- [ ] **AC-04**: `escapeHtml()` from SplunkVisualizationUtils used when adding search data to DOM — required for Splunk app certification (XSS prevention)
 
 ### Validator Improvements (VI)
 
-- [ ] **VI-01**: check_design.js D01/D08 findings include the viz name in the output message — no more guessing which viz failed
-- [ ] **VI-02**: vp-viz pipeline runs validate_viz.sh after all vizs are built and loops (max 2 iterations): if XFILE/D08 failures, report which viz + control, fix, rebuild, re-validate — before handing off to vp-create
+- [x] **VI-01**: check_design.js D01/D08 findings include the viz name in the output message — no more guessing which viz failed
+- [x] **VI-02**: vp-viz pipeline runs validate_viz.sh after all vizs are built and loops (max 2 iterations): if XFILE/D08 failures, report which viz + control, fix, rebuild, re-validate — before handing off to vp-create
 
 ## Future Requirements
 
@@ -52,7 +59,7 @@
 ## Out of Scope
 
 - DOS expressions (`> x | getField()`) for custom viz field binding — platform-only
-- Splunk-native palette dropdown grid in custom viz formatters — platform UI component
+- DS Extension API generation (config.json, React hooks, esbuild) — v6.0 scope, dual-format architecture
 - Responsive dashboard layouts — Dashboard Studio uses absolute positioning only
 - Logo generation via external AI image APIs — keep pure JS Canvas generation
 
@@ -75,3 +82,7 @@
 | PA-02 | Phase 25 | 25-02 | pending |
 | MC-01 | Phase 26 | 26-01 | pending |
 | MC-02 | Phase 26 | 26-02 | pending |
+| AC-01 | Phase 27 | - | pending |
+| AC-02 | Phase 27 | - | pending |
+| AC-03 | Phase 27 | - | pending |
+| AC-04 | Phase 27 | - | pending |

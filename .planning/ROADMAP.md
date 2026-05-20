@@ -8,7 +8,7 @@
 - ✅ **v5.2.0 Smart Vizs & Domain Identity** — Phases 13-15 (shipped 2026-05-18)
 - ✅ **v5.3.0 Production Polish & Interactive Dashboards** — Phases 16-18 (shipped 2026-05-19)
 - ✅ **v5.4.0 Runtime Robustness & Visual Polish** — Phases 19-21 (shipped 2026-05-19)
-- **v5.5.0 Visual Wow-Factor & First-Build Perfection** — Phases 22-26 (active)
+- **v5.5.0 Visual Wow-Factor & First-Build Perfection** — Phases 22-27 (active)
 
 ## Phases
 
@@ -75,13 +75,14 @@ Full details: `.planning/milestones/v5.3.0-ROADMAP.md`
 
 </details>
 
-**v5.5.0 Visual Wow-Factor & First-Build Perfection (Phases 22-26)**
+**v5.5.0 Visual Wow-Factor & First-Build Perfection (Phases 22-27)**
 
-- [ ] **Phase 22: Validator Feedback Loop** - check_design.js names the failing viz in D01/D08 output; vp-viz pipeline loops on XFILE/D08 before handoff to vp-create
-- [ ] **Phase 23: Color Palette & Accent Foundation** - Every generated formatter has 6-8 brand swatches; light textFaint passes WCAG AA; accentColor restored with correct usage rules
+- [x] **Phase 22: Validator Feedback Loop** - check_design.js names the failing viz in D01/D08 output; vp-viz pipeline loops on XFILE/D08 before handoff to vp-create (completed 2026-05-20)
+- [x] **Phase 23: Color Palette & Accent Foundation** - Every generated formatter has 6-8 brand swatches; light textFaint passes WCAG AA; accentColor restored with correct usage rules (completed 2026-05-20)
 - [ ] **Phase 24: Animation Boilerplate** - Generic copy-paste ES5 entrance and LED pulse boilerplates in animation-recipes.md; viz-blueprints.md specifies which boilerplate per viz type
-- [ ] **Phase 25: Backgrounds & Preview Assets** - generate_assets.js produces background variant matching visual language backgroundType; 2x preview PNG with gradient fills and distinct silhouettes; branded appIcon symbol
+- [ ] **Phase 25: Backgrounds & Preview Assets** - generate_assets.js produces background variant matching visual language backgroundType; preview.png at 116x76 (official spec); branded appIcon symbol
 - [ ] **Phase 26: Multi-Channel Archetype** - viz-blueprints.md includes Multi-Channel Composite archetype; domain-templates.md data-rich domain entries reference it
+- [ ] **Phase 27: API Correctness** - Fix drilldown payload shape to official spec; splunkCategorical color pickers; threshold 3-band RAG template; escapeHtml() for XSS prevention
 
 ## Phase Details
 
@@ -341,8 +342,8 @@ Plans:
   3. After building all vizs in vp-viz, the pipeline automatically runs validate_viz.sh and if XFILE or D08 findings are present, reports which viz+control failed, applies fixes, rebuilds, and re-validates without user intervention — all within a single pipeline invocation (max 2 repair iterations)
 **Plans**: 2 plans
 Plans:
-- [ ] 22-01-PLAN.md — Add viz name to D01/D08 output in check_design.js; update D01/D08 tests to assert viz name presence
-- [ ] 22-02-PLAN.md — Add post-build validate+loop to vp-viz SKILL.md pipeline step; document XFILE/D08 auto-fix behaviour
+- [x] 22-01-PLAN.md — Add viz name to D01/D08 output in check_design.js; update D01/D08 tests to assert viz name presence
+- [x] 22-02-PLAN.md — Add post-build validate+loop to vp-viz SKILL.md pipeline step; document XFILE/D08 auto-fix behaviour
 
 ### Phase 23: Color Palette & Accent Foundation
 **Goal**: Every generated formatter ships with 6-8 brand palette swatches in color pickers, light theme textFaint is dark enough to pass WCAG AA, and accentColor is restored with unambiguous usage rules — glow/hover/selection only, never solid fill
@@ -355,8 +356,8 @@ Plans:
   4. Setting accentIntensity to 0 in the formatter produces a viz with no visible glow, halo, or highlight overlay — the accent effects fully disappear at intensity 0
 **Plans**: 2 plans
 Plans:
-- [ ] 23-01-PLAN.md — Update formatter-patterns.md brand swatch template; update vp-design SKILL.md to extract and pass palette to formatter generation step
-- [ ] 23-02-PLAN.md — Update theme-template.md LIGHT textFaint to #6B7080; restore accentColor picker in formatter-patterns.md with usage contract comment
+- [x] 23-01-PLAN.md — Update formatter-patterns.md brand swatch template; update vp-design SKILL.md to extract and pass palette to formatter generation step
+- [x] 23-02-PLAN.md — Update theme-template.md LIGHT textFaint to #6B7080; restore accentColor picker in formatter-patterns.md with usage contract comment
 
 ### Phase 24: Animation Boilerplate
 **Goal**: animation-recipes.md contains generic copy-paste ES5 entrance and LED pulse boilerplates that work for any viz type, and viz-blueprints.md per-viz animation notes point to the correct boilerplate by name — no more "implementation varies"
@@ -426,8 +427,8 @@ Plans:
 | 19. Validator Fixes | v5.4.0 | 1/1 | Complete | 2026-05-19 |
 | 20. Data Binding & Drilldown | v5.4.0 | 2/2 | Complete | 2026-05-19 |
 | 21. Animation & Visual Polish | v5.4.0 | 2/2 | Complete | 2026-05-19 |
-| 22. Validator Feedback Loop | v5.5.0 | 0/2 | Not started | - |
-| 23. Color Palette & Accent Foundation | v5.5.0 | 0/2 | Not started | - |
+| 22. Validator Feedback Loop | v5.5.0 | 2/2 | Complete    | 2026-05-20 |
+| 23. Color Palette & Accent Foundation | v5.5.0 | 2/2 | Complete    | 2026-05-20 |
 | 24. Animation Boilerplate | v5.5.0 | 0/2 | Not started | - |
 | 25. Backgrounds & Preview Assets | v5.5.0 | 0/2 | Not started | - |
 | 26. Multi-Channel Archetype | v5.5.0 | 0/2 | Not started | - |
