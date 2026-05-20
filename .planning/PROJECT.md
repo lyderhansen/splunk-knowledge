@@ -52,9 +52,19 @@ When a user runs `/vp-init`, the resulting viz pack installs in Splunk without e
 - Mobile-responsive viz rendering — Splunk dashboards are desktop/wall-display
 - Multi-tenant viz sharing — each pack is a standalone Splunk app
 
-## Current State
+## Current Milestone: v5.5.0 Visual Wow-Factor & First-Build Perfection
 
-v5.4.0 shipped 2026-05-19. All 6 milestones (v4.1.0 through v5.4.0) complete. Next milestone TBD.
+**Goal:** Every generated viz pack looks like a designer made it on first build — branded backgrounds, rich color pickers, working animations, multi-channel vizs, and better preview assets.
+
+**Target features:**
+- Dashboard backgrounds: brand imagery, patterns, photos — not just dark gradients. Light mode support
+- Color picker brand swatches: 6-8 brand colors per picker (F1 pattern)
+- Multi-channel viz archetype: stacked synchronized channels (F1 lap analysis pattern)
+- Animation: real entrance/pulse with copy-paste ES5 boilerplate, no dead controls
+- Preview PNG quality: richer branded assets, logo-designer pattern for appIcon
+- Light theme textFaint darker default for WCAG AA
+- D01 output viz labeling in check_design.js
+- Validator pre-packaging loop: auto-fix XFILE/D08 before vp-create
 
 <details>
 <summary>v5.4.0 Runtime Robustness & Visual Polish (shipped 2026-05-19)</summary>
@@ -152,4 +162,4 @@ v5.4.0 shipped 2026-05-19. All 6 milestones (v4.1.0 through v5.4.0) complete. Ne
 This document evolves at phase transitions and milestone boundaries.
 
 ---
-*Last updated: 2026-05-19 after v5.4.0 milestone completion*
+*Last updated: 2026-05-20 after v5.5.0 milestone start*
