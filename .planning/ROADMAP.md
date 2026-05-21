@@ -9,6 +9,7 @@
 - ✅ **v5.3.0 Production Polish & Interactive Dashboards** — Phases 16-18 (shipped 2026-05-19)
 - ✅ **v5.4.0 Runtime Robustness & Visual Polish** — Phases 19-21 (shipped 2026-05-19)
 - ✅ **v5.5.0 Visual Wow-Factor & First-Build Perfection** — Phases 22-27 (shipped 2026-05-21)
+- **v5.6.0 DS Extension API & Dual-Format Architecture** — Phases 28-33 (active)
 
 ## Phases
 
@@ -88,6 +89,15 @@ Full details: `.planning/milestones/v5.3.0-ROADMAP.md`
 Full details: `.planning/milestones/v5.5.0-ROADMAP.md`
 
 </details>
+
+**v5.6.0 DS Extension API & Dual-Format Architecture (Phases 28-33)**
+
+- [ ] **Phase 28: Extension API Templates** - Write config.json, visualization.js, package.json, and app.conf generation templates for the DS Extension API path
+- [ ] **Phase 29: Skill Format Conditioning** - vp-init format choice (Classic vs Extension); vp-viz and vp-create format-conditional generation sections
+- [ ] **Phase 30: Data & Drilldown Adapter** - Columnar data access patterns in viz-blueprints.md; Extension API edge cases; drilldown variant with triggerDrilldown
+- [ ] **Phase 31: Build & Validation** - validate_viz.sh Extension API mode (config.json, ESM, columnar); .spl build verification via yarn package
+- [ ] **Phase 32: Aesthetic Scoring** - score_design.js automated aesthetic scorer with per-dimension breakdown; optional Phase 5 in validate_viz.sh
+- [ ] **Phase 33: Test Build** - End-to-end Extension API test build with 3+ vizs producing an installable .spl file
 
 ## Phase Details
 
@@ -432,6 +442,69 @@ Plans:
 **Wave 2** *(blocked on Wave 1 completion)*
 - [x] 27-02-PLAN.md — Add ECR-08 escapeHtml/makeSafeUrl XSS prevention to edge-cases.md + mandatory check in pre-code-checklist.md
 
+### Phase 28: Extension API Templates
+**Goal**: Complete generation templates exist for the DS Extension API path — config.json, visualization.js (Canvas 2D wrapper), package.json, and app.conf — so Claude can generate Extension API vizs
+**Depends on**: Phase 27
+**Requirements**: ET-01, ET-02, ET-03, ET-04
+**Success Criteria** (what must be TRUE):
+  1. A config.json template exists with optionsSchema, editorConfig, and all 4 confirmed editor types (editor.color, editor.text, editor.number, editor.checkbox)
+  2. A visualization.js template exists with VisualizationAPI import, listener-based state (data, options, theme, dimensions), columnar data access, Canvas 2D render function, and no-data fallback
+  3. package.json and app.conf templates exist with correct @splunk/dashboard-studio-extension dependency and yarn build/package scripts
+  4. The visualization.js template uses ESM import syntax and inlines shared/theme.js DARK/LIGHT tokens
+**Plans**: 2 plans
+
+### Phase 29: Skill Format Conditioning
+**Goal**: vp-init asks the user to choose Classic or Extension format, stores the choice in the visual language, and vp-viz/vp-create read it to generate the correct file types
+**Depends on**: Phase 28
+**Requirements**: FC-01, FC-02, ES-01, ES-02, ES-03
+**Success Criteria** (what must be TRUE):
+  1. vp-init SKILL.md prompts the user to choose between "Classic (DS + Simple XML)" and "Extension (DS-only)" before brand research
+  2. The format choice is stored in the visual language output and readable by downstream skills
+  3. vp-viz SKILL.md has format-conditional sections — Extension path generates visualization.js + config.json, Classic path generates visualization_source.js + formatter.html
+  4. pre-code-checklist.md has Extension API items — ESM syntax, columnar data, no VIZ_NAMESPACE, addDrilldownListener
+  5. vp-create SKILL.md has Extension API packaging — yarn install + yarn package instead of build_flat.js + manual tar
+**Plans**: 3 plans
+
+### Phase 30: Data & Drilldown Adapter
+**Goal**: viz-blueprints.md and edge-cases.md document the Extension API data access and drilldown patterns alongside Classic patterns, so Claude generates correct code for either format
+**Depends on**: Phase 28
+**Requirements**: DA-01, DA-02, DT-01, DT-02
+**Success Criteria** (what must be TRUE):
+  1. viz-blueprints.md documents columnar data access (columns[fieldIdx][rowIdx]) alongside the existing row-major pattern
+  2. edge-cases.md has Extension API-specific entries — loading gate, dataSources null check, string-to-number conversion, iframe sandbox
+  3. viz-blueprints.md _onClick template has an Extension API variant using addDrilldownListener/triggerDrilldown
+  4. config.json template has showDrilldown, hasEventHandlers, and canSetTokens correctly set for drilldown-enabled vizs
+**Plans**: 2 plans
+
+### Phase 31: Build & Validation
+**Goal**: validate_viz.sh detects format=extension and applies Extension API-specific checks, and the build path produces a valid .spl file
+**Depends on**: Phase 29, Phase 30
+**Requirements**: BV-01, BV-02
+**Success Criteria** (what must be TRUE):
+  1. validate_viz.sh has a format-aware mode checking config.json schema, ESM syntax, and columnar data patterns for Extension API vizs
+  2. Running yarn package on a scaffolded Extension API app produces a .spl file with the correct internal structure
+**Plans**: 2 plans
+
+### Phase 32: Aesthetic Scoring
+**Goal**: score_design.js automatically scores generated viz code on aesthetic dimensions and integrates as an optional Phase 5 in the validation pipeline
+**Depends on**: Phase 27 (independent of dual-format work)
+**Requirements**: AS-01, AS-02
+**Success Criteria** (what must be TRUE):
+  1. score_design.js exists and scores generated viz code on gradient usage, typography hierarchy, spacing ratios, color variety, and animation presence
+  2. Running score_design.js produces a 0-100 numeric score with per-dimension breakdown
+  3. validate_viz.sh runs score_design.js as an optional Phase 5 check when invoked with --score flag
+**Plans**: 2 plans
+
+### Phase 33: Test Build
+**Goal**: One complete end-to-end build using the Extension API path produces a working .spl file with 3+ vizs, validating the entire dual-format pipeline
+**Depends on**: Phase 31
+**Requirements**: TB-01
+**Success Criteria** (what must be TRUE):
+  1. A test build using the Extension API path produces a .spl file containing 3+ branded vizs
+  2. The .spl internal structure matches the Extension API spec — framework_type=studio_visualization in visualizations.conf, config.json per viz, bundled visualization.js per viz
+  3. Each viz in the pack has working theme detection, no-data fallback, and drilldown wiring
+**Plans**: 1 plan
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -463,3 +536,9 @@ Plans:
 | 25. Backgrounds & Preview Assets | v5.5.0 | 2/2 | Complete    | 2026-05-20 |
 | 26. Multi-Channel Archetype | v5.5.0 | 2/2 | Complete   | 2026-05-21 |
 | 27. API Correctness | v5.5.0 | 2/2 | Complete   | 2026-05-21 |
+| 28. Extension API Templates | v5.6.0 | 0/2 | Not started | - |
+| 29. Skill Format Conditioning | v5.6.0 | 0/3 | Not started | - |
+| 30. Data & Drilldown Adapter | v5.6.0 | 0/2 | Not started | - |
+| 31. Build & Validation | v5.6.0 | 0/2 | Not started | - |
+| 32. Aesthetic Scoring | v5.6.0 | 0/2 | Not started | - |
+| 33. Test Build | v5.6.0 | 0/1 | Not started | - |

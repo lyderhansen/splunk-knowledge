@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v5.5.0
-milestone_name: Visual Wow-Factor & First-Build Perfection
-status: milestone-complete
-stopped_at: Phase 27 Plan 02 complete — ECR-08 XSS prevention pattern, escapeHtml/makeSafeUrl checklist gate
-last_updated: "2026-05-21T19:23:12.309Z"
+milestone: v5.6.0
+milestone_name: DS Extension API & Dual-Format Architecture
+status: planning
+stopped_at: Milestone created, ready for Phase 28 planning
+last_updated: "2026-05-21T20:00:00Z"
 last_activity: 2026-05-21
 progress:
-  total_phases: 22
-  completed_phases: 6
+  total_phases: 6
+  completed_phases: 0
   total_plans: 12
-  completed_plans: 48
-  percent: 100
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-20)
 
 **Core value:** Zero-fix first builds AND wow-factor dashboards — reliable + beautiful every time
-**Current focus:** v5.5.0 milestone complete — all 6 phases shipped (22-27)
+**Current focus:** Phase 28 — extension-api-templates
 
 ## Current Position
 
-Phase: 27
-Plan: 02 (complete)
-Status: Phase 27 Complete
+Phase: 28
+Plan: Not started
+Status: Ready to plan
 Last activity: 2026-05-21
 
 ## Performance Metrics
@@ -139,10 +139,9 @@ Items acknowledged and carried forward:
 ## Session Continuity
 
 Last session: 2026-05-21T19:23:12.304Z
-Stopped at: v5.5.0 milestone complete — all 6 phases (22-27) shipped
-Resume: Run /gsd-complete-milestone or start v6.0 planning
+Stopped at: v5.6.0 milestone created with 6 phases (28-33)
+Resume: Run /gsd-plan-phase 28
 
 ## Operator Next Steps
 
-- Run /gsd-complete-milestone to archive v5.5.0 and prepare for v6.0
-- Or start v6.0 planning with /gsd-new-milestone
+- Run /gsd-discuss-phase 28 or /gsd-plan-phase 28 to begin Phase 28

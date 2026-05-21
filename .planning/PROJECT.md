@@ -63,7 +63,7 @@ When a user runs `/vp-init`, the resulting viz pack installs in Splunk without e
 - Copy-paste animation boilerplates (entrance + LED pulse), validator viz-name feedback loop
 - Official API correctness: drilldown data:{} shape, threshold 3-band RAG, escapeHtml XSS prevention
 
-**Next milestone:** Not yet defined. Run `/gsd-new-milestone` to start v6.0 planning.
+**Next milestone:** v5.6.0 DS Extension API & Dual-Format Architecture — 6 phases (28-33), 18 requirements. Adds Dashboard Studio Extension API as a second generation target alongside Classic.
 
 <details>
 <summary>v5.4.0 Runtime Robustness & Visual Polish (shipped 2026-05-19)</summary>
