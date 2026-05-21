@@ -1,7 +1,7 @@
 # Domain Templates + Layout Archetypes
 
 ## Contents
-- Domain viz inventories (F1, SOC, Retail, Healthcare, NOC, Energy)
+- Domain viz inventories (F1, SOC, Retail, Healthcare, NOC, Energy) — includes multi-channel archetypes
 - Layout archetypes (5 types)
 - Canvas complexity gate
 - Anti-patterns (design-level)
@@ -22,6 +22,13 @@ Starting points — analyze the actual data before choosing.
 | position_board | Grid/race position with delta arrows |
 | lap_ticker | Live scrolling lap-by-lap feed |
 | track_info | Circuit outline with sector highlights |
+| telemetry_channels | Stacked throttle/brake/speed/gear/ERS synchronized time view (Multi-Channel Composite) |
+
+Data for domain-unique F1 Racing entries:
+- `telemetry_channels`: `_time + throttle + brake + speed + gear + ers`
+  - Channel config: `channels=throttle,brake,speed,gear,ers`, `channelLabels=Throttle %,Brake %,Speed km/h,Gear,ERS %`, `channelTypes=area,area,line,step,area`
+  - Y-scale ranges: Throttle 0–100, Brake 0–100, Speed 0–350, Gear 1–8 (discrete step), ERS 0–100
+  - (no generic equivalent) — synchronized multi-channel stacked view is specific to telemetry analysis
 
 ### SOC / Security
 
@@ -72,11 +79,17 @@ Data for domain-unique SOC entries:
 | ward_occupancy_bars | Bar per ward, fill=occupancy%, reference line=target capacity, zone colors (no generic equivalent) |
 | vital_sparkline_matrix | Grid: patient rows x vital columns (HR, SpO2, BP, Temp), each cell a sparkline (no generic equivalent) |
 | triage_horizon | Horizon chart of wait time by triage category over the day (no generic equivalent) |
+| vital_signs_monitor | Stacked HR/SpO2/RR/BP synchronized patient monitoring (Multi-Channel Composite) |
 
 Data for domain-unique Healthcare entries:
 - `ward_occupancy_bars`: `ward + occupied + capacity`
 - `vital_sparkline_matrix`: `patient_id + hr + spo2 + bp + temp + _time`
 - `triage_horizon`: `hour + triage_cat + avg_wait_min`
+- `vital_signs_monitor`: `_time + heart_rate + spo2 + resp_rate + bp_systolic + bp_diastolic`
+  - Channel config: `channels=heart_rate,spo2,resp_rate,bp_systolic`, `channelLabels=Heart Rate (bpm),SpO2 (%),Resp Rate (/min),Blood Pressure (mmHg)`, `channelTypes=line,line,line,line`
+  - Y-scale ranges: HR 40–200, SpO2 85–100 (narrow band with alarm threshold at 92%), RR 5–40, BP 60–200
+  - BP renders as dual line (systolic + diastolic) within a single channel strip — `bp_diastolic` drawn as a second line in the same strip using a lighter shade of the channel color
+  - (no generic equivalent) — synchronized patient vital waveforms are specific to clinical monitoring
 
 ### Infrastructure / NOC
 
@@ -90,6 +103,14 @@ Data for domain-unique Healthcare entries:
 | service_board | Service health status grid |
 | incident_ticker | Scrolling incident feed |
 | topology_map | Node-edge service topology |
+| network_channels | Stacked throughput/latency/errors/CPU synchronized NOC view (Multi-Channel Composite) |
+
+Data for domain-unique Infrastructure / NOC entries:
+- `network_channels`: `_time + throughput_mbps + latency_ms + error_rate_pct + cpu_pct`
+  - Channel config: `channels=throughput_mbps,latency_ms,error_rate_pct,cpu_pct`, `channelLabels=Throughput (Mbps),Latency (ms),Error Rate (%),CPU (%)`, `channelTypes=area,line,line,area`
+  - Y-scale ranges: Throughput 0–auto (auto-scale from data max), Latency 0–auto (with threshold band at SLA value), Error Rate 0–10, CPU 0–100
+  - Latency channel shows a threshold band (horizontal shaded region) at the SLA threshold value — configurable via formatter setting
+  - (no generic equivalent) — synchronized network metrics stack is specific to NOC analysis
 
 ### Energy / Utilities
 
