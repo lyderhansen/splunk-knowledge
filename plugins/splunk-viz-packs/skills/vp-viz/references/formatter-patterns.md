@@ -25,7 +25,49 @@ only the `{FILL}` parts. Getting ANY attribute wrong causes silent failures.
 </splunk-control-group>
 ```
 
-### Color picker (MUST have type="custom")
+### Series color picker (type=splunkCategorical)
+
+Use for **series1Color through series5Color** — data series pickers where the user benefits
+from Splunk's full 20+ categorical palette in addition to brand swatches.
+
+```html
+<splunk-control-group label="{FILL}" help="{FILL}">
+    <splunk-color-picker name="{{VIZ_NAMESPACE}}.{FILL}" type="splunkCategorical" value="{FILL}">
+        <!-- Populate 6-8 brand colors from theme.js DARK: accent, series[0-4], bg, panel. Min 6 per picker. -->
+        <!-- Users also get Splunk's full 20+ categorical palette via splunkCategorical. -->
+        <splunk-color>#FILL_ACCENT</splunk-color>
+        <splunk-color>#FILL_S1</splunk-color>
+        <splunk-color>#FILL_S2</splunk-color>
+        <splunk-color>#FILL_S3</splunk-color>
+        <splunk-color>#FILL_S4</splunk-color>
+        <splunk-color>#FILL_S5</splunk-color>
+        <splunk-color>#FILL_BG</splunk-color>
+        <splunk-color>#FILL_PANEL</splunk-color>
+    </splunk-color-picker>
+</splunk-control-group>
+```
+```html
+<!-- Example: theme.js DARK hex values filled in (Spotify-inspired) -->
+<splunk-color-picker name="{{VIZ_NAMESPACE}}.series1Color" type="splunkCategorical" value="#1DB954">
+    <splunk-color>#1DB954</splunk-color><!-- accent -->
+    <splunk-color>#2D46B9</splunk-color><!-- series[0] -->
+    <splunk-color>#E91E8C</splunk-color><!-- series[1] -->
+    <splunk-color>#FF6437</splunk-color><!-- series[2] -->
+    <splunk-color>#FAE62D</splunk-color><!-- series[3] -->
+    <splunk-color>#27856A</splunk-color><!-- series[4] -->
+    <splunk-color>#121212</splunk-color><!-- bg -->
+    <splunk-color>#282828</splunk-color><!-- panel -->
+</splunk-color-picker>
+```
+
+Migration note: Existing generated vizs with `type="custom"` on series pickers still work but
+only show the brand swatches. Regenerating the formatter updates the type to splunkCategorical.
+
+### Brand/accent color picker (type=custom)
+
+Use for **accentColor, backgroundColor, fontColor**, and any single-brand-value picker where
+the full Splunk categorical palette would be confusing (these need specific brand defaults,
+not a data-series palette).
 
 ```html
 <splunk-control-group label="{FILL}" help="{FILL}">
@@ -41,19 +83,6 @@ only the `{FILL}` parts. Getting ANY attribute wrong causes silent failures.
         <splunk-color>#FILL_PANEL</splunk-color>
     </splunk-color-picker>
 </splunk-control-group>
-```
-```html
-<!-- Example: theme.js DARK hex values filled in (Spotify-inspired) -->
-<splunk-color-picker name="{{VIZ_NAMESPACE}}.series1Color" type="custom" value="#1DB954">
-    <splunk-color>#1DB954</splunk-color><!-- accent -->
-    <splunk-color>#2D46B9</splunk-color><!-- series[0] -->
-    <splunk-color>#E91E8C</splunk-color><!-- series[1] -->
-    <splunk-color>#FF6437</splunk-color><!-- series[2] -->
-    <splunk-color>#FAE62D</splunk-color><!-- series[3] -->
-    <splunk-color>#27856A</splunk-color><!-- series[4] -->
-    <splunk-color>#121212</splunk-color><!-- bg -->
-    <splunk-color>#282828</splunk-color><!-- panel -->
-</splunk-color-picker>
 ```
 ### Theme selector (MUST default to "auto")
 
@@ -122,7 +151,8 @@ See viz-blueprints.md Status Chip and Status Matrix sections for the three-tier 
 ```
 WRONG: name="myapp.myviz.field"       → MUST be name="{{VIZ_NAMESPACE}}.field"
 WRONG: default="value"                 → MUST be value="value"
-WRONG: <splunk-color-picker value=     → MUST add type="custom"
+WRONG: series picker without type=     → series1-5 pickers MUST use type="splunkCategorical"
+WRONG: accentColor/bgColor without type → brand/accent pickers MUST use type="custom"
 WRONG: <form>                          → MUST add class="splunk-formatter-section" section-label="..."
 WRONG: themeMode value="dark"          → MUST be value="auto"
 NOTE:  accentColor picker belongs in Effects section (not Color and style). Controls glow/highlight overlay only — never solid fill. (Phase 23 CP-03)
@@ -276,27 +306,27 @@ using viz-blueprints.md Settings: list as your guide (D-01, D-04).
         </splunk-color-picker>
     </splunk-control-group>
     <splunk-control-group label="Series 1" help="Color for first data series">
-        <splunk-color-picker name="{{VIZ_NAMESPACE}}.series1Color" type="custom" value="#0077B6">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.series1Color" type="splunkCategorical" value="#0077B6">
             <splunk-color>#0077B6</splunk-color>
         </splunk-color-picker>
     </splunk-control-group>
     <splunk-control-group label="Series 2" help="Color for second data series">
-        <splunk-color-picker name="{{VIZ_NAMESPACE}}.series2Color" type="custom" value="#00B4D8">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.series2Color" type="splunkCategorical" value="#00B4D8">
             <splunk-color>#00B4D8</splunk-color>
         </splunk-color-picker>
     </splunk-control-group>
     <splunk-control-group label="Series 3" help="Color for third data series">
-        <splunk-color-picker name="{{VIZ_NAMESPACE}}.series3Color" type="custom" value="#90E0EF">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.series3Color" type="splunkCategorical" value="#90E0EF">
             <splunk-color>#90E0EF</splunk-color>
         </splunk-color-picker>
     </splunk-control-group>
     <splunk-control-group label="Series 4" help="Color for fourth data series">
-        <splunk-color-picker name="{{VIZ_NAMESPACE}}.series4Color" type="custom" value="#CAF0F8">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.series4Color" type="splunkCategorical" value="#CAF0F8">
             <splunk-color>#CAF0F8</splunk-color>
         </splunk-color-picker>
     </splunk-control-group>
     <splunk-control-group label="Series 5" help="Color for fifth data series">
-        <splunk-color-picker name="{{VIZ_NAMESPACE}}.series5Color" type="custom" value="#ADE8F4">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.series5Color" type="splunkCategorical" value="#ADE8F4">
             <splunk-color>#ADE8F4</splunk-color>
         </splunk-color-picker>
     </splunk-control-group>
@@ -417,6 +447,116 @@ if (reducedMotion) {
     flashCritical = false;
     // showHoverEffect stays ON — functional feedback, not decorative
 }
+```
+
+### Threshold colors (3-band RAG)
+
+**Recommended for:** KPI, Ring Gauge, Needle Gauge, Status Matrix, Status Chip. Claude may add
+to any viz type where value-to-color mapping is meaningful.
+
+**Formatter HTML (add to `Color and style` or a dedicated `Thresholds` section):**
+
+```html
+<splunk-control-group label="Threshold field" help="SPL field to evaluate for status color (default: value)">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.thresholdField" value="value">
+    </splunk-text-input>
+</splunk-control-group>
+<splunk-control-group label="Low boundary" help="Values below this are in the low band">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.thresholdLow" value="50">
+    </splunk-text-input>
+</splunk-control-group>
+<splunk-control-group label="High boundary" help="Values above this are in the high band">
+    <splunk-text-input name="{{VIZ_NAMESPACE}}.thresholdHigh" value="90">
+    </splunk-text-input>
+</splunk-control-group>
+<splunk-control-group label="Direction" help="Whether high values are good (green) or bad (red)">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.thresholdDirection" value="high_good">
+        <option value="high_good">High = Good</option>
+        <option value="high_bad">High = Bad</option>
+    </splunk-radio-input>
+</splunk-control-group>
+<splunk-control-group label="Low color" help="Color for lowest band">
+    <splunk-color-picker name="{{VIZ_NAMESPACE}}.thresholdColorLow" type="custom" value="#EF4444">
+        <splunk-color>#EF4444</splunk-color>
+        <splunk-color>#F59E0B</splunk-color>
+        <splunk-color>#22C55E</splunk-color>
+    </splunk-color-picker>
+</splunk-control-group>
+<splunk-control-group label="Mid color" help="Color for middle band">
+    <splunk-color-picker name="{{VIZ_NAMESPACE}}.thresholdColorMid" type="custom" value="#F59E0B">
+        <splunk-color>#EF4444</splunk-color>
+        <splunk-color>#F59E0B</splunk-color>
+        <splunk-color>#22C55E</splunk-color>
+    </splunk-color-picker>
+</splunk-control-group>
+<splunk-control-group label="High color" help="Color for highest band">
+    <splunk-color-picker name="{{VIZ_NAMESPACE}}.thresholdColorHigh" type="custom" value="#22C55E">
+        <splunk-color>#EF4444</splunk-color>
+        <splunk-color>#F59E0B</splunk-color>
+        <splunk-color>#22C55E</splunk-color>
+    </splunk-color-picker>
+</splunk-control-group>
+<splunk-control-group label="Color icon" help="Apply threshold color to icon element">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.colorIcon" value="true">
+        <option value="true">Yes</option>
+        <option value="false">No</option>
+    </splunk-radio-input>
+</splunk-control-group>
+<splunk-control-group label="Color label" help="Apply threshold color to text label">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.colorLabel" value="false">
+        <option value="true">Yes</option>
+        <option value="false">No</option>
+    </splunk-radio-input>
+</splunk-control-group>
+<splunk-control-group label="Color glow" help="Apply threshold color to glow effect">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.colorGlow" value="true">
+        <option value="true">Yes</option>
+        <option value="false">No</option>
+    </splunk-radio-input>
+</splunk-control-group>
+<splunk-control-group label="Color background" help="Apply threshold color to panel background tint">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.colorBg" value="false">
+        <option value="true">Yes</option>
+        <option value="false">No</option>
+    </splunk-radio-input>
+</splunk-control-group>
+```
+
+**JS opt() read pattern (in `updateView`, after theme/opt setup):**
+
+```javascript
+// Threshold 3-band RAG — direction-aware color lookup
+var thresholdLow  = parseFloat(opt('thresholdLow',  '50'), 10);
+var thresholdHigh = parseFloat(opt('thresholdHigh', '90'), 10);
+var thresholdDir  = opt('thresholdDirection', 'high_good');
+var tcLow  = hexFromSplunk(opt('thresholdColorLow',  ''), '#EF4444');
+var tcMid  = hexFromSplunk(opt('thresholdColorMid',  ''), '#F59E0B');
+var tcHigh = hexFromSplunk(opt('thresholdColorHigh', ''), '#22C55E');
+
+// direction swap: when high_bad, high values are red and low values are green
+var bandLow  = thresholdDir === 'high_bad' ? tcHigh : tcLow;
+var bandMid  = tcMid;
+var bandHigh = thresholdDir === 'high_bad' ? tcLow  : tcHigh;
+
+function getThresholdColor(val) {
+    var n = parseFloat(val);
+    if (isNaN(n)) { return bandMid; }
+    if (n < thresholdLow)  { return bandLow; }
+    if (n > thresholdHigh) { return bandHigh; }
+    return bandMid;
+}
+
+// Per-element toggles
+var colorIcon  = opt('colorIcon',  'true')  === 'true';
+var colorLabel = opt('colorLabel', 'false') === 'true';
+var colorGlow  = opt('colorGlow',  'true')  === 'true';
+var colorBg    = opt('colorBg',    'false') === 'true';
+
+// Usage: var statusColor = getThresholdColor(numericValue);
+// Then: if (colorIcon)  { /* draw icon with statusColor */ }
+//       if (colorLabel) { ctx.fillStyle = statusColor; /* draw label */ }
+//       if (colorGlow)  { ctx.shadowColor = withAlpha(statusColor, 0.6); }
+//       if (colorBg)    { ctx.fillStyle = withAlpha(statusColor, 0.08); /* bg tint */ }
 ```
 
 ### Series color opt() read patterns (Phase 18 D-10/D-12/D-13)
