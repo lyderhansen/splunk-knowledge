@@ -408,6 +408,25 @@ Plans:
 - [x] 26-02-PLAN.md — Add multi-channel archetype references to F1/motorsport, healthcare monitoring, and network ops entries in domain-templates.md
 **UI hint**: yes
 
+### Phase 27: API Correctness
+**Goal**: Fix drilldown payload shape to official spec; splunkCategorical color pickers; threshold 3-band RAG template; escapeHtml() for XSS prevention
+**Depends on**: Phase 26
+**Requirements**: AC-01, AC-02, AC-03, AC-04
+**Success Criteria** (what must be TRUE):
+  1. The _onClick template in viz-blueprints.md uses `{data: {fieldName: value}}` payload shape with browserEvent as the second argument to this.drilldown() — no `field:` or `value:` properties remain
+  2. The FIELD_VALUE_DRILLDOWN fallback note says string `'fieldvalue'`, not integer `1`
+  3. Series color pickers in formatter-patterns.md use `type="splunkCategorical"` while brand/accent pickers retain `type="custom"`
+  4. A "Threshold colors (3-band RAG)" section exists in formatter-patterns.md with thresholdField, thresholdLow, thresholdHigh, thresholdDirection, three color pickers, and per-element toggle controls
+  5. edge-cases.md contains ECR-08 documenting escapeHtml() and makeSafeUrl() from SplunkVisualizationUtils with wrong/correct patterns
+  6. pre-code-checklist.md includes a mandatory escapeHtml/makeSafeUrl check referencing ECR-08
+**Plans**: 2 plans
+Plans:
+**Wave 1**
+- [ ] 27-01-PLAN.md — Fix drilldown payload shape in viz-blueprints.md + split color picker section to splunkCategorical/custom + add threshold RAG template in formatter-patterns.md
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 27-02-PLAN.md — Add ECR-08 escapeHtml/makeSafeUrl XSS prevention to edge-cases.md + mandatory check in pre-code-checklist.md
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -438,3 +457,4 @@ Plans:
 | 24. Animation Boilerplate | v5.5.0 | 2/2 | Complete    | 2026-05-20 |
 | 25. Backgrounds & Preview Assets | v5.5.0 | 2/2 | Complete    | 2026-05-20 |
 | 26. Multi-Channel Archetype | v5.5.0 | 2/2 | Complete   | 2026-05-21 |
+| 27. API Correctness | v5.5.0 | 0/2 | Planning | - |
