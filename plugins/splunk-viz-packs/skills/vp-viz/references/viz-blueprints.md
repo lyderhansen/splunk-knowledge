@@ -69,11 +69,12 @@ _onClick: function(e) {
     // (see per-viz section below for hit-test implementation per viz type)
     var clickedVal = /* value from identified row or segment */;
     if (!clickedVal) { return; }
+    var payload = {};
+    payload[this._clickField] = clickedVal;
     this.drilldown({
         action: SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN,
-        field: this._clickField,
-        value: clickedVal
-    });
+        data: payload
+    }, e);
 },
 ```
 
@@ -93,7 +94,7 @@ Add `"options": {"drilldown": "all"}` to the viz panel and `"eventHandlers"` wit
 drilldownField | text | "value" | Which field's value is passed on click
 ```
 
-Note: `SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN` — if the constant is unavailable at runtime, use integer value `1` as fallback.
+Note: `SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN` — if the constant is unavailable at runtime, use string `'fieldvalue'` as fallback.
 
 ### Single Value Tile (KPI)
 
@@ -539,7 +540,7 @@ This archetype stacks 3-6 horizontal channel strips that share a single time x-a
 
 **Data contract:** Time-series with 3-6 numeric value columns. xField (default `_time`) is the shared time axis. Each additional numeric column is one channel. Multi-row.
 **Expected columns:** `| timechart span=1m avg(throttle) avg(brake) avg(speed) avg(gear) avg(ers)` — _time + 3-6 numeric series
-**Drilldown:** crosshair-based — click passes the x-axis value (timestamp) at the click position. In `updateView`, store the rendered x-pixel-to-time mapping as `this._xPositions` (array of {x, time} pairs). `_onClick` finds the entry where `Math.abs(entry.x - mx)` is smallest, then calls `this.drilldown({action: SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN, field: this._clickField, value: entry.time})`.
+**Drilldown:** crosshair-based — click passes the x-axis value (timestamp) at the click position. In `updateView`, store the rendered x-pixel-to-time mapping as `this._xPositions` (array of {x, time} pairs). `_onClick` finds the entry where `Math.abs(entry.x - mx)` is smallest, builds `var payload = {}; payload[this._clickField] = entry.time;`, then calls `this.drilldown({action: SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN, data: payload}, e)`.
 
 **Worked example — F1 telemetry (5 channels):**
 
