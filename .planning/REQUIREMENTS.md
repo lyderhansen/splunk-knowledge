@@ -22,7 +22,7 @@
 ### Multi-Channel Vizs (MC)
 
 - [ ] **MC-01**: viz-blueprints.md includes a "Multi-Channel Composite" archetype showing stacked synchronized data channels with shared x-axis and per-channel y-scales (F1 lap analysis pattern)
-- [ ] **MC-02**: Domain-templates.md entries for data-rich domains (F1/motorsport, healthcare monitoring, network ops) reference the multi-channel archetype with example channel configurations
+- [x] **MC-02**: Domain-templates.md entries for data-rich domains (F1/motorsport, healthcare monitoring, network ops) reference the multi-channel archetype with example channel configurations
 
 ### Animation Behavior (AB)
 

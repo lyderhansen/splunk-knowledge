@@ -81,7 +81,7 @@ Full details: `.planning/milestones/v5.3.0-ROADMAP.md`
 - [x] **Phase 23: Color Palette & Accent Foundation** - Every generated formatter has 6-8 brand swatches; light textFaint passes WCAG AA; accentColor restored with correct usage rules (completed 2026-05-20)
 - [x] **Phase 24: Animation Boilerplate** - Generic copy-paste ES5 entrance and LED pulse boilerplates in animation-recipes.md; viz-blueprints.md specifies which boilerplate per viz type (completed 2026-05-20)
 - [x] **Phase 25: Backgrounds & Preview Assets** - generate_assets.js produces background variant matching visual language backgroundType; preview.png at 116x76 (official spec); branded appIcon symbol (completed 2026-05-20)
-- [ ] **Phase 26: Multi-Channel Archetype** - viz-blueprints.md includes Multi-Channel Composite archetype; domain-templates.md data-rich domain entries reference it
+- [x] **Phase 26: Multi-Channel Archetype** - viz-blueprints.md includes Multi-Channel Composite archetype; domain-templates.md data-rich domain entries reference it (completed 2026-05-21)
 - [ ] **Phase 27: API Correctness** - Fix drilldown payload shape to official spec; splunkCategorical color pickers; threshold 3-band RAG template; escapeHtml() for XSS prevention
 
 ## Phase Details
@@ -404,8 +404,8 @@ Plans:
   3. The domain-templates.md entry for healthcare monitoring references the Multi-Channel Composite archetype with specific channel names (e.g., heart rate, SpO2, respiration rate) — not a generic pointer
 **Plans**: 2 plans
 Plans:
-- [ ] 26-01-PLAN.md — Add Multi-Channel Composite archetype to viz-blueprints.md with full pattern specification and one worked example
-- [ ] 26-02-PLAN.md — Add multi-channel archetype references to F1/motorsport, healthcare monitoring, and network ops entries in domain-templates.md
+- [x] 26-01-PLAN.md — Add Multi-Channel Composite archetype to viz-blueprints.md with full pattern specification and one worked example
+- [x] 26-02-PLAN.md — Add multi-channel archetype references to F1/motorsport, healthcare monitoring, and network ops entries in domain-templates.md
 **UI hint**: yes
 
 ## Progress
@@ -437,4 +437,4 @@ Plans:
 | 23. Color Palette & Accent Foundation | v5.5.0 | 2/2 | Complete    | 2026-05-20 |
 | 24. Animation Boilerplate | v5.5.0 | 2/2 | Complete    | 2026-05-20 |
 | 25. Backgrounds & Preview Assets | v5.5.0 | 2/2 | Complete    | 2026-05-20 |
-| 26. Multi-Channel Archetype | v5.5.0 | 0/2 | Not started | - |
+| 26. Multi-Channel Archetype | v5.5.0 | 2/2 | Complete   | 2026-05-21 |
