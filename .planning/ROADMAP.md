@@ -82,7 +82,7 @@ Full details: `.planning/milestones/v5.3.0-ROADMAP.md`
 - [x] **Phase 24: Animation Boilerplate** - Generic copy-paste ES5 entrance and LED pulse boilerplates in animation-recipes.md; viz-blueprints.md specifies which boilerplate per viz type (completed 2026-05-20)
 - [x] **Phase 25: Backgrounds & Preview Assets** - generate_assets.js produces background variant matching visual language backgroundType; preview.png at 116x76 (official spec); branded appIcon symbol (completed 2026-05-20)
 - [x] **Phase 26: Multi-Channel Archetype** - viz-blueprints.md includes Multi-Channel Composite archetype; domain-templates.md data-rich domain entries reference it (completed 2026-05-21)
-- [ ] **Phase 27: API Correctness** - Fix drilldown payload shape to official spec; splunkCategorical color pickers; threshold 3-band RAG template; escapeHtml() for XSS prevention
+- [x] **Phase 27: API Correctness** - Fix drilldown payload shape to official spec; splunkCategorical color pickers; threshold 3-band RAG template; escapeHtml() for XSS prevention (completed 2026-05-21)
 
 ## Phase Details
 
@@ -425,7 +425,7 @@ Plans:
 - [x] 27-01-PLAN.md — Fix drilldown payload shape in viz-blueprints.md + split color picker section to splunkCategorical/custom + add threshold RAG template in formatter-patterns.md
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 27-02-PLAN.md — Add ECR-08 escapeHtml/makeSafeUrl XSS prevention to edge-cases.md + mandatory check in pre-code-checklist.md
+- [x] 27-02-PLAN.md — Add ECR-08 escapeHtml/makeSafeUrl XSS prevention to edge-cases.md + mandatory check in pre-code-checklist.md
 
 ## Progress
 
@@ -457,4 +457,4 @@ Plans:
 | 24. Animation Boilerplate | v5.5.0 | 2/2 | Complete    | 2026-05-20 |
 | 25. Backgrounds & Preview Assets | v5.5.0 | 2/2 | Complete    | 2026-05-20 |
 | 26. Multi-Channel Archetype | v5.5.0 | 2/2 | Complete   | 2026-05-21 |
-| 27. API Correctness | v5.5.0 | 1/2 | In Progress|  |
+| 27. API Correctness | v5.5.0 | 2/2 | Complete   | 2026-05-21 |
