@@ -1,7 +1,7 @@
 # Edge Case Resilience Patterns
 
 Read this file during **step 5 (JS generation)** of the vp-viz workflow.
-Every generated `visualization_source.js` MUST implement ECR-01 through ECR-05.
+Every generated `visualization_source.js` MUST implement ECR-01 through ECR-08.
 These are not optional — they are correctness requirements for every viz.
 
 ---
@@ -471,3 +471,72 @@ _onMouseMove: function(e) {
   changes, no `invalidateUpdateView`.
 - On a 10-viz dashboard, unnecessary redraws from mouse movement cause visible frame drops.
   This is a correctness fix, not a premature optimization.
+
+---
+
+## ECR-08: escapeHtml / makeSafeUrl XSS Prevention
+
+**Requirement:** Any viz that inserts search data into an HTML context MUST escape it first.
+SPL results are untrusted input — a malicious search result containing script tags or
+`javascript:` URLs will execute if rendered raw. Use `SplunkVisualizationUtils.escapeHtml()`
+for HTML content and `SplunkVisualizationUtils.makeSafeUrl()` for URL construction.
+
+**When this applies:** Tooltip HTML (`innerHTML` assignments), label text that goes through
+`innerHTML` or `insertAdjacentHTML`, dynamic image sources, link `href` construction, any
+context where a string from `data.rows` ends up in a DOM property that interprets HTML or URLs.
+
+**Canvas exemption:** `ctx.fillText()` is inherently safe — Canvas 2D renders text, not HTML.
+`escapeHtml` is NOT needed for pure Canvas text rendering. It IS needed when the viz creates
+DOM elements for tooltips or overlays.
+
+### Wrong pattern
+
+```javascript
+// WRONG — raw row value assigned to innerHTML
+var label = row[colIdx['label']];
+tooltip.innerHTML = label;               // XSS if label contains <script> or event attributes
+
+// WRONG — raw URL assigned to src
+var iconUrl = row[colIdx['icon_url']];
+img.src = iconUrl;                        // XSS if icon_url is "javascript:alert(1)"
+```
+
+### Correct pattern
+
+Import both utilities at module scope after the `SplunkVisualizationUtils` require:
+
+```javascript
+define([
+    'api/SplunkVisualizationBase',
+    'api/SplunkVisualizationUtils'
+], function(SplunkVisualizationBase, SplunkVisualizationUtils) {
+
+    var escapeHtml  = SplunkVisualizationUtils.escapeHtml;
+    var makeSafeUrl = SplunkVisualizationUtils.makeSafeUrl;
+
+    // ...
+
+    updateView: function(data, config) {
+        // ...
+
+        // HTML context — escape AFTER safeStr null-guard
+        tooltip.innerHTML = escapeHtml(safeStr(row[colIdx['label']]));
+
+        // URL context — makeSafeUrl rejects javascript:/data: schemes
+        img.src = makeSafeUrl(safeStr(row[colIdx['icon_url']]));
+    }
+});
+```
+
+### Rules
+
+- Import both utilities at module scope alongside the `SplunkVisualizationUtils` require —
+  one declaration, used throughout the module.
+- `escapeHtml` every string from `data.rows` before `innerHTML` / `insertAdjacentHTML`.
+- `makeSafeUrl` every string from `data.rows` before assigning to `href`, `src`, or `action`.
+- Canvas `ctx.fillText()` does NOT need `escapeHtml` — Canvas rendering is not an HTML context.
+- `safeStr()` and `escapeHtml()` serve different purposes: `safeStr` handles null/undefined
+  values (returns `''`); `escapeHtml` handles HTML entity encoding. Use both in order:
+  `escapeHtml(safeStr(val))`.
+- Hand-rolled escaping (replacing `<` with `&lt;` manually) is an anti-pattern — use the
+  Splunk-provided utilities to ensure correctness under all input shapes.
