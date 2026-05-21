@@ -6,7 +6,7 @@ Verify EVERY item before writing visualization code. This is the gate between "r
 □ Viz files in appserver/static/visualizations/{viz}/ — NEVER default/visualizations/
 □ Formatter: {{VIZ_NAMESPACE}}.key in ALL name= attributes
 □ Formatter: value= on all inputs (NEVER default=)
-□ Formatter: type="custom" on every <splunk-color-picker>
+□ Formatter: type="splunkCategorical" on series color pickers; type="custom" on brand/accent pickers (accentColor, backgroundColor, fontColor, thresholdColor*)
 □ Formatter: class="splunk-formatter-section" section-label="..." on every <form>
 □ Formatter: themeMode defaults to "auto" (NEVER "dark")
 □ Formatter: minimum 10 controls (4 sections required when mood effects present)
@@ -19,6 +19,7 @@ Verify EVERY item before writing visualization code. This is the gate between "r
 □ JS: require()/module.exports — NEVER define()
 □ JS: SplunkVisualizationBase.extend({...}) object literal
 □ JS: safeStr()/safeNum() on all row field reads
+□ JS: escapeHtml() on ALL search data inserted into innerHTML/insertAdjacentHTML; makeSafeUrl() on ALL search data used in href/src attributes — from SplunkVisualizationUtils (ECR-08). Canvas fillText is exempt.
 □ JS: detectTheme() for auto theme detection
 □ JS: clientWidth/clientHeight — NEVER getBoundingClientRect for sizing
 □ JS: clearRect for background — NEVER fillRect
@@ -44,7 +45,7 @@ Verify EVERY item before writing visualization code. This is the gate between "r
 □ JS tables: column sort (click header → re-sort) + pagination (maxRows config, prev/next controls) — MANDATORY
 □ JS bar/column charts: hover tooltip showing field value on mousemove — MANDATORY
 □ JS KPI/single-value: threshold-based text/bg color change (green if >= high, yellow if >= med, red if below) — MANDATORY
-□ JS all vizs: _onClick(e) emits this.drilldown({action:SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN, data:hit.drilldownData}, e) — MANDATORY
+□ JS all vizs: _onClick(e) builds var payload = {}; payload[fieldName] = value; then calls this.drilldown({action:SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN, data: payload}, e) — MANDATORY
 □ Formatter: drilldownField text input on every viz with clickable data rows
 □ Visual Language: implement cornerRadius/fillTechnique/spacing from vp-design brief; different brands MUST use different Canvas APIs (gradient vs flat fill, rounded vs sharp rects)
 □ Tarball: ONE top-level directory only — package from parent dir
