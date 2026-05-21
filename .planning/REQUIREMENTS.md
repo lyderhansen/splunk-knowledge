@@ -37,9 +37,9 @@
 
 ### API Correctness (AC)
 
-- [ ] **AC-01**: Drilldown payload uses official `data: { fieldName: value }` shape — not `{ field, value }`. Pass `browserEvent` as second argument for keyboard modifier support (ctrl+click → new tab)
-- [ ] **AC-02**: Series color pickers use `type="splunkCategorical"` (gives full Splunk palette) with brand `<splunk-color>` additions — not `type="custom"` only
-- [ ] **AC-03**: Threshold colors section template added to formatter-patterns.md — 3-band RAG pattern (thresholdField, thresholdLow/High, direction toggle, 3 color pickers, per-element toggles) for status-bearing vizs
+- [x] **AC-01**: Drilldown payload uses official `data: { fieldName: value }` shape — not `{ field, value }`. Pass `browserEvent` as second argument for keyboard modifier support (ctrl+click → new tab)
+- [x] **AC-02**: Series color pickers use `type="splunkCategorical"` (gives full Splunk palette) with brand `<splunk-color>` additions — not `type="custom"` only
+- [x] **AC-03**: Threshold colors section template added to formatter-patterns.md — 3-band RAG pattern (thresholdField, thresholdLow/High, direction toggle, 3 color pickers, per-element toggles) for status-bearing vizs
 - [ ] **AC-04**: `escapeHtml()` from SplunkVisualizationUtils used when adding search data to DOM — required for Splunk app certification (XSS prevention)
 
 ### Validator Improvements (VI)

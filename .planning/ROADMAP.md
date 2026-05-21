@@ -422,7 +422,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 **Wave 1**
-- [ ] 27-01-PLAN.md — Fix drilldown payload shape in viz-blueprints.md + split color picker section to splunkCategorical/custom + add threshold RAG template in formatter-patterns.md
+- [x] 27-01-PLAN.md — Fix drilldown payload shape in viz-blueprints.md + split color picker section to splunkCategorical/custom + add threshold RAG template in formatter-patterns.md
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 27-02-PLAN.md — Add ECR-08 escapeHtml/makeSafeUrl XSS prevention to edge-cases.md + mandatory check in pre-code-checklist.md
@@ -457,4 +457,4 @@ Plans:
 | 24. Animation Boilerplate | v5.5.0 | 2/2 | Complete    | 2026-05-20 |
 | 25. Backgrounds & Preview Assets | v5.5.0 | 2/2 | Complete    | 2026-05-20 |
 | 26. Multi-Channel Archetype | v5.5.0 | 2/2 | Complete   | 2026-05-21 |
-| 27. API Correctness | v5.5.0 | 0/2 | Planning | - |
+| 27. API Correctness | v5.5.0 | 1/2 | In Progress|  |

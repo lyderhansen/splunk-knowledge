@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v5.5.0
 milestone_name: Visual Wow-Factor & First-Build Perfection
 status: executing
-stopped_at: Phase 26 Plan 02 complete — domain-templates.md updated with multi-channel archetype refs for F1/Healthcare/NOC
-last_updated: "2026-05-21T18:39:53.302Z"
+stopped_at: Phase 27 Plan 01 complete — drilldown API shape corrected, splunkCategorical series pickers, threshold RAG template added
+last_updated: "2026-05-21T19:20:00Z"
 last_activity: 2026-05-21
 progress:
-  total_phases: 21
+  total_phases: 22
   completed_phases: 5
-  total_plans: 10
-  completed_plans: 46
+  total_plans: 12
+  completed_plans: 47
   percent: 100
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-20)
 
 **Core value:** Zero-fix first builds AND wow-factor dashboards — reliable + beautiful every time
-**Current focus:** Phase 25 — backgrounds-preview-assets
+**Current focus:** Phase 27 — api-correctness
 
 ## Current Position
 
-Phase: 26
-Plan: 02 complete — Phase 26 complete
-Status: Complete
+Phase: 27
+Plan: 01 (complete)
+Status: Executing
 Last activity: 2026-05-21
 
 ## Performance Metrics
@@ -76,6 +76,7 @@ Last activity: 2026-05-21
 | 24 | 2 | - | - |
 | 25 | 2 | - | - |
 | 26 | 2/2 | ~12min | ~6min |
+| 27 | 1/2 | ~12min | ~12min |
 
 *Updated after each plan completion*
 
@@ -105,14 +106,17 @@ Recent decisions affecting current work:
 - [Architecture]: PA-02 changes land in generate_assets.js appIcon generation — domain symbol lookup table from @viz-type or brand keywords
 - [Architecture]: MC-01 changes land in viz-blueprints.md — new "Multi-Channel Composite" archetype entry
 - [Architecture]: MC-02 changes land in domain-templates.md — add archetype references to F1/motorsport, healthcare monitoring, network ops entries
+- [AC-01]: Drilldown payload shape corrected to {data:{field:val}} with browserEvent as second arg — official Splunk custom viz API
+- [AC-02]: Series pickers use type=splunkCategorical; brand/accent pickers keep type=custom
+- [AC-03]: Threshold 3-band RAG template added with direction-swap logic and per-element toggles
 
 ### Pending Todos
 
-- [ ] Run /gsd-plan-phase 22 to begin Phase 22 planning
+- [ ] Execute 27-02-PLAN.md (remaining plan in phase 27)
 
 ### Blockers/Concerns
 
-None blocking. Phase 22 can start immediately.
+None blocking. Phase 27 can start immediately.
 
 ## Deferred Items
 
@@ -133,10 +137,10 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-05-21T18:39:02Z
-Stopped at: Phase 26 Plan 02 complete — domain-templates.md multi-channel archetype refs for F1/Healthcare/NOC
-Resume: Phase 26 complete. Phase 27 planning next if applicable.
+Last session: 2026-05-21T19:20:00Z
+Stopped at: Phase 27 Plan 01 complete — drilldown API + color picker types + threshold RAG
+Resume: Execute 27-02-PLAN.md
 
 ## Operator Next Steps
 
-- Start Phase 22 with /gsd-plan-phase 22
+- Execute 27-02-PLAN.md to complete Phase 27
