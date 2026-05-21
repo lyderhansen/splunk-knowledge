@@ -8,7 +8,7 @@
 - ✅ **v5.2.0 Smart Vizs & Domain Identity** — Phases 13-15 (shipped 2026-05-18)
 - ✅ **v5.3.0 Production Polish & Interactive Dashboards** — Phases 16-18 (shipped 2026-05-19)
 - ✅ **v5.4.0 Runtime Robustness & Visual Polish** — Phases 19-21 (shipped 2026-05-19)
-- **v5.5.0 Visual Wow-Factor & First-Build Perfection** — Phases 22-27 (active)
+- ✅ **v5.5.0 Visual Wow-Factor & First-Build Perfection** — Phases 22-27 (shipped 2026-05-21)
 
 ## Phases
 
@@ -75,14 +75,19 @@ Full details: `.planning/milestones/v5.3.0-ROADMAP.md`
 
 </details>
 
-**v5.5.0 Visual Wow-Factor & First-Build Perfection (Phases 22-27)**
+<details>
+<summary>✅ v5.5.0 Visual Wow-Factor & First-Build Perfection (Phases 22-27) — SHIPPED 2026-05-21</summary>
 
-- [x] **Phase 22: Validator Feedback Loop** - check_design.js names the failing viz in D01/D08 output; vp-viz pipeline loops on XFILE/D08 before handoff to vp-create (completed 2026-05-20)
-- [x] **Phase 23: Color Palette & Accent Foundation** - Every generated formatter has 6-8 brand swatches; light textFaint passes WCAG AA; accentColor restored with correct usage rules (completed 2026-05-20)
-- [x] **Phase 24: Animation Boilerplate** - Generic copy-paste ES5 entrance and LED pulse boilerplates in animation-recipes.md; viz-blueprints.md specifies which boilerplate per viz type (completed 2026-05-20)
-- [x] **Phase 25: Backgrounds & Preview Assets** - generate_assets.js produces background variant matching visual language backgroundType; preview.png at 116x76 (official spec); branded appIcon symbol (completed 2026-05-20)
-- [x] **Phase 26: Multi-Channel Archetype** - viz-blueprints.md includes Multi-Channel Composite archetype; domain-templates.md data-rich domain entries reference it (completed 2026-05-21)
-- [x] **Phase 27: API Correctness** - Fix drilldown payload shape to official spec; splunkCategorical color pickers; threshold 3-band RAG template; escapeHtml() for XSS prevention (completed 2026-05-21)
+- [x] Phase 22: Validator Feedback Loop (2/2 plans) — completed 2026-05-20
+- [x] Phase 23: Color Palette & Accent Foundation (2/2 plans) — completed 2026-05-20
+- [x] Phase 24: Animation Boilerplate (2/2 plans) — completed 2026-05-20
+- [x] Phase 25: Backgrounds & Preview Assets (2/2 plans) — completed 2026-05-20
+- [x] Phase 26: Multi-Channel Archetype (2/2 plans) — completed 2026-05-21
+- [x] Phase 27: API Correctness (2/2 plans) — completed 2026-05-21
+
+Full details: `.planning/milestones/v5.5.0-ROADMAP.md`
+
+</details>
 
 ## Phase Details
 
