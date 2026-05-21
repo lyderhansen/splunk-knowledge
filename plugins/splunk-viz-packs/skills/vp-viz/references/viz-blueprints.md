@@ -17,6 +17,7 @@
 - Waterfall Chart
 - Horizontal Bar List
 - Data Table (Canvas)
+- Multi-Channel Composite
 
 > These blueprints show WHAT each viz type expresses and what settings
 > to expose. They are NOT templates to copy verbatim. Study the brand's
@@ -500,6 +501,55 @@ var pageRows = rows.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
 
 **Data contract:** multi-column, multi-row. Field names from formatter.
 **Expected columns:** `| table col1 col2 col3 ...` — arbitrary multi-column; formatData reads all fields dynamically
+
+### Multi-Channel Composite
+
+**Expresses:** correlated multi-signal time-series. F1 telemetry, patient vital signs, network operations center.
+
+This archetype stacks 3-6 horizontal channel strips that share a single time x-axis at the bottom. Each channel has its own independent y-scale — channels with wildly different value ranges (e.g. Gear 1-8 alongside Speed 0-350) stack cleanly without distortion. This is the F1 lap analysis pattern: throttle, brake, speed, gear, and ERS stacked vertically with synchronized time scrubbing. Hover on any channel draws a vertical cursor line that spans ALL channels simultaneously at the same x position (synchronized crosshair), and the left-side label area updates to show each channel's value at that time position.
+
+**Accessibility:** B — multiple dense line charts stacked. Provide channel name labels and current values in the left label area that update as the cursor moves.
+
+**When NOT to use:** Fewer than 3 signals (use multi-series Line Chart instead). More than 6 channels — each strip becomes too thin to read at standard panel sizes per D-02. Unrelated metrics with no shared time axis.
+
+**Technical rules (Canvas rendering):**
+
+- Divide canvas into equal-height strips: `var stripH = Math.floor((h - timeAxisH - topPad) / channelCount);` where timeAxisH is the shared x-axis area at the bottom (typically 24-32px) and topPad is the chart top margin.
+- Each strip gets its own y-scale: compute yMin and yMax per channel from data, then `var yScale = stripH / (yMax - yMin || 1);` — the `|| 1` guards against flat zero-range data.
+- Draw thin horizontal divider lines between strips using `t.border` at 0.4 alpha to visually separate channels without eating into strip height.
+- Left-side label area (~70px wide): draw channel name in `t.textDim` at 11px and current-cursor value in `t.text` at 13px bold — both positioned left-aligned within the strip vertical center. Values update on every mousemove frame.
+- Y-axis ticks render INSIDE the strip (2-3 ticks, right-aligned text at the strip's inner-right edge), not in a separate axis column per D-02.
+- Shared time x-axis at bottom: single row of time labels spanning full canvas width from the left-label edge to the right edge.
+- Synchronized crosshair per D-01: on mousemove compute x from event.offsetX, draw a vertical line spanning from topPad to `h - timeAxisH` using `t.accent` at 0.5 alpha and 1px stroke. Store the cursor x-position in `this._cursorX`; call `updateView` or trigger a lightweight redraw to refresh all channel value labels.
+
+**Design rules:** See design-principles.md — DPR-01 (typography hierarchy for channel labels vs current values), DPR-03 (gradient area fills for area-type channels). See consistency-grid.md for spacing and typography scale across all channel strips.
+
+**Creative decisions YOU make:**
+- Per-channel render style (solid line, gradient area fill, step line) based on data type and brand personality
+- Channel color assignment (brand series colors s1-s6 or accent-derived hues)
+- Crosshair line style (solid vs dashed, 1-2px thickness)
+- Whether strips have subtle alternating background tints for readability in dense packs
+- Time axis label density and timestamp format (_time string vs formatted HH:MM:SS)
+- Channel label font weight and alignment within the left label area
+- Whether to display min/max value whiskers at the left or right edge of each strip
+
+**Settings:** `channels` (CSV of field names, e.g. `throttle,brake,speed`), `channelLabels` (CSV of display names), `channelTypes` (CSV of render types: `line`, `area`, `step`), `xField` (default `_time`), `showCrosshair`, `showChannelLabels`, `crosshairColor`, `showGrid`, `themeMode`, `accentIntensity`, `showEntrance`, `showHoverEffect`, `animationSpeed`
+
+**Animation notes:** Entrance uses Generic Entrance Boilerplate from animation-recipes.md — globalAlpha fade-in applies to all strips simultaneously, requiring no per-channel modification. `flashCritical` is NOT a default for this viz type (no discrete status values; use threshold bands within channel renders instead if alarm visualization is needed). `showHoverEffect` controls synchronized crosshair visibility — when OFF, cursor movement still works but no crosshair line is drawn.
+
+**Data contract:** Time-series with 3-6 numeric value columns. xField (default `_time`) is the shared time axis. Each additional numeric column is one channel. Multi-row.
+**Expected columns:** `| timechart span=1m avg(throttle) avg(brake) avg(speed) avg(gear) avg(ers)` — _time + 3-6 numeric series
+**Drilldown:** crosshair-based — click passes the x-axis value (timestamp) at the click position. In `updateView`, store the rendered x-pixel-to-time mapping as `this._xPositions` (array of {x, time} pairs). `_onClick` finds the entry where `Math.abs(entry.x - mx)` is smallest, then calls `this.drilldown({action: SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN, field: this._clickField, value: entry.time})`.
+
+**Worked example — F1 telemetry (5 channels):**
+
+Five-channel lap analysis showing correlated driver inputs and vehicle state over one lap. Channels: Throttle % (range 0-100, area fill), Brake % (range 0-100, area fill), Speed km/h (range 0-350, line), Gear (range 1-8, step line), ERS % (range 0-100, area fill).
+
+SPL: `| timechart span=1s avg(throttle) as throttle avg(brake) as brake avg(speed) as speed avg(gear) as gear avg(ers) as ers`
+
+Settings: `channels=throttle,brake,speed,gear,ers`, `channelLabels=Throttle %,Brake %,Speed km/h,Gear,ERS %`, `channelTypes=area,area,line,step,area`, `xField=_time`, `showCrosshair=true`, `showChannelLabels=true`
+
+Each strip is `Math.floor((h - 28 - 12) / 5)` pixels tall. Gear uses a step-line render (horizontal segments snapping to integer gear values) rather than a smooth interpolated line, making gear changes immediately visible as vertical steps.
 
 ---
 
