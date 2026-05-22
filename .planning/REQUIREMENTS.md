@@ -27,13 +27,13 @@
 
 ### Data Adapter (DA)
 
-- [ ] **DA-01**: viz-blueprints.md documents the columnar data access pattern alongside the existing row-major pattern — columns[fieldIdx][rowIdx] with parseFloat/parseInt for all numeric values
+- [x] **DA-01**: viz-blueprints.md documents the columnar data access pattern alongside the existing row-major pattern — columns[fieldIdx][rowIdx] with parseFloat/parseInt for all numeric values
 - [ ] **DA-02**: edge-cases.md documents Extension API-specific edge cases — loading gate, dataSources null check, string-to-number conversion, iframe sandboxing (no window.parent)
 
 ### Drilldown & Tokens (DT)
 
-- [ ] **DT-01**: viz-blueprints.md _onClick template has an Extension API variant using addDrilldownListener or triggerDrilldown with the correct payload shape
-- [ ] **DT-02**: config.json template has showDrilldown, hasEventHandlers, and canSetTokens correctly wired for drilldown-enabled vizs
+- [x] **DT-01**: viz-blueprints.md _onClick template has an Extension API variant using addDrilldownListener or triggerDrilldown with the correct payload shape
+- [x] **DT-02**: config.json template has showDrilldown, hasEventHandlers, and canSetTokens correctly wired for drilldown-enabled vizs
 
 ### Build & Validation (BV)
 

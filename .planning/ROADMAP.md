@@ -94,7 +94,7 @@ Full details: `.planning/milestones/v5.5.0-ROADMAP.md`
 
 - [x] **Phase 28: Extension API Templates** - Write config.json, visualization.js, package.json, and app.conf generation templates for the DS Extension API path (completed 2026-05-22)
 - [x] **Phase 29: Skill Format Conditioning** - vp-init format choice (Classic vs Extension); vp-viz and vp-create format-conditional generation sections (completed 2026-05-22)
-- [ ] **Phase 30: Data & Drilldown Adapter** - Columnar data access patterns in viz-blueprints.md; Extension API edge cases; drilldown variant with triggerDrilldown
+- [x] **Phase 30: Data & Drilldown Adapter** - Columnar data access patterns in viz-blueprints.md; Extension API edge cases; drilldown variant with triggerDrilldown (completed 2026-05-22)
 - [ ] **Phase 31: Build & Validation** - validate_viz.sh Extension API mode (config.json, ESM, columnar); .spl build verification via yarn package
 - [ ] **Phase 32: Aesthetic Scoring** - score_design.js automated aesthetic scorer with per-dimension breakdown; optional Phase 5 in validate_viz.sh
 - [ ] **Phase 33: Test Build** - End-to-end Extension API test build with 3+ vizs producing an installable .spl file
@@ -181,8 +181,8 @@ Plans:
   5. User toggles showHoverEffect=false on leaderboard or status matrix and hover highlight disappears completely
 **Plans**: 2 plans
 Plans:
-- [ ] 30-01-PLAN.md — Add columnar data pattern + Extension API drilldown template to viz-blueprints.md; verify config-json-template.md drilldown flags
-- [ ] 30-02-PLAN.md — Add ECR-09 Extension API edge cases to edge-cases.md
+- [x] 30-01-PLAN.md — Add columnar data pattern + Extension API drilldown template to viz-blueprints.md; verify config-json-template.md drilldown flags
+- [x] 30-02-PLAN.md — Add ECR-09 Extension API edge cases to edge-cases.md
 Plans:
 - [x] 10-01-PLAN.md — Replace opt() with two-path getOption() in SKILL.md template; update D08 regex
 - [x] 10-02-PLAN.md — Fix entrance-off path, widen flashCritical pulse, add hexFromSplunk and hover-toggle ECR patterns
@@ -599,7 +599,7 @@ Plans:
 | 27. API Correctness | v5.5.0 | 2/2 | Complete   | 2026-05-21 |
 | 28. Extension API Templates | v5.6.0 | 2/2 | Complete   | 2026-05-22 |
 | 29. Skill Format Conditioning | v5.6.0 | 3/3 | Complete   | 2026-05-22 |
-| 30. Data & Drilldown Adapter | v5.6.0 | 0/2 | Not started | - |
+| 30. Data & Drilldown Adapter | v5.6.0 | 2/2 | Complete   | 2026-05-22 |
 | 31. Build & Validation | v5.6.0 | 0/2 | Not started | - |
 | 32. Aesthetic Scoring | v5.6.0 | 0/2 | Not started | - |
 | 33. Test Build | v5.6.0 | 0/1 | Not started | - |
