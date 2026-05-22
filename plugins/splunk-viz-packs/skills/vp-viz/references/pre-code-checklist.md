@@ -70,3 +70,26 @@ For EVERY formatter control, trace the value through to the Canvas draw call:
 If ANY control exists in the formatter but has no Canvas effect: either wire it or remove it.
 If ANY control has a Canvas effect but no formatter: add the formatter control.
 
+## Extension API Checklist (format=extension only)
+
+Skip the Classic items marked with "Formatter:" and "JS: require()/module.exports" above when generating Extension API vizs. Apply these instead:
+
+```
+□ JS: ESM import syntax — import { ... } from '...'; — NEVER define()/require()
+□ JS: columnar data access — columns[fieldIdx][rowIdx] — all values are strings, parse with Number() or parseFloat()
+□ JS: addThemeListener(callback) for theme changes — NEVER SplunkVisualizationUtils.getCurrentTheme()
+□ JS: addDrilldownListener + triggerDrilldown({payload, event}) — NEVER this.drilldown() or _onClick
+□ Config: config.json with optionsSchema + editorConfig — NEVER formatter.html
+□ Config: bare option names in config.json (e.g., "themeMode") — NO VIZ_NAMESPACE prefix
+□ Config: every optionsSchema entry has a matching editorConfig layout item — orphaned schema entries are invisible
+□ Config: showDrilldown + hasEventHandlers + canSetTokens for drilldown-enabled vizs
+□ Structure: source in visualizations/{viz}/src/visualization.js — NEVER visualization_source.js at viz root
+□ Build: yarn build (webpack/rollup via package.json) — NEVER build_flat.js
+□ Package: yarn package produces .spl — NEVER manual COPYFILE_DISABLE=1 tar
+□ Dashboard JSON options: {app_id}.{viz_name}.key — same namespace rule as Classic (DS reads both formats the same way)
+```
+
+Template references:
+- config.json: references/config-json-template.md
+- visualization.js: references/visualization-js-template.md
+
