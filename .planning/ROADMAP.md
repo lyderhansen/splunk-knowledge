@@ -181,6 +181,9 @@ Plans:
   5. User toggles showHoverEffect=false on leaderboard or status matrix and hover highlight disappears completely
 **Plans**: 2 plans
 Plans:
+- [ ] 30-01-PLAN.md — Add columnar data pattern + Extension API drilldown template to viz-blueprints.md; verify config-json-template.md drilldown flags
+- [ ] 30-02-PLAN.md — Add ECR-09 Extension API edge cases to edge-cases.md
+Plans:
 - [x] 10-01-PLAN.md — Replace opt() with two-path getOption() in SKILL.md template; update D08 regex
 - [x] 10-02-PLAN.md — Fix entrance-off path, widen flashCritical pulse, add hexFromSplunk and hover-toggle ECR patterns
 
@@ -196,6 +199,9 @@ Plans:
   5. User reads the Drilldown Field formatter control and immediately understands what clicking a viz row will pass downstream — help text is unambiguous
 **Plans**: 2 plans
 Plans:
+- [ ] 30-01-PLAN.md — Add columnar data pattern + Extension API drilldown template to viz-blueprints.md; verify config-json-template.md drilldown flags
+- [ ] 30-02-PLAN.md — Add ECR-09 Extension API edge cases to edge-cases.md
+Plans:
 - [x] 11-01-PLAN.md — Expand viz-blueprints.md settings and creative freedom language
 - [x] 11-02-PLAN.md — Add drilldown field template and comma-separated input pattern to formatter-patterns.md
 **UI hint**: yes
@@ -210,6 +216,9 @@ Plans:
   3. A generated dashboard shows card-group depth — background rectangles establish section separators between hero, primary, and detail zones
   4. A user reading a generated dashboard can identify the story from layout alone — the arrangement follows data narrative order (summary to detail, alert to root-cause, or KPI to trend)
 **Plans**: 2 plans
+Plans:
+- [ ] 30-01-PLAN.md — Add columnar data pattern + Extension API drilldown template to viz-blueprints.md; verify config-json-template.md drilldown flags
+- [ ] 30-02-PLAN.md — Add ECR-09 Extension API edge cases to edge-cases.md
 Plans:
 - [x] 12-01-PLAN.md — Create dashboard-composition.md reference and wire into vp-design SKILL.md
 - [x] 12-02-PLAN.md — Extend generate_assets.js with gradient background PNG generation
@@ -244,6 +253,9 @@ Plans:
   6. When a domain-specific viz type exceeds Canvas 2D complexity budget, the generated code uses the documented proxy pattern — not a blank panel or a JS error
 **Plans**: 2 plans
 Plans:
+- [ ] 30-01-PLAN.md — Add columnar data pattern + Extension API drilldown template to viz-blueprints.md; verify config-json-template.md drilldown flags
+- [ ] 30-02-PLAN.md — Add ECR-09 Extension API edge cases to edge-cases.md
+Plans:
 - [ ] 14-01-PLAN.md — Domain visual language step in vp-design + domain-unique viz entries in domain-templates.md
 - [ ] 14-02-PLAN.md — Auto-field discovery patterns reference + vp-viz SKILL.md template update
 
@@ -271,6 +283,9 @@ Plans:
   5. Two preview.png thumbnails in the same generated pack have distinct shapes — grepping the generate_assets.js silhouette map confirms each @viz-type annotation maps to a unique drawing routine
 **Plans**: 2 plans
 Plans:
+- [ ] 30-01-PLAN.md — Add columnar data pattern + Extension API drilldown template to viz-blueprints.md; verify config-json-template.md drilldown flags
+- [ ] 30-02-PLAN.md — Add ECR-09 Extension API edge cases to edge-cases.md
+Plans:
 - [x] 16-01-PLAN.md — Trim canvas-recipes.md from 998 to under 500 lines (remove duplicates, condense verbose sections)
 - [x] 16-02-PLAN.md — Add D09/D10/D11 design quality rules, update pre-code-checklist.md and viz-blueprints.md
 
@@ -284,6 +299,9 @@ Plans:
   3. Every generated dashboard contains a splunk.markdown panel at the top with the brand name or project title visible — the panel is present even if no explicit title was requested
   4. When a user requests a dashboard with 7 or more vizs or explicitly requests tabs, ds-int-tabs is loaded before any dashboard JSON is written — no manual reminder required
 **Plans**: 2 plans
+Plans:
+- [ ] 30-01-PLAN.md — Add columnar data pattern + Extension API drilldown template to viz-blueprints.md; verify config-json-template.md drilldown flags
+- [ ] 30-02-PLAN.md — Add ECR-09 Extension API edge cases to edge-cases.md
 Plans:
 - [x] 17-01-PLAN.md — Add DS2/DS3/DS4 checks to validate_dash.js + tests (tab schema, background, title panel)
 - [x] 17-02-PLAN.md — Update dashboard-json-template.md with mandatory title section + vp-create SKILL.md ds-int-tabs conditional load
@@ -328,6 +346,9 @@ Plans:
   5. Every panel with _onClick in a generated pack has matching dashboard JSON with "drilldown": "all" in options and an eventHandlers entry with drilldown.setToken — neither half is present without the other
 **Plans**: 2 plans
 Plans:
+- [ ] 30-01-PLAN.md — Add columnar data pattern + Extension API drilldown template to viz-blueprints.md; verify config-json-template.md drilldown flags
+- [ ] 30-02-PLAN.md — Add ECR-09 Extension API edge cases to edge-cases.md
+Plans:
 - [x] 20-01-PLAN.md — Data binding: remove Data configurations section, add formatData() note, Expected columns + drilldown notes per viz type
 - [x] 20-02-PLAN.md — Drilldown enforcement: vp-create Step 3c all-panel wiring, Section 8 seriesColors in dashboard-interactivity.md
 
@@ -343,6 +364,9 @@ Plans:
   5. User switches a generated viz to light themeMode and hero text (value/score/label) renders at full opacity with 4.5:1 contrast or better against the panel background — verified by check_contrast.js
 **Plans**: 2 plans
 Plans:
+- [ ] 30-01-PLAN.md — Add columnar data pattern + Extension API drilldown template to viz-blueprints.md; verify config-json-template.md drilldown flags
+- [ ] 30-02-PLAN.md — Add ECR-09 Extension API edge cases to edge-cases.md
+Plans:
 - [x] 21-01-PLAN.md — D01 conditional FAIL for gradient enforcement (check_design.js + tests + theme-template.md)
 - [x] 21-02-PLAN.md — Animation enforcement + light theme contrast in SKILL.md + viz-blueprints.md
 **UI hint**: yes
@@ -356,6 +380,9 @@ Plans:
   2. Running check_design.js on a pack with a D08 violation in "kpi_tile" produces output that includes the viz name "kpi_tile" in the finding message — not just "D08: Formatter control not read in JS"
   3. After building all vizs in vp-viz, the pipeline automatically runs validate_viz.sh and if XFILE or D08 findings are present, reports which viz+control failed, applies fixes, rebuilds, and re-validates without user intervention — all within a single pipeline invocation (max 2 repair iterations)
 **Plans**: 2 plans
+Plans:
+- [ ] 30-01-PLAN.md — Add columnar data pattern + Extension API drilldown template to viz-blueprints.md; verify config-json-template.md drilldown flags
+- [ ] 30-02-PLAN.md — Add ECR-09 Extension API edge cases to edge-cases.md
 Plans:
 - [x] 22-01-PLAN.md — Add viz name to D01/D08 output in check_design.js; update D01/D08 tests to assert viz name presence
 - [x] 22-02-PLAN.md — Add post-build validate+loop to vp-viz SKILL.md pipeline step; document XFILE/D08 auto-fix behaviour
@@ -371,6 +398,9 @@ Plans:
   4. Setting accentIntensity to 0 in the formatter produces a viz with no visible glow, halo, or highlight overlay — the accent effects fully disappear at intensity 0
 **Plans**: 2 plans
 Plans:
+- [ ] 30-01-PLAN.md — Add columnar data pattern + Extension API drilldown template to viz-blueprints.md; verify config-json-template.md drilldown flags
+- [ ] 30-02-PLAN.md — Add ECR-09 Extension API edge cases to edge-cases.md
+Plans:
 - [x] 23-01-PLAN.md — Update formatter-patterns.md brand swatch template; update vp-design SKILL.md to extract and pass palette to formatter generation step
 - [x] 23-02-PLAN.md — Update theme-template.md LIGHT textFaint to #6B7080; restore accentColor picker in formatter-patterns.md with usage contract comment
 
@@ -383,6 +413,9 @@ Plans:
   2. animation-recipes.md contains a clearly-labelled "Generic LED Pulse Boilerplate" section with a self-contained setInterval 30fps shadowBlur oscillation block — it compiles with no modifications other than substituting the target element reference
   3. Every viz type entry in viz-blueprints.md that previously said "animation varies by type" or equivalent now says "use Generic Entrance Boilerplate" or "use Generic LED Pulse Boilerplate" with a direct section reference
 **Plans**: 2 plans
+Plans:
+- [ ] 30-01-PLAN.md — Add columnar data pattern + Extension API drilldown template to viz-blueprints.md; verify config-json-template.md drilldown flags
+- [ ] 30-02-PLAN.md — Add ECR-09 Extension API edge cases to edge-cases.md
 Plans:
 **Wave 1**
 - [x] 24-01-PLAN.md — Write Generic Entrance Boilerplate and Generic LED Pulse Boilerplate sections in animation-recipes.md
@@ -403,6 +436,9 @@ Plans:
   6. A generated appIcon.png displays a recognizable domain symbol (e.g., heartbeat line for healthcare, shield for security) using the brand primary color — not a generic colored circle
 **Plans**: 2 plans
 Plans:
+- [ ] 30-01-PLAN.md — Add columnar data pattern + Extension API drilldown template to viz-blueprints.md; verify config-json-template.md drilldown flags
+- [ ] 30-02-PLAN.md — Add ECR-09 Extension API edge cases to edge-cases.md
+Plans:
 **Wave 1**
 - [x] 25-01-PLAN.md — BG track: add backgroundType/backgroundPattern to vp-design schema + theme-template; implement 4-type background dispatcher + light variants in generate_assets.js; tests T11-T16
 
@@ -418,6 +454,9 @@ Plans:
   2. The domain-templates.md entry for F1/motorsport (or equivalent data-rich domain) references the Multi-Channel Composite archetype with specific channel names (e.g., throttle %, brake %, speed km/h) — not a generic pointer
   3. The domain-templates.md entry for healthcare monitoring references the Multi-Channel Composite archetype with specific channel names (e.g., heart rate, SpO2, respiration rate) — not a generic pointer
 **Plans**: 2 plans
+Plans:
+- [ ] 30-01-PLAN.md — Add columnar data pattern + Extension API drilldown template to viz-blueprints.md; verify config-json-template.md drilldown flags
+- [ ] 30-02-PLAN.md — Add ECR-09 Extension API edge cases to edge-cases.md
 Plans:
 - [x] 26-01-PLAN.md — Add Multi-Channel Composite archetype to viz-blueprints.md with full pattern specification and one worked example
 - [x] 26-02-PLAN.md — Add multi-channel archetype references to F1/motorsport, healthcare monitoring, and network ops entries in domain-templates.md
@@ -436,6 +475,9 @@ Plans:
   6. pre-code-checklist.md includes a mandatory escapeHtml/makeSafeUrl check referencing ECR-08
 **Plans**: 2 plans
 Plans:
+- [ ] 30-01-PLAN.md — Add columnar data pattern + Extension API drilldown template to viz-blueprints.md; verify config-json-template.md drilldown flags
+- [ ] 30-02-PLAN.md — Add ECR-09 Extension API edge cases to edge-cases.md
+Plans:
 **Wave 1**
 - [x] 27-01-PLAN.md — Fix drilldown payload shape in viz-blueprints.md + split color picker section to splunkCategorical/custom + add threshold RAG template in formatter-patterns.md
 
@@ -452,6 +494,9 @@ Plans:
   3. package.json and app.conf templates exist with correct @splunk/dashboard-studio-extension dependency and yarn build/package scripts
   4. The visualization.js template uses ESM import syntax and inlines shared/theme.js DARK/LIGHT tokens
 **Plans**: 2 plans
+Plans:
+- [ ] 30-01-PLAN.md — Add columnar data pattern + Extension API drilldown template to viz-blueprints.md; verify config-json-template.md drilldown flags
+- [ ] 30-02-PLAN.md — Add ECR-09 Extension API edge cases to edge-cases.md
 Plans:
 - [ ] 28-01-PLAN.md — Create config-json-template.md with optionsSchema, editorConfig, 4 editor types, drilldown wiring, Classic-vs-Extension comparison
 - [x] 28-02-PLAN.md — Create visualization-js-template.md with Canvas 2D Extension API wrapper, listener-based state, columnar data, package.json and app.conf sections
@@ -482,6 +527,9 @@ Plans:
   3. viz-blueprints.md _onClick template has an Extension API variant using addDrilldownListener/triggerDrilldown
   4. config.json template has showDrilldown, hasEventHandlers, and canSetTokens correctly set for drilldown-enabled vizs
 **Plans**: 2 plans
+Plans:
+- [ ] 30-01-PLAN.md — Add columnar data pattern + Extension API drilldown template to viz-blueprints.md; verify config-json-template.md drilldown flags
+- [ ] 30-02-PLAN.md — Add ECR-09 Extension API edge cases to edge-cases.md
 
 ### Phase 31: Build & Validation
 **Goal**: validate_viz.sh detects format=extension and applies Extension API-specific checks, and the build path produces a valid .spl file
@@ -491,6 +539,9 @@ Plans:
   1. validate_viz.sh has a format-aware mode checking config.json schema, ESM syntax, and columnar data patterns for Extension API vizs
   2. Running yarn package on a scaffolded Extension API app produces a .spl file with the correct internal structure
 **Plans**: 2 plans
+Plans:
+- [ ] 30-01-PLAN.md — Add columnar data pattern + Extension API drilldown template to viz-blueprints.md; verify config-json-template.md drilldown flags
+- [ ] 30-02-PLAN.md — Add ECR-09 Extension API edge cases to edge-cases.md
 
 ### Phase 32: Aesthetic Scoring
 **Goal**: score_design.js automatically scores generated viz code on aesthetic dimensions and integrates as an optional Phase 5 in the validation pipeline
@@ -501,6 +552,9 @@ Plans:
   2. Running score_design.js produces a 0-100 numeric score with per-dimension breakdown
   3. validate_viz.sh runs score_design.js as an optional Phase 5 check when invoked with --score flag
 **Plans**: 2 plans
+Plans:
+- [ ] 30-01-PLAN.md — Add columnar data pattern + Extension API drilldown template to viz-blueprints.md; verify config-json-template.md drilldown flags
+- [ ] 30-02-PLAN.md — Add ECR-09 Extension API edge cases to edge-cases.md
 
 ### Phase 33: Test Build
 **Goal**: One complete end-to-end build using the Extension API path produces a working .spl file with 3+ vizs, validating the entire dual-format pipeline
