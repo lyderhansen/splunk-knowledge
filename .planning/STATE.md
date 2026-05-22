@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v5.6.0
 milestone_name: DS Extension API & Dual-Format Architecture
 status: executing
-stopped_at: Phase 29 Plan 01 complete — vp-init format choice question added
-last_updated: "2026-05-22T07:48:50.156Z"
+stopped_at: Phase 29 Plan 02 complete — format-conditional workflow and Extension API checklist added
+last_updated: "2026-05-22T07:49:42.486Z"
 last_activity: 2026-05-22
 progress:
   total_phases: 28
-  completed_phases: 19
+  completed_phases: 20
   total_plans: 46
-  completed_plans: 53
+  completed_plans: 54
   percent: 100
 ---
 
@@ -26,8 +26,8 @@ See: .planning/PROJECT.md (updated 2026-05-20)
 ## Current Position
 
 Phase: 29
-Plan: 01 complete
-Status: In progress — plan 01 of 3 done
+Plan: 02 complete
+Status: In progress — plan 02 of 3 done
 Last activity: 2026-05-22
 
 ## Performance Metrics
@@ -113,6 +113,8 @@ Recent decisions affecting current work:
 - [ET-01]: config-json-template.md created with 4 confirmed editor types; editor.text used as fallback for unconfirmed editor.radio/editor.select; bare option names (no VIZ_NAMESPACE) documented as Extension API improvement
 - [FC-01]: vp-init Q1 added as "Target format" (Classic vs Extension); Classic is default; previous Q1-Q7 renumbered to Q2-Q8
 - [FC-02]: Format field added as first entry in vp-design hand-off context block; propagates to all downstream skills
+- [FC-03]: vp-viz SKILL.md format-conditional workflow block added — Extension routes to config-json-template.md and visualization-js-template.md; Classic workflow unchanged
+- [FC-04]: pre-code-checklist.md Extension API Checklist section (12 items) added — ESM, columnar data, addThemeListener, addDrilldownListener, config.json, bare option names, yarn build
 
 ### Pending Todos
 
@@ -141,10 +143,10 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-05-22T07:48:50.149Z
-Stopped at: Phase 29 Plan 01 complete — vp-init format choice question added
-Resume: Run /gsd-execute-phase 29 plan 02
+Last session: 2026-05-22T07:49:42.480Z
+Stopped at: Phase 29 Plan 02 complete — format-conditional workflow and Extension API checklist added
+Resume: Run /gsd-execute-phase 29 plan 03
 
 ## Operator Next Steps
 
-- Run /gsd-execute-phase 29 plan 02 to add format-conditional branches to vp-viz
+- Run /gsd-execute-phase 29 plan 03 to continue Phase 29

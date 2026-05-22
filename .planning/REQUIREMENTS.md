@@ -21,8 +21,8 @@
 
 ### Extension API Skill Updates (ES)
 
-- [ ] **ES-01**: vp-viz SKILL.md has a format-conditional section — when format=extension, it generates visualization.js + config.json instead of visualization_source.js + formatter.html
-- [ ] **ES-02**: vp-viz pre-code-checklist.md has Extension API items alongside Classic items — ESM syntax, columnar data access, no VIZ_NAMESPACE in config.json, addDrilldownListener instead of _onClick
+- [x] **ES-01**: vp-viz SKILL.md has a format-conditional section — when format=extension, it generates visualization.js + config.json instead of visualization_source.js + formatter.html
+- [x] **ES-02**: vp-viz pre-code-checklist.md has Extension API items alongside Classic items — ESM syntax, columnar data access, no VIZ_NAMESPACE in config.json, addDrilldownListener instead of _onClick
 - [x] **ES-03**: vp-create SKILL.md has Extension API packaging steps — yarn install + yarn package instead of build_flat.js + manual tar
 
 ### Data Adapter (DA)
