@@ -615,6 +615,8 @@ Plans:
   4. The dashboard JSON is structurally valid (manual inspection or validate_dash.js)
   5. Any issues discovered during the build are committed as atomic fixes
 **Plans**: 1 plan
+Plans:
+- [ ] 35-01-PLAN.md — End-to-end Classic pipeline: vp-init (Red Bull brand) → vp-design (visual language) → vp-viz (5+ vizs inline) → vp-create (build, validate, score, dashboard, package)
 
 ### Phase 36: Extension API Path Test Build
 **Goal**: Run the same brand through the Extension API path producing a .spl with 3+ vizs — reusing the brand research and visual language from Phase 35
