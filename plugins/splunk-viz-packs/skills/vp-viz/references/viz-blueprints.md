@@ -96,6 +96,54 @@ drilldownField | text | "value" | Which field's value is passed on click
 
 Note: `SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN` — if the constant is unavailable at runtime, use string `'fieldvalue'` as fallback.
 
+### Extension API Data Access (columnar)
+
+Extension API delivers data in columnar format via `addDataSourcesListener`. The field order and names come from `data.fields`; values from `data.columns`.
+
+```javascript
+// data.fields = [{name: "host"}, {name: "count"}]
+// data.columns = [["host-1", "host-2"], ["100", "250"]]  — columns[fieldIdx][rowIdx]
+
+var fields   = data.fields;
+var hostIdx  = fields.findIndex(function(f) { return f.name === 'host'; });
+var countIdx = fields.findIndex(function(f) { return f.name === 'count'; });
+var host0    = data.columns[hostIdx][0];               // "host-1"
+var count0   = parseFloat(data.columns[countIdx][0]);  // 100 — ALL values are strings
+```
+
+**Classic vs Extension:** `data.rows[rowIdx][colIdx]` (row-major, pre-typed) vs `data.columns[fieldIdx][rowIdx]` (columnar, all strings — parseFloat/parseInt required for numerics).
+
+**Loading gate (mandatory):** gate rendering behind `ds.loading` and null-check `dataSources.primary.data` — see ECR-09 in edge-cases.md.
+
+### Extension API Drilldown
+
+Two approaches — choose based on hit-testing needs:
+
+**1. addDrilldownListener** — element-based; framework manages the click event. Best for Canvas vizs where the whole canvas is one click target:
+```javascript
+VisualizationAPI.addDrilldownListener(canvasEl, 'custom.click', function() {
+    return { name: 'selected_host', value: currentHost };  // payload
+});
+```
+
+**2. triggerDrilldown** — programmatic; for Canvas hit-testing, hover, or keyboard triggers:
+```javascript
+canvas.addEventListener('click', function(e) {
+    var val = /* hit-test result */;
+    VisualizationAPI.triggerDrilldown({
+        action: 'setToken',
+        payload: { name: 'selected_host', value: val },
+        originalEvent: e
+    });
+});
+```
+
+**Token setting:** `action: 'setToken'`, `payload: { name, value }`. Enable with `"canSetTokens": ["dynamic"]` in config.json. Note: payload shape for custom (non-setToken) actions has **LOW CONFIDENCE** from research — keep custom payloads to simple `{ name, value }` pairs until tested.
+
+**Classic vs Extension:** Classic calls `this.drilldown({action: FIELD_VALUE_DRILLDOWN, data: payload}, e)`. Extension calls `VisualizationAPI.triggerDrilldown()` or `addDrilldownListener()` — no `this.drilldown()`, no `SplunkVisualizationBase` constant.
+
+**config.json flags:** See config-json-template.md Drilldown Wiring — set `showDrilldown`, `hasEventHandlers`, `canSetTokens` together. `showDrilldown: true` alone shows UI but clicks do nothing.
+
 ### Single Value Tile (KPI)
 
 **Expresses:** the single most important number. Hero metric.
