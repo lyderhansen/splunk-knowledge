@@ -185,8 +185,24 @@ echo "OK — $SIZE bytes"
 ### Step 5 (Extension API): Verify .spl
 
 ```bash
+# 1. File exists and is > 1KB
 ls -la /path/to/app/*.spl
-# Must exist and be > 1KB
+
+# 2. Internal structure — scan top entries
+unzip -l /path/to/app/*.spl | head -30
+# Expect: default/visualizations.conf, appserver/static/visualizations/<viz>/{config.json,visualization.js}
+
+# 3. Confirm framework_type per viz stanza
+unzip -p /path/to/app/*.spl "*/default/visualizations.conf" | grep framework_type
+# Must show: framework_type = studio_visualization  (one line per viz)
+
+# 4. config.json present per viz (no formatter.html)
+unzip -l /path/to/app/*.spl | grep config.json
+# Expect one config.json per viz directory
+
+# 5. Bundled visualization.js present per viz
+unzip -l /path/to/app/*.spl | grep visualization.js
+# Expect one visualization.js per viz directory
 ```
 
 ## Step 6: Completion output
@@ -241,4 +257,5 @@ Save to `default/data/ui/nav/default.xml`.
 - [ ] (Extension only) yarn build succeeded without errors
 - [ ] (Extension only) .spl file exists and > 1KB
 - [ ] (Extension only) config.json present per viz (not formatter.html)
+- [ ] (Extension only) visualizations.conf has framework_type=studio_visualization per viz
 ```
