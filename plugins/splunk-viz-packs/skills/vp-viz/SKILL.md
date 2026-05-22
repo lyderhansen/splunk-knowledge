@@ -31,6 +31,8 @@ WRONG: "options": { "scoreField": "score" }
 RIGHT: "options": { "myapp.myviz.scoreField": "score" }
 ```
 
+**Extension API exception:** When format=extension, config.json uses bare option names (no namespace prefix) and Dashboard Studio reads them directly. The VIZ_NAMESPACE and namespace rules above apply to Classic format only.
+
 ## Workflow
 
 ```
@@ -48,6 +50,20 @@ RIGHT: "options": { "myapp.myviz.scoreField": "score" }
    6. If still failing after 2 iterations, report the remaining failures and continue to vp-create
 7. Package                → see vp-create
 ```
+
+### Format-conditional workflow
+
+**If format=extension** (from visual language):
+1. Read conf templates    → references/conf-templates.md (app.conf only — no visualizations.conf formatter_app_name)
+2. Read theme template    → references/theme-template.md (same)
+3. Write config.json      → use references/config-json-template.md (replaces formatter.html)
+4. Write visualization.js → use references/visualization-js-template.md (ESM, replaces visualization_source.js)
+   Put source in visualizations/{viz}/src/visualization.js
+5. Skip build_flat.js — Extension uses yarn build (handled by vp-create)
+6. Validate and fix (same loop, different checks — see Phase 31)
+7. Package → see vp-create
+
+**If format=classic** (default): follow the workflow above unchanged.
 
 ## Pre-code checklist — MUST READ before writing any code
 
@@ -71,6 +87,8 @@ CRITICAL SUBSET (12 most-failed rules):
 ```
 
 **Full checklist (43 items):** [references/pre-code-checklist.md](references/pre-code-checklist.md)
+
+The checklist includes an Extension API section — read it when format=extension to skip Classic-only items and follow Extension-specific rules.
 
 ## Conf templates
 
