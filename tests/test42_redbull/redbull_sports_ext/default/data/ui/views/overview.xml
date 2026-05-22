@@ -1,0 +1,105 @@
+<dashboard version="2" theme="dark">
+  <label>Red Bull Sports Analytics (Extension API)</label>
+  <description>Branded sports analytics dashboard with 3 Extension API custom visualizations — KPI tile, ring gauge, and athlete leaderboard.</description>
+  <definition><![CDATA[
+{
+  "dataSources": {
+    "ds_kpi": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup demo_kpi.csv"
+      },
+      "name": "KPI Demo Data"
+    },
+    "ds_gauge": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup demo_gauge.csv"
+      },
+      "name": "Gauge Demo Data"
+    },
+    "ds_leaderboard": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup demo_leaderboard.csv"
+      },
+      "name": "Leaderboard Demo Data"
+    }
+  },
+  "visualizations": {
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "## Red Bull Sports Analytics"
+      }
+    },
+    "viz_kpi_1": {
+      "type": "redbull_sports_ext.kpi_tile",
+      "dataSources": {
+        "primary": "ds_kpi"
+      },
+      "title": "Total Events",
+      "options": {
+        "redbull_sports_ext.kpi_tile.themeMode": "auto"
+      }
+    },
+    "viz_gauge": {
+      "type": "redbull_sports_ext.ring_gauge",
+      "dataSources": {
+        "primary": "ds_gauge"
+      },
+      "title": "Performance Score",
+      "options": {
+        "redbull_sports_ext.ring_gauge.themeMode": "auto"
+      }
+    },
+    "viz_leaderboard": {
+      "type": "redbull_sports_ext.athlete_leaderboard",
+      "dataSources": {
+        "primary": "ds_leaderboard"
+      },
+      "title": "Athlete Rankings",
+      "options": {
+        "redbull_sports_ext.athlete_leaderboard.themeMode": "auto"
+      }
+    },
+    "viz_bg": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "#0C1B3A"
+      }
+    }
+  },
+  "layout": {
+    "type": "absolute",
+    "options": {
+      "width": 1920,
+      "height": 1200,
+      "backgroundColor": "#070D1A"
+    },
+    "structure": [
+      {
+        "item": "viz_bg",
+        "position": { "x": 0, "y": 0, "w": 1920, "h": 1200 }
+      },
+      {
+        "item": "viz_title",
+        "position": { "x": 20, "y": 10, "w": 1880, "h": 50 }
+      },
+      {
+        "item": "viz_kpi_1",
+        "position": { "x": 20, "y": 70, "w": 620, "h": 250 }
+      },
+      {
+        "item": "viz_gauge",
+        "position": { "x": 660, "y": 70, "w": 620, "h": 250 }
+      },
+      {
+        "item": "viz_leaderboard",
+        "position": { "x": 20, "y": 340, "w": 1260, "h": 840 }
+      }
+    ]
+  }
+}
+  ]]></definition>
+</dashboard>
