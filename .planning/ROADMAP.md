@@ -95,7 +95,7 @@ Full details: `.planning/milestones/v5.5.0-ROADMAP.md`
 - [x] **Phase 28: Extension API Templates** - Write config.json, visualization.js, package.json, and app.conf generation templates for the DS Extension API path (completed 2026-05-22)
 - [x] **Phase 29: Skill Format Conditioning** - vp-init format choice (Classic vs Extension); vp-viz and vp-create format-conditional generation sections (completed 2026-05-22)
 - [x] **Phase 30: Data & Drilldown Adapter** - Columnar data access patterns in viz-blueprints.md; Extension API edge cases; drilldown variant with triggerDrilldown (completed 2026-05-22)
-- [ ] **Phase 31: Build & Validation** - validate_viz.sh Extension API mode (config.json, ESM, columnar); .spl build verification via yarn package
+- [x] **Phase 31: Build & Validation** - validate_viz.sh Extension API mode (config.json, ESM, columnar); .spl build verification via yarn package (completed 2026-05-22)
 - [ ] **Phase 32: Aesthetic Scoring** - score_design.js automated aesthetic scorer with per-dimension breakdown; optional Phase 5 in validate_viz.sh
 - [ ] **Phase 33: Test Build** - End-to-end Extension API test build with 3+ vizs producing an installable .spl file
 
@@ -540,7 +540,7 @@ Plans:
   2. Running yarn package on a scaffolded Extension API app produces a .spl file with the correct internal structure
 **Plans**: 2 plans
 Plans:
-- [ ] 31-01-PLAN.md — Add Extension API format detection and E01-E05 checks to validate_viz.sh (BV-01)
+- [x] 31-01-PLAN.md — Add Extension API format detection and E01-E05 checks to validate_viz.sh (BV-01)
 - [x] 31-02-PLAN.md — Expand .spl internal structure verification in vp-create SKILL.md (BV-02)
 
 
@@ -601,6 +601,6 @@ Plans:
 | 28. Extension API Templates | v5.6.0 | 2/2 | Complete   | 2026-05-22 |
 | 29. Skill Format Conditioning | v5.6.0 | 3/3 | Complete   | 2026-05-22 |
 | 30. Data & Drilldown Adapter | v5.6.0 | 2/2 | Complete   | 2026-05-22 |
-| 31. Build & Validation | v5.6.0 | 1/2 | In Progress|  |
+| 31. Build & Validation | v5.6.0 | 2/2 | Complete   | 2026-05-22 |
 | 32. Aesthetic Scoring | v5.6.0 | 0/2 | Not started | - |
 | 33. Test Build | v5.6.0 | 0/1 | Not started | - |
