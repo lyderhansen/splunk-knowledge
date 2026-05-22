@@ -1,0 +1,4 @@
+<nav search_view="search" color="#F5C518">
+  <view name="redbull_sports_viz_overview" default="true" />
+  <view name="search" />
+</nav>

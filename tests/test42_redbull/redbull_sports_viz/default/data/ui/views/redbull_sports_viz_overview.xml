@@ -1,0 +1,243 @@
+<dashboard version="2" theme="dark">
+  <label>Red Bull Sports Analytics Overview</label>
+  <description>Branded sports analytics dashboard with 5 custom visualizations — KPI tile, horizontal bar, ring gauge, event timeline, and athlete leaderboard.</description>
+  <definition><![CDATA[
+{
+  "dataSources": {
+    "ds_kpi_tile": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup redbull_sports_viz_demo_kpi_tile.csv"
+      },
+      "name": "KPI Tile Demo Data"
+    },
+    "ds_horizontal_bar": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup redbull_sports_viz_demo_horizontal_bar.csv"
+      },
+      "name": "Horizontal Bar Demo Data"
+    },
+    "ds_ring_gauge": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup redbull_sports_viz_demo_ring_gauge.csv"
+      },
+      "name": "Ring Gauge Demo Data"
+    },
+    "ds_event_timeline": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup redbull_sports_viz_demo_event_timeline.csv"
+      },
+      "name": "Event Timeline Demo Data"
+    },
+    "ds_athlete_leaderboard": {
+      "type": "ds.search",
+      "options": {
+        "query": "| inputlookup redbull_sports_viz_demo_athlete_leaderboard.csv"
+      },
+      "name": "Athlete Leaderboard Demo Data"
+    }
+  },
+  "visualizations": {
+    "viz_bg_gradient": {
+      "type": "splunk.image",
+      "options": {
+        "src": "/static/app/redbull_sports_viz/images/bg_gradient.png",
+        "preserveAspectRatio": false
+      }
+    },
+    "viz_depth_overlay": {
+      "type": "splunk.rectangle",
+      "options": {
+        "fillColor": "rgba(0,0,0,0.35)"
+      }
+    },
+    "viz_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# Red Bull Sports Analytics"
+      }
+    },
+    "viz_kpi_tile": {
+      "type": "redbull_sports_viz.kpi_tile",
+      "dataSources": {
+        "primary": "ds_kpi_tile"
+      },
+      "options": {
+        "drilldown": "all"
+      },
+      "eventHandlers": [
+        {
+          "type": "drilldown.setToken",
+          "options": {
+            "tokens": [
+              { "token": "selected_kpi", "key": "click.value" }
+            ]
+          }
+        }
+      ]
+    },
+    "viz_horizontal_bar": {
+      "type": "redbull_sports_viz.horizontal_bar",
+      "dataSources": {
+        "primary": "ds_horizontal_bar"
+      },
+      "options": {
+        "drilldown": "all"
+      },
+      "eventHandlers": [
+        {
+          "type": "drilldown.setToken",
+          "options": {
+            "tokens": [
+              { "token": "selected_athlete", "key": "click.value" }
+            ]
+          }
+        }
+      ]
+    },
+    "viz_ring_gauge": {
+      "type": "redbull_sports_viz.ring_gauge",
+      "dataSources": {
+        "primary": "ds_ring_gauge"
+      },
+      "options": {
+        "drilldown": "all"
+      },
+      "eventHandlers": [
+        {
+          "type": "drilldown.setToken",
+          "options": {
+            "tokens": [
+              { "token": "selected_gauge", "key": "click.value" }
+            ]
+          }
+        }
+      ]
+    },
+    "viz_event_timeline": {
+      "type": "redbull_sports_viz.event_timeline",
+      "dataSources": {
+        "primary": "ds_event_timeline"
+      },
+      "options": {
+        "drilldown": "all"
+      },
+      "eventHandlers": [
+        {
+          "type": "drilldown.setToken",
+          "options": {
+            "tokens": [
+              { "token": "selected_event", "key": "click.value" }
+            ]
+          }
+        }
+      ]
+    },
+    "viz_athlete_leaderboard": {
+      "type": "redbull_sports_viz.athlete_leaderboard",
+      "dataSources": {
+        "primary": "ds_athlete_leaderboard"
+      },
+      "options": {
+        "drilldown": "all"
+      },
+      "eventHandlers": [
+        {
+          "type": "drilldown.setToken",
+          "options": {
+            "tokens": [
+              { "token": "selected_racer", "key": "click.value" }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "defaults": {
+    "dataSources": {
+      "ds.search": {
+        "options": {
+          "queryParameters": {
+            "earliest": "$global_time.earliest$",
+            "latest": "$global_time.latest$"
+          }
+        }
+      }
+    },
+    "tokens": {
+      "default": {
+        "selected_kpi":      { "value": "*" },
+        "selected_athlete":  { "value": "*" },
+        "selected_gauge":    { "value": "*" },
+        "selected_event":    { "value": "*" },
+        "selected_racer":    { "value": "*" }
+      }
+    }
+  },
+  "inputs": {
+    "input_global_time": {
+      "type": "input.timerange",
+      "title": "Time range",
+      "options": {
+        "token": "global_time",
+        "defaultValue": "-7d@d,now"
+      }
+    }
+  },
+  "layout": {
+    "type": "absolute",
+    "globalInputs": ["input_global_time"],
+    "options": {
+      "width": 1920,
+      "height": 1080,
+      "backgroundColor": "#060E1F"
+    },
+    "structure": [
+      {
+        "item": "viz_bg_gradient",
+        "type": "block",
+        "position": { "x": 0, "y": 0, "w": 1920, "h": 1080 }
+      },
+      {
+        "item": "viz_depth_overlay",
+        "type": "block",
+        "position": { "x": 0, "y": 0, "w": 1920, "h": 1080 }
+      },
+      {
+        "item": "viz_title",
+        "type": "block",
+        "position": { "x": 24, "y": 16, "w": 900, "h": 60 }
+      },
+      {
+        "item": "viz_kpi_tile",
+        "type": "block",
+        "position": { "x": 24, "y": 90, "w": 420, "h": 210 }
+      },
+      {
+        "item": "viz_ring_gauge",
+        "type": "block",
+        "position": { "x": 456, "y": 90, "w": 280, "h": 210 }
+      },
+      {
+        "item": "viz_horizontal_bar",
+        "type": "block",
+        "position": { "x": 748, "y": 90, "w": 600, "h": 210 }
+      },
+      {
+        "item": "viz_event_timeline",
+        "type": "block",
+        "position": { "x": 24, "y": 316, "w": 1324, "h": 340 }
+      },
+      {
+        "item": "viz_athlete_leaderboard",
+        "type": "block",
+        "position": { "x": 24, "y": 670, "w": 1324, "h": 390 }
+      }
+    ]
+  }
+}
+]]></definition>
+</dashboard>
