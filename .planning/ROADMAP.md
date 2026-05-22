@@ -92,7 +92,7 @@ Full details: `.planning/milestones/v5.5.0-ROADMAP.md`
 
 **v5.6.0 DS Extension API & Dual-Format Architecture (Phases 28-33)**
 
-- [ ] **Phase 28: Extension API Templates** - Write config.json, visualization.js, package.json, and app.conf generation templates for the DS Extension API path
+- [x] **Phase 28: Extension API Templates** - Write config.json, visualization.js, package.json, and app.conf generation templates for the DS Extension API path (completed 2026-05-22)
 - [ ] **Phase 29: Skill Format Conditioning** - vp-init format choice (Classic vs Extension); vp-viz and vp-create format-conditional generation sections
 - [ ] **Phase 30: Data & Drilldown Adapter** - Columnar data access patterns in viz-blueprints.md; Extension API edge cases; drilldown variant with triggerDrilldown
 - [ ] **Phase 31: Build & Validation** - validate_viz.sh Extension API mode (config.json, ESM, columnar); .spl build verification via yarn package
@@ -467,6 +467,10 @@ Plans:
   4. pre-code-checklist.md has Extension API items — ESM syntax, columnar data, no VIZ_NAMESPACE, addDrilldownListener
   5. vp-create SKILL.md has Extension API packaging — yarn install + yarn package instead of build_flat.js + manual tar
 **Plans**: 3 plans
+Plans:
+- [ ] 29-01-PLAN.md — Add format choice question to vp-init SKILL.md + include format field in hand-off to vp-design
+- [ ] 29-02-PLAN.md — Add format-conditional generation section to vp-viz SKILL.md + Extension API items to pre-code-checklist.md
+- [ ] 29-03-PLAN.md — Add format-conditional build/package section to vp-create SKILL.md
 
 ### Phase 30: Data & Drilldown Adapter
 **Goal**: viz-blueprints.md and edge-cases.md document the Extension API data access and drilldown patterns alongside Classic patterns, so Claude generates correct code for either format
@@ -539,7 +543,7 @@ Plans:
 | 25. Backgrounds & Preview Assets | v5.5.0 | 2/2 | Complete    | 2026-05-20 |
 | 26. Multi-Channel Archetype | v5.5.0 | 2/2 | Complete   | 2026-05-21 |
 | 27. API Correctness | v5.5.0 | 2/2 | Complete   | 2026-05-21 |
-| 28. Extension API Templates | v5.6.0 | 1/2 | In Progress|  |
+| 28. Extension API Templates | v5.6.0 | 2/2 | Complete   | 2026-05-22 |
 | 29. Skill Format Conditioning | v5.6.0 | 0/3 | Not started | - |
 | 30. Data & Drilldown Adapter | v5.6.0 | 0/2 | Not started | - |
 | 31. Build & Validation | v5.6.0 | 0/2 | Not started | - |
