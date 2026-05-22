@@ -10,8 +10,8 @@
 - [ ] **SU-01**: ds-int-drilldowns documents linkToDashboard token format (array with `value` field not `key`), key vs value distinction in setToken, columnFormat.data DS expression requirement (`> table | seriesByName(...)`), and cross-dashboard ±N minute time range recipe
 - [ ] **SU-02**: ds-int-tokens documents the `expressions` stanza (conditions + eval sections), JSONata syntax (NOT SPL eval), `$eval:name$` reference syntax, arithmetic/ternary/string-concat examples, `$now('format')` with JSONata date patterns, and version requirements (Enterprise 10.2+ / Cloud 10.1.2507+)
 - [ ] **SU-03**: ds-int-visibility documents `containerOptions.visibility` (NOT direct showConditions on viz), show/hide conditions arrays with OR logic, hide-wins precedence, toggle button pattern using `input.button` + eval expressions, and conditions-only-in-source limitation
-- [ ] **SU-04**: ds-ref-syntax lists `expressions` as top-level key, `containerOptions.visibility` as viz-level property, `input.button` as input type, and `columnFormat.data` as DS expression (not plain string)
-- [ ] **SU-05**: ds-ref-pitfalls adds three new symptoms: `e.map is not a function` (tokens object instead of array OR columnFormat.data plain string), `linkToDashboard tokens undefined` (used key instead of value), JSONata vs SPL eval syntax confusion
+- [x] **SU-04**: ds-ref-syntax lists `expressions` as top-level key, `containerOptions.visibility` as viz-level property, `input.button` as input type, and `columnFormat.data` as DS expression (not plain string)
+- [x] **SU-05**: ds-ref-pitfalls adds three new symptoms: `e.map is not a function` (tokens object instead of array OR columnFormat.data plain string), `linkToDashboard tokens undefined` (used key instead of value), JSONata vs SPL eval syntax confusion
 
 ### Pipeline Execution (PE)
 

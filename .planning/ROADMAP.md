@@ -602,7 +602,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 - [ ] 34-01-PLAN.md — CRITICAL skills: ds-int-drilldowns (linkToDashboard format, key vs value, columnFormat.data, three-handler chain) + ds-int-tokens (expressions, JSONata, $eval:name$) + ds-int-visibility (input.button toggle, conditions limitation)
-- [ ] 34-02-PLAN.md — Reference skills: ds-ref-syntax (input.button, columnFormat.data) + ds-ref-pitfalls (3 new symptoms) + ds-int-defaults (expressions stanza mention)
+- [x] 34-02-PLAN.md — Reference skills: ds-ref-syntax (input.button, columnFormat.data) + ds-ref-pitfalls (3 new symptoms) + ds-int-defaults (expressions stanza mention)
 
 ### Phase 35: Classic Path Test Build
 **Goal**: Run the full /vp-init → /vp-design → /vp-viz → /vp-create pipeline with a real brand through the Classic path, producing a .tar.gz with 5+ vizs, a branded dashboard, and all assets — fixing issues in-flight
@@ -673,7 +673,7 @@ Plans:
 | 31. Build & Validation | v5.6.0 | 2/2 | Complete   | 2026-05-22 |
 | 32. Aesthetic Scoring | v5.6.0 | 2/2 | Complete   | 2026-05-22 |
 | 33. Test Build | v5.6.0 | 1/1 | Complete   | 2026-05-22 |
-| 34. Dashboard Studio Skill Updates | v5.7.0 | 0/2 | Not started | - |
+| 34. Dashboard Studio Skill Updates | v5.7.0 | 1/2 | In Progress|  |
 | 35. Classic Path Test Build | v5.7.0 | 0/1 | Not started | - |
 | 36. Extension API Path Test Build | v5.7.0 | 0/1 | Not started | - |
 | 37. Test Report & Comparison | v5.7.0 | 0/1 | Not started | - |
