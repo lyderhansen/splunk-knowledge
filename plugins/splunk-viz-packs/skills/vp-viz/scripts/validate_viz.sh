@@ -64,6 +64,8 @@ echo "============================================"
 for f in "$APP_DIR"/appserver/static/visualizations/*/formatter.html; do
   [ -f "$f" ] || continue
   VIZ=$(basename "$(dirname "$f")")
+  # Skip Extension API vizs — they use config.json, not formatter.html
+  [ -f "$(dirname "$f")/config.json" ] && continue
   FAIL=0
   echo ""
   echo "--- formatter: $VIZ ---"
@@ -121,14 +123,76 @@ for f in "$APP_DIR"/appserver/static/visualizations/*/formatter.html; do
   [ "$FAIL" -eq 0 ] && echo "  OK" || TOTAL_FAIL=1
 done
 
+# --- EXTENSION API CHECKS ---
+for vizdir in "$APP_DIR"/appserver/static/visualizations/*/; do
+  [ -d "$vizdir" ] || continue
+  [ -f "$vizdir/config.json" ] || continue
+  VIZ=$(basename "$vizdir")
+  EXT_FAIL=0
+  echo ""
+  echo "--- Extension API: $VIZ ---"
+
+  # E01 — config.json valid JSON with required keys (optionsSchema + editorConfig)
+  if [ "$HAS_NODE" -eq 1 ]; then
+    E01_OUT=$(node -e "var fs=require('fs'),c=JSON.parse(fs.readFileSync('${vizdir}config.json','utf8')),g=c.config||c;if(!g.optionsSchema){console.error('FAIL E01: config.json missing optionsSchema');process.exit(1);}if(!g.editorConfig){console.error('FAIL E01: config.json missing editorConfig');process.exit(1);}" 2>&1); E01_EXIT=$?
+    [ -n "$E01_OUT" ] && echo "  $E01_OUT"
+    [ "$E01_EXIT" -ne 0 ] && EXT_FAIL=1
+  else
+    grep -q '"optionsSchema"' "$vizdir/config.json" || { echo "  FAIL E01: config.json missing optionsSchema"; EXT_FAIL=1; }
+    grep -q '"editorConfig"'  "$vizdir/config.json" || { echo "  FAIL E01: config.json missing editorConfig";  EXT_FAIL=1; }
+  fi
+
+  # Find the visualization JS file (src/ preferred, then root)
+  EXT_JS=""
+  [ -f "$vizdir/src/visualization.js" ] && EXT_JS="$vizdir/src/visualization.js"
+  [ -z "$EXT_JS" ] && [ -f "$vizdir/visualization.js" ] && EXT_JS="$vizdir/visualization.js"
+
+  if [ -z "$EXT_JS" ]; then
+    echo "  FAIL E02: no visualization.js found"
+    EXT_FAIL=1
+  else
+    # E02 — ESM import present, AMD define absent
+    grep -qE 'import.*VisualizationAPI|import.*dashboard-studio-extension' "$EXT_JS" || {
+      echo "  FAIL E02: visualization.js missing ESM import (import { VisualizationAPI })"; EXT_FAIL=1
+    }
+    grep -q 'define(\[' "$EXT_JS" && {
+      echo "  FAIL E02: visualization.js uses AMD define wrapper (must use ESM import)"; EXT_FAIL=1
+    }
+
+    # E03 — listener-based data access (addDataSourcesListener)
+    grep -q 'addDataSourcesListener' "$EXT_JS" || {
+      echo "  FAIL E03: visualization.js missing addDataSourcesListener (Extension API listener pattern required)"; EXT_FAIL=1
+    }
+
+    # E04 — columnar data access (columns[ not rows[)
+    grep -q 'columns\[' "$EXT_JS" || {
+      echo "  FAIL E04: visualization.js missing columns[ access (Extension API delivers columnar data)"; EXT_FAIL=1
+    }
+  fi
+
+  # E05 — no formatter.html alongside config.json (mutually exclusive formats)
+  [ -f "$vizdir/formatter.html" ] && {
+    echo "  FAIL E05: $VIZ has both config.json and formatter.html (formats are mutually exclusive)"; EXT_FAIL=1
+  }
+
+  [ "$EXT_FAIL" -eq 0 ] && echo "  OK" || TOTAL_FAIL=1
+done
+
 # --- JS CHECKS (check SOURCE files first, fall back to built bundles) ---
 for vizdir in "$APP_DIR"/appserver/static/visualizations/*/; do
   [ -d "$vizdir" ] || continue
   VIZ=$(basename "$vizdir")
 
+  # Detect Extension API format (config.json present = Extension)
+  IS_EXTENSION=0
+  [ -f "$vizdir/config.json" ] && IS_EXTENSION=1
+
   # Prefer source file for checks (not minified)
   if [ -f "$vizdir/src/visualization_source.js" ]; then
     f="$vizdir/src/visualization_source.js"
+    SRC="source"
+  elif [ "$IS_EXTENSION" -eq 1 ] && [ -f "$vizdir/src/visualization.js" ]; then
+    f="$vizdir/src/visualization.js"
     SRC="source"
   elif [ -f "$vizdir/visualization.js" ]; then
     f="$vizdir/visualization.js"
@@ -144,26 +208,34 @@ for vizdir in "$APP_DIR"/appserver/static/visualizations/*/; do
   echo ""
   echo "--- JS ($SRC): $VIZ ---"
 
-  # Syntax check (bundle only — source may use require())
-  if [ "$SRC" = "bundle" ]; then
-    node --check "$f" 2>/dev/null || { echo "  FAIL: syntax error"; FAIL=1; }
-    head -1 "$f" | grep -q 'define(\[' || { echo "  FAIL: missing AMD define wrapper"; FAIL=1; }
+  if [ "$IS_EXTENSION" -eq 0 ]; then
+    # Classic-only checks: AMD wrapper + ES5 compliance
+
+    # Syntax check (bundle only — source may use require())
+    if [ "$SRC" = "bundle" ]; then
+      node --check "$f" 2>/dev/null || { echo "  FAIL: syntax error"; FAIL=1; }
+      head -1 "$f" | grep -q 'define(\[' || { echo "  FAIL: missing AMD define wrapper"; FAIL=1; }
+    fi
+
+    # ES5 compliance
+    if [ "$USE_AST" -eq 1 ]; then
+      OUTPUT=$(node "$VALIDATE_AST" --js "$f" 2>&1)
+      AST_EXIT=$?
+      [ -n "$OUTPUT" ] && echo "$OUTPUT"
+      [ "$AST_EXIT" -ne 0 ] && FAIL=1
+    else
+      # Fallback grep check
+      ES6=$(grep -cE '\bconst \b|\blet \b| => ' "$f" 2>/dev/null || true)
+      [ "$ES6" -gt 0 ] && { echo "  FAIL F3: $ES6 ES6 occurrences (grep fallback — no line numbers)"; FAIL=1; }
+    fi
   fi
 
-  # ES5 compliance
-  if [ "$USE_AST" -eq 1 ]; then
-    OUTPUT=$(node "$VALIDATE_AST" --js "$f" 2>&1)
-    AST_EXIT=$?
-    [ -n "$OUTPUT" ] && echo "$OUTPUT"
-    [ "$AST_EXIT" -ne 0 ] && FAIL=1
+  # Theme detection (Classic: detectTheme/getCurrentTheme; Extension: addThemeListener)
+  if [ "$IS_EXTENSION" -eq 1 ]; then
+    grep -qE 'addThemeListener|detectTheme|getCurrentTheme' "$f" || { echo "  FAIL B20: no theme detection (addThemeListener expected for Extension API)"; FAIL=1; }
   else
-    # Fallback grep check
-    ES6=$(grep -cE '\bconst \b|\blet \b| => ' "$f" 2>/dev/null || true)
-    [ "$ES6" -gt 0 ] && { echo "  FAIL F3: $ES6 ES6 occurrences (grep fallback — no line numbers)"; FAIL=1; }
+    grep -qE 'detectTheme|getCurrentTheme' "$f" || { echo "  FAIL B20: no theme detection"; FAIL=1; }
   fi
-
-  # Theme detection
-  grep -qE 'detectTheme|getCurrentTheme' "$f" || { echo "  FAIL B20: no theme detection"; FAIL=1; }
 
   # Null guards
   grep -qE '!= null|safeStr|safeNum' "$f" || { echo "  FAIL B21: no null guards"; FAIL=1; }
