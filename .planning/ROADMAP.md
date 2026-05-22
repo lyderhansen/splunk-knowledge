@@ -554,8 +554,11 @@ Plans:
   3. validate_viz.sh runs score_design.js as an optional Phase 5 check when invoked with --score flag
 **Plans**: 2 plans
 Plans:
-- [ ] 30-01-PLAN.md — Add columnar data pattern + Extension API drilldown template to viz-blueprints.md; verify config-json-template.md drilldown flags
-- [ ] 30-02-PLAN.md — Add ECR-09 Extension API edge cases to edge-cases.md
+**Wave 1**
+- [ ] 32-01-PLAN.md — Create score_design.js with 5 aesthetic dimensions (gradient, typography, spacing, color, animation), 0-100 score output (AS-01)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 32-02-PLAN.md — Integrate score_design.js into validate_viz.sh as optional Phase 5 with --score flag (AS-02)
 
 ### Phase 33: Test Build
 **Goal**: One complete end-to-end build using the Extension API path produces a working .spl file with 3+ vizs, validating the entire dual-format pipeline
