@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v5.7.0
 milestone_name: Real Brand End-to-End Validation
 status: planning
-stopped_at: Phase 33 Plan 01 complete — Extension API end-to-end test build, 5/5 D-03 checks PASS, v5.6.0 milestone complete
-last_updated: "2026-05-22T14:34:15.685Z"
+stopped_at: Phase 34 Plan 01 complete — ds-int-drilldowns/tokens/visibility skill corrections from test40 handover
+last_updated: "2026-05-22T14:40:00.000Z"
 last_activity: 2026-05-22
 progress:
   total_phases: 32
-  completed_phases: 24
+  completed_phases: 25
   total_plans: 55
-  completed_plans: 62
+  completed_plans: 63
   percent: 100
 ---
 
@@ -26,8 +26,8 @@ See: .planning/PROJECT.md (updated 2026-05-20)
 ## Current Position
 
 Phase: 34
-Plan: Not started
-Status: Ready to plan
+Plan: 01 complete
+Status: In progress (1/1 plans complete)
 Last activity: 2026-05-22
 
 ## Performance Metrics
@@ -120,12 +120,16 @@ Recent decisions affecting current work:
 
 - [x] Execute 27-02-PLAN.md (remaining plan in phase 27) — COMPLETE
 - [x] Execute 33-01-PLAN.md — COMPLETE (2026-05-22)
+- [x] Execute 34-01-PLAN.md — COMPLETE (2026-05-22)
 
 ### Decisions
 
 - [TB-01]: @splunk/dashboard-studio-extension is publicly available on npm — no Splunk auth required for Extension API test builds
 - [TB-02]: Manual scaffold (no @splunk/create CLI) produces identical Extension API project structure per plan D-02 fallback
 - [TB-03]: preview.png generated with raw Buffer + Node.js zlib (no external PNG lib) — 116x76, brand palette, >100 bytes passes A01/A02
+- [SU-01]: linkToDashboard.tokens must be array+value (not object map, not key) — live-tested error table added to ds-int-drilldowns
+- [SU-02]: Dashboard Studio eval uses JSONata not SPL eval — & for concat, ? : ternary, $now() for dates; documented in ds-int-tokens
+- [SU-03]: Three-handler chain is the only working cross-dashboard time range pattern — $eval:name$ direct in linkToDashboard does not recompute before navigation
 
 ### Blockers/Concerns
 
@@ -150,9 +154,9 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-05-22T14:34:15.677Z
-Stopped at: Phase 33 Plan 01 complete — Extension API end-to-end test build, 5/5 D-03 checks PASS, v5.6.0 milestone complete
-Resume: None — v5.6.0 complete
+Last session: 2026-05-22T14:40:00.000Z
+Stopped at: Phase 34 Plan 01 complete — ds-int-drilldowns/tokens/visibility skill corrections from test40 handover
+Resume: None — phase 34 plan 01 complete
 
 ## Operator Next Steps
 
