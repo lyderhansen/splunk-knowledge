@@ -155,7 +155,7 @@ async function main() {
     let vizConf = '';
     for (const vizName of vizDirs) {
         const label = vizName.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-        vizConf += `[${APP_ID}.${vizName}]\n`;
+        vizConf += `[${vizName}]\n`;
         vizConf += `framework_type = studio_visualization\n`;
         vizConf += `allow_user_selection = true\n`;
         vizConf += `label = ${label}\n\n`;
