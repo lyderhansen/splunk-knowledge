@@ -15,9 +15,9 @@
 ### Extension API Templates (ET)
 
 - [ ] **ET-01**: A config.json template exists in vp-viz references with optionsSchema, editorConfig sections, and the 4 confirmed editor types (editor.color, editor.text, editor.number, editor.checkbox)
-- [ ] **ET-02**: A visualization.js template exists for Extension API Canvas 2D vizs — VisualizationAPI import, listener-based state management, columnar data access, theme detection, no-data fallback
-- [ ] **ET-03**: A package.json and app.conf template exist for Extension API apps — @splunk/dashboard-studio-extension dependency, esbuild devDep, yarn build/package scripts
-- [ ] **ET-04**: The visualization.js template inlines shared/theme.js tokens (DARK/LIGHT) and uses ESM import syntax — not AMD define()
+- [x] **ET-02**: A visualization.js template exists for Extension API Canvas 2D vizs — VisualizationAPI import, listener-based state management, columnar data access, theme detection, no-data fallback
+- [x] **ET-03**: A package.json and app.conf template exist for Extension API apps — @splunk/dashboard-studio-extension dependency, esbuild devDep, yarn build/package scripts
+- [x] **ET-04**: The visualization.js template inlines shared/theme.js tokens (DARK/LIGHT) and uses ESM import syntax — not AMD define()
 
 ### Extension API Skill Updates (ES)
 

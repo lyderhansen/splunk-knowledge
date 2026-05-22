@@ -454,7 +454,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 - [ ] 28-01-PLAN.md — Create config-json-template.md with optionsSchema, editorConfig, 4 editor types, drilldown wiring, Classic-vs-Extension comparison
-- [ ] 28-02-PLAN.md — Create visualization-js-template.md with Canvas 2D Extension API wrapper, listener-based state, columnar data, package.json and app.conf sections
+- [x] 28-02-PLAN.md — Create visualization-js-template.md with Canvas 2D Extension API wrapper, listener-based state, columnar data, package.json and app.conf sections
 
 ### Phase 29: Skill Format Conditioning
 **Goal**: vp-init asks the user to choose Classic or Extension format, stores the choice in the visual language, and vp-viz/vp-create read it to generate the correct file types
@@ -539,7 +539,7 @@ Plans:
 | 25. Backgrounds & Preview Assets | v5.5.0 | 2/2 | Complete    | 2026-05-20 |
 | 26. Multi-Channel Archetype | v5.5.0 | 2/2 | Complete   | 2026-05-21 |
 | 27. API Correctness | v5.5.0 | 2/2 | Complete   | 2026-05-21 |
-| 28. Extension API Templates | v5.6.0 | 0/2 | Not started | - |
+| 28. Extension API Templates | v5.6.0 | 1/2 | In Progress|  |
 | 29. Skill Format Conditioning | v5.6.0 | 0/3 | Not started | - |
 | 30. Data & Drilldown Adapter | v5.6.0 | 0/2 | Not started | - |
 | 31. Build & Validation | v5.6.0 | 0/2 | Not started | - |
