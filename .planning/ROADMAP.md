@@ -269,6 +269,8 @@ Plans:
   3. vp-create refuses to generate the dashboard and reports an error if validate_viz.sh exits non-zero for any viz — the dashboard is never produced from broken vizs
 **Plans**: 1 plan
 Plans:
+- [ ] 33-01-PLAN.md — End-to-end Extension API test build: scaffold 3-viz project, generate code, build, validate, package to .spl, verify structure
+Plans:
 - [ ] 15-01-PLAN.md — Add Step 3c mandatory dashboard generation to vp-create with validation gate and panel count verification
 
 ### Phase 16: Code Quality & Reference Cleanup
@@ -331,6 +333,8 @@ Plans:
   2. Running check_design.js against a viz that defines _onMouseMove after a comment block produces zero false-positive D11 findings — the scan starts from the method definition, not the first string occurrence
   3. Running validate_dash.js against a dashboard with a defaults.tokens.default entry of "*" produces a DS5 pass — only non-wildcard or missing entries trigger the check
 **Plans**: 1 plan
+Plans:
+- [ ] 33-01-PLAN.md — End-to-end Extension API test build: scaffold 3-viz project, generate code, build, validate, package to .spl, verify structure
 Plans:
 - [x] 19-01-PLAN.md -- Fix DS4 vizId/item, add DS5w WARN, fix D11 lastIndexOf in validate_dash.js and check_design.js
 
@@ -569,6 +573,8 @@ Plans:
   2. The .spl internal structure matches the Extension API spec — framework_type=studio_visualization in visualizations.conf, config.json per viz, bundled visualization.js per viz
   3. Each viz in the pack has working theme detection, no-data fallback, and drilldown wiring
 **Plans**: 1 plan
+Plans:
+- [ ] 33-01-PLAN.md — End-to-end Extension API test build: scaffold 3-viz project, generate code, build, validate, package to .spl, verify structure
 
 ## Progress
 
