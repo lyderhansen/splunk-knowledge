@@ -42,8 +42,8 @@
 
 ### Aesthetic Scoring (AS)
 
-- [ ] **AS-01**: score_design.js exists as a new validator that scores generated viz code on aesthetic dimensions — gradient usage, typography hierarchy, spacing ratios, color variety, animation presence
-- [ ] **AS-02**: score_design.js produces a numeric score (0-100) with per-dimension breakdowns — integrated into validate_viz.sh as an optional Phase 5 check
+- [x] **AS-01**: score_design.js exists as a new validator that scores generated viz code on aesthetic dimensions — gradient usage, typography hierarchy, spacing ratios, color variety, animation presence
+- [x] **AS-02**: score_design.js produces a numeric score (0-100) with per-dimension breakdowns — integrated into validate_viz.sh as an optional Phase 5 check
 
 ### Test Build (TB)
 

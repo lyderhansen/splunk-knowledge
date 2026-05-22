@@ -96,7 +96,7 @@ Full details: `.planning/milestones/v5.5.0-ROADMAP.md`
 - [x] **Phase 29: Skill Format Conditioning** - vp-init format choice (Classic vs Extension); vp-viz and vp-create format-conditional generation sections (completed 2026-05-22)
 - [x] **Phase 30: Data & Drilldown Adapter** - Columnar data access patterns in viz-blueprints.md; Extension API edge cases; drilldown variant with triggerDrilldown (completed 2026-05-22)
 - [x] **Phase 31: Build & Validation** - validate_viz.sh Extension API mode (config.json, ESM, columnar); .spl build verification via yarn package (completed 2026-05-22)
-- [ ] **Phase 32: Aesthetic Scoring** - score_design.js automated aesthetic scorer with per-dimension breakdown; optional Phase 5 in validate_viz.sh
+- [x] **Phase 32: Aesthetic Scoring** - score_design.js automated aesthetic scorer with per-dimension breakdown; optional Phase 5 in validate_viz.sh (completed 2026-05-22)
 - [ ] **Phase 33: Test Build** - End-to-end Extension API test build with 3+ vizs producing an installable .spl file
 
 ## Phase Details
@@ -558,7 +558,7 @@ Plans:
 - [x] 32-01-PLAN.md — Create score_design.js with 5 aesthetic dimensions (gradient, typography, spacing, color, animation), 0-100 score output (AS-01)
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 32-02-PLAN.md — Integrate score_design.js into validate_viz.sh as optional Phase 5 with --score flag (AS-02)
+- [x] 32-02-PLAN.md — Integrate score_design.js into validate_viz.sh as optional Phase 5 with --score flag (AS-02)
 
 ### Phase 33: Test Build
 **Goal**: One complete end-to-end build using the Extension API path produces a working .spl file with 3+ vizs, validating the entire dual-format pipeline
@@ -605,5 +605,5 @@ Plans:
 | 29. Skill Format Conditioning | v5.6.0 | 3/3 | Complete   | 2026-05-22 |
 | 30. Data & Drilldown Adapter | v5.6.0 | 2/2 | Complete   | 2026-05-22 |
 | 31. Build & Validation | v5.6.0 | 2/2 | Complete   | 2026-05-22 |
-| 32. Aesthetic Scoring | v5.6.0 | 1/2 | In Progress|  |
+| 32. Aesthetic Scoring | v5.6.0 | 2/2 | Complete   | 2026-05-22 |
 | 33. Test Build | v5.6.0 | 0/1 | Not started | - |
