@@ -8,7 +8,7 @@
         "package": "node package.mjs"
     },
     "dependencies": {
-        "@splunk/dashboard-studio-extension": "latest"
+        "@splunk/dashboard-studio-extension": "^1.0.0"
     },
     "devDependencies": {
         "esbuild": "latest"

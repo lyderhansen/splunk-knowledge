@@ -122,6 +122,15 @@ var state = {
 
 // === Render ===
 function render() {
+    try { _render(); } catch(e) {
+        canvas.width = state.width || 400; canvas.height = state.height || 200;
+        ctx.fillStyle = '#000'; ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = '#f00'; ctx.font = '12px monospace'; ctx.textBaseline = 'top';
+        ctx.fillText('ERROR: ' + e.message, 8, 8);
+        ctx.fillText('w=' + state.width + ' h=' + state.height + ' data=' + !!state.data + ' loading=' + state.loading, 8, 24);
+    }
+}
+function _render() {
     // Gate 1: data still arriving
     if (state.loading) return;
 

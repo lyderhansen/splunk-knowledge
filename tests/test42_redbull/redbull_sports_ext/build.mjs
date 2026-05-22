@@ -48,11 +48,10 @@ async function buildViz(vizName) {
         entryPoints: [srcFile],
         outfile:     outFile,
         bundle:      true,
-        format:      'esm',
+        format:      'iife',
         platform:    'browser',
         target:      ['es2020'],
-        // Keep @splunk/dashboard-studio-extension as an external — resolved by Splunk at runtime
-        external:    ['@splunk/dashboard-studio-extension'],
+        // Bundle @splunk/dashboard-studio-extension INTO the viz (it uses postMessage to talk to parent)
         logLevel:    'info'
     };
 
