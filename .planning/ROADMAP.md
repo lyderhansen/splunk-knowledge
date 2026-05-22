@@ -9,7 +9,7 @@
 - ✅ **v5.3.0 Production Polish & Interactive Dashboards** — Phases 16-18 (shipped 2026-05-19)
 - ✅ **v5.4.0 Runtime Robustness & Visual Polish** — Phases 19-21 (shipped 2026-05-19)
 - ✅ **v5.5.0 Visual Wow-Factor & First-Build Perfection** — Phases 22-27 (shipped 2026-05-21)
-- **v5.6.0 DS Extension API & Dual-Format Architecture** — Phases 28-33 (active)
+- ✅ **v5.6.0 DS Extension API & Dual-Format Architecture** — Phases 28-33 (shipped 2026-05-22)
 
 ## Phases
 
@@ -90,14 +90,19 @@ Full details: `.planning/milestones/v5.5.0-ROADMAP.md`
 
 </details>
 
-**v5.6.0 DS Extension API & Dual-Format Architecture (Phases 28-33)**
+<details>
+<summary>✅ v5.6.0 DS Extension API & Dual-Format Architecture (Phases 28-33) — SHIPPED 2026-05-22</summary>
 
-- [x] **Phase 28: Extension API Templates** - Write config.json, visualization.js, package.json, and app.conf generation templates for the DS Extension API path (completed 2026-05-22)
-- [x] **Phase 29: Skill Format Conditioning** - vp-init format choice (Classic vs Extension); vp-viz and vp-create format-conditional generation sections (completed 2026-05-22)
-- [x] **Phase 30: Data & Drilldown Adapter** - Columnar data access patterns in viz-blueprints.md; Extension API edge cases; drilldown variant with triggerDrilldown (completed 2026-05-22)
-- [x] **Phase 31: Build & Validation** - validate_viz.sh Extension API mode (config.json, ESM, columnar); .spl build verification via yarn package (completed 2026-05-22)
-- [x] **Phase 32: Aesthetic Scoring** - score_design.js automated aesthetic scorer with per-dimension breakdown; optional Phase 5 in validate_viz.sh (completed 2026-05-22)
-- [ ] **Phase 33: Test Build** - End-to-end Extension API test build with 3+ vizs producing an installable .spl file
+- [x] Phase 28: Extension API Templates (2/2 plans) — completed 2026-05-22
+- [x] Phase 29: Skill Format Conditioning (3/3 plans) — completed 2026-05-22
+- [x] Phase 30: Data & Drilldown Adapter (2/2 plans) — completed 2026-05-22
+- [x] Phase 31: Build & Validation (2/2 plans) — completed 2026-05-22
+- [x] Phase 32: Aesthetic Scoring (2/2 plans) — completed 2026-05-22
+- [x] Phase 33: Test Build (1/1 plans) — completed 2026-05-22
+
+Full details: `.planning/milestones/v5.6.0-ROADMAP.md`
+
+</details>
 
 ## Phase Details
 

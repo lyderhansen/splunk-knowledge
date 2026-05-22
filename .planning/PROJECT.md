@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A marketplace of Claude Code plugins for Splunk development — custom visualizations, dashboards, SPL queries, and admin tasks. The primary focus is **splunk-viz-packs** (v5.5.0): a plugin that generates branded Splunk custom visualization apps from a brand brief. v4.1.0 shipped validation/repair. v5.0.0 added design awesomeness. v5.1.0 hardened vizs and dashboard composition. v5.2.0 added smart fields and domain identity. v5.3.0 polished code quality and added interactive dashboard features. v5.4.0 fixed runtime bugs and visual polish. v5.5.0 added wow-factor — branded backgrounds, animation boilerplates, multi-channel vizs, official API correctness, and XSS prevention.
+A marketplace of Claude Code plugins for Splunk development — custom visualizations, dashboards, SPL queries, and admin tasks. The primary focus is **splunk-viz-packs** (v5.6.0): a plugin that generates branded Splunk custom visualization apps from a brand brief. v4.1.0 shipped validation/repair. v5.0.0 added design awesomeness. v5.1.0 hardened vizs and dashboard composition. v5.2.0 added smart fields and domain identity. v5.3.0 polished code quality and added interactive dashboard features. v5.4.0 fixed runtime bugs and visual polish. v5.5.0 added wow-factor — branded backgrounds, animation boilerplates, multi-channel vizs, official API correctness, and XSS prevention. v5.6.0 added dual-format architecture — Extension API (config.json + ESM) alongside Classic (formatter.html + AMD), aesthetic scoring, and a validated test build.
 
 ## Core Value
 
@@ -52,18 +52,25 @@ When a user runs `/vp-init`, the resulting viz pack installs in Splunk without e
 - Mobile-responsive viz rendering — Splunk dashboards are desktop/wall-display
 - Multi-tenant viz sharing — each pack is a standalone Splunk app
 
-## Current State: v5.5.0 shipped
+## Current State: v5.6.0 shipped
 
-**Shipped:** 2026-05-21 — 6 phases, 12 plans, 19 requirements satisfied.
+**Shipped:** 2026-05-22 — 6 phases, 12 plans, 18 requirements satisfied.
 
-**What v5.5.0 delivered:**
-- Branded backgrounds (4 types + light variants), 116x76 preview.png, domain appIcon symbols
-- Brand swatch color pickers (splunkCategorical + brand colors), accentColor with glow-only contract
-- Multi-Channel Composite archetype (F1/Healthcare/NOC domain configs)
-- Copy-paste animation boilerplates (entrance + LED pulse), validator viz-name feedback loop
-- Official API correctness: drilldown data:{} shape, threshold 3-band RAG, escapeHtml XSS prevention
+**What v5.6.0 delivered:**
+- Dual-format architecture: vp-init asks Classic vs Extension, all downstream skills branch on choice
+- Extension API templates: config.json (optionsSchema/editorConfig), visualization.js (ESM + Canvas 2D + listeners)
+- Format-aware validation: E01-E05 checks in validate_viz.sh for Extension API vizs
+- Aesthetic scorer: score_design.js (0-100 across 5 dimensions), optional --score flag
+- Validated test build: 3-viz .spl file produced end-to-end, framework_type=studio_visualization confirmed
 
-**Next milestone:** v5.6.0 DS Extension API & Dual-Format Architecture — 6 phases (28-33), 18 requirements. Adds Dashboard Studio Extension API as a second generation target alongside Classic.
+**Next milestone:** Not yet defined. Run `/gsd-new-milestone` to start planning.
+
+<details>
+<summary>v5.5.0 Visual Wow-Factor & First-Build Perfection (shipped 2026-05-21)</summary>
+
+Branded backgrounds, color pickers, multi-channel vizs, animation boilerplates, official API correctness, XSS prevention.
+
+</details>
 
 <details>
 <summary>v5.4.0 Runtime Robustness & Visual Polish (shipped 2026-05-19)</summary>

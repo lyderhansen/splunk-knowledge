@@ -2,7 +2,7 @@
 gsd_state_version: 1.0
 milestone: v5.6.0
 milestone_name: DS Extension API & Dual-Format Architecture
-status: planning
+status: milestone-complete
 stopped_at: Phase 29 Plan 02 complete — format-conditional workflow and Extension API checklist added
 last_updated: "2026-05-22T12:25:56.804Z"
 last_activity: 2026-05-22
