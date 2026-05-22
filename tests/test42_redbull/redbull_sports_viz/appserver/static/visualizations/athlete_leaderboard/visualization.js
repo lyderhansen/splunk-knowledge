@@ -448,7 +448,7 @@ return SplunkVisualizationBase.extend({
         var rows = allRows.slice(startIdx, endIdx);
 
         if (showEntrance && !this._entranceDone) {
-            this._startStaggeredEntrance(rows.length, config, ns);
+            var _sm=(function(s){return s==="slow"?1.5:s==="fast"?0.6:1.0;})(opt("animationSpeed","normal"));this._startStaggeredEntrance(rows.length, _sm);
         }
 
         // Layout
@@ -643,11 +643,10 @@ return SplunkVisualizationBase.extend({
         this._nameField = nameField;
     },
 
-    _startStaggeredEntrance: function(rowCount, config, ns) {
+    _startStaggeredEntrance: function(rowCount, speedMult) {
         if (this._animating) { return; }
-        var animSpeed = opt('animationSpeed', 'normal'); var speedMult = (animSpeed === 'slow') ? 1.5 : (animSpeed === 'fast') ? 0.6 : 1.0;
         var perRowDelay = Math.min(500 / Math.max(rowCount, 1), 80);
-        var rowDuration = 200 * speedMult;
+        var rowDuration = 200 * (speedMult || 1.0);
         var startTime = null;
         var self = this;
         this._animating = true;

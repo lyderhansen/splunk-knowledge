@@ -409,7 +409,7 @@ return SplunkVisualizationBase.extend({
             this._entranceProgress = 1;
         }
         if (showEntrance && !this._entranceDone) {
-            this._startEntrance(config, ns);
+            var _sm=(function(s){return s==="slow"?1.5:s==="fast"?0.6:1.0;})(opt("animationSpeed","normal"));this._startEntrance(_sm);
         }
 
         var flashCritical = opt('flashCritical', 'false') === 'true';
@@ -607,9 +607,8 @@ return SplunkVisualizationBase.extend({
         this._lastLabel = labelVal;
     },
 
-    _startEntrance: function(config, ns) {
+    _startEntrance: function(speedMult) {
         if (this._animating) { return; }
-        var animSpeed = opt('animationSpeed', 'normal'); var speedMult = (animSpeed === 'slow') ? 1.5 : (animSpeed === 'fast') ? 0.6 : 1.0;
         var duration = 350 * speedMult;
         this._animating = true;
         var startTime = null;
