@@ -470,7 +470,7 @@ Plans:
 Plans:
 - [x] 29-01-PLAN.md — Add format choice question to vp-init SKILL.md + include format field in hand-off to vp-design
 - [ ] 29-02-PLAN.md — Add format-conditional generation section to vp-viz SKILL.md + Extension API items to pre-code-checklist.md
-- [ ] 29-03-PLAN.md — Add format-conditional build/package section to vp-create SKILL.md
+- [x] 29-03-PLAN.md — Add format-conditional build/package section to vp-create SKILL.md
 
 ### Phase 30: Data & Drilldown Adapter
 **Goal**: viz-blueprints.md and edge-cases.md document the Extension API data access and drilldown patterns alongside Classic patterns, so Claude generates correct code for either format
@@ -544,7 +544,7 @@ Plans:
 | 26. Multi-Channel Archetype | v5.5.0 | 2/2 | Complete   | 2026-05-21 |
 | 27. API Correctness | v5.5.0 | 2/2 | Complete   | 2026-05-21 |
 | 28. Extension API Templates | v5.6.0 | 2/2 | Complete   | 2026-05-22 |
-| 29. Skill Format Conditioning | v5.6.0 | 1/3 | In Progress|  |
+| 29. Skill Format Conditioning | v5.6.0 | 2/3 | In Progress|  |
 | 30. Data & Drilldown Adapter | v5.6.0 | 0/2 | Not started | - |
 | 31. Build & Validation | v5.6.0 | 0/2 | Not started | - |
 | 32. Aesthetic Scoring | v5.6.0 | 0/2 | Not started | - |
