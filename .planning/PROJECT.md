@@ -52,18 +52,24 @@ When a user runs `/vp-init`, the resulting viz pack installs in Splunk without e
 - Mobile-responsive viz rendering — Splunk dashboards are desktop/wall-display
 - Multi-tenant viz sharing — each pack is a standalone Splunk app
 
-## Current State: v5.6.0 shipped
+## Current State: v5.7.0 shipped
 
-**Shipped:** 2026-05-22 — 6 phases, 12 plans, 18 requirements satisfied.
+**Shipped:** 2026-05-22 — 4 phases, 7 plans, 15 requirements satisfied.
 
-**What v5.6.0 delivered:**
-- Dual-format architecture: vp-init asks Classic vs Extension, all downstream skills branch on choice
-- Extension API templates: config.json (optionsSchema/editorConfig), visualization.js (ESM + Canvas 2D + listeners)
-- Format-aware validation: E01-E05 checks in validate_viz.sh for Extension API vizs
-- Aesthetic scorer: score_design.js (0-100 across 5 dimensions), optional --score flag
-- Validated test build: 3-viz .spl file produced end-to-end, framework_type=studio_visualization confirmed
+**What v5.7.0 delivered:**
+- DS skill updates: linkToDashboard tokens, JSONata expressions, containerOptions.visibility, three-handler chain recipe
+- Red Bull Classic test build: 5 vizs, 140 KB .tar.gz, ALL CHECKS PASSED, scores 65-95/100
+- Red Bull Extension API test build: 3 vizs, 10.8 KB .spl, rendering in live Splunk Dashboard Studio
+- Critical live findings: opt() scope bug, IIFE format required, bare stanza names, bundle the extension package
 
-**Next milestone:** v5.7.0 Real Brand End-to-End Validation — 3 phases (34-36), 10 requirements. Full pipeline test with a real brand through both Classic and Extension API paths.
+**Next milestone:** Not yet defined. Run `/gsd-new-milestone` to start planning.
+
+<details>
+<summary>v5.6.0 DS Extension API & Dual-Format Architecture (shipped 2026-05-22)</summary>
+
+Dual-format architecture, Extension API templates, format-aware validation (E01-E05), aesthetic scoring, validated test build.
+
+</details>
 
 <details>
 <summary>v5.5.0 Visual Wow-Factor & First-Build Perfection (shipped 2026-05-21)</summary>

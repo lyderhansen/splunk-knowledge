@@ -10,7 +10,7 @@
 - ✅ **v5.4.0 Runtime Robustness & Visual Polish** — Phases 19-21 (shipped 2026-05-19)
 - ✅ **v5.5.0 Visual Wow-Factor & First-Build Perfection** — Phases 22-27 (shipped 2026-05-21)
 - ✅ **v5.6.0 DS Extension API & Dual-Format Architecture** — Phases 28-33 (shipped 2026-05-22)
-- **v5.7.0 Real Brand End-to-End Validation** — Phases 34-36 (active)
+- ✅ **v5.7.0 Real Brand End-to-End Validation** — Phases 34-37 (shipped 2026-05-22)
 
 ## Phases
 
@@ -105,12 +105,17 @@ Full details: `.planning/milestones/v5.6.0-ROADMAP.md`
 
 </details>
 
-**v5.7.0 Real Brand End-to-End Validation (Phases 34-37)**
+<details>
+<summary>✅ v5.7.0 Real Brand End-to-End Validation (Phases 34-37) — SHIPPED 2026-05-22</summary>
 
-- [ ] **Phase 34: Dashboard Studio Skill Updates** - Fix ds-int-drilldowns (linkToDashboard token format, key vs value), ds-int-tokens (expressions/eval, JSONata), ds-int-visibility (containerOptions.visibility, input.button), ds-ref-syntax, ds-ref-pitfalls — from test40 live-tested findings
-- [ ] **Phase 35: Classic Path Test Build** - Full /vp-init → /vp-create pipeline with a real brand producing .tar.gz with 5+ vizs, branded dashboard, all assets; validate_viz.sh clean; score_design.js scores; in-flight fixes
-- [ ] **Phase 36: Extension API Path Test Build** - Same brand through Extension API path producing .spl with 3+ vizs; E01-E05 clean; structure verification
-- [ ] **Phase 37: Test Report & Comparison** - TEST_REPORT.md with all findings (FIXED/KNOWN/WONTFIX), Classic vs Extension side-by-side comparison, pipeline improvement recommendations
+- [x] Phase 34: Dashboard Studio Skill Updates (2/2 plans) — completed 2026-05-22
+- [x] Phase 35: Classic Path Test Build (1/1 plans) — completed 2026-05-22
+- [x] Phase 36: Extension API Path Test Build (1/1 plans) — completed 2026-05-22
+- [x] Phase 37: Test Report & Comparison (1/1 plans) — completed 2026-05-22
+
+Full details: `.planning/milestones/v5.7.0-ROADMAP.md`
+
+</details>
 
 ## Phase Details
 
