@@ -600,6 +600,9 @@ Plans:
   4. ds-ref-syntax lists `expressions` as top-level key, `containerOptions.visibility` as viz-level property, `input.button` as input type, and `columnFormat.data` as DS expression requirement
   5. ds-ref-pitfalls adds `e.map is not a function` (tokens object/columnFormat), `linkToDashboard undefined` (key vs value), JSONata vs SPL gotcha
 **Plans**: 2 plans
+Plans:
+- [ ] 34-01-PLAN.md — CRITICAL skills: ds-int-drilldowns (linkToDashboard format, key vs value, columnFormat.data, three-handler chain) + ds-int-tokens (expressions, JSONata, $eval:name$) + ds-int-visibility (input.button toggle, conditions limitation)
+- [ ] 34-02-PLAN.md — Reference skills: ds-ref-syntax (input.button, columnFormat.data) + ds-ref-pitfalls (3 new symptoms) + ds-int-defaults (expressions stanza mention)
 
 ### Phase 35: Classic Path Test Build
 **Goal**: Run the full /vp-init → /vp-design → /vp-viz → /vp-create pipeline with a real brand through the Classic path, producing a .tar.gz with 5+ vizs, a branded dashboard, and all assets — fixing issues in-flight
