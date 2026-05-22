@@ -541,7 +541,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 - [ ] 31-01-PLAN.md — Add Extension API format detection and E01-E05 checks to validate_viz.sh (BV-01)
-- [ ] 31-02-PLAN.md — Expand .spl internal structure verification in vp-create SKILL.md (BV-02)
+- [x] 31-02-PLAN.md — Expand .spl internal structure verification in vp-create SKILL.md (BV-02)
 
 
 ### Phase 32: Aesthetic Scoring
@@ -601,6 +601,6 @@ Plans:
 | 28. Extension API Templates | v5.6.0 | 2/2 | Complete   | 2026-05-22 |
 | 29. Skill Format Conditioning | v5.6.0 | 3/3 | Complete   | 2026-05-22 |
 | 30. Data & Drilldown Adapter | v5.6.0 | 2/2 | Complete   | 2026-05-22 |
-| 31. Build & Validation | v5.6.0 | 0/2 | Not started | - |
+| 31. Build & Validation | v5.6.0 | 1/2 | In Progress|  |
 | 32. Aesthetic Scoring | v5.6.0 | 0/2 | Not started | - |
 | 33. Test Build | v5.6.0 | 0/1 | Not started | - |

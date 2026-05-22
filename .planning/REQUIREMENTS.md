@@ -38,7 +38,7 @@
 ### Build & Validation (BV)
 
 - [ ] **BV-01**: validate_viz.sh has a format-aware mode — when format=extension, it checks config.json schema instead of formatter.html, ESM syntax instead of AMD, and columnar data patterns instead of ROW_MAJOR
-- [ ] **BV-02**: The Extension API build path produces an installable .spl file when `yarn package` runs — verified by a test build
+- [x] **BV-02**: The Extension API build path produces an installable .spl file when `yarn package` runs — verified by a test build
 
 ### Aesthetic Scoring (AS)
 
