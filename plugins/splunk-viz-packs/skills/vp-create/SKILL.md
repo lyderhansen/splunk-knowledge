@@ -23,6 +23,8 @@ Task Progress:
 - [ ] Step 6: Report completion
 ```
 
+(If format=extension, Steps 1 and 4 change — see Step 1 (Extension API) and Step 4 (Extension API) below)
+
 ## Step 1: Build (flat AMD)
 
 ```bash
@@ -31,6 +33,18 @@ node ${CLAUDE_SKILL_DIR}/scripts/build_flat.js /path/to/app
 
 This inlines theme.js into each viz and wraps as AMD module.
 
+### Step 1 (Extension API): Build with yarn
+
+When format=extension (from visual language):
+
+```bash
+cd /path/to/app
+yarn install
+yarn build
+```
+
+This runs the webpack/rollup bundler configured in package.json (scaffolded by visualization-js-template.md). Produces visualization.js in each viz directory. Do NOT run build_flat.js — it is Classic-only.
+
 ## Step 2: Validate
 
 ```bash
@@ -38,6 +52,8 @@ bash ${CLAUDE_SKILL_DIR}/scripts/validate_viz.sh /path/to/app
 ```
 
 CRITICAL: Do NOT package if validation fails. Fix and re-validate.
+
+> For Extension API vizs, validation checks config.json instead of formatter.html. Full Extension validation rules are defined in Phase 31.
 
 ## Step 3: Fix failures
 
@@ -142,6 +158,17 @@ COPYFILE_DISABLE=1 tar czf "${APP_NAME}.tar.gz" \
 
 ALWAYS use absolute paths. Build steps may change cwd.
 
+### Step 4 (Extension API): Package with yarn
+
+When format=extension:
+
+```bash
+cd /path/to/app
+yarn package
+```
+
+This produces an .spl file (Splunk package) in the app directory. Do NOT use manual COPYFILE_DISABLE=1 tar — yarn package handles the correct archive structure for Extension API apps.
+
 ## Step 5: Verify archive
 
 ```bash
@@ -153,6 +180,13 @@ tar tzf "${APP_NAME}.tar.gz" | grep '\.tar\.gz' && echo "ERROR: nested archive!"
 SIZE=$(wc -c < "${APP_NAME}.tar.gz")
 [ "$SIZE" -lt 1000 ] && echo "ERROR: archive too small ($SIZE bytes)" && exit 1
 echo "OK — $SIZE bytes"
+```
+
+### Step 5 (Extension API): Verify .spl
+
+```bash
+ls -la /path/to/app/*.spl
+# Must exist and be > 1KB
 ```
 
 ## Step 6: Completion output
@@ -204,4 +238,7 @@ Save to `default/data/ui/nav/default.xml`.
 - [ ] Drilldown tokens have defaults (INT-03 — every token set via eventHandlers has a defaults.tokens.default entry with value "*")
 - [ ] Drilldown wired on every custom viz panel (options.drilldown: "all" + eventHandlers setToken — not just example panels)
 - [ ] Time range input declared and placed in layout.globalInputs
+- [ ] (Extension only) yarn build succeeded without errors
+- [ ] (Extension only) .spl file exists and > 1KB
+- [ ] (Extension only) config.json present per viz (not formatter.html)
 ```
