@@ -1,0 +1,41 @@
+{
+    "showTitleAndDescription": true,
+    "includeInToolbar": true,
+    "includeInVizSwitcher": true,
+    "showDrilldown": true,
+    "hasEventHandlers": true,
+    "canSetTokens": ["dynamic"],
+    "config": {
+        "name": "Red Bull Athlete Leaderboard",
+        "description": "Ranked athlete list with position indicators, value bars, and Red Bull brand highlighting for top 3.",
+        "category": "Custom",
+        "dataContract": { "requiredDataSources": ["primary"] },
+        "size": { "initialWidth": 500, "initialHeight": 400 },
+        "optionsSchema": {
+            "themeMode":      { "type": "string",  "default": "auto" },
+            "maxRows":        { "type": "number",  "default": 10 },
+            "showBars":       { "type": "boolean", "default": true },
+            "showPosition":   { "type": "boolean", "default": true },
+            "accentColor":    { "type": "string",  "default": "#F5C518" },
+            "barColor":       { "type": "string",  "default": "#DB0032" }
+        },
+        "editorConfig": [
+            {
+                "label": "Data display",
+                "layout": [
+                    [ { "editor": "editor.number",   "label": "Max rows",           "option": "maxRows" } ],
+                    [ { "editor": "editor.checkbox", "label": "Show value bars",    "option": "showBars" } ],
+                    [ { "editor": "editor.checkbox", "label": "Show position rank", "option": "showPosition" } ]
+                ]
+            },
+            {
+                "label": "Color and style",
+                "layout": [
+                    [ { "editor": "editor.text",  "label": "Theme (auto/dark/light)", "option": "themeMode" } ],
+                    [ { "editor": "editor.color", "label": "Accent (top 1)",          "option": "accentColor" } ],
+                    [ { "editor": "editor.color", "label": "Bar fill color",          "option": "barColor" } ]
+                ]
+            }
+        ]
+    }
+}
