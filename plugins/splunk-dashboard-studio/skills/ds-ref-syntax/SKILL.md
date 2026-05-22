@@ -157,6 +157,8 @@ base data.
 
 For per-type options, see the appropriate `ds-viz-<type>` skill.
 
+**columnFormat.data** — Must be a DS expression starting with `>`: `"> table | seriesByName(\"field\")"`. Plain string causes `e.map is not a function`. See `ds-ref-pitfalls`.
+
 ## inputs and tokens
 
 ```json
@@ -175,6 +177,8 @@ Reference tokens in SPL as `$token_name$`. For timerange inputs, use
 > **CRITICAL — `input.timerange.defaultValue` MUST be a comma-separated
 > string.** Object form `{"earliest": "...", "latest": "..."}` is
 > rejected with schema error. See `ds-int-inputs`.
+
+Other input types: `input.dropdown`, `input.multiselect`, `input.text`, `input.timerange`, `input.button` (Enterprise 10.2+ / Cloud 10.1.2507+). See `ds-int-inputs`.
 
 ## defaults
 
