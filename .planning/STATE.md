@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v5.6.0
 milestone_name: DS Extension API & Dual-Format Architecture
 status: planning
-stopped_at: v5.6.0 milestone created with 6 phases (28-33)
-last_updated: "2026-05-22T06:45:10.003Z"
-last_activity: 2026-05-21
+stopped_at: Phase 29 Plan 01 complete — vp-init format choice question added
+last_updated: "2026-05-22T07:45:39.799Z"
+last_activity: 2026-05-22
 progress:
   total_phases: 28
-  completed_phases: 18
-  total_plans: 43
-  completed_plans: 50
+  completed_phases: 19
+  total_plans: 46
+  completed_plans: 52
   percent: 100
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-20)
 
 **Core value:** Zero-fix first builds AND wow-factor dashboards — reliable + beautiful every time
-**Current focus:** Phase 28 — extension-api-templates
+**Current focus:** Phase 29 — skill-format-conditioning
 
 ## Current Position
 
-Phase: 28
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-05-21
+Phase: 29
+Plan: 01 complete
+Status: In progress — plan 01 of 3 done
+Last activity: 2026-05-22
 
 ## Performance Metrics
 
@@ -110,6 +110,9 @@ Recent decisions affecting current work:
 - [AC-02]: Series pickers use type=splunkCategorical; brand/accent pickers keep type=custom
 - [AC-03]: Threshold 3-band RAG template added with direction-swap logic and per-element toggles
 - [AC-04]: escapeHtml/makeSafeUrl documented as mandatory for DOM-context viz rendering; Canvas fillText explicitly exempted
+- [ET-01]: config-json-template.md created with 4 confirmed editor types; editor.text used as fallback for unconfirmed editor.radio/editor.select; bare option names (no VIZ_NAMESPACE) documented as Extension API improvement
+- [FC-01]: vp-init Q1 added as "Target format" (Classic vs Extension); Classic is default; previous Q1-Q7 renumbered to Q2-Q8
+- [FC-02]: Format field added as first entry in vp-design hand-off context block; propagates to all downstream skills
 
 ### Pending Todos
 
@@ -138,10 +141,10 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-05-22T06:45:09.998Z
-Stopped at: v5.6.0 milestone created with 6 phases (28-33)
-Resume: Run /gsd-plan-phase 28
+Last session: 2026-05-22T07:45:05Z
+Stopped at: Phase 29 Plan 01 complete — vp-init format choice question added
+Resume: Run /gsd-execute-phase 29 plan 02
 
 ## Operator Next Steps
 
-- Run /gsd-discuss-phase 28 or /gsd-plan-phase 28 to begin Phase 28
+- Run /gsd-execute-phase 29 plan 02 to add format-conditional branches to vp-viz

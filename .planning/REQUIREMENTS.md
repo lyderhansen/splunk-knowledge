@@ -9,8 +9,8 @@
 
 ### Format Choice (FC)
 
-- [ ] **FC-01**: vp-init prompts the user to choose between "Classic (works in DS + Simple XML)" and "Extension (DS-only, modern API)" before proceeding with brand research
-- [ ] **FC-02**: The format choice is stored in the visual language output and propagated to vp-viz and vp-create — all downstream skills read it without re-asking
+- [x] **FC-01**: vp-init prompts the user to choose between "Classic (works in DS + Simple XML)" and "Extension (DS-only, modern API)" before proceeding with brand research
+- [x] **FC-02**: The format choice is stored in the visual language output and propagated to vp-viz and vp-create — all downstream skills read it without re-asking
 
 ### Extension API Templates (ET)
 

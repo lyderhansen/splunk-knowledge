@@ -468,7 +468,7 @@ Plans:
   5. vp-create SKILL.md has Extension API packaging — yarn install + yarn package instead of build_flat.js + manual tar
 **Plans**: 3 plans
 Plans:
-- [ ] 29-01-PLAN.md — Add format choice question to vp-init SKILL.md + include format field in hand-off to vp-design
+- [x] 29-01-PLAN.md — Add format choice question to vp-init SKILL.md + include format field in hand-off to vp-design
 - [ ] 29-02-PLAN.md — Add format-conditional generation section to vp-viz SKILL.md + Extension API items to pre-code-checklist.md
 - [ ] 29-03-PLAN.md — Add format-conditional build/package section to vp-create SKILL.md
 
@@ -544,7 +544,7 @@ Plans:
 | 26. Multi-Channel Archetype | v5.5.0 | 2/2 | Complete   | 2026-05-21 |
 | 27. API Correctness | v5.5.0 | 2/2 | Complete   | 2026-05-21 |
 | 28. Extension API Templates | v5.6.0 | 2/2 | Complete   | 2026-05-22 |
-| 29. Skill Format Conditioning | v5.6.0 | 0/3 | Not started | - |
+| 29. Skill Format Conditioning | v5.6.0 | 1/3 | In Progress|  |
 | 30. Data & Drilldown Adapter | v5.6.0 | 0/2 | Not started | - |
 | 31. Build & Validation | v5.6.0 | 0/2 | Not started | - |
 | 32. Aesthetic Scoring | v5.6.0 | 0/2 | Not started | - |
