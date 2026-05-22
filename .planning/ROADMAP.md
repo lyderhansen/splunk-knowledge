@@ -105,11 +105,12 @@ Full details: `.planning/milestones/v5.6.0-ROADMAP.md`
 
 </details>
 
-**v5.7.0 Real Brand End-to-End Validation (Phases 34-36)**
+**v5.7.0 Real Brand End-to-End Validation (Phases 34-37)**
 
-- [ ] **Phase 34: Classic Path Test Build** - Full /vp-init → /vp-create pipeline with a real brand producing .tar.gz with 5+ vizs, branded dashboard, all assets; validate_viz.sh clean; score_design.js scores; in-flight fixes
-- [ ] **Phase 35: Extension API Path Test Build** - Same brand through Extension API path producing .spl with 3+ vizs; E01-E05 clean; structure verification
-- [ ] **Phase 36: Test Report & Comparison** - TEST_REPORT.md with all findings (FIXED/KNOWN/WONTFIX), Classic vs Extension side-by-side comparison, pipeline improvement recommendations
+- [ ] **Phase 34: Dashboard Studio Skill Updates** - Fix ds-int-drilldowns (linkToDashboard token format, key vs value), ds-int-tokens (expressions/eval, JSONata), ds-int-visibility (containerOptions.visibility, input.button), ds-ref-syntax, ds-ref-pitfalls — from test40 live-tested findings
+- [ ] **Phase 35: Classic Path Test Build** - Full /vp-init → /vp-create pipeline with a real brand producing .tar.gz with 5+ vizs, branded dashboard, all assets; validate_viz.sh clean; score_design.js scores; in-flight fixes
+- [ ] **Phase 36: Extension API Path Test Build** - Same brand through Extension API path producing .spl with 3+ vizs; E01-E05 clean; structure verification
+- [ ] **Phase 37: Test Report & Comparison** - TEST_REPORT.md with all findings (FIXED/KNOWN/WONTFIX), Classic vs Extension side-by-side comparison, pipeline improvement recommendations
 
 ## Phase Details
 
@@ -588,9 +589,21 @@ Plans:
 Plans:
 - [ ] 33-01-PLAN.md — End-to-end Extension API test build: scaffold 3-viz project, generate code, build, validate, package to .spl, verify structure
 
-### Phase 34: Classic Path Test Build
-**Goal**: Run the full /vp-init → /vp-design → /vp-viz → /vp-create pipeline with a real brand through the Classic path, producing a .tar.gz with 5+ vizs, a branded dashboard, and all assets — fixing issues in-flight
+### Phase 34: Dashboard Studio Skill Updates
+**Goal**: Fix critical bugs and gaps in ds-int-drilldowns, ds-int-tokens, ds-int-visibility, ds-ref-syntax, and ds-ref-pitfalls discovered during test40 live testing — linkToDashboard token format, key vs value distinction, JSONata expressions, containerOptions.visibility, input.button, columnFormat.data
 **Depends on**: Phase 33
+**Requirements**: SU-01, SU-02, SU-03, SU-04, SU-05
+**Success Criteria** (what must be TRUE):
+  1. ds-int-drilldowns documents linkToDashboard token format (array with `value` field), key vs value distinction in setToken, columnFormat.data DS expression requirement, and cross-dashboard ±N minute time range recipe
+  2. ds-int-tokens documents the `expressions` stanza (conditions + eval), JSONata syntax (NOT SPL eval), `$eval:name$` reference syntax, arithmetic/ternary/string-concat examples, and version requirements (Enterprise 10.2+)
+  3. ds-int-visibility documents `containerOptions.visibility` (NOT direct showConditions on viz), hide-wins-over-show precedence, toggle button pattern using input.button, and conditions-only-in-source limitation
+  4. ds-ref-syntax lists `expressions` as top-level key, `containerOptions.visibility` as viz-level property, `input.button` as input type, and `columnFormat.data` as DS expression requirement
+  5. ds-ref-pitfalls adds `e.map is not a function` (tokens object/columnFormat), `linkToDashboard undefined` (key vs value), JSONata vs SPL gotcha
+**Plans**: 2 plans
+
+### Phase 35: Classic Path Test Build
+**Goal**: Run the full /vp-init → /vp-design → /vp-viz → /vp-create pipeline with a real brand through the Classic path, producing a .tar.gz with 5+ vizs, a branded dashboard, and all assets — fixing issues in-flight
+**Depends on**: Phase 34
 **Requirements**: PE-01, PE-02, PE-03, PE-04, FF-02
 **Success Criteria** (what must be TRUE):
   1. A .tar.gz file is produced containing 5+ branded custom vizs, a Dashboard Studio JSON dashboard, appIcon, preview.png per viz, and gradient background
@@ -600,9 +613,9 @@ Plans:
   5. Any issues discovered during the build are committed as atomic fixes
 **Plans**: 1 plan
 
-### Phase 35: Extension API Path Test Build
-**Goal**: Run the same brand through the Extension API path producing a .spl with 3+ vizs — reusing the brand research and visual language from Phase 34
-**Depends on**: Phase 34
+### Phase 36: Extension API Path Test Build
+**Goal**: Run the same brand through the Extension API path producing a .spl with 3+ vizs — reusing the brand research and visual language from Phase 35
+**Depends on**: Phase 35
 **Requirements**: EV-01, EV-02, EV-03
 **Success Criteria** (what must be TRUE):
   1. A .spl file is produced containing 3+ vizs from the same brand as Phase 34
@@ -610,9 +623,9 @@ Plans:
   3. The .spl internal structure has framework_type=studio_visualization, config.json and visualization.js per viz
 **Plans**: 1 plan
 
-### Phase 36: Test Report & Comparison
+### Phase 37: Test Report & Comparison
 **Goal**: Document all findings from both builds in a TEST_REPORT.md with categorized issues and a Classic vs Extension comparison
-**Depends on**: Phase 35
+**Depends on**: Phase 36
 **Requirements**: FF-01, FF-03
 **Success Criteria** (what must be TRUE):
   1. TEST_REPORT.md exists with all findings categorized as FIXED, KNOWN, or WONTFIX
@@ -657,6 +670,7 @@ Plans:
 | 31. Build & Validation | v5.6.0 | 2/2 | Complete   | 2026-05-22 |
 | 32. Aesthetic Scoring | v5.6.0 | 2/2 | Complete   | 2026-05-22 |
 | 33. Test Build | v5.6.0 | 1/1 | Complete   | 2026-05-22 |
-| 34. Classic Path Test Build | v5.7.0 | 0/1 | Not started | - |
-| 35. Extension API Path Test Build | v5.7.0 | 0/1 | Not started | - |
-| 36. Test Report & Comparison | v5.7.0 | 0/1 | Not started | - |
+| 34. Dashboard Studio Skill Updates | v5.7.0 | 0/2 | Not started | - |
+| 35. Classic Path Test Build | v5.7.0 | 0/1 | Not started | - |
+| 36. Extension API Path Test Build | v5.7.0 | 0/1 | Not started | - |
+| 37. Test Report & Comparison | v5.7.0 | 0/1 | Not started | - |

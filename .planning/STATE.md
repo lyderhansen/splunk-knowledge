@@ -21,7 +21,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-20)
 
 **Core value:** Zero-fix first builds AND wow-factor dashboards — reliable + beautiful every time
-**Current focus:** Phase 34 — classic-path-test-build
+**Current focus:** Phase 34 — dashboard-studio-skill-updates
 
 ## Current Position
 
