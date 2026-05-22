@@ -1,0 +1,143 @@
+<!-- No Data configurations section — ring gauge uses formatData() column indexing. -->
+
+<form class="splunk-formatter-section" section-label="Data display">
+    <splunk-control-group label="Value field" help="SPL field name for the gauge value (0-100 range or custom max)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.field" value="value">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Max value" help="Maximum value for 100% fill (default 100)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.maxValue" value="100">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Label" help="Static label shown below the arc center">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.label" value="Performance">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Unit suffix" help="Unit shown after value (e.g. %, pts, km/h)">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.unit" value="%">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Low zone boundary" help="Values below this percentage show danger color">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.zoneLow" value="33">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="High zone boundary" help="Values above this percentage show success color">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.zoneHigh" value="66">
+        </splunk-text-input>
+    </splunk-control-group>
+    <splunk-control-group label="Drilldown field" help="SPL field name passed on canvas click">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.drilldownField" value="value">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Color and style">
+    <splunk-control-group label="Theme" help="Auto detects dashboard theme">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto">
+            <option value="auto">Auto</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Series 1" help="Primary gauge arc color">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.series1Color" type="custom" value="#DB0032">
+            <splunk-color>#DB0032</splunk-color>
+            <splunk-color>#F5C518</splunk-color>
+            <splunk-color>#C8C8C8</splunk-color>
+            <splunk-color>#1A6FBF</splunk-color>
+            <splunk-color>#FF5C00</splunk-color>
+            <splunk-color>#0C1B3A</splunk-color>
+            <splunk-color>#060E1F</splunk-color>
+            <splunk-color>#142444</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Danger zone color" help="Color for low performance zone">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.detractorColor" type="custom" value="#DB0032">
+            <splunk-color>#DB0032</splunk-color>
+            <splunk-color>#F5C518</splunk-color>
+            <splunk-color>#C8C8C8</splunk-color>
+            <splunk-color>#1A6FBF</splunk-color>
+            <splunk-color>#FF5C00</splunk-color>
+            <splunk-color>#0C1B3A</splunk-color>
+            <splunk-color>#060E1F</splunk-color>
+            <splunk-color>#142444</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Mid zone color" help="Color for middle performance zone">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.passiveColor" type="custom" value="#F5C518">
+            <splunk-color>#F5C518</splunk-color>
+            <splunk-color>#DB0032</splunk-color>
+            <splunk-color>#C8C8C8</splunk-color>
+            <splunk-color>#1A6FBF</splunk-color>
+            <splunk-color>#FF5C00</splunk-color>
+            <splunk-color>#0C1B3A</splunk-color>
+            <splunk-color>#060E1F</splunk-color>
+            <splunk-color>#142444</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Success zone color" help="Color for high performance zone">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.promoterColor" type="custom" value="#00C851">
+            <splunk-color>#00C851</splunk-color>
+            <splunk-color>#DB0032</splunk-color>
+            <splunk-color>#F5C518</splunk-color>
+            <splunk-color>#C8C8C8</splunk-color>
+            <splunk-color>#1A6FBF</splunk-color>
+            <splunk-color>#FF5C00</splunk-color>
+            <splunk-color>#0C1B3A</splunk-color>
+            <splunk-color>#142444</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Accent intensity" help="Highlight glow multiplier (0=off, 50=default, 100+=extreme). Values above 100 amplify glow beyond the standard range.">
+        <splunk-text-input name="{{VIZ_NAMESPACE}}.accentIntensity" value="50">
+        </splunk-text-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Effects">
+    <splunk-control-group label="Accent color" help="Glow and highlight overlay color — used only in withAlpha() for hover, glow halo, and selection ring. Never a solid fill.">
+        <splunk-color-picker name="{{VIZ_NAMESPACE}}.accentColor" type="custom" value="#F5C518">
+            <splunk-color>#F5C518</splunk-color>
+            <splunk-color>#DB0032</splunk-color>
+            <splunk-color>#C8C8C8</splunk-color>
+            <splunk-color>#1A6FBF</splunk-color>
+            <splunk-color>#FF5C00</splunk-color>
+            <splunk-color>#0C1B3A</splunk-color>
+            <splunk-color>#060E1F</splunk-color>
+            <splunk-color>#142444</splunk-color>
+        </splunk-color-picker>
+    </splunk-control-group>
+    <splunk-control-group label="Glow" help="Arc glow effect on the active fill">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showGlow" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Critical pulse" help="LED pulse on low-zone values">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.flashCritical" value="false">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
+
+<form class="splunk-formatter-section" section-label="Animation">
+    <splunk-control-group label="Entrance animation" help="Arc fills from 0 to value on first render">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showEntrance" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Hover highlight" help="Highlight on mouse hover">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.showHoverEffect" value="true">
+            <option value="true">On</option>
+            <option value="false">Off</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+    <splunk-control-group label="Animation speed" help="Controls entrance and transition speed">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.animationSpeed" value="normal">
+            <option value="slow">Slow</option>
+            <option value="normal">Normal</option>
+            <option value="fast">Fast</option>
+        </splunk-radio-input>
+    </splunk-control-group>
+</form>
