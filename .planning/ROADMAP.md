@@ -555,7 +555,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 **Wave 1**
-- [ ] 32-01-PLAN.md — Create score_design.js with 5 aesthetic dimensions (gradient, typography, spacing, color, animation), 0-100 score output (AS-01)
+- [x] 32-01-PLAN.md — Create score_design.js with 5 aesthetic dimensions (gradient, typography, spacing, color, animation), 0-100 score output (AS-01)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 32-02-PLAN.md — Integrate score_design.js into validate_viz.sh as optional Phase 5 with --score flag (AS-02)
@@ -605,5 +605,5 @@ Plans:
 | 29. Skill Format Conditioning | v5.6.0 | 3/3 | Complete   | 2026-05-22 |
 | 30. Data & Drilldown Adapter | v5.6.0 | 2/2 | Complete   | 2026-05-22 |
 | 31. Build & Validation | v5.6.0 | 2/2 | Complete   | 2026-05-22 |
-| 32. Aesthetic Scoring | v5.6.0 | 0/2 | Not started | - |
+| 32. Aesthetic Scoring | v5.6.0 | 1/2 | In Progress|  |
 | 33. Test Build | v5.6.0 | 0/1 | Not started | - |
