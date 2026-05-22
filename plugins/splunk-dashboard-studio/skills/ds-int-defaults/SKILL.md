@@ -71,6 +71,8 @@ Three top-level keys:
 - **`tokens.default`** — initial values for tokens written by
   drilldowns / eval expressions.
 
+**Sibling stanza:** `expressions` (top-level, same level as `defaults`) defines derived tokens (`expressions.eval`) and visibility conditions (`expressions.conditions`). See `ds-int-tokens` for eval syntax, `ds-int-visibility` for conditions.
+
 ## Do / Don't
 
 | ✅ Do | ❌ Don't |
@@ -110,6 +112,8 @@ Each entry maps a token name to `{ "value": <string> }`. After this:
 
 The block lives at `defaults.tokens.default` — `default` is the
 bucket name, not a typo.
+
+Eval expression results (referenced via `$eval:name$`) re-evaluate automatically whenever their dependency tokens change. No manual refresh or re-dispatch needed.
 
 ## What you can put under `dataSources["ds.search"].options`
 
