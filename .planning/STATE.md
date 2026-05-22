@@ -1,8 +1,8 @@
 ---
 gsd_state_version: 1.0
-milestone: v5.6.0
-milestone_name: DS Extension API & Dual-Format Architecture
-status: milestone-complete
+milestone: v5.7.0
+milestone_name: Real Brand End-to-End Validation
+status: planning
 stopped_at: Phase 29 Plan 02 complete — format-conditional workflow and Extension API checklist added
 last_updated: "2026-05-22T12:25:56.804Z"
 last_activity: 2026-05-22
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-20)
 
 **Core value:** Zero-fix first builds AND wow-factor dashboards — reliable + beautiful every time
-**Current focus:** Phase 33 — test-build (final v5.6.0 phase)
+**Current focus:** Phase 34 — classic-path-test-build
 
 ## Current Position
 
-Phase: 33
-Plan: 01 COMPLETE
-Status: Phase 33 complete — v5.6.0 milestone complete
+Phase: 34
+Plan: Not started
+Status: Ready to plan
 Last activity: 2026-05-22
 
 ## Performance Metrics

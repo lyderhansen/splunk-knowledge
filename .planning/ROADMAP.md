@@ -10,6 +10,7 @@
 - ✅ **v5.4.0 Runtime Robustness & Visual Polish** — Phases 19-21 (shipped 2026-05-19)
 - ✅ **v5.5.0 Visual Wow-Factor & First-Build Perfection** — Phases 22-27 (shipped 2026-05-21)
 - ✅ **v5.6.0 DS Extension API & Dual-Format Architecture** — Phases 28-33 (shipped 2026-05-22)
+- **v5.7.0 Real Brand End-to-End Validation** — Phases 34-36 (active)
 
 ## Phases
 
@@ -103,6 +104,12 @@ Full details: `.planning/milestones/v5.5.0-ROADMAP.md`
 Full details: `.planning/milestones/v5.6.0-ROADMAP.md`
 
 </details>
+
+**v5.7.0 Real Brand End-to-End Validation (Phases 34-36)**
+
+- [ ] **Phase 34: Classic Path Test Build** - Full /vp-init → /vp-create pipeline with a real brand producing .tar.gz with 5+ vizs, branded dashboard, all assets; validate_viz.sh clean; score_design.js scores; in-flight fixes
+- [ ] **Phase 35: Extension API Path Test Build** - Same brand through Extension API path producing .spl with 3+ vizs; E01-E05 clean; structure verification
+- [ ] **Phase 36: Test Report & Comparison** - TEST_REPORT.md with all findings (FIXED/KNOWN/WONTFIX), Classic vs Extension side-by-side comparison, pipeline improvement recommendations
 
 ## Phase Details
 
@@ -581,6 +588,38 @@ Plans:
 Plans:
 - [ ] 33-01-PLAN.md — End-to-end Extension API test build: scaffold 3-viz project, generate code, build, validate, package to .spl, verify structure
 
+### Phase 34: Classic Path Test Build
+**Goal**: Run the full /vp-init → /vp-design → /vp-viz → /vp-create pipeline with a real brand through the Classic path, producing a .tar.gz with 5+ vizs, a branded dashboard, and all assets — fixing issues in-flight
+**Depends on**: Phase 33
+**Requirements**: PE-01, PE-02, PE-03, PE-04, FF-02
+**Success Criteria** (what must be TRUE):
+  1. A .tar.gz file is produced containing 5+ branded custom vizs, a Dashboard Studio JSON dashboard, appIcon, preview.png per viz, and gradient background
+  2. validate_viz.sh exits 0 with zero FAIL findings
+  3. validate_viz.sh --score shows all viz scores at 40/100 or above
+  4. The dashboard JSON is structurally valid (manual inspection or validate_dash.js)
+  5. Any issues discovered during the build are committed as atomic fixes
+**Plans**: 1 plan
+
+### Phase 35: Extension API Path Test Build
+**Goal**: Run the same brand through the Extension API path producing a .spl with 3+ vizs — reusing the brand research and visual language from Phase 34
+**Depends on**: Phase 34
+**Requirements**: EV-01, EV-02, EV-03
+**Success Criteria** (what must be TRUE):
+  1. A .spl file is produced containing 3+ vizs from the same brand as Phase 34
+  2. validate_viz.sh passes E01-E05 with zero FAIL findings
+  3. The .spl internal structure has framework_type=studio_visualization, config.json and visualization.js per viz
+**Plans**: 1 plan
+
+### Phase 36: Test Report & Comparison
+**Goal**: Document all findings from both builds in a TEST_REPORT.md with categorized issues and a Classic vs Extension comparison
+**Depends on**: Phase 35
+**Requirements**: FF-01, FF-03
+**Success Criteria** (what must be TRUE):
+  1. TEST_REPORT.md exists with all findings categorized as FIXED, KNOWN, or WONTFIX
+  2. A side-by-side Classic vs Extension comparison section covers output quality, build complexity, validation coverage, and developer experience
+  3. Improvement recommendations are listed for the next milestone
+**Plans**: 1 plan
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -617,4 +656,7 @@ Plans:
 | 30. Data & Drilldown Adapter | v5.6.0 | 2/2 | Complete   | 2026-05-22 |
 | 31. Build & Validation | v5.6.0 | 2/2 | Complete   | 2026-05-22 |
 | 32. Aesthetic Scoring | v5.6.0 | 2/2 | Complete   | 2026-05-22 |
-| 33. Test Build | v5.6.0 | 0/1 | Not started | - |
+| 33. Test Build | v5.6.0 | 1/1 | Complete   | 2026-05-22 |
+| 34. Classic Path Test Build | v5.7.0 | 0/1 | Not started | - |
+| 35. Extension API Path Test Build | v5.7.0 | 0/1 | Not started | - |
+| 36. Test Report & Comparison | v5.7.0 | 0/1 | Not started | - |

@@ -63,7 +63,7 @@ When a user runs `/vp-init`, the resulting viz pack installs in Splunk without e
 - Aesthetic scorer: score_design.js (0-100 across 5 dimensions), optional --score flag
 - Validated test build: 3-viz .spl file produced end-to-end, framework_type=studio_visualization confirmed
 
-**Next milestone:** Not yet defined. Run `/gsd-new-milestone` to start planning.
+**Next milestone:** v5.7.0 Real Brand End-to-End Validation — 3 phases (34-36), 10 requirements. Full pipeline test with a real brand through both Classic and Extension API paths.
 
 <details>
 <summary>v5.5.0 Visual Wow-Factor & First-Build Perfection (shipped 2026-05-21)</summary>
