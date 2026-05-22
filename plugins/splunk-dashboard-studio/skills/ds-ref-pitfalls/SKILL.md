@@ -80,6 +80,9 @@ per-viz / interactivity / reference skill that owns the full fix.
 | `input.timerange` schema error on save                           | `defaultValue` MUST be `"-24h@h,now"` string, NOT object.                                            | `ds-int-inputs` Do/Don't        |
 | Tabbed dashboard panels missing                                  | `layoutId` mismatch with `layoutDefinitions` key, OR `layout.type` set alongside `layout.tabs`.      | `ds-int-tabs` Do/Don't          |
 | Hidden tab still costing search dispatch                         | Add `containerOptions.visibility` to gate searches inside hidden tabs.                               | `ds-int-visibility` Caveats     |
+| `e.map is not a function` on drilldown or table render           | `linkToDashboard` tokens passed as object map instead of array, OR `columnFormat.data` is plain string instead of DS expression starting with `>`. | `ds-int-drilldowns` key vs value, `ds-ref-syntax` columnFormat.data |
+| `linkToDashboard` tokens arrive as `undefined` on target dashboard | Used `key` field instead of `value` in tokens array. `key` reads from click context; `value` sets the URL parameter forwarded to the target. | `ds-int-drilldowns` key vs value |
+| Token eval expression uses `if()` / `.` concat / `strftime` — produces error or wrong result | DS eval uses JSONata syntax, NOT SPL eval. String concat = `&`, ternary = `? :`, date = `$now('format')`. No `if()` function. | `ds-int-tokens` Token eval expressions |
 
 
 ## Schema rejections
