@@ -1,6 +1,6 @@
 ---
 name: ds-int-visibility
-description: Splunk Dashboard Studio conditional panel visibility — toggle individual panels on or off based on dashboard token values. Provides patterns for progressive disclosure (panel only after row click), empty-state hints, wizard flows, role-based panels, hideWhenNoData auto-hide, and the portable "$tok$ != ""/=" expression syntax that works on Enterprise + Cloud. Use when the user asks about visibility, show/hide panel, conditional panels, progressive disclosure, showConditions, hideWhenNoData, or "panel only when token is set" in Splunk Dashboard Studio.
+description: Splunk Dashboard Studio conditional panel visibility — toggle individual panels on or off using containerOptions.visibility (showConditions/hideConditions). Covers progressive disclosure, empty-state hints, wizard flows, hideWhenNoData, input.button toggle pattern (Enterprise 10.2+ / Cloud 10.1.2507+), and the portable "$tok$ != ''" expression syntax. Note: conditions are source-code-only — Token Manager UI creates eval expressions but NOT conditions. Use when the user asks about visibility, show/hide panel, toggle button, conditional panels, showConditions, hideWhenNoData, containerOptions.visibility, or input.button in Splunk Dashboard Studio.
 ---
 
 # ds-int-visibility — conditional panel visibility
@@ -54,7 +54,8 @@ the panel root.
 ## Where conditions live
 
 Top-level **`expressions.conditions`** block on dashboard root, sibling
-to `dataSources` and `visualizations`:
+to `dataSources` and `visualizations`. `expressions.eval` (derived token
+arithmetic/ternary) is a sibling inside the same `expressions` stanza:
 
 ```json
 {
@@ -63,10 +64,12 @@ to `dataSources` and `visualizations`:
       "condition_host_set": {
         "name": "host is set",
         "value": "$selected_host$ != \"\""
-      },
-      "condition_host_is_web01": {
-        "name": "host is web-01",
-        "value": "$selected_host$ = \"web-01\""
+      }
+    },
+    "eval": {
+      "expr_toggle": {
+        "name": "toggleDetails",
+        "value": "$detailsVisibility$ = 'true' ? 'false' : 'true'"
       }
     }
   }
@@ -77,6 +80,8 @@ Each condition is a `{ name, value }` record:
 
 - `name` — friendly label shown in editor's expressions panel.
 - `value` — the actual boolean expression.
+
+**Source-code only:** Conditions can only be created in source code (JSON). The Token Manager UI (Enterprise 10.2+ / Cloud 10.1.2507+) supports creating **eval** expressions but does NOT support creating conditions — you must add `expressions.conditions` entries manually in the JSON editor.
 
 ## Do / Don't
 
@@ -243,6 +248,64 @@ The user always sees exactly one of the two.
 
 Detail panel only appears when both: row clicked AND action was deny.
 
+### input.button toggle pattern (Enterprise 10.2+ / Cloud 10.1.2507+)
+
+The official Splunk pattern for show/hide toggling uses `input.button` — NOT markdown with a click handler:
+
+```json
+{
+  "inputs": {
+    "input_toggle": {
+      "type": "input.button",
+      "options": { "label": "$eval:detailsBtnLabel$" },
+      "eventHandlers": [{
+        "type": "drilldown.setToken",
+        "options": {
+          "tokens": [{ "token": "detailsVisibility", "value": "$eval:toggleDetails$" }]
+        }
+      }]
+    }
+  },
+  "expressions": {
+    "conditions": {
+      "condition_show": {
+        "name": "show details",
+        "value": "$detailsVisibility$ = \"true\""
+      }
+    },
+    "eval": {
+      "expr_toggle": {
+        "name": "toggleDetails",
+        "value": "$detailsVisibility$ = 'true' ? 'false' : 'true'"
+      },
+      "expr_label": {
+        "name": "detailsBtnLabel",
+        "value": "$detailsVisibility$ = 'true' ? 'Show overview' : 'Show details'"
+      }
+    }
+  },
+  "defaults": {
+    "tokens": { "default": { "detailsVisibility": { "value": "false" } } }
+  }
+}
+```
+
+**Key points:**
+- Button uses `"value": "$eval:toggleDetails$"` in `setToken` — `value` field (sets computed result), NOT `key` (reads click context)
+- Button label updates dynamically via `$eval:detailsBtnLabel$`
+- Initialize `detailsVisibility` in `defaults.tokens.default` so toggle starts in a known state
+- Panel `containerOptions.visibility.showConditions` references the condition ID
+
+**Wire the panel:**
+```json
+"viz_detail_panel": {
+  "type": "splunk.table",
+  "containerOptions": {
+    "visibility": { "showConditions": ["condition_show"] }
+  }
+}
+```
+
 ## Caveats
 
 - **Conditions must exist.** Reference an ID not in
@@ -250,6 +313,8 @@ Detail panel only appears when both: row clicked AND action was deny.
   false — panel never shows.
 - **`expressions.conditions` is top-level**, not inside `defaults` or
   per-viz `context`.
+- **Conditions are source-code only.** The Token Manager UI supports creating eval expressions but NOT conditions. Add `expressions.conditions` entries manually in the JSON source editor.
+- **Feature version gates:** `input.button`, `expressions.eval`, and `containerOptions.visibility` require Enterprise 10.2+ or Cloud 10.1.2507+. For older targets, use `drilldown.setToken` on a shape element with `expressions.conditions`.
 
 ## See also
 
