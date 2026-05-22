@@ -5,10 +5,13 @@
 
 # --- ARGUMENT PARSING ---
 REPAIR_MODE=0
+SCORE_MODE=0
 APP_DIR=""
 for arg in "$@"; do
   if [ "$arg" = "--repair" ]; then
     REPAIR_MODE=1
+  elif [ "$arg" = "--score" ]; then
+    SCORE_MODE=1
   else
     APP_DIR="$arg"
   fi
@@ -380,6 +383,7 @@ fi
 
 # --- PHASE 4: Design Quality Gate ---
 CHECK_DESIGN="$SCRIPT_DIR/check_design.js"
+SCORE_DESIGN="$SCRIPT_DIR/score_design.js"
 THEME_JS="$APP_DIR/shared/theme.js"
 echo ""
 echo "--- Design Quality Gate ---"
@@ -405,6 +409,24 @@ if [ "$HAS_NODE" -eq 1 ] && [ -f "$CHECK_DESIGN" ]; then
   done
 else
   echo "  SKIP: check_design.js not found or Node.js unavailable"
+fi
+
+# --- PHASE 5: Aesthetic Score (optional, --score flag) ---
+if [ "$SCORE_MODE" -eq 1 ] && [ "$HAS_NODE" -eq 1 ] && [ -f "$SCORE_DESIGN" ]; then
+  echo ""
+  echo "--- Aesthetic Score ---"
+  for vizdir in "$APP_DIR"/appserver/static/visualizations/*/; do
+    [ -d "$vizdir" ] || continue
+    VIZ=$(basename "$vizdir")
+    # Find JS source
+    JS_SRC=""
+    [ -f "$vizdir/src/visualization_source.js" ] && JS_SRC="$vizdir/src/visualization_source.js"
+    [ -z "$JS_SRC" ] && [ -f "$vizdir/src/visualization.js" ] && JS_SRC="$vizdir/src/visualization.js"
+    [ -z "$JS_SRC" ] && [ -f "$vizdir/visualization.js" ] && JS_SRC="$vizdir/visualization.js"
+    if [ -n "$JS_SRC" ] && [ -f "$THEME_JS" ]; then
+      node "$SCORE_DESIGN" "$JS_SRC" "$THEME_JS" "$VIZ"
+    fi
+  done
 fi
 
 echo ""
