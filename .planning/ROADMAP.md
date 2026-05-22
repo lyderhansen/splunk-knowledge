@@ -540,8 +540,9 @@ Plans:
   2. Running yarn package on a scaffolded Extension API app produces a .spl file with the correct internal structure
 **Plans**: 2 plans
 Plans:
-- [ ] 30-01-PLAN.md — Add columnar data pattern + Extension API drilldown template to viz-blueprints.md; verify config-json-template.md drilldown flags
-- [ ] 30-02-PLAN.md — Add ECR-09 Extension API edge cases to edge-cases.md
+- [ ] 31-01-PLAN.md — Add Extension API format detection and E01-E05 checks to validate_viz.sh (BV-01)
+- [ ] 31-02-PLAN.md — Expand .spl internal structure verification in vp-create SKILL.md (BV-02)
+
 
 ### Phase 32: Aesthetic Scoring
 **Goal**: score_design.js automatically scores generated viz code on aesthetic dimensions and integrates as an optional Phase 5 in the validation pipeline
