@@ -4,13 +4,13 @@ milestone: v5.6.0
 milestone_name: DS Extension API & Dual-Format Architecture
 status: planning
 stopped_at: Phase 29 Plan 02 complete — format-conditional workflow and Extension API checklist added
-last_updated: "2026-05-22T10:09:53.641Z"
+last_updated: "2026-05-22T12:25:56.804Z"
 last_activity: 2026-05-22
 progress:
   total_phases: 28
-  completed_phases: 23
-  total_plans: 52
-  completed_plans: 60
+  completed_phases: 24
+  total_plans: 53
+  completed_plans: 61
   percent: 100
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-20)
 
 **Core value:** Zero-fix first builds AND wow-factor dashboards — reliable + beautiful every time
-**Current focus:** Phase 32 — aesthetic-scoring
+**Current focus:** Phase 33 — test-build (final v5.6.0 phase)
 
 ## Current Position
 
-Phase: 32
-Plan: Not started
-Status: Ready to plan
+Phase: 33
+Plan: 01 COMPLETE
+Status: Phase 33 complete — v5.6.0 milestone complete
 Last activity: 2026-05-22
 
 ## Performance Metrics
@@ -119,10 +119,17 @@ Recent decisions affecting current work:
 ### Pending Todos
 
 - [x] Execute 27-02-PLAN.md (remaining plan in phase 27) — COMPLETE
+- [x] Execute 33-01-PLAN.md — COMPLETE (2026-05-22)
+
+### Decisions
+
+- [TB-01]: @splunk/dashboard-studio-extension is publicly available on npm — no Splunk auth required for Extension API test builds
+- [TB-02]: Manual scaffold (no @splunk/create CLI) produces identical Extension API project structure per plan D-02 fallback
+- [TB-03]: preview.png generated with raw Buffer + Node.js zlib (no external PNG lib) — 116x76, brand palette, >100 bytes passes A01/A02
 
 ### Blockers/Concerns
 
-None blocking. Phase 27 can start immediately.
+None. v5.6.0 milestone complete.
 
 ## Deferred Items
 
@@ -143,10 +150,11 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-05-22T10:09:53.632Z
-Stopped at: Phase 29 Plan 02 complete — format-conditional workflow and Extension API checklist added
-Resume: Run /gsd-execute-phase 29 plan 03
+Last session: 2026-05-22T12:25:00Z
+Stopped at: Phase 33 Plan 01 complete — Extension API end-to-end test build, 5/5 D-03 checks PASS, v5.6.0 milestone complete
+Resume: None — v5.6.0 complete
 
 ## Operator Next Steps
 
-- Run /gsd-execute-phase 29 plan 03 to continue Phase 29
+- v5.6.0 milestone complete — all phases done
+- Consider v6.0 planning (validate_dash.js, Aviation/Fintech domain types, production SPL templates)
