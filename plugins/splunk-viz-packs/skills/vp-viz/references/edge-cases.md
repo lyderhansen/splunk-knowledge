@@ -540,3 +540,59 @@ define([
   `escapeHtml(safeStr(val))`.
 - Hand-rolled escaping (replacing `<` with `&lt;` manually) is an anti-pattern — use the
   Splunk-provided utilities to ensure correctness under all input shapes.
+
+---
+
+## ECR-09: Extension API Runtime Differences
+
+**Requirement:** Extension API vizs face five runtime pitfalls absent in Classic format. Every Extension API `visualization.js` MUST handle async data arrival, null dataSources chains, string-typed numerics, iframe sandboxing, and the absence of `formatData`.
+
+**Scope:** ECR-09 applies ONLY to Extension API vizs. Classic vizs use ECR-01 through ECR-08 unchanged.
+
+### Loading gate and dataSources null check
+
+Data arrives asynchronously. The `addDataSourcesListener` callback fires with `ds.loading === true` before data is ready. Check `ds.loading` first, then defensively chain the dataSources access — each level may be undefined:
+
+```javascript
+function render() {
+    if (ds.loading) return;                    // gate: data not ready
+    var data = ds.dataSources &&
+               ds.dataSources.primary &&
+               ds.dataSources.primary.data;    // null chain — each level may be undefined
+    if (!data || !data.columns || data.columns.length === 0) {
+        drawEmptyState(ctx, w, h, t, accent); return;
+    }
+    // safe: data.columns[fieldIdx][rowIdx]
+}
+```
+
+### String-to-number conversion
+
+ALL values in `data.columns` are strings, even numeric fields. Classic may deliver pre-typed numbers via `formatData`; Extension never does. Use `safeNum` before any arithmetic or comparison:
+
+```javascript
+var count = data.columns[1][0];          // WRONG — "250" > 100 is a string compare
+var count = safeNum(data.columns[1][0], 0); // CORRECT
+```
+
+### iframe sandboxing
+
+Extension vizs run in a sandboxed iframe. No `window.parent` access, no parent DOM reads. Use `document.getElementById('root')` as the viz container; use `VisualizationAPI` for drilldown and tokens.
+
+```javascript
+var url = window.parent.document.location.href;  // WRONG — throws in sandbox
+document.getElementById('root').appendChild(canvas); // CORRECT
+```
+
+### No formatData lifecycle
+
+Extension API has no `formatData` method. Raw columnar data arrives in the listener callback. Perform all field-index resolution and data reshaping inside the render function.
+
+### Rules
+
+- Gate rendering behind `ds.loading` — check this first, before null checks or drawing.
+- Defensive-chain dataSources: `ds.dataSources && ds.dataSources.primary && ds.dataSources.primary.data`.
+- Parse every numeric column value via `safeNum(val, fallback)` — Extension delivers all values as strings.
+- Do not access `window.parent` or the Dashboard Studio DOM; all cross-frame interaction uses `VisualizationAPI`.
+- No `formatData` — resolve field indices and reshape data inside the render function.
+- ECR-01 through ECR-08 canvas patterns (save/restore, safeStr, hexFromSplunk, escapeHtml) still apply to Extension vizs.
