@@ -199,8 +199,8 @@ Plans:
   5. User reads the Drilldown Field formatter control and immediately understands what clicking a viz row will pass downstream — help text is unambiguous
 **Plans**: 2 plans
 Plans:
-- [ ] 30-01-PLAN.md — Add columnar data pattern + Extension API drilldown template to viz-blueprints.md; verify config-json-template.md drilldown flags
-- [ ] 30-02-PLAN.md — Add ECR-09 Extension API edge cases to edge-cases.md
+- [x] 30-01-PLAN.md — Add columnar data pattern + Extension API drilldown template to viz-blueprints.md; verify config-json-template.md drilldown flags
+- [x] 30-02-PLAN.md — Add ECR-09 Extension API edge cases to edge-cases.md
 Plans:
 - [x] 11-01-PLAN.md — Expand viz-blueprints.md settings and creative freedom language
 - [x] 11-02-PLAN.md — Add drilldown field template and comma-separated input pattern to formatter-patterns.md

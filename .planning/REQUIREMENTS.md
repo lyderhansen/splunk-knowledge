@@ -28,7 +28,7 @@
 ### Data Adapter (DA)
 
 - [x] **DA-01**: viz-blueprints.md documents the columnar data access pattern alongside the existing row-major pattern — columns[fieldIdx][rowIdx] with parseFloat/parseInt for all numeric values
-- [ ] **DA-02**: edge-cases.md documents Extension API-specific edge cases — loading gate, dataSources null check, string-to-number conversion, iframe sandboxing (no window.parent)
+- [x] **DA-02**: edge-cases.md documents Extension API-specific edge cases — loading gate, dataSources null check, string-to-number conversion, iframe sandboxing (no window.parent)
 
 ### Drilldown & Tokens (DT)
 
