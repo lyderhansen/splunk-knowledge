@@ -1,0 +1,41 @@
+{
+    "showTitleAndDescription": true,
+    "includeInToolbar": true,
+    "includeInVizSwitcher": true,
+    "showDrilldown": true,
+    "hasEventHandlers": true,
+    "canSetTokens": ["dynamic"],
+    "config": {
+        "name": "KPI Tile",
+        "description": "Single-value KPI tile with hero value display, optional delta arrow, and accent gradient.",
+        "category": "Custom",
+        "dataContract": { "requiredDataSources": ["primary"] },
+        "size": { "initialWidth": 500, "initialHeight": 300 },
+        "optionsSchema": {
+            "themeMode":       { "type": "string",  "default": "auto" },
+            "label":           { "type": "string",  "default": "Value" },
+            "decimals":        { "type": "number",  "default": 0 },
+            "showDelta":       { "type": "boolean", "default": false },
+            "accentColor":     { "type": "string",  "default": "#4ECDC4" },
+            "accentIntensity": { "type": "number",  "default": 50 }
+        },
+        "editorConfig": [
+            {
+                "label": "Data display",
+                "layout": [
+                    [ { "editor": "editor.text",     "label": "Display label",    "option": "label" } ],
+                    [ { "editor": "editor.number",   "label": "Decimal places",   "option": "decimals" } ],
+                    [ { "editor": "editor.checkbox", "label": "Show delta arrow", "option": "showDelta" } ]
+                ]
+            },
+            {
+                "label": "Color and style",
+                "layout": [
+                    [ { "editor": "editor.text",   "label": "Theme (auto/dark/light)",   "option": "themeMode" } ],
+                    [ { "editor": "editor.color",  "label": "Accent color",              "option": "accentColor" } ],
+                    [ { "editor": "editor.number", "label": "Accent intensity (0-100+)", "option": "accentIntensity" } ]
+                ]
+            }
+        ]
+    }
+}

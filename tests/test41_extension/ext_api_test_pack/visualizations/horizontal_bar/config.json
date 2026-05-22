@@ -1,0 +1,41 @@
+{
+    "showTitleAndDescription": true,
+    "includeInToolbar": true,
+    "includeInVizSwitcher": true,
+    "showDrilldown": true,
+    "hasEventHandlers": true,
+    "canSetTokens": ["dynamic"],
+    "config": {
+        "name": "Horizontal Bar",
+        "description": "Multi-row horizontal bar chart with gradient fills, label truncation, and click drilldown.",
+        "category": "Custom",
+        "dataContract": { "requiredDataSources": ["primary"] },
+        "size": { "initialWidth": 500, "initialHeight": 300 },
+        "optionsSchema": {
+            "themeMode":    { "type": "string",  "default": "auto" },
+            "maxBars":      { "type": "number",  "default": 10 },
+            "barHeight":    { "type": "number",  "default": 24 },
+            "showValues":   { "type": "boolean", "default": true },
+            "series1Color": { "type": "string",  "default": "#4ECDC4" },
+            "series2Color": { "type": "string",  "default": "#45B7D1" }
+        },
+        "editorConfig": [
+            {
+                "label": "Data display",
+                "layout": [
+                    [ { "editor": "editor.number",   "label": "Max bars to show", "option": "maxBars" } ],
+                    [ { "editor": "editor.number",   "label": "Bar height (px)",  "option": "barHeight" } ],
+                    [ { "editor": "editor.checkbox", "label": "Show values",      "option": "showValues" } ]
+                ]
+            },
+            {
+                "label": "Color and style",
+                "layout": [
+                    [ { "editor": "editor.text",  "label": "Theme (auto/dark/light)", "option": "themeMode" } ],
+                    [ { "editor": "editor.color", "label": "Series 1 color",          "option": "series1Color" } ],
+                    [ { "editor": "editor.color", "label": "Series 2 color",          "option": "series2Color" } ]
+                ]
+            }
+        ]
+    }
+}

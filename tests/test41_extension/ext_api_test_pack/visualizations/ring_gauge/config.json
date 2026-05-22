@@ -1,0 +1,41 @@
+{
+    "showTitleAndDescription": true,
+    "includeInToolbar": true,
+    "includeInVizSwitcher": true,
+    "showDrilldown": true,
+    "hasEventHandlers": true,
+    "canSetTokens": ["dynamic"],
+    "config": {
+        "name": "Ring Gauge",
+        "description": "Arc-rendering ring gauge with zone-based gradient coloring (danger/warn/success) and click drilldown.",
+        "category": "Custom",
+        "dataContract": { "requiredDataSources": ["primary"] },
+        "size": { "initialWidth": 500, "initialHeight": 300 },
+        "optionsSchema": {
+            "themeMode":    { "type": "string",  "default": "auto" },
+            "minValue":     { "type": "number",  "default": 0 },
+            "maxValue":     { "type": "number",  "default": 100 },
+            "arcWidth":     { "type": "number",  "default": 20 },
+            "showLabel":    { "type": "boolean", "default": true },
+            "accentColor":  { "type": "string",  "default": "#4ECDC4" }
+        },
+        "editorConfig": [
+            {
+                "label": "Data display",
+                "layout": [
+                    [ { "editor": "editor.number",   "label": "Minimum value",  "option": "minValue" } ],
+                    [ { "editor": "editor.number",   "label": "Maximum value",  "option": "maxValue" } ],
+                    [ { "editor": "editor.checkbox", "label": "Show label",     "option": "showLabel" } ]
+                ]
+            },
+            {
+                "label": "Color and style",
+                "layout": [
+                    [ { "editor": "editor.text",   "label": "Theme (auto/dark/light)", "option": "themeMode" } ],
+                    [ { "editor": "editor.number", "label": "Arc width (px)",          "option": "arcWidth" } ],
+                    [ { "editor": "editor.color",  "label": "Accent color",            "option": "accentColor" } ]
+                ]
+            }
+        ]
+    }
+}
