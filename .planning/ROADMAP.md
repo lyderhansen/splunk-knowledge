@@ -121,7 +121,7 @@ Full details: `.planning/milestones/v5.7.0-ROADMAP.md`
 **v5.8.0 Quality & Template Corrections (Phases 38-43)**
 
 - [x] **Phase 38: JSONata Reference** - Create ds-ref-jsonata.md with full JSONata syntax for Dashboard Studio eval expressions; condense ds-int-tokens inline section to summary + link (completed 2026-05-23)
-- [ ] **Phase 39: Extension API Template Fixes** - Apply IIFE format, bundled extension package, bare stanza names to visualization-js-template.md and config-json-template.md
+- [x] **Phase 39: Extension API Template Fixes** - Apply IIFE format, bundled extension package, bare stanza names to visualization-js-template.md and config-json-template.md (completed 2026-05-23)
 - [ ] **Phase 40: Animation Scope Fix** - Document opt() scope constraint in animation-recipes.md; fix entrance/pulse boilerplates to pass speedMult as parameter
 - [ ] **Phase 41: Pillow Preview** - Replace raw-buffer silhouettes with Pillow-generated miniature viz renderings in vp-create pipeline
 - [ ] **Phase 42: Light Mode backgroundColor** - Fix opt() read order so backgroundColor works in both dark and light themes
@@ -677,6 +677,9 @@ Plans:
 **Requirements**: AF-01, AF-02
 **Plans**: 1 plan
 
+Plans:
+- [ ] 40-01-PLAN.md — Insert scope rule section + refactor all five animation helper signatures
+
 ### Phase 41: Pillow Preview
 **Goal**: vp-create generates Pillow-based preview.png files with per-viz custom miniature renderings instead of raw-buffer silhouettes
 **Depends on**: Phase 37
@@ -737,7 +740,7 @@ Plans:
 | 36. Extension API Path Test Build | v5.7.0 | 0/1 | Not started | - |
 | 37. Test Report & Comparison | v5.7.0 | 0/1 | Not started | - |
 | 38. JSONata Reference | v5.8.0 | 2/2 | Complete    | 2026-05-23 |
-| 39. Extension API Template Fixes | v5.8.0 | 0/2 | Not started | - |
+| 39. Extension API Template Fixes | v5.8.0 | 2/2 | Complete    | 2026-05-23 |
 | 40. Animation Scope Fix | v5.8.0 | 0/1 | Not started | - |
 | 41. Pillow Preview | v5.8.0 | 0/2 | Not started | - |
 | 42. Light Mode backgroundColor | v5.8.0 | 0/1 | Not started | - |
