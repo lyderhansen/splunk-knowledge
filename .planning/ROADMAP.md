@@ -658,6 +658,12 @@ Plans:
 **Depends on**: Phase 37
 **Requirements**: JR-01, JR-02
 **Plans**: 2 plans
+Plans:
+**Wave 1**
+- [ ] 38-01-PLAN.md — Create ds-ref-jsonata/SKILL.md with comprehensive JSONata reference (gotchas, operators, functions, recipes)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 38-02-PLAN.md — Condense ds-int-tokens inline JSONata section to summary with MUST LOAD directive; wire cross-references in ds-ref-syntax, ds-int-drilldowns, plugin.json
 
 ### Phase 39: Extension API Template Fixes
 **Goal**: The Extension API generation templates reflect all live-tested findings — IIFE format, bundled extension package, bare stanza names
