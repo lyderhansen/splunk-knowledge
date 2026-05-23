@@ -59,9 +59,10 @@ RIGHT: "options": { "myapp.myviz.scoreField": "score" }
 3. Write config.json      → use references/config-json-template.md (replaces formatter.html)
 4. Write visualization.js → use references/visualization-js-template.md (ESM, replaces visualization_source.js)
    Put source in visualizations/{viz}/src/visualization.js
-5. Skip build_flat.js — Extension uses yarn build (handled by vp-create)
-6. Validate and fix (same loop, different checks — see Phase 31)
-7. Package → see vp-create
+5. Write build.mjs        → MUST LOAD before writing: [references/build-mjs-template.md](references/build-mjs-template.md). Copy the template verbatim, fill {{APP_ID}}, write to app root. Skip build_flat.js — Extension uses node build.mjs (run by vp-create).
+6. Write package.mjs      → MUST LOAD before writing: [references/package-mjs-template.md](references/package-mjs-template.md). Copy the template verbatim, fill {{APP_ID}}, {{ACCENT_HEX}}, {{PRIMARY_HEX}}/{{SECONDARY_HEX}}/{{TERTIARY_HEX}}, write to app root. This handles app.conf, visualizations.conf (bare stanzas), preview.png, and .spl tarball.
+7. Validate and fix (same loop, different checks — see Phase 31)
+8. Package → see vp-create
 
 **If format=classic** (default): follow the workflow above unchanged.
 
