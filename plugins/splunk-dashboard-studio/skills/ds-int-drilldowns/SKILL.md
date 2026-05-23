@@ -277,7 +277,7 @@ dashboard remembers click context.
 
 **Note:** `$eval:name$` does NOT work in `input.timerange defaultValue` — shows "Invalid value" (live-tested). Always pass pre-materialized regular tokens.
 
-**Full recipe details:** `tests/test40_rema/HANDOVER-token-eval.md` Part B. See also `ds-int-tokens` for `expressions.eval` JSONata syntax.
+**Full recipe details:** `tests/test40_rema/HANDOVER-token-eval.md` Part B. See `ds-ref-jsonata` for full JSONata expression syntax (eval + conditions).
 
 ## Enabling drilldowns on the panel
 
