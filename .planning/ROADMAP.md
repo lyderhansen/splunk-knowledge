@@ -11,6 +11,7 @@
 - ✅ **v5.5.0 Visual Wow-Factor & First-Build Perfection** — Phases 22-27 (shipped 2026-05-21)
 - ✅ **v5.6.0 DS Extension API & Dual-Format Architecture** — Phases 28-33 (shipped 2026-05-22)
 - ✅ **v5.7.0 Real Brand End-to-End Validation** — Phases 34-37 (shipped 2026-05-22)
+- **v5.8.0 Quality & Template Corrections** — Phases 38-43 (active)
 
 ## Phases
 
@@ -116,6 +117,15 @@ Full details: `.planning/milestones/v5.6.0-ROADMAP.md`
 Full details: `.planning/milestones/v5.7.0-ROADMAP.md`
 
 </details>
+
+**v5.8.0 Quality & Template Corrections (Phases 38-43)**
+
+- [ ] **Phase 38: JSONata Reference** - Create ds-ref-jsonata.md with full JSONata syntax for Dashboard Studio eval expressions; condense ds-int-tokens inline section to summary + link
+- [ ] **Phase 39: Extension API Template Fixes** - Apply IIFE format, bundled extension package, bare stanza names to visualization-js-template.md and config-json-template.md
+- [ ] **Phase 40: Animation Scope Fix** - Document opt() scope constraint in animation-recipes.md; fix entrance/pulse boilerplates to pass speedMult as parameter
+- [ ] **Phase 41: Pillow Preview** - Replace raw-buffer silhouettes with Pillow-generated miniature viz renderings in vp-create pipeline
+- [ ] **Phase 42: Light Mode backgroundColor** - Fix opt() read order so backgroundColor works in both dark and light themes
+- [ ] **Phase 43: Deep Review** - Review all 6 vp-* skills and all reference files for consistency with v5.5-5.7 changes; produce REVIEW.md
 
 ## Phase Details
 
@@ -643,6 +653,42 @@ Plans:
   3. Improvement recommendations are listed for the next milestone
 **Plans**: 1 plan
 
+### Phase 38: JSONata Reference
+**Goal**: A comprehensive JSONata syntax reference exists for Dashboard Studio eval expressions, and ds-int-tokens links to it
+**Depends on**: Phase 37
+**Requirements**: JR-01, JR-02
+**Plans**: 2 plans
+
+### Phase 39: Extension API Template Fixes
+**Goal**: The Extension API generation templates reflect all live-tested findings — IIFE format, bundled extension package, bare stanza names
+**Depends on**: Phase 37
+**Requirements**: EF-01, EF-02, EF-03
+**Plans**: 2 plans
+
+### Phase 40: Animation Scope Fix
+**Goal**: animation-recipes.md documents the opt() scope constraint and the entrance/pulse boilerplates pass speedMult as parameter
+**Depends on**: Phase 37
+**Requirements**: AF-01, AF-02
+**Plans**: 1 plan
+
+### Phase 41: Pillow Preview
+**Goal**: vp-create generates Pillow-based preview.png files with per-viz custom miniature renderings instead of raw-buffer silhouettes
+**Depends on**: Phase 37
+**Requirements**: PP-01, PP-02
+**Plans**: 2 plans
+
+### Phase 42: Light Mode backgroundColor
+**Goal**: Generated viz code reads backgroundColor via opt() before the theme branch so both dark and light modes respect the user's setting
+**Depends on**: Phase 37
+**Requirements**: LM-01, LM-02
+**Plans**: 1 plan
+
+### Phase 43: Deep Review
+**Goal**: All 6 vp-* skills and all reference files are reviewed for consistency with v5.5-5.7 changes, producing a REVIEW.md with findings
+**Depends on**: Phase 38, 39, 40, 41, 42 (all fixes landed)
+**Requirements**: DR-01, DR-02, DR-03
+**Plans**: 1 plan
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -684,3 +730,9 @@ Plans:
 | 35. Classic Path Test Build | v5.7.0 | 0/1 | Not started | - |
 | 36. Extension API Path Test Build | v5.7.0 | 0/1 | Not started | - |
 | 37. Test Report & Comparison | v5.7.0 | 0/1 | Not started | - |
+| 38. JSONata Reference | v5.8.0 | 0/2 | Not started | - |
+| 39. Extension API Template Fixes | v5.8.0 | 0/2 | Not started | - |
+| 40. Animation Scope Fix | v5.8.0 | 0/1 | Not started | - |
+| 41. Pillow Preview | v5.8.0 | 0/2 | Not started | - |
+| 42. Light Mode backgroundColor | v5.8.0 | 0/1 | Not started | - |
+| 43. Deep Review | v5.8.0 | 0/1 | Not started | - |

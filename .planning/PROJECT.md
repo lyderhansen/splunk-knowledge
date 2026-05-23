@@ -62,7 +62,7 @@ When a user runs `/vp-init`, the resulting viz pack installs in Splunk without e
 - Red Bull Extension API test build: 3 vizs, 10.8 KB .spl, rendering in live Splunk Dashboard Studio
 - Critical live findings: opt() scope bug, IIFE format required, bare stanza names, bundle the extension package
 
-**Next milestone:** Not yet defined. Run `/gsd-new-milestone` to start planning.
+**Next milestone:** v5.8.0 Quality & Template Corrections — 6 phases (38-43), 14 requirements. JSONata reference, Extension API template fixes, animation scope fix, Pillow preview, light mode backgroundColor, deep skill review.
 
 <details>
 <summary>v5.6.0 DS Extension API & Dual-Format Architecture (shipped 2026-05-22)</summary>

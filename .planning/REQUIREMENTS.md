@@ -1,0 +1,70 @@
+# Requirements: splunk-knowledge — v5.8.0 Quality & Template Corrections
+
+**Defined:** 2026-05-23
+**Core Value:** Fix every issue found during Red Bull live testing, add comprehensive JSONata reference, improve preview.png quality, and deep-review all viz-packs skills for consistency.
+
+## v1 Requirements
+
+### JSONata Reference (JR)
+
+- [ ] **JR-01**: ds-ref-jsonata.md exists as a comprehensive JSONata syntax reference for Dashboard Studio eval expressions — operators, string functions, numeric functions, date/time functions ($toMillis, $fromMillis, $now), array operations ($map, $filter, $reduce), path expressions, and lambdas
+- [ ] **JR-02**: ds-int-tokens links to ds-ref-jsonata.md as a "MUST LOAD" for complex expressions, and the existing inline JSONata section is condensed to a summary pointing to the full reference
+
+### Extension API Template Fixes (EF)
+
+- [ ] **EF-01**: visualization-js-template.md specifies IIFE format (not ESM) in the build.mjs template — Splunk loads viz scripts as regular `<script>`, not `<script type="module">`
+- [ ] **EF-02**: visualization-js-template.md specifies bundling @splunk/dashboard-studio-extension into the viz (not keeping it as external) — the iframe doesn't provide the package as a global
+- [ ] **EF-03**: The package.mjs template generates visualizations.conf stanza names as `[viz_name]` not `[app_id.viz_name]` — bare names, Splunk resolves app context automatically
+
+### Animation Scope Fix (AF)
+
+- [ ] **AF-01**: animation-recipes.md documents that `opt()` is ONLY available inside `updateView` scope — animation helper methods (_startEntrance, _startStaggeredEntrance, _startPulse) must receive computed values as parameters, not call opt() directly
+- [ ] **AF-02**: The Generic Entrance Boilerplate and LED Pulse Boilerplate in animation-recipes.md pass speedMult as a parameter instead of reading animationSpeed via opt() inside the helper method
+
+### Pillow Preview (PP)
+
+- [ ] **PP-01**: vp-create generates a `generate_previews.py` script with per-viz drawing functions using Pillow (PIL) — each viz type gets a custom miniature rendering with brand colors, real fonts, and representative data layout
+- [ ] **PP-02**: The generated preview.png files are 116x76 pixels (official Splunk spec) and visually represent the viz type — a gauge preview shows an arc, a bar chart shows bars, a table shows rows
+
+### Light Mode Fix (LM)
+
+- [ ] **LM-01**: The backgroundColor opt() read in generated viz code happens BEFORE the dark/light theme branch — both themes respect the user's chosen backgroundColor, not just dark mode
+- [ ] **LM-02**: theme-template.md or pre-code-checklist.md documents the correct pattern: `var bg = hexFromSplunk(opt('backgroundColor', t.bg));` at the TOP of the render function
+
+### Deep Review (DR)
+
+- [ ] **DR-01**: All 6 splunk-viz-packs skills (vp-init, vp-design, vp-viz, vp-create, vp-debug, vp-recipes) are reviewed for consistency with v5.5-5.7 changes — no stale references, no contradictions, no missing cross-references
+- [ ] **DR-02**: All reference files in vp-viz/references/ are reviewed for accuracy against live-tested findings — pre-code-checklist, formatter-patterns, viz-blueprints, edge-cases, animation-recipes, config-json-template, visualization-js-template
+- [ ] **DR-03**: A REVIEW.md is produced listing every inconsistency found and whether it was fixed or deferred
+
+## Future Requirements
+
+- Extension API editor.select/editor.radio discovery
+- score_design.js Extension API pattern recognition
+- Multi-brand regression test suite
+
+## Out of Scope
+
+- New viz types or domain templates
+- Extension API React template
+- Plugin marketplace changes
+- splunk-dashboard-studio or splunk-admin plugin hardening
+
+## Traceability
+
+| Requirement | Phase | Plan | Status |
+|-------------|-------|------|--------|
+| JR-01 | 38 | - | pending |
+| JR-02 | 38 | - | pending |
+| EF-01 | 39 | - | pending |
+| EF-02 | 39 | - | pending |
+| EF-03 | 39 | - | pending |
+| AF-01 | 40 | - | pending |
+| AF-02 | 40 | - | pending |
+| PP-01 | 41 | - | pending |
+| PP-02 | 41 | - | pending |
+| LM-01 | 42 | - | pending |
+| LM-02 | 42 | - | pending |
+| DR-01 | 43 | - | pending |
+| DR-02 | 43 | - | pending |
+| DR-03 | 43 | - | pending |
