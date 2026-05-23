@@ -248,7 +248,7 @@ Token references inside conditions are **bare**: `$selected_host$ =
 
 ### Eval — derived token values
 
-JSONata expressions. Reference result as `$eval:<name>$`.
+JSONata expressions. Reference result as `$eval:<name>$`. See `ds-ref-jsonata` for full syntax.
 
 ## visibility (under `containerOptions`)
 
@@ -413,6 +413,7 @@ Canonical multiselect pattern:
   formatters, escaping, `context` configuration store.
 - `ds-ref-design-principles` — visual hierarchy, when not to use a chart.
 - `ds-ref-pitfalls` — cross-skill traps matrix (viz + interactivity + schema).
+- `ds-ref-jsonata` — JSONata expression language reference (eval + conditions).
 - `ds-int-tokens` — token consumption.
 - `ds-int-inputs` — input declarations.
 - `ds-int-defaults` — global defaults block.
