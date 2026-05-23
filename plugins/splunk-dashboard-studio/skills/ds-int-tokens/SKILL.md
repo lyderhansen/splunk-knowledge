@@ -179,121 +179,16 @@ Receiving dashboard must declare inputs with matching `token` names.
 
 ## Token eval expressions (Enterprise 10.2+ / Cloud 10.1.2507+)
 
-**Announced:** October 29, 2025. Official docs: [Splunk 10.4 Token Manager](https://help.splunk.com/en/splunk-cloud-platform/create-dashboards-and-reports/dashboard-studio/10.4.2604/make-dashboards-dynamic-and-interactive/tokens/token-manager)
+> **MUST LOAD `ds-ref-jsonata`** before writing `eval` or `conditions` expressions. JSONata is a different language from SPL eval — using SPL syntax (`.` for concat, `if()`, `strftime()`) will silently produce wrong results.
 
-### Version requirements
+Dashboard Studio's `expressions` stanza is a top-level sibling of `dataSources` / `visualizations` / `layout`. It holds two child stanzas:
 
-| Feature | Splunk Cloud | Splunk Enterprise |
-|---|---|---|
-| Token eval (`expressions.eval`) | 10.1.2507 | 10.2 |
-| `input.button` | 10.1.2507 | 10.2 |
-| `containerOptions.visibility` | 10.1.2507 | 10.2 |
-| Conditional panel visibility | 9.0.2303 | 9.1 |
+- **`expressions.eval`** — derived token values (string, number, boolean, or array). Re-evaluates whenever a referenced token changes.
+- **`expressions.conditions`** — boolean predicates consumed by `containerOptions.visibility.showConditions` / `hideConditions` (see `ds-int-visibility`).
 
-### The `expressions` stanza (JSON syntax)
+**`$eval:name$` quick reference.** Use the `name` field (NOT the object key) when referencing the result. Works in markdown, SPL queries, input labels, panel titles, option values, and `setToken.value`. Does **NOT** work in `input.timerange defaultValue` — shows "Invalid value" (live-tested). For cross-dashboard time ranges, pre-materialize the value via `setToken` first (see `ds-int-drilldowns` three-handler chain).
 
-Top-level sibling of `dataSources`, `visualizations`, `layout`:
-
-```json
-{
-  "expressions": {
-    "conditions": {
-      "condition_abc": {
-        "name": "show details",
-        "value": "$detailsVisibility$ = \"true\""
-      }
-    },
-    "eval": {
-      "eval_uniqueId": {
-        "name": "expressionName",
-        "value": "JSONata expression here"
-      }
-    }
-  }
-}
-```
-
-**Key points:**
-- `conditions` evaluate to boolean — used for visibility (`showConditions`/`hideConditions`)
-- `eval` expressions evaluate to string, number, boolean, or array
-- Object keys (`eval_uniqueId`) are internal IDs — `name` is the reference identifier used in `$eval:name$`
-- Expressions re-evaluate whenever their dependency tokens change
-
-### CRITICAL: JSONata syntax, NOT SPL eval
-
-Dashboard Studio uses **JSONata** (https://docs.jsonata.org/overview.html), NOT SPL eval. Common differences:
-
-| Operation | JSONata | SPL eval |
-|---|---|---|
-| String concatenation | `&` | `.` or `+` |
-| Ternary | `condition ? value : other` | `if()` |
-| Date function | `$now('format')` | `strftime()` |
-| Token reference | `$name$` inside expression | — |
-
-### $eval:name$ reference syntax
-
-The `name` field (NOT the object key) is used in `$eval:name$`:
-
-**Confirmed working locations:**
-- Markdown: `"markdown": "## $eval:welcome message$"`
-- SPL queries: `"query": "| makeresults | eval field=$eval:CombinedRevenue$"`
-- Input labels: `"label": "$eval:detailsBtnLabel$"`
-- Panel titles, options values
-- `setToken.value`: `"value": "$eval:toggleDetails$"`
-
-**Does NOT work:**
-- `input.timerange defaultValue` — shows "Invalid value" (live-tested)
-- Direct `$eval:name$` in `linkToDashboard` tokens — eval does not recompute before navigation fires. Use the three-handler chain instead (see `ds-int-drilldowns`).
-
-### Working examples (from official Splunk 10.4 docs)
-
-**Arithmetic — addition:**
-```json
-"eval_V7nqJNlY": {
-  "name": "CombinedRevenue",
-  "value": "$NovaStreamRevenue$+$NovaAnalyticsRevenue$"
-}
-```
-Used in SPL: `"query": "| makeresults | eval field=$eval:CombinedRevenue$"`
-
-**String with date function:**
-```json
-"eval_YKKOO7sw": {
-  "name": "welcome message",
-  "value": "'Hello!\\nToday is ' & $now('[MNn,-3] [D01], [Y0001]')"
-}
-```
-
-**Ternary toggle (two dependent evals):**
-```json
-"expr_1": {
-  "name": "detailsBtnLabel",
-  "value": "$detailsVisibility$ = 'true' ? 'Show overview' : 'Show details'"
-},
-"expr_2": {
-  "name": "toggleDetails",
-  "value": "$detailsVisibility$ = 'true' ? 'false' : 'true'"
-}
-```
-
-**Epoch arithmetic (±N minutes for cross-dashboard time ranges):**
-```json
-"eval_earliest": { "name": "EARLIEST", "value": "$click_epoch$-300" },
-"eval_latest":   { "name": "LATEST",   "value": "$click_epoch$+300" }
-```
-Note: `_epoch_time=_time` in SPL gives numeric epoch; `$toMillis()` is only needed for ISO 8601 strings from `row._time.value`.
-
-### JSONata operators
-
-| Category | Operators |
-|---|---|
-| Arithmetic | `+`, `-`, `*`, `/` |
-| Comparison | `=`, `!=`, `<`, `>`, `<=`, `>=` |
-| Ternary | `condition ? true_value : false_value` |
-| String concat | `&` (NOT `+` or `.`) |
-| Functions | `$now('format')`, full JSONata library |
-
-Reference: https://docs.jsonata.org/overview.html
+Full syntax, operators, function tables, gotchas, and copy-paste recipes: **`ds-ref-jsonata`**.
 
 ## See also
 
