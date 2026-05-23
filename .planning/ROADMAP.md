@@ -660,7 +660,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 **Wave 1**
-- [ ] 38-01-PLAN.md — Create ds-ref-jsonata/SKILL.md with comprehensive JSONata reference (gotchas, operators, functions, recipes)
+- [x] 38-01-PLAN.md — Create ds-ref-jsonata/SKILL.md with comprehensive JSONata reference (gotchas, operators, functions, recipes)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 38-02-PLAN.md — Condense ds-int-tokens inline JSONata section to summary with MUST LOAD directive; wire cross-references in ds-ref-syntax, ds-int-drilldowns, plugin.json
@@ -736,7 +736,7 @@ Plans:
 | 35. Classic Path Test Build | v5.7.0 | 0/1 | Not started | - |
 | 36. Extension API Path Test Build | v5.7.0 | 0/1 | Not started | - |
 | 37. Test Report & Comparison | v5.7.0 | 0/1 | Not started | - |
-| 38. JSONata Reference | v5.8.0 | 0/2 | Not started | - |
+| 38. JSONata Reference | v5.8.0 | 1/2 | In Progress|  |
 | 39. Extension API Template Fixes | v5.8.0 | 0/2 | Not started | - |
 | 40. Animation Scope Fix | v5.8.0 | 0/1 | Not started | - |
 | 41. Pillow Preview | v5.8.0 | 0/2 | Not started | - |
