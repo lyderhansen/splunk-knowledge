@@ -120,7 +120,7 @@ Full details: `.planning/milestones/v5.7.0-ROADMAP.md`
 
 **v5.8.0 Quality & Template Corrections (Phases 38-43)**
 
-- [ ] **Phase 38: JSONata Reference** - Create ds-ref-jsonata.md with full JSONata syntax for Dashboard Studio eval expressions; condense ds-int-tokens inline section to summary + link
+- [x] **Phase 38: JSONata Reference** - Create ds-ref-jsonata.md with full JSONata syntax for Dashboard Studio eval expressions; condense ds-int-tokens inline section to summary + link (completed 2026-05-23)
 - [ ] **Phase 39: Extension API Template Fixes** - Apply IIFE format, bundled extension package, bare stanza names to visualization-js-template.md and config-json-template.md
 - [ ] **Phase 40: Animation Scope Fix** - Document opt() scope constraint in animation-recipes.md; fix entrance/pulse boilerplates to pass speedMult as parameter
 - [ ] **Phase 41: Pillow Preview** - Replace raw-buffer silhouettes with Pillow-generated miniature viz renderings in vp-create pipeline
@@ -663,7 +663,7 @@ Plans:
 - [x] 38-01-PLAN.md — Create ds-ref-jsonata/SKILL.md with comprehensive JSONata reference (gotchas, operators, functions, recipes)
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 38-02-PLAN.md — Condense ds-int-tokens inline JSONata section to summary with MUST LOAD directive; wire cross-references in ds-ref-syntax, ds-int-drilldowns, plugin.json
+- [x] 38-02-PLAN.md — Condense ds-int-tokens inline JSONata section to summary with MUST LOAD directive; wire cross-references in ds-ref-syntax, ds-int-drilldowns, plugin.json
 
 ### Phase 39: Extension API Template Fixes
 **Goal**: The Extension API generation templates reflect all live-tested findings — IIFE format, bundled extension package, bare stanza names
@@ -736,7 +736,7 @@ Plans:
 | 35. Classic Path Test Build | v5.7.0 | 0/1 | Not started | - |
 | 36. Extension API Path Test Build | v5.7.0 | 0/1 | Not started | - |
 | 37. Test Report & Comparison | v5.7.0 | 0/1 | Not started | - |
-| 38. JSONata Reference | v5.8.0 | 1/2 | In Progress|  |
+| 38. JSONata Reference | v5.8.0 | 2/2 | Complete   | 2026-05-23 |
 | 39. Extension API Template Fixes | v5.8.0 | 0/2 | Not started | - |
 | 40. Animation Scope Fix | v5.8.0 | 0/1 | Not started | - |
 | 41. Pillow Preview | v5.8.0 | 0/2 | Not started | - |
