@@ -20,6 +20,7 @@ docs/*.txt
 
 # Local sandbox / test scratch dirs
 /test[0-9]*/
+tests/
 node_modules/
 !plugins/splunk-viz-packs/skills/vp-viz/scripts/vendor/
 !plugins/splunk-viz-packs/skills/vp-viz/scripts/vendor/**
@@ -36,3 +37,9 @@ svgs/
 docs/*.md
 .planning/
 validate_findings.ndjson
+
+# Claude Code agent worktrees (ephemeral)
+.claude/worktrees/
+
+# Splunk doc extracts
+_doc_*.txt
