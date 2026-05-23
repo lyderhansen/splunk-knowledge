@@ -7,8 +7,8 @@
 
 ### JSONata Reference (JR)
 
-- [ ] **JR-01**: ds-ref-jsonata.md exists as a comprehensive JSONata syntax reference for Dashboard Studio eval expressions — operators, string functions, numeric functions, date/time functions ($toMillis, $fromMillis, $now), array operations ($map, $filter, $reduce), path expressions, and lambdas
-- [ ] **JR-02**: ds-int-tokens links to ds-ref-jsonata.md as a "MUST LOAD" for complex expressions, and the existing inline JSONata section is condensed to a summary pointing to the full reference
+- [x] **JR-01**: ds-ref-jsonata.md exists as a comprehensive JSONata syntax reference for Dashboard Studio eval expressions — operators, string functions, numeric functions, date/time functions ($toMillis, $fromMillis, $now), array operations ($map, $filter, $reduce), path expressions, and lambdas
+- [x] **JR-02**: ds-int-tokens links to ds-ref-jsonata.md as a "MUST LOAD" for complex expressions, and the existing inline JSONata section is condensed to a summary pointing to the full reference
 
 ### Extension API Template Fixes (EF)
 

@@ -736,7 +736,7 @@ Plans:
 | 35. Classic Path Test Build | v5.7.0 | 0/1 | Not started | - |
 | 36. Extension API Path Test Build | v5.7.0 | 0/1 | Not started | - |
 | 37. Test Report & Comparison | v5.7.0 | 0/1 | Not started | - |
-| 38. JSONata Reference | v5.8.0 | 2/2 | Complete   | 2026-05-23 |
+| 38. JSONata Reference | v5.8.0 | 2/2 | Complete    | 2026-05-23 |
 | 39. Extension API Template Fixes | v5.8.0 | 0/2 | Not started | - |
 | 40. Animation Scope Fix | v5.8.0 | 0/1 | Not started | - |
 | 41. Pillow Preview | v5.8.0 | 0/2 | Not started | - |
