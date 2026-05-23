@@ -42,7 +42,9 @@ yarn install
 yarn build
 ```
 
-This runs the webpack/rollup bundler configured in package.json (scaffolded by visualization-js-template.md). Produces visualization.js in each viz directory. Do NOT run build_flat.js — it is Classic-only.
+This runs the esbuild bundler configured in package.json (scaffolded from vp-viz/references/build-mjs-template.md and package-mjs-template.md). Produces visualization.js in each viz directory. Do NOT run build_flat.js — it is Classic-only.
+
+Reference: see [vp-viz/references/build-mjs-template.md](../vp-viz/references/build-mjs-template.md) and [vp-viz/references/package-mjs-template.md](../vp-viz/references/package-mjs-template.md) for the canonical proven-working build.mjs and package.mjs (IIFE format, bundled extension package, bare visualizations.conf stanzas). vp-viz Steps 5-6 require Claude to MUST LOAD these before writing the scripts — the files arrive at the app root pre-validated against Phase 36 test42_redbull.
 
 ## Step 2: Validate
 
