@@ -70,12 +70,18 @@ After fixing, re-run build (step 1) then validate (step 2).
 ## Step 3b: Generate app icons and previews (MANDATORY)
 
 ```bash
+# Icons + gradient background (Node.js)
 node ${CLAUDE_SKILL_DIR}/scripts/generate_assets.js /path/to/app
+
+# Per-viz preview.png (Python + Pillow — D-01 split)
+python3 ${CLAUDE_SKILL_DIR}/scripts/generate_previews.py /path/to/app
 ```
 
-Reads `shared/theme.js` for brand colors. Writes:
+If python3 or Pillow are unavailable, the second command exits with code 2 and prints "Pillow install failed". When this happens, fall back to the JS silhouette path: re-run `node ${CLAUDE_SKILL_DIR}/scripts/generate_assets.js /path/to/app --legacy-previews` to enable the JS-based preview generation that was gated off in v5.9.0.
+
+Both scripts read `shared/theme.js` for brand colors. Outputs:
 - `static/appIcon.png` (36x36) and `static/appIcon_2x.png` (72x72) — accent color background + white initial letter
-- `appserver/static/visualizations/<viz>/preview.png` (116x76) per viz — brand-colored silhouette per viz type
+- `appserver/static/visualizations/<viz>/preview.png` (116x76 RGB) per viz — Pillow-rendered miniature using brand colors, bundled Inter font, and 3-tier detection cascade (@viz-type → Canvas pattern → branded generic). Produced by `generate_previews.py` (Python), NOT `generate_assets.js` (Node) anymore.
 - `appserver/static/images/bg_gradient.png` (1920x1080) — branded gradient background for dashboard composition
 
 If Node.js is unavailable, validation will report FAIL A01-A04 on missing/placeholder assets.
@@ -237,7 +243,7 @@ Save to `default/data/ui/nav/default.xml`.
 ```
 - [ ] validate_viz.sh passed (zero FAIL)
 - [ ] App icons generated (step 3b — run generate_assets.js; static/appIcon.png exists, 36x36, >100 bytes)
-- [ ] Preview.png generated per viz (step 3b — run generate_assets.js; each viz dir has preview.png at 116x76, >100 bytes)
+- [ ] Preview.png generated per viz (step 3b — run generate_previews.py; each viz dir has preview.png at 116x76 RGB, uses Pillow + Inter font, >100 bytes)
 - [ ] Gradient background generated (step 3b — run generate_assets.js; appserver/static/images/bg_gradient.png exists, 1920x1080, > 1000 bytes)
 - [ ] Tarball > 1KB
 - [ ] No nested .tar.gz in archive
