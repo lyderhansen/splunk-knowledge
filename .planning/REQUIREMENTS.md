@@ -12,9 +12,9 @@
 
 ### Extension API Template Fixes (EF)
 
-- [ ] **EF-01**: visualization-js-template.md specifies IIFE format (not ESM) in the build.mjs template — Splunk loads viz scripts as regular `<script>`, not `<script type="module">`
-- [ ] **EF-02**: visualization-js-template.md specifies bundling @splunk/dashboard-studio-extension into the viz (not keeping it as external) — the iframe doesn't provide the package as a global
-- [ ] **EF-03**: The package.mjs template generates visualizations.conf stanza names as `[viz_name]` not `[app_id.viz_name]` — bare names, Splunk resolves app context automatically
+- [x] **EF-01**: visualization-js-template.md specifies IIFE format (not ESM) in the build.mjs template — Splunk loads viz scripts as regular `<script>`, not `<script type="module">`
+- [x] **EF-02**: visualization-js-template.md specifies bundling @splunk/dashboard-studio-extension into the viz (not keeping it as external) — the iframe doesn't provide the package as a global
+- [x] **EF-03**: The package.mjs template generates visualizations.conf stanza names as `[viz_name]` not `[app_id.viz_name]` — bare names, Splunk resolves app context automatically
 
 ### Animation Scope Fix (AF)
 
