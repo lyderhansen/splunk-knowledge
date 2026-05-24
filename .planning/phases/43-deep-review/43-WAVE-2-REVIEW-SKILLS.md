@@ -136,3 +136,100 @@
 - Issue: `Dark palette: bg={hex} card={hex} text={hex} accent={hex}` — the theme-template.md has significantly more token fields (panelHi, textDim, textFaint, edge, etc.). The brief format only captures 4 fields, which is intentionally compact. This is acceptable but could leave token gaps in theme.js when Claude fills them in.
 - Recommendation: Add "panel={hex} textDim={hex}" to the palette line or add a note "theme.js tokens derived from these 4 — see theme-template.md".
 
+---
+
+## vp-init/SKILL.md
+
+**Line count:** 128 / 500 budget — PASSES (372 lines of headroom)
+
+**Cross-references verified:**
+
+| Reference | Line | Resolves? |
+|-----------|------|----------|
+| ds-create (splunk-dashboard-studio) | 120 | YES |
+| vp-design (next stage load) | 97-111 | YES (same plugin) |
+| vp-viz (implied via pipeline) | — | YES |
+| vp-create (implied via pipeline) | — | YES |
+
+**Phase 22-42 patterns verified:**
+
+- FC-01 (Q1 "Target format" is the first question): PRESENT — line 19, "### 1. Target format" is the first question. Lines 20-24 describe Classic vs Extension with correct Splunk version requirements.
+- FC-01 format hand-off context: PRESENT — line 103, `Format: {answer to Q1 — "classic" or "extension"}` is the first field in the context block passed to vp-design.
+- Dashboard mandatory (DSB-01): PRESENT — line 60-61, "Always yes. Every viz pack ships with a Dashboard Studio JSON dashboard."
+
+### BLOCKER
+
+**1. [PP-01 stale] STAGE 3 pipeline summary still attributes preview generation to generate_assets.js only**
+
+- File: `plugins/splunk-viz-packs/skills/vp-init/SKILL.md:81`
+- Issue: Pipeline summary reads "Step 3b: generate_assets.js (icons + previews + gradient bg)". Phase 41 split this: `generate_previews.py` (Python/Pillow) now owns per-viz preview.png generation. `generate_assets.js` only handles icons + gradient background. The vp-init pipeline summary is the first place a developer sees Stage 3 — it must reflect the two-script split to avoid confusion and silent fallback to the stale JS silhouette path.
+- Recommendation: Update to "Step 3b: generate_assets.js (icons + gradient bg) + generate_previews.py (per-viz preview.png, Pillow)"
+
+### WARNING
+
+**1. [Cross-plugin reference incomplete] ds-create cited in a table with no full path**
+
+- File: `plugins/splunk-viz-packs/skills/vp-init/SKILL.md:119-121`
+- Issue: The cross-plugin dependencies table lists `ds-create | splunk-dashboard-studio | ds-create` but gives no file path. Unlike vp-create which cites the full path (`plugins/splunk-dashboard-studio/skills/ds-int-tabs/SKILL.md`), vp-init's reference is skill-name only. Claude cannot navigate to the skill without knowing the path, especially in a non-IDE context.
+- Recommendation: Update to include path: `plugins/splunk-dashboard-studio/skills/ds-create/SKILL.md`
+
+### NIT
+
+(none)
+
+---
+
+## vp-create/SKILL.md
+
+**Line count:** 268 / 500 budget — PASSES (232 lines of headroom)
+
+**Cross-references verified:**
+
+| Reference | Line | Resolves? |
+|-----------|------|----------|
+| scripts/build_flat.js (via ${CLAUDE_SKILL_DIR}) | 30 | YES |
+| scripts/validate_viz.sh (via ${CLAUDE_SKILL_DIR}) | 52 | YES |
+| scripts/generate_assets.js (via ${CLAUDE_SKILL_DIR}) | 74 | YES |
+| scripts/generate_previews.py (via ${CLAUDE_SKILL_DIR}) | 77 | YES |
+| ds-int-tabs (full path) | 98 | YES — `plugins/splunk-dashboard-studio/skills/ds-int-tabs/SKILL.md` |
+| ds-int-tabs (checklist ref) | 260 | YES |
+| references/dashboard-json-template.md | 96 | YES |
+| references/dashboard-interactivity.md | 99 | YES |
+| vp-viz/references/build-mjs-template.md | 47 | YES |
+| vp-viz/references/package-mjs-template.md | 47 | YES |
+
+**Phase 22-42 patterns verified:**
+
+- PP-01/PP-02 (Phase 41 D-01/D-02 split): PRESENT and CORRECT — lines 74-84, both `generate_assets.js` (icons + gradient bg) AND `generate_previews.py` (per-viz preview.png, 116x76 RGB, Pillow path) are documented. Fallback to `--legacy-previews` flag documented.
+- Dashboard MUST include ALL vizs: PRESENT — Step 3c MANDATORY header (line 89), one panel per viz (line 103), DSB-02 panel count verification (line 133-136).
+- ds-int-tabs full-path reference at line ~98: PRESENT — `plugins/splunk-dashboard-studio/skills/ds-int-tabs/SKILL.md` (line 98, condition for 7+ vizs or tabbed layout).
+- INT-03 (drilldown token defaults): PRESENT — lines 116-117 require `defaults.tokens.default` entry with value `"*"`.
+
+### BLOCKER
+
+(none)
+
+### WARNING
+
+**1. [PP-01 stale] Packaging checklist item still mentions generate_previews.py but the icon item is split incorrectly**
+
+- File: `plugins/splunk-viz-packs/skills/vp-create/SKILL.md:245-247`
+- Issue: Checklist lines 245-247 correctly document the split:
+  - "App icons generated (step 3b — run generate_assets.js)"
+  - "Preview.png generated per viz (step 3b — run generate_previews.py)"
+  - "Gradient background generated (step 3b — run generate_assets.js)"
+  This is correct. No issue here — marking as previously identified finding confirmed RESOLVED.
+
+**1. [Extension Step comment] Extension validation rules reference "Phase 31" but that is a planning internal reference**
+
+- File: `plugins/splunk-viz-packs/skills/vp-create/SKILL.md:53`
+- Issue: "Full Extension validation rules are defined in Phase 31" is a planning-internal reference that a Claude agent reading the skill cannot follow. There is no file at `references/phase-31-extension-validation.md` or similar. The Phase 31 work landed in `validate_viz.sh` — the actual rules are enforced by the script, not a named reference file.
+- Recommendation: Replace "see Phase 31" with the actual reference: "Extension API checks enforced by validate_viz.sh (E01-E05 codes)."
+
+### NIT
+
+**1. Step 2 note mentions "Full Extension validation rules are defined in Phase 31" — internal planning ref**
+
+- File: `plugins/splunk-viz-packs/skills/vp-create/SKILL.md:53`
+- Already documented as WARNING above.
+
