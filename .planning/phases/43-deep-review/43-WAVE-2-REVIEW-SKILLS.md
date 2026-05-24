@@ -351,3 +351,49 @@ This is a coverage gap (Wave 3 territory — script/reference alignment) rather 
 - Issue: "Basic recipes ... are in `vp-viz/references/canvas-recipes.md`" uses a prose reference, not a Markdown link. Line 122 does have a proper Markdown link to `../vp-viz/references/canvas-recipes.md`. The intro line is redundant and inconsistent.
 - Recommendation: Minor — either remove the intro prose reference or make it a Markdown link matching line 122.
 
+---
+
+## Coverage Summary
+
+Phase 22-42 change IDs mapped to their expected SKILL.md home(s) and verification status.
+
+**Legend:** YES = verified present and correct | NO = absent or stale | PARTIAL = present but incomplete/indirect
+
+| Change-ID | Phase | Expected SKILL.md(s) | Verified present? | Notes |
+|-----------|-------|----------------------|-------------------|-------|
+| VI-01 | 22 | vp-viz | YES | validate_viz.sh step in Workflow, line 45-50 |
+| VI-02 | 22 | vp-viz | YES | XFILE/D08 failure handling, max 2 iterations, lines 44-50 |
+| CP-01 | 23 | vp-design | NO | 6-8 brand swatch extraction step absent — BLOCKER finding above |
+| CP-02 | 23 | vp-design | YES | 60-30-10 accent rule present in Color principles (line 121) |
+| CP-03 | 23 | vp-viz | YES | DPR-03b accent-only-for-hover in pre-code checklist CRITICAL SUBSET (line 79) |
+| FC-01 | 29 | vp-init | YES | Q1 "Target format" is question 1 (line 19); hand-off block lists Format first (line 103) |
+| FC-02 | 29 | vp-design | PARTIAL | Format field in vp-init hand-off block only; vp-design hand-off message does not pass Format forward to vp-viz — WARNING finding above |
+| FC-03 | 29 | vp-viz | YES | Format-conditional workflow block with separate Extension and Classic paths (lines 56-67) |
+| FC-04 | 29 | vp-viz | PARTIAL | pre-code-checklist.md Extension API section cited (line 92) but no FC-04 tag — NIT finding above |
+| Phase 29 line budget | 29 | all 6 SKILL.md | YES | vp-viz 487/500, vp-design 210/500, vp-init 128/500, vp-create 268/500, vp-debug 125/500, vp-recipes 123/500 — all under 500 |
+| PP-01 | 41 | vp-create | YES | generate_previews.py step documented at line 77; 116x76 size correct (line 84) |
+| PP-02 | 41 | vp-create | YES | Pillow fallback (--legacy-previews flag) documented (line 80); checklist item at line 246 |
+| PP-01 stale | 41 | vp-viz, vp-init | NO | vp-viz quick rule 13 stale (300x200, generate_assets.js) — BLOCKER; vp-init STAGE 3 summary stale — BLOCKER |
+| EF-01 | 39 | vp-viz | YES | IIFE format cited indirectly via build-mjs-template.md reference (line 62); template itself has IIFE |
+| EF-02 | 39 | vp-viz | YES | bare stanza names documented in build-mjs-template.md/package-mjs-template.md references |
+| AF-01 | 40 | vp-recipes (animation-recipes.md) | YES | Animation Helper Scope Rule present as first heading in animation-recipes.md |
+| AF-02 | 40 | vp-recipes (animation-recipes.md) | YES | Parameter threading pattern documented in AF-02 row of animation-recipes.md |
+| AF-01 eager | 40 | vp-viz | PARTIAL | Animation control requirement in CRITICAL SUBSET (line 86) but no explicit AF-01 scope rule warning — WARNING finding above |
+| MC-01 | 26 | vp-design | YES | domain-templates.md cited at lines 41, 65, 71, 75, 139, 209 |
+| MC-02 | 26 | vp-design | YES | DOM-02 minimum 2 domain-unique viz types stated (line 75, 139) |
+| JR-01 | 38 | vp-init, vp-viz | N/A | ds-ref-jsonata.md cross-reference not expected in vp-* skills per RESEARCH |
+| JR-02 | 38 | ds-int-tokens | N/A | ds-int-tokens links to ds-ref-jsonata — out of scope for Wave 2 (Wave 5 territory) |
+| LM-01 (THM-05) | 42 | vp-viz | YES | THM-05 comment in template updateView (line 330); theme-template.md ref present |
+| LM-02 (THM-05) | 42 | vp-debug | NO | THM-05 / backgroundColor light-mode fix absent from vp-debug — BLOCKER finding above |
+| Accent arch | 23 | vp-design | PARTIAL | 60-30-10 rule present but accent-role (hover/glow only) not stated in design brief output — WARNING finding above |
+| D-08 light theme | Phase 1+ | vp-viz | YES | D-08 STRUCTURAL CHECK documented (lines 457-459); hero text = t.text requirement stated |
+| Animation control | 24 | vp-viz | YES | showEntrance/flashCritical/animationSpeed requirements in CRITICAL SUBSET (line 86) |
+
+**Summary of NO/PARTIAL rows:**
+- **CP-01** — BLOCKER (vp-design missing 6-8 swatch extraction step)
+- **FC-02** — PARTIAL / WARNING (vp-design hand-off message missing Format forward pass)
+- **FC-04** — PARTIAL / NIT (no explicit FC-04 tag)
+- **PP-01 stale** — BLOCKER in vp-viz (quick rule 13) and vp-init (STAGE 3 summary)
+- **AF-01 eager** — PARTIAL / WARNING (vp-viz missing explicit scope rule callout)
+- **LM-02** — NO / BLOCKER (vp-debug missing THM-05 debug entry)
+
