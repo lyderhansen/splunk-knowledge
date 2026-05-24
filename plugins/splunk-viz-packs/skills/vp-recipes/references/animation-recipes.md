@@ -279,11 +279,13 @@ if (!showEntrance) {
     this._entranceDone = true;
     this._entranceProgress = 1;  // CRITICAL: render final state, not zero
 }
-if (showEntrance && !this._entranceDone) { this._startEntrance(config, ns); }
-
-_startEntrance: function(config, ns) {
-    if (this._animating) { return; }
+if (showEntrance && !this._entranceDone) {
     var speedMult = getSpeedMult(config, ns);
+    this._startEntrance(speedMult);
+}
+
+_startEntrance: function(speedMult) {
+    if (this._animating) { return; }
     var duration = 350 * speedMult;  // 350ms base
     var startTime = null;
     var self = this;
@@ -330,9 +332,9 @@ Default OFF (`flashCritical: false`) per D-06. cadence = 700ms per D-05.
 this._pulsing = false;
 this._pulseTimer = null;
 
-_startPulse: function(cadenceMs) {
+_startPulse: function(speedMult, accentColor) {
     if (this._pulseTimer) { return; }   // single loop guard
-    cadenceMs = cadenceMs || 700;
+    var cadenceMs = 700 * speedMult;
     var startTime = Date.now();
     var self = this;
     this._pulsing = true;
@@ -396,7 +398,8 @@ for (var i = 0; i < data.rows.length; i++) {
     if (sev === 'critical' || sev === 'error') { hasCritical = true; break; }
 }
 if (flashCritical && hasCritical && !prefersReducedMotion()) {
-    this._startPulse(700);
+    var speedMult = getSpeedMult(config, ns);
+    this._startPulse(speedMult, accentColor);
 } else {
     this._stopPulse();
 }
@@ -465,9 +468,8 @@ _onMouseMove: function(e) {
 Per-row delay offset. Total stagger capped at 500ms regardless of row count.
 
 ```javascript
-_startStaggeredEntrance: function(rowCount, config, ns) {
+_startStaggeredEntrance: function(rowCount, speedMult) {
     if (this._animating) { return; }
-    var speedMult = getSpeedMult(config, ns);
     var perRowDelay = Math.min(500 / Math.max(rowCount, 1), 80); // cap 500ms
     var rowDuration = 200 * speedMult;
     var startTime = null;
