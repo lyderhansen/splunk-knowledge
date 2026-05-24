@@ -18,13 +18,13 @@
 
 ### Animation Scope Fix (AF)
 
-- [ ] **AF-01**: animation-recipes.md documents that `opt()` is ONLY available inside `updateView` scope — animation helper methods (_startEntrance, _startStaggeredEntrance, _startPulse) must receive computed values as parameters, not call opt() directly
-- [ ] **AF-02**: The Generic Entrance Boilerplate and LED Pulse Boilerplate in animation-recipes.md pass speedMult as a parameter instead of reading animationSpeed via opt() inside the helper method
+- [x] **AF-01**: animation-recipes.md documents that `opt()` is ONLY available inside `updateView` scope — animation helper methods (_startEntrance, _startStaggeredEntrance, _startPulse) must receive computed values as parameters, not call opt() directly
+- [x] **AF-02**: The Generic Entrance Boilerplate and LED Pulse Boilerplate in animation-recipes.md pass speedMult as a parameter instead of reading animationSpeed via opt() inside the helper method
 
 ### Pillow Preview (PP)
 
-- [ ] **PP-01**: vp-create generates a `generate_previews.py` script with per-viz drawing functions using Pillow (PIL) — each viz type gets a custom miniature rendering with brand colors, real fonts, and representative data layout
-- [ ] **PP-02**: The generated preview.png files are 116x76 pixels (official Splunk spec) and visually represent the viz type — a gauge preview shows an arc, a bar chart shows bars, a table shows rows
+- [x] **PP-01**: vp-create generates a `generate_previews.py` script with per-viz drawing functions using Pillow (PIL) — each viz type gets a custom miniature rendering with brand colors, real fonts, and representative data layout
+- [x] **PP-02**: The generated preview.png files are 116x76 pixels (official Splunk spec) and visually represent the viz type — a gauge preview shows an arc, a bar chart shows bars, a table shows rows
 
 ### Light Mode Fix (LM)
 

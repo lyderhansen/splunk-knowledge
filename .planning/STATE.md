@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v5.8.0
 milestone_name: Quality & Template Corrections
-status: executing
-stopped_at: Phase 40 context gathered
-last_updated: "2026-05-24T08:34:08.049Z"
-last_activity: 2026-05-24 -- Phase 40 execution started
+status: completed
+stopped_at: Phase 41 context gathered
+last_updated: "2026-05-24T11:14:51.090Z"
+last_activity: 2026-05-24 -- 41-01-SUMMARY.md committed
 progress:
   total_phases: 38
-  completed_phases: 29
-  total_plans: 62
-  completed_plans: 69
-  percent: 76
+  completed_phases: 30
+  total_plans: 64
+  completed_plans: 71
+  percent: 79
 ---
 
 # Project State
@@ -21,20 +21,20 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-20)
 
 **Core value:** Zero-fix first builds AND wow-factor dashboards — reliable + beautiful every time
-**Current focus:** Phase 40 — animation-scope-fix
+**Current focus:** Phase 41 — pillow preview
 
 ## Current Position
 
-Phase: 40 (animation-scope-fix) — EXECUTING
-Plan: 1 of 1
-Status: Executing Phase 40
-Last activity: 2026-05-24 -- Phase 40 execution started
+Phase: 41
+Plan: 01 complete, 02 next
+Status: Plan 41-01 complete (Pillow preview generator + bundled Inter font)
+Last activity: 2026-05-24 -- 41-01-SUMMARY.md committed
 
 ## Performance Metrics
 
 **v4.1.0 Velocity (reference):**
 
-- Total plans completed: 46
+- Total plans completed: 47
 - Total phases completed: 5
 
 **v5.0.0 Velocity:**
@@ -79,8 +79,10 @@ Last activity: 2026-05-24 -- Phase 40 execution started
 | 27 | 1/2 | ~12min | ~12min |
 | 38 | 2 | - | - |
 | 39 | 2 | - | - |
+| 40 | 1 | - | - |
 
 *Updated after each plan completion*
+| Phase 41 P01 | 12min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -117,6 +119,7 @@ Recent decisions affecting current work:
 - [FC-02]: Format field added as first entry in vp-design hand-off context block; propagates to all downstream skills
 - [FC-03]: vp-viz SKILL.md format-conditional workflow block added — Extension routes to config-json-template.md and visualization-js-template.md; Classic workflow unchanged
 - [FC-04]: pre-code-checklist.md Extension API Checklist section (12 items) added — ESM, columnar data, addThemeListener, addDrilldownListener, config.json, bare option names, yarn build
+- [Phase 41]: [41-01]: Bundled Inter Regular 4.0 desktop TTF (407KB) over Web variant — Pillow ImageFont.truetype requires TTF format. The Inter v4.0 Web folder contains only .woff2 files which Pillow cannot consume. extras/ttf/Inter-Regular.ttf (407KB) is the canonical TTF and falls within the 50-500KB budget. Renders predictably at small sizes 7-22pt per D-03.
 
 ### Pending Todos
 
@@ -161,8 +164,8 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-05-23T21:44:15.943Z
-Stopped at: Phase 40 context gathered
+Last session: 2026-05-24T11:14:16.307Z
+Stopped at: Phase 41 context gathered
 Resume: None — phase 34 plan 01 complete
 
 ## Operator Next Steps
