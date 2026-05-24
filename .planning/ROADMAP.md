@@ -889,7 +889,25 @@ Plans:
 **Goal**: All 6 vp-* skills and all reference files are reviewed for consistency with v5.5-5.7 changes, producing a REVIEW.md with findings
 **Depends on**: Phase 38, 39, 40, 41, 42 (all fixes landed)
 **Requirements**: DR-01, DR-02, DR-03
-**Plans**: 1 plan
+**Plans**: 7 plans
+
+Plans:
+
+**Wave 1**
+
+- [ ] 43-01-PLAN.md — Wave 1 Discovery: review 13 reference files in vp-viz/references/ + vp-recipes/references/animation-recipes.md; produce 43-WAVE-1-REVIEW-REFERENCES.md
+- [ ] 43-02-PLAN.md — Wave 1 Discovery: review 6 vp-* SKILL.md files + vp-debug/references/broken-rules.md; produce 43-WAVE-2-REVIEW-SKILLS.md
+- [ ] 43-03-PLAN.md — Wave 1 Discovery: review 17 vp-viz/scripts/ files for B/D/E/F/R code symmetry vs docs; produce 43-WAVE-3-REVIEW-VP-VIZ-SCRIPTS.md
+- [ ] 43-04-PLAN.md — Wave 1 Discovery: review 5 vp-create/scripts/ files for Phase 41 D-01/D-02 contract; produce 43-WAVE-4-REVIEW-VP-CREATE-SCRIPTS.md
+- [ ] 43-05-PLAN.md — Wave 1 Discovery: review 8 bounded dashboard-studio skills (5 cross-referenced + 3 Phase-38 touched); produce 43-WAVE-5-REVIEW-DASHBOARD-STUDIO.md
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 43-06-PLAN.md — Wave 2 Discovery: tests/ flag-only sweep + consolidate all per-wave REVIEW files into canonical 43-REVIEW.md
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 43-07-PLAN.md — Wave 3 Remediation (PLACEHOLDER): regenerated via /gsd:plan-phase 43 --gaps after 43-REVIEW.md exists; lands BLOCKER+WARNING fixes inline + bumps plugin.json 5.9.1 → 5.10.0
 
 ## Progress
 
@@ -937,4 +955,4 @@ Plans:
 | 40. Animation Scope Fix | v5.8.0 | 1/1 | Complete    | 2026-05-24 |
 | 41. Pillow Preview | v5.8.0 | 2/2 | Complete    | 2026-05-24 |
 | 42. Light Mode backgroundColor | v5.8.0 | 1/1 | Complete   | 2026-05-24 |
-| 43. Deep Review | v5.8.0 | 0/1 | Not started | - |
+| 43. Deep Review | v5.8.0 | 0/7 | Not started | - |
