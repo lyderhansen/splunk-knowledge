@@ -232,3 +232,29 @@ module.exports = {
 // if (isDark) { drawInnerShadow(ctx, x, y, w, h, 4, cr); }
 // else { roundRect(ctx, x+0.5, y+0.5, w-1, h-1, cr); ctx.strokeStyle = t.edge; ctx.lineWidth = 1; ctx.stroke(); }
 ```
+
+## Background Color (THM-05): user opt() overrides theme default in both modes
+
+The `opt('backgroundColor')` read must happen unconditionally — outside any `if (isDark)` branch — immediately after `var t = theme.getTheme(...)` so `t.bg` is available as the fallback. Every paint call that fills the canvas/panel background MUST then use that single resolved variable in **both** the light and dark render paths. Painting with `t.bg` or `t.panel` directly inside a theme branch silently discards the user's brand color in the other branch (the 2026-05-22 Tesla FSD light-mode failure mode).
+
+```javascript
+// WRONG — Tesla FSD failure: opt() trapped inside isDark, light path leaks t.panel
+var t = theme.getTheme(isDark ? 'dark' : 'light');
+if (isDark) {
+    var bg = hexFromSplunk(opt('backgroundColor', ''), t.panel);
+    ctx.fillStyle = bg;
+} else {
+    ctx.fillStyle = t.panel;   // BUG: ignores opt('backgroundColor') entirely
+}
+ctx.fillRect(0, 0, w, h);
+
+// RIGHT — unconditional read AFTER var t, used in both paths
+var t = theme.getTheme(isDark ? 'dark' : 'light');
+var bg = hexFromSplunk(opt('backgroundColor', t.bg), t.bg);  // unconditional, B22-wrapped
+// ... later in render (both isDark paths paint the same bg):
+ctx.fillStyle = bg;
+ctx.fillRect(0, 0, w, h);
+```
+
+See also: pre-code-checklist.md THM-05 line; visualization-js-template.md / config-json-template.md for the Extension API equivalent.
+
