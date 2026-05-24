@@ -931,6 +931,6 @@ Plans:
 | 38. JSONata Reference | v5.8.0 | 2/2 | Complete    | 2026-05-23 |
 | 39. Extension API Template Fixes | v5.8.0 | 2/2 | Complete    | 2026-05-23 |
 | 40. Animation Scope Fix | v5.8.0 | 1/1 | Complete    | 2026-05-24 |
-| 41. Pillow Preview | v5.8.0 | 2/2 | Complete   | 2026-05-24 |
+| 41. Pillow Preview | v5.8.0 | 2/2 | Complete    | 2026-05-24 |
 | 42. Light Mode backgroundColor | v5.8.0 | 0/1 | Not started | - |
 | 43. Deep Review | v5.8.0 | 0/1 | Not started | - |
