@@ -422,11 +422,13 @@ Default ON (`showHoverEffect: true`) per D-10.
 // In initialize():
 this._hoverAlpha = 0;  this._hoverTarget = 0;
 this._hoverAnimating = false;  this._hoveredIndex = -1;
+this._showHoverEffect = true;  // default ON; overwritten in updateView
 
-_startHoverTransition: function(config, ns) {
-    if (this._hoverAnimating) { return; }
-    var showHover = opt('showHoverEffect', 'true') === 'true';
-    if (!showHover) { return; }
+// In updateView (compute once, cache on instance — opt() is not available in event handlers):
+this._showHoverEffect = opt('showHoverEffect', 'true') === 'true';
+
+_startHoverTransition: function() {
+    if (this._hoverAnimating || !this._showHoverEffect) { return; }
     var startAlpha = this._hoverAlpha;
     var target = this._hoverTarget;  // 0.12 on enter, 0 on leave
     var duration = 150;              // 150ms per D-09
@@ -451,7 +453,7 @@ _onMouseMove: function(e) {
     if (newIndex !== this._hoveredIndex) {
         this._hoveredIndex = newIndex;
         this._hoverTarget = (newIndex >= 0) ? 0.12 : 0;
-        this._startHoverTransition(this._lastConfig, '{{VIZ_NAMESPACE}}');
+        this._startHoverTransition();  // reads this._showHoverEffect (set in updateView)
     }
 },
 
