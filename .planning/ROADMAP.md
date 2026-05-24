@@ -124,7 +124,7 @@ Full details: `.planning/milestones/v5.7.0-ROADMAP.md`
 - [x] **Phase 39: Extension API Template Fixes** - Apply IIFE format, bundled extension package, bare stanza names to visualization-js-template.md and config-json-template.md (completed 2026-05-23)
 - [x] **Phase 40: Animation Scope Fix** - Document opt() scope constraint in animation-recipes.md; fix entrance/pulse boilerplates to pass speedMult as parameter (completed 2026-05-24)
 - [x] **Phase 41: Pillow Preview** - Replace raw-buffer silhouettes with Pillow-generated miniature viz renderings in vp-create pipeline (completed 2026-05-24)
-- [ ] **Phase 42: Light Mode backgroundColor** - Fix opt() read order so backgroundColor works in both dark and light themes
+- [x] **Phase 42: Light Mode backgroundColor** - Fix opt() read order so backgroundColor works in both dark and light themes (completed 2026-05-24)
 - [ ] **Phase 43: Deep Review** - Review all 6 vp-* skills and all reference files for consistency with v5.5-5.7 changes; produce REVIEW.md
 
 ## Phase Details
@@ -880,6 +880,10 @@ Plans:
 **Requirements**: LM-01, LM-02
 **Plans**: 1 plan
 
+Plans:
+
+- [x] 42-01-PLAN.md — Add THM-05 backgroundColor pattern to theme-template.md (WRONG/RIGHT), pre-code-checklist.md (THM-05/LM-01 line), visualization-js-template.md (bg read + pointer), config-json-template.md (Extension API note); bump plugin.json 5.9.0 to 5.9.1
+
 ### Phase 43: Deep Review
 
 **Goal**: All 6 vp-* skills and all reference files are reviewed for consistency with v5.5-5.7 changes, producing a REVIEW.md with findings
@@ -932,5 +936,5 @@ Plans:
 | 39. Extension API Template Fixes | v5.8.0 | 2/2 | Complete    | 2026-05-23 |
 | 40. Animation Scope Fix | v5.8.0 | 1/1 | Complete    | 2026-05-24 |
 | 41. Pillow Preview | v5.8.0 | 2/2 | Complete    | 2026-05-24 |
-| 42. Light Mode backgroundColor | v5.8.0 | 0/1 | Not started | - |
+| 42. Light Mode backgroundColor | v5.8.0 | 1/1 | Complete   | 2026-05-24 |
 | 43. Deep Review | v5.8.0 | 0/1 | Not started | - |
