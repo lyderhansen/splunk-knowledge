@@ -162,6 +162,9 @@ function render() {
     //          var showGlow = opts.showGlow !== 'false';
     //          var lineWidth = safeNum(opts.lineWidth, 2);
 
+    // THM-05: read backgroundColor once here, then use bg in EVERY paint call below — see config-json-template.md "Background Color Note (THM-05)" for the full rule (Classic equivalent in theme-template.md THM-05).
+    var bg = hexFromSplunk(opts.backgroundColor, t.bg);
+
     // ===== CANVAS RENDER CODE =====
     // {{CANVAS_RENDER_CODE}}
     // Replace the line above with brand-specific Canvas 2D drawing.
