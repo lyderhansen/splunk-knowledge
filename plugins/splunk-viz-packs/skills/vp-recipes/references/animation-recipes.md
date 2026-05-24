@@ -117,6 +117,7 @@ if (flashCritical && hasCritical && !prefersReducedMotion()) {
 // Add _startPulse and _stopPulse methods to the extend({}) object:
 _startPulse: function(speedMult, accentColor) {
     if (this._pulseInterval) { return; }
+    this._pulseColor = accentColor;
     var base = 4;
     var amp = 8;
     var cadenceMs = 700 * speedMult;
@@ -133,6 +134,7 @@ _startPulse: function(speedMult, accentColor) {
 _stopPulse: function() {
     if (this._pulseInterval) { clearInterval(this._pulseInterval); this._pulseInterval = null; }
     this._pulseBlur = 0;
+    this._pulseColor = null;
 },
 ```
 
@@ -141,7 +143,7 @@ _stopPulse: function() {
 if (this._pulseInterval) { clearInterval(this._pulseInterval); this._pulseInterval = null; }
 ```
 
-> Apply in _render: use `ctx.shadowBlur = this._pulseBlur;` and `ctx.shadowColor = accentColor;` before drawing the target element. Always wrap in ctx.save()/ctx.restore() to prevent shadow bleed. See drawPulsingIndicator() helper in 'LED pulse pattern' section below for a reusable draw utility.
+> Apply in _render: use `ctx.shadowBlur = this._pulseBlur;` and `ctx.shadowColor = this._pulseColor;` before drawing the target element. The `_pulseColor` field is stashed by `_startPulse` so `_render` can reach it (the `accentColor` parameter is only in scope inside the helper itself). Always wrap in ctx.save()/ctx.restore() to prevent shadow bleed. See drawPulsingIndicator() helper in 'LED pulse pattern' section below for a reusable draw utility.
 
 ---
 
@@ -334,6 +336,7 @@ this._pulseTimer = null;
 
 _startPulse: function(speedMult, accentColor) {
     if (this._pulseTimer) { return; }   // single loop guard
+    this._pulseColor = accentColor;
     var cadenceMs = 700 * speedMult;
     var startTime = Date.now();
     var self = this;
@@ -350,6 +353,7 @@ _startPulse: function(speedMult, accentColor) {
 _stopPulse: function() {
     this._pulsing = false;
     this._pulseBlur = 0;
+    this._pulseColor = null;
     if (this._pulseTimer) { clearInterval(this._pulseTimer); this._pulseTimer = null; }
 },
 
@@ -385,8 +389,10 @@ function drawPulsingIndicator(ctx, x, y, r, color, blurAmount, innerAlpha) {
 
 ```javascript
 var innerAlpha = 0.15 + 0.15 * Math.sin(phase * Math.PI * 2);
-drawPulsingIndicator(ctx, x, y, r, accentColor, this._pulseBlur, innerAlpha);
+drawPulsingIndicator(ctx, x, y, r, this._pulseColor, this._pulseBlur, innerAlpha);
 ```
+
+> `this._pulseColor` is stashed by `_startPulse` so `_render` can reach it — the `accentColor` parameter is only in scope inside the helper itself.
 
 **In updateView — severity check before starting pulse:**
 
