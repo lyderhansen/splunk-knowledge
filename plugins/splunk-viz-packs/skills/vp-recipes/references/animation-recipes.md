@@ -5,6 +5,19 @@ These patterns cover all Phase 9 animation requirements (ANI-01 through ANI-06).
 
 ---
 
+## Animation Helper Scope Rule
+
+`opt()` is a closure binding created inside `updateView` from the formatter config object. It is NOT a method on the viz instance, so calling `opt()` inside `_startEntrance`, `_startPulse`, or any other helper method fails silently at runtime — `opt` is simply undefined in that scope. The same applies to `config` and `ns`, which are parameters of `updateView` and do not exist on `this`. Pass computed values as named primitive parameters instead: compute `speedMult`, `accentColor`, or any other config-derived value inside `updateView`, then hand the result to the helper.
+
+| Finding | WRONG | RIGHT |
+|---------|-------|-------|
+| **AF-01** scope rule | `_startEntrance: function() {`<br>`  var speed = opt('animationSpeed', 'normal');`<br>`  // opt is undefined here — silent runtime failure`<br>`}` | In `updateView`: `var speedMult = getSpeedMult(config, ns);`<br>`this._startEntrance(speedMult);`<br><br>Helper: `_startEntrance: function(speedMult) {`<br>`  var duration = 350 * speedMult; ... }` |
+| **AF-02** parameter threading | Call site: `this._startEntrance(config, ns);`<br>Signature: `function(config, ns)` | Call site: `this._startEntrance(speedMult);`<br>Signature: `function(speedMult)` |
+
+All boilerplates below follow this rule — copy them verbatim, then substitute the `_drawFrame(progress)` call with your viz-specific render.
+
+---
+
 ## Generic Entrance Boilerplate (AB-01)
 
 Copy-paste verbatim into any viz. Only substitute the `_drawFrame(progress)` call with your viz-specific render. The default renders via globalAlpha opacity fade-in — works for every viz type with zero modifications.
