@@ -40,7 +40,10 @@ if (!showEntrance) {
     this._entranceDone = true;
     this._entranceProgress = 1;
 }
-if (showEntrance && !this._entranceDone) { this._startEntrance(config, ns); }
+if (showEntrance && !this._entranceDone) {
+    var speedMult = getSpeedMult(config, ns);
+    this._startEntrance(speedMult);
+}
 
 // Apply in render — inside _render(), before drawing anything:
 ctx.globalAlpha = easeOutQuart(this._entranceProgress);
@@ -50,9 +53,8 @@ ctx.globalAlpha = 1;
 
 ```javascript
 // Add _startEntrance method to the extend({}) object:
-_startEntrance: function(config, ns) {
+_startEntrance: function(speedMult) {
     if (this._animating) { return; }
-    var speedMult = getSpeedMult(config, ns);
     var duration = 350 * speedMult;
     this._animating = true;
     var startTime = null;
@@ -103,7 +105,9 @@ for (var i = 0; i < data.rows.length; i++) {
     if (sev === 'critical' || sev === 'error') { hasCritical = true; break; }
 }
 if (flashCritical && hasCritical && !prefersReducedMotion()) {
-    this._startPulse();
+    var speedMult = getSpeedMult(config, ns);
+    var accentColor = opt('accentColor', t.accent);
+    this._startPulse(speedMult, accentColor);
 } else {
     this._stopPulse();
 }
@@ -111,11 +115,11 @@ if (flashCritical && hasCritical && !prefersReducedMotion()) {
 
 ```javascript
 // Add _startPulse and _stopPulse methods to the extend({}) object:
-_startPulse: function() {
+_startPulse: function(speedMult, accentColor) {
     if (this._pulseInterval) { return; }
     var base = 4;
     var amp = 8;
-    var cadenceMs = 700;
+    var cadenceMs = 700 * speedMult;
     var startTime = Date.now();
     var self = this;
     this._pulseInterval = setInterval(function() {
