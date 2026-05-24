@@ -233,3 +233,121 @@
 - File: `plugins/splunk-viz-packs/skills/vp-create/SKILL.md:53`
 - Already documented as WARNING above.
 
+---
+
+## vp-debug/SKILL.md
+
+**Line count:** 125 / 500 budget — PASSES (375 lines of headroom)
+
+**Last known commit:** e39e2d6c "feat(splunk-viz-packs): rename skills, fix 5 gaps, add B22-B23 (v4.1.0)" — predates Phase 28 (Extension API), Phase 39 (IIFE format), Phase 40 (Animation Helper Scope), Phase 41 (Pillow preview), Phase 42 (THM-05).
+
+**Cross-references verified:**
+
+| Reference | Line | Resolves? |
+|-----------|------|----------|
+| references/fatal-rules.md | 60 | YES |
+| references/broken-rules.md | 78 | YES |
+| references/rejected-rules.md | 107 | YES |
+| references/interactive-cosmetic.md | 110 | YES |
+
+**Phase 22-42 patterns verified:**
+
+- B22/B23 (Phase 22+): PRESENT in both SKILL.md index table (lines 103-104) and broken-rules.md summary table (rows 31-32). B23 detail section in broken-rules.md: NOT present (only B1, B4, B14, B19 have detailed sections — B22/B23 are summary-only). Acceptable for now.
+- THM-05 (Phase 42): ABSENT — no mention of THM-05, backgroundColor unconditional read, or light mode background fix anywhere in vp-debug or broken-rules.md
+- E-codes E01-E05 (Phase 28/31 Extension API): ABSENT — not mentioned in SKILL.md or any referenced file
+- A-codes A01-A04 (Phase 41 asset validation): ABSENT — not mentioned in SKILL.md or error flowchart
+- Animation Helper Scope Rule (Phase 40/AF-01): ABSENT
+- "Phase 31" internal reference in error flowchart: NOT present (only affects vp-create)
+
+### BLOCKER
+
+**1. [BROKEN heading range wrong] SKILL.md heading says "B1-B21" but table has B1-B23**
+
+- File: `plugins/splunk-viz-packs/skills/vp-debug/SKILL.md:77`
+- Issue: The heading reads "### BROKEN — renders but wrong (B1-B21)" but the table immediately below contains rows for B22 and B23 (lines 103-104). The heading range is stale by 2 rules. A Claude agent reading "B1-B21" in the heading may believe B22/B23 don't exist for the BROKEN category.
+- Recommendation: Update heading to "### BROKEN — renders but wrong (B1-B23)"
+
+**2. [THM-05 missing] Light-mode backgroundColor fix (Phase 42) has no debug entry**
+
+- File: `plugins/splunk-viz-packs/skills/vp-debug/SKILL.md`
+- Issue: THM-05 is the most recently landed fix (Phase 42). Its failure mode — viz shows wrong background color in light mode because `opt('backgroundColor')` was only read inside the dark branch — is a runtime rendering bug that vp-debug should cover. There is no entry for it. A developer debugging "wrong background in light mode" will not find guidance here.
+- Recommendation: Add to the quick fix table (line ~112): "Background color wrong in light mode | THM-05, B23". Add to error flowchart under "No console errors but blank" or under "Wrong theme (dark on light)": "Background color correct but unwanted in light? → THM-05 (backgroundColor read inside dark branch only)"
+
+### WARNING
+
+**1. [E-codes absent] Extension API E01-E05 failure codes missing from SKILL.md**
+
+- File: `plugins/splunk-viz-packs/skills/vp-debug/SKILL.md`
+- Issue: Phase 28/31 added Extension API validation codes E01-E05 to validate_viz.sh. vp-debug's error diagnosis flowchart covers only Classic format failures. A developer debugging an Extension API viz failure (e.g., "config.json missing optionsSchema", "visualization.js missing addDataSourcesListener") has no flowchart path or rule reference in vp-debug. The E-codes are not listed in the rule index at all.
+- Recommendation: Add "Extension API — config.json / visualization.js failures (E01-E05)" section to the rule index or error flowchart. At minimum, add quick-fix rows: "config.json validation failure | E01-E05 | see validate_viz.sh output".
+
+**2. [A-codes absent] Asset validation codes A01-A04 missing from SKILL.md**
+
+- File: `plugins/splunk-viz-packs/skills/vp-debug/SKILL.md`
+- Issue: A01-A04 are enforced by validate_viz.sh (preview.png missing/wrong dimensions, appIcon.png missing/wrong dimensions). vp-debug's quick fix table and error flowchart do not mention them. A developer seeing "FAIL A01" or "FAIL A03" in validate output has no vp-debug entry to consult.
+- Recommendation: Add quick-fix rows: "FAIL A01-A02 (preview.png missing/wrong size) | run generate_previews.py (116x76) | see vp-create Step 3b". "FAIL A03-A04 (appIcon.png missing/wrong size) | run generate_assets.js | see vp-create Step 3b".
+
+**3. [Animation scope rule absent] AF-01 animation helper scope rule not in vp-debug**
+
+- File: `plugins/splunk-viz-packs/skills/vp-debug/SKILL.md`
+- Issue: Phase 40 (AF-01) established that `opt()` is only in scope inside `updateView` and helper methods must receive computed values as parameters. This is a runtime failure mode (silent undefined error) that would surface as "animation not working" or "incorrect speed" — exactly the kind of bug vp-debug should document. Neither the error flowchart nor the quick fix table mentions it.
+- Recommendation: Add to error flowchart under "No console errors but blank": "Animation not playing? → AF-01 (opt() called outside updateView)". Add to quick fix table: "Animation has no effect | AF-01 | opt() in helper — pass computed values as params, see animation-recipes.md".
+
+### NIT
+
+(none)
+
+### vp-debug/references/broken-rules.md drift
+
+**B-code documentation gap (candidate BLOCKER for Wave 3)**
+
+Research finding A3 identified this. The broken-rules.md summary table correctly documents all B1-B23. However, detailed `### Bxx.` sections (with code examples and fix patterns) exist only for B1, B4, B14, B19. Rules B2, B3, B5, B6, B7, B8, B9, B10, B11, B12, B13, B15, B16, B17, B18, B20, B21, B22, B23 are summary-only — no code examples.
+
+This is a coverage gap (Wave 3 territory — script/reference alignment) rather than a SKILL.md finding. The SKILL.md points to broken-rules.md ("See [references/broken-rules.md]"), so if a developer follows the pointer for B22, they find only the summary row, not a code example showing `hexFromSplunk()` usage patterns. However, broken-rules.md B22/B23 rows contain the fix instruction inline, which partially mitigates this.
+
+**Assessment:** WARNING-class finding deferred to Wave 3 (broken-rules.md depth review). Not a BLOCKER because the summary table rows contain actionable fix instructions.
+
+---
+
+## vp-recipes/SKILL.md
+
+**Line count:** 123 / 500 budget — PASSES (377 lines of headroom)
+
+**Cross-references verified:**
+
+| Reference | Line | Resolves? |
+|-----------|------|----------|
+| references/all-patterns.md | 115 | YES |
+| references/mood-recipes.md | 116 | YES |
+| references/depth-recipes.md | 117 | YES |
+| references/texture-recipes.md | 118 | YES |
+| references/typography-recipes.md | 119 | YES |
+| vp-viz/references/canvas-recipes.md (cross-plugin) | 122 | YES |
+| vp-viz/references/formatter-patterns.md (cross-plugin) | 123 | YES |
+| references/animation-recipes.md | NOT directly cited — only via all-patterns.md index | INDIRECT |
+
+**Phase 22-42 patterns verified:**
+
+- AF-01/AF-02 (Phase 40 Animation Helper Scope Rule): PRESENT in `references/animation-recipes.md:8-18` — the scope rule is the first heading in that file, with WRONG/RIGHT table for AF-01 and AF-02. The file is at the correct path (`vp-recipes/references/animation-recipes.md`), resolves, and owns the canonical AF-01/AF-02 content.
+- Animation-recipes.md path (RESEARCH correction): CONFIRMED at `vp-recipes/references/animation-recipes.md` (NOT vp-viz/references as CONTEXT.md D-06 line 248 stated). vp-viz/SKILL.md line 434 correctly cites it as `../../vp-recipes/references/animation-recipes.md` which resolves correctly.
+
+### BLOCKER
+
+(none)
+
+### WARNING
+
+**1. [AF-01 path not directly cited in vp-recipes/SKILL.md] animation-recipes.md only reachable via all-patterns.md**
+
+- File: `plugins/splunk-viz-packs/skills/vp-recipes/SKILL.md:115-123`
+- Issue: The References section lists `all-patterns.md` first, and `all-patterns.md` at line 109 points to `animation-recipes.md`. But vp-recipes/SKILL.md itself does NOT list `animation-recipes.md` directly. The Animation section of `all-patterns.md` correctly directs to it, but requires two hops (vp-recipes SKILL → all-patterns → animation-recipes). Meanwhile, vp-viz/SKILL.md cites animation-recipes.md DIRECTLY as a MUST-LOAD at line 434. The asymmetry means a developer loading vp-recipes may miss animation-recipes.md if they skip the all-patterns.md navigation index.
+- Recommendation: Add a direct link to `references/animation-recipes.md` in vp-recipes/SKILL.md References section. Example: "- **[Animation recipes](references/animation-recipes.md)** — AF-01/AF-02 scope rule, entrance, pulse, hover easing, stagger. Load before writing updateView() animation logic."
+
+### NIT
+
+**1. "Basic recipes" intro line points to vp-viz/references but not via relative path**
+
+- File: `plugins/splunk-viz-packs/skills/vp-recipes/SKILL.md:9`
+- Issue: "Basic recipes ... are in `vp-viz/references/canvas-recipes.md`" uses a prose reference, not a Markdown link. Line 122 does have a proper Markdown link to `../vp-viz/references/canvas-recipes.md`. The intro line is redundant and inconsistent.
+- Recommendation: Minor — either remove the intro prose reference or make it a Markdown link matching line 122.
+
