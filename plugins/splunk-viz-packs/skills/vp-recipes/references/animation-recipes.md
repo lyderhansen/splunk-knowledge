@@ -16,6 +16,8 @@ These patterns cover all Phase 9 animation requirements (ANI-01 through ANI-06).
 
 All boilerplates below follow this rule — copy them verbatim, then substitute the `_drawFrame(progress)` call with your viz-specific render.
 
+> **Combining boilerplates:** If a viz uses both entrance (AB-01 / ANI-01) and pulse (AB-02 / ANI-02), both caller blocks declare `var speedMult = getSpeedMult(config, ns);`. Under ES5 `var` hoisting this is legal but trips linters. Compute `speedMult` once at the top of `updateView` and omit the re-declaration from the second block (or keep it — both are safe).
+
 ---
 
 ## Generic Entrance Boilerplate (AB-01)
@@ -105,7 +107,7 @@ for (var i = 0; i < data.rows.length; i++) {
     if (sev === 'critical' || sev === 'error') { hasCritical = true; break; }
 }
 if (flashCritical && hasCritical && !prefersReducedMotion()) {
-    var speedMult = getSpeedMult(config, ns);
+    var speedMult = getSpeedMult(config, ns);  // already declared by AB-01 if both boilerplates are present — safe under ES5 hoisting; lift to top of updateView to avoid linter warnings
     var accentColor = opt('accentColor', t.accent);
     this._startPulse(speedMult, accentColor);
 } else {
@@ -404,7 +406,7 @@ for (var i = 0; i < data.rows.length; i++) {
     if (sev === 'critical' || sev === 'error') { hasCritical = true; break; }
 }
 if (flashCritical && hasCritical && !prefersReducedMotion()) {
-    var speedMult = getSpeedMult(config, ns);
+    var speedMult = getSpeedMult(config, ns);  // already declared by ANI-01 if both boilerplates are present — safe under ES5 hoisting; lift to top of updateView to avoid linter warnings
     this._startPulse(speedMult, accentColor);
 } else {
     this._stopPulse();
