@@ -123,7 +123,7 @@ Full details: `.planning/milestones/v5.7.0-ROADMAP.md`
 - [x] **Phase 38: JSONata Reference** - Create ds-ref-jsonata.md with full JSONata syntax for Dashboard Studio eval expressions; condense ds-int-tokens inline section to summary + link (completed 2026-05-23)
 - [x] **Phase 39: Extension API Template Fixes** - Apply IIFE format, bundled extension package, bare stanza names to visualization-js-template.md and config-json-template.md (completed 2026-05-23)
 - [x] **Phase 40: Animation Scope Fix** - Document opt() scope constraint in animation-recipes.md; fix entrance/pulse boilerplates to pass speedMult as parameter (completed 2026-05-24)
-- [ ] **Phase 41: Pillow Preview** - Replace raw-buffer silhouettes with Pillow-generated miniature viz renderings in vp-create pipeline
+- [x] **Phase 41: Pillow Preview** - Replace raw-buffer silhouettes with Pillow-generated miniature viz renderings in vp-create pipeline (completed 2026-05-24)
 - [ ] **Phase 42: Light Mode backgroundColor** - Fix opt() read order so backgroundColor works in both dark and light themes
 - [ ] **Phase 43: Deep Review** - Review all 6 vp-* skills and all reference files for consistency with v5.5-5.7 changes; produce REVIEW.md
 
@@ -871,7 +871,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 41-02-PLAN.md — Wire generate_previews.py into vp-create/SKILL.md Step 3b; gate generate_assets.js preview path behind --legacy-previews; upgrade package-mjs-template.md Extension API preview section; bump plugin.json 5.8.0 to 5.9.0
+- [x] 41-02-PLAN.md — Wire generate_previews.py into vp-create/SKILL.md Step 3b; gate generate_assets.js preview path behind --legacy-previews; upgrade package-mjs-template.md Extension API preview section; bump plugin.json 5.8.0 to 5.9.0
 
 ### Phase 42: Light Mode backgroundColor
 
@@ -931,6 +931,6 @@ Plans:
 | 38. JSONata Reference | v5.8.0 | 2/2 | Complete    | 2026-05-23 |
 | 39. Extension API Template Fixes | v5.8.0 | 2/2 | Complete    | 2026-05-23 |
 | 40. Animation Scope Fix | v5.8.0 | 1/1 | Complete    | 2026-05-24 |
-| 41. Pillow Preview | v5.8.0 | 1/2 | In Progress|  |
+| 41. Pillow Preview | v5.8.0 | 2/2 | Complete   | 2026-05-24 |
 | 42. Light Mode backgroundColor | v5.8.0 | 0/1 | Not started | - |
 | 43. Deep Review | v5.8.0 | 0/1 | Not started | - |

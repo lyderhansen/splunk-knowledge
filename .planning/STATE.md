@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v5.8.0
 milestone_name: Quality & Template Corrections
 status: completed
-stopped_at: Phase 41 context gathered
-last_updated: "2026-05-24T11:14:51.090Z"
-last_activity: 2026-05-24 -- 41-01-SUMMARY.md committed
+stopped_at: Phase 41 complete (Plan 02 SUMMARY committed)
+last_updated: "2026-05-24T11:21:24Z"
+last_activity: 2026-05-24 -- 41-02-SUMMARY.md committed
 progress:
   total_phases: 38
-  completed_phases: 30
+  completed_phases: 31
   total_plans: 64
-  completed_plans: 71
-  percent: 79
+  completed_plans: 72
+  percent: 82
 ---
 
 # Project State
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-05-20)
 
 ## Current Position
 
-Phase: 41
-Plan: 01 complete, 02 next
-Status: Plan 41-01 complete (Pillow preview generator + bundled Inter font)
-Last activity: 2026-05-24 -- 41-01-SUMMARY.md committed
+Phase: 41 complete
+Plan: 01 complete, 02 complete
+Status: Phase 41 complete — generate_previews.py wired into vp-create + Extension API; plugin bumped to 5.9.0
+Last activity: 2026-05-24 -- 41-02-SUMMARY.md committed
 
 ## Performance Metrics
 
@@ -83,6 +83,7 @@ Last activity: 2026-05-24 -- 41-01-SUMMARY.md committed
 
 *Updated after each plan completion*
 | Phase 41 P01 | 12min | 2 tasks | 3 files |
+| Phase 41 P02 | 4min  | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -120,6 +121,9 @@ Recent decisions affecting current work:
 - [FC-03]: vp-viz SKILL.md format-conditional workflow block added — Extension routes to config-json-template.md and visualization-js-template.md; Classic workflow unchanged
 - [FC-04]: pre-code-checklist.md Extension API Checklist section (12 items) added — ESM, columnar data, addThemeListener, addDrilldownListener, config.json, bare option names, yarn build
 - [Phase 41]: [41-01]: Bundled Inter Regular 4.0 desktop TTF (407KB) over Web variant — Pillow ImageFont.truetype requires TTF format. The Inter v4.0 Web folder contains only .woff2 files which Pillow cannot consume. extras/ttf/Inter-Regular.ttf (407KB) is the canonical TTF and falls within the 50-500KB budget. Renders predictably at small sizes 7-22pt per D-03.
+- [Phase 41]: [41-02]: generate_assets.js --legacy-previews flag preserves silhouette path as D-02 fallback while generate_previews.py owns preview.png by default — argv parser splits positional from --flag args; gated call retains full try/catch; all silhouette draw functions and generatePreviews() preserved verbatim
+- [Phase 41]: [41-02]: package-mjs-template.md Section 5 wraps execSync(generate_previews.py) in try/catch with full buildSolidPng fallback inline — Extension API path achieves parity with Classic; ${PREVIEW_SCRIPT_PATH} added as a new template placeholder
+- [Phase 41]: [41-02]: splunk-viz-packs plugin.json bumped 5.8.0 → 5.9.0 per memory feedback_plugin_version_bump.md and CONTEXT D-10 — reflects Pillow preview feature addition on top of v5.8.0 template corrections
 
 ### Pending Todos
 
@@ -164,8 +168,8 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-05-24T11:14:16.307Z
-Stopped at: Phase 41 context gathered
+Last session: 2026-05-24T11:23:11.424Z
+Stopped at: Phase 41 complete (Plan 02 SUMMARY committed)
 Resume: None — phase 34 plan 01 complete
 
 ## Operator Next Steps
