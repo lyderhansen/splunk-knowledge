@@ -56,6 +56,8 @@ Write all viz code INLINE (same context). Do NOT dispatch subagents for code gen
 3. **Design language** — is it minimal? bold? technical? organic?
 4. **Typography** — what fonts does the brand use? (fall back to system fonts if custom fonts aren't web-safe)
 
+5. **Extract 6-8 brand color swatches for formatter color pickers (CP-01)** — these appear as `<splunk-color>{hex}</splunk-color>` presets inside every `<splunk-color-picker>` in the formatter. Include: primary, secondary, accent, light/dark variants of primary and secondary, and one neutral (near-white or mid-gray). Empty or placeholder presets result from skipping this step.
+
 If WebSearch is unavailable, use your knowledge of the brand but note that colors may be approximate.
 
 ## Domain visual language research (step 3b)
@@ -88,7 +90,7 @@ When design brief is complete, hand off:
 
 **Important for color pickers:** Splunk may return color values as integers (e.g. `6511615`) instead of hex strings. vp-viz includes `hexFromSplunk()` to handle this — ensure it's used on all color picker reads.
 
-Hand-off message: "Design brief complete. Now load vp-viz and write code for each viz, using the brief for palette, fonts, and per-viz specs."
+Hand-off message: "Design brief complete. Now load vp-viz and write code for each viz, using the brief for palette, fonts, and per-viz specs. (FC-02: include `Format: classic/extension` from the vp-init hand-off context block when passing context to vp-viz — vp-viz's format-conditional workflow requires this value upfront.)"
 
 ## Aesthetic flavors — pick ONE
 
@@ -170,6 +172,8 @@ VIZ INVENTORY (N vizs)
 2. {viz_name}
    ...
 ```
+
+> Note: `accent` is for hover/glow/selection highlights ONLY — data series use `getSeriesColor(i, t)` from theme.js. See pre-code-checklist.md DPR-03b / CP-03.
 
 ## Visual Language schema — output after design brief
 
