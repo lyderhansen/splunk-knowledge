@@ -134,6 +134,7 @@ Recent decisions affecting current work:
 - [x] Execute 34-01-PLAN.md — COMPLETE (2026-05-22)
 - [x] Execute 35-01-PLAN.md — COMPLETE (2026-05-22): Red Bull Classic path build, 5 vizs, ALL CHECKS PASSED, 133KB tarball
 - [x] Execute 36-01-PLAN.md — COMPLETE (2026-05-22): Extension API Red Bull pack, 3 vizs, E01-E05 ALL PASS, 8.6KB .spl
+- [ ] Evaluate cv6 HTML-first as splunk-viz-packs replacement (2026-05-25) — `.planning/todos/pending/2026-05-25-evaluate-cv6-html-first-as-splunk-viz-packs-replacement.md` — three forks: adopt cv6, cherry-pick HTML-first into v5, or coexist until breadth parity
 
 ### Decisions
 
