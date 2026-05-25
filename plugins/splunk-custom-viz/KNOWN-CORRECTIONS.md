@@ -128,13 +128,30 @@ Plus `_layout` should default `rows = data.rows || []` and `ci = data.colIdx || 
 
 ---
 
-## Correction 6 — preview.png MUST be per-viz-type silhouette, not a single letter
+## Correction 6 — preview.png is owned by Pillow, NOT pixel-grid JS
 
-**Source:** WWF Field Ops 2026-05-25 (Splunk viz picker showed 14 identical letter-cards)
+**Source:** WWF Field Ops 2026-05-25 (Splunk viz picker showed 14 identical letter-cards, then 3 duplicate KPI tiles after first JS rewrite)
 
-The v6 "simplification" of `drawSilhouette()` to render `letter + accent bar` for every viz produced visually indistinguishable previews. Restored per-type rendering using existing `detectVizType()` / `@viz-type` annotation: gauge → arc, bars → bars, line → sparkline, timeline → lanes, grid → heatmap matrix, kpi → big number, progress → bar, scatter → dots, network → hub+spokes, radar → polygon.
+**Two iterations of this correction:**
 
-**Where it lives:** `scripts/generate_assets.js` — `drawSilhouette()` + 10 per-type `_draw*` helpers (rewritten 2026-05-25).
+**Iteration 1 (2026-05-25 morning):** Restored per-type JS silhouettes in `generate_assets.js drawSilhouette()` with 10 helper functions (gauge → arc, bars → bars, line → sparkline, etc.). This fixed the 14-identical-letter problem but produced new duplicates: same-type vizs (two KPIs, two grids) rendered identically because helpers used hardcoded geometry.
+
+**Iteration 2 (2026-05-25 afternoon, current):** Ported the Pillow-based `generate_previews.py` from `splunk-viz-packs/skills/vp-create/scripts/` (originally Phase 41 of vp-create). Brings:
+- **Real TrueType fonts** (Inter-Regular.ttf bundled in `scripts/fonts/`) — readable text, not 5x7 bitmap glyphs
+- **3-tier detection cascade**: `// @viz-type` annotation → Canvas API pattern scan (`ctx.arc` count, `fillRect` count, nested `for` loops, large-font `fillText`) → keyword fallback
+- **Hash-seeded geometry per viz_name** in `drawBars`, `drawLine`, `drawTimeline`, `drawHeatmap` — same-type vizs render distinctly
+- **drawGeneric fallback** uses viz name as auto-sized text + corner motif from keyword hint, so every viz is guaranteed visually unique
+- **Pillow auto-install** with graceful fallback (`--legacy-previews` flag on `generate_assets.js`) when offline
+
+**Where it lives:**
+- `scripts/generate_previews.py` — Pillow-based, canonical (NEW 2026-05-25)
+- `scripts/fonts/Inter-Regular.ttf` + `OFL.txt` — bundled font (NEW 2026-05-25)
+- `scripts/generate_assets.js` — now skips previews by default; `--legacy-previews` flag re-enables JS rendering as fallback
+- `skills/cv-build/SKILL.md` Step 3 — documents the two-script flow + the `@viz-type` annotation requirement
+
+**Build order:** `python3 generate_previews.py` first → if exits 2 (Pillow install failed), then `node generate_assets.js --legacy-previews`. Always run `node generate_assets.js` (without flag) for appIcon + bg_gradient regardless.
+
+**Agent contract:** `cv-create` MUST emit `// @viz-type: <type>` as line 1 of every `visualization_source.js`. Valid types: `gauge`, `bars`, `line`, `timeline`, `kpi`, `grid`, `heatmap`, `table`, `ring`, `donut`, `scatter`, `network`. Without the annotation, the script falls back to Canvas-API pattern detection (Tier 2) or filesystem keyword matching (Tier 3) and may misclassify.
 
 ---
 

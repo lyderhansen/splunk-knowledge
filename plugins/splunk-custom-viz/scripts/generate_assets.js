@@ -33,12 +33,25 @@ var zlib = require('zlib');
 
 var args = process.argv.slice(2);
 
-if (args.length < 1) {
-    process.stderr.write('Usage: node generate_assets.js <app_dir>\n');
+// Flag handling: --legacy-previews enables JS preview rendering as a Pillow
+// fallback. By default, previews are owned by generate_previews.py (Python).
+// Pre-extract the flag, then treat first remaining positional as app_dir.
+var legacyPreviews = false;
+var positional = [];
+for (var ai = 0; ai < args.length; ai++) {
+    if (args[ai] === '--legacy-previews') {
+        legacyPreviews = true;
+    } else {
+        positional.push(args[ai]);
+    }
+}
+
+if (positional.length < 1) {
+    process.stderr.write('Usage: node generate_assets.js <app_dir> [--legacy-previews]\n');
     process.exit(2);
 }
 
-var appDir = path.resolve(args[0]);
+var appDir = path.resolve(positional[0]);
 
 if (!fs.existsSync(appDir)) {
     process.stderr.write('Error: directory not found: ' + appDir + '\n');
@@ -1443,11 +1456,19 @@ function main() {
         errors++;
     }
 
-    try {
-        generatePreviews(appDir, dark);
-    } catch (e) {
-        process.stderr.write('Error generating previews: ' + String(e) + '\n');
-        errors++;
+    // Preview ownership split: generate_previews.py (Pillow) is canonical.
+    // JS silhouette path runs only when --legacy-previews is passed (Pillow
+    // install failed or offline environment).
+    if (legacyPreviews) {
+        process.stdout.write('  INFO: --legacy-previews flag set; generating JS silhouette previews\n');
+        try {
+            generatePreviews(appDir, dark);
+        } catch (e) {
+            process.stderr.write('Error generating previews: ' + String(e) + '\n');
+            errors++;
+        }
+    } else {
+        process.stdout.write('  INFO: previews handled by generate_previews.py (skipping; pass --legacy-previews to override)\n');
     }
 
     try {

@@ -65,16 +65,37 @@ If validation exits with non-zero (any FAIL), STOP. Do not package. Load [refere
 
 ## Step 3 — Generate assets
 
+Two scripts run sequentially. Python owns previews (per-viz Pillow rendering); JS owns appIcon + bg_gradient.
+
 ```bash
+# Primary: Pillow-based per-viz previews (Tier 1/2/3 detection cascade,
+# real TTF fonts, hash-seeded geometry per viz_name).
+python3 ${CLAUDE_SKILL_PLUGIN_DIR}/../../scripts/generate_previews.py <app_dir>
+PYTHON_PREVIEW_EXIT=$?
+
+# Icons + background gradient (always JS — no Pillow dependency).
 node ${CLAUDE_SKILL_PLUGIN_DIR}/../../scripts/generate_assets.js <app_dir>
 ```
 
+**If `generate_previews.py` exits 2** (Pillow install failed and no network), fall back to legacy JS preview rendering:
+
+```bash
+# Fallback: JS silhouette previews (lower quality, no TTF, no source-content
+# detection — uses viz dir name keyword matching only).
+node ${CLAUDE_SKILL_PLUGIN_DIR}/../../scripts/generate_assets.js <app_dir> --previews-fallback
+```
+
+(The JS path renders pixel-grid silhouettes per viz type. Acceptable for offline builds but visually inferior to Pillow output.)
+
 Produces:
 
-- `static/appIcon.png` (36×36, brand accent background + white app initial)
+- `appserver/static/visualizations/<viz>/preview.png` per viz (116×76) — **via Pillow when available, JS fallback otherwise**
+- `static/appIcon.png` (36×36, brand accent background + white app initial / domain symbol)
 - `static/appIcon_2x.png` (72×72)
 - `appserver/static/images/bg_gradient.png` (1920×1080, branded gradient)
-- `appserver/static/visualizations/<viz>/preview.png` per viz (116×76)
+- `appserver/static/images/bg_gradient_light.png` (1920×1080, light variant)
+
+**Maximize preview quality with `// @viz-type: <type>` annotation** as line 1 of every `visualization_source.js`. Without it, the Pillow generator falls back to Canvas-API pattern detection (Tier 2) or keyword matching (Tier 3) and may misclassify. Valid types: `gauge`, `bars`, `line`, `timeline`, `kpi`, `grid`, `heatmap`, `table`, `ring`, `donut`, `scatter`, `network`. cv-create should write this annotation when emitting the source file.
 
 Asset generation reads `shared/theme.js` for brand colors. If theme.js is missing, this step fails.
 
