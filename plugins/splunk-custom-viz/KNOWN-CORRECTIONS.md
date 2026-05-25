@@ -371,14 +371,14 @@ Tier 1/2/3 detection only chooses *which renderer* runs. The renderer itself is 
 
 The "same default for every viz" pattern is the AI-slop equivalent of the canon's design anti-patterns (uniform-color KPI rows, default grey canvas, rainbow on severity). Same root cause: pre-baked output that doesn't engage with the specific viz's identity. Same fix: derive from inputs, never hardcode.
 
-### Outstanding work
+### Compliance status (2026-05-25, v6.0.5)
 
-As of 2026-05-25 the following renderers in `generate_previews.py` still violate this rule and should be updated next time they're touched:
+All 10 renderers in `generate_previews.py` satisfy the rule:
 
-- `drawGauge` — hardcoded `"84"` hero, no label band
-- `drawRing` — hardcoded `"65%"` hero, no label band, fixed 65% fill arc
-
-Both should adopt the `drawKpi` v6.0.4 pattern: viz_name as label, hash-picked hero from a candidate pool, hash-seeded geometry (gauge needle position / ring fill percentage).
+- `drawKpi`, `drawGauge`, `drawRing` — viz_name label + hash-derived geometry + hash-picked hero from 12-candidate pool
+- `drawBars`, `drawLine`, `drawTimeline`, `drawHeatmap` — hash-seeded geometry from viz_name (heights / points / segment widths / cell intensities)
+- `drawTable` — header + alternating tinted body rows (visual-only; if two table vizs render identically in a future pack, add hash-seed to row tint pattern)
+- `drawGeneric` (Tier 3 fallback) — viz_name as auto-sized hero text + corner motif from keyword hint
 
 **Where it lives:**
 - `scripts/generate_previews.py` — all `draw*` functions are bound by this rule

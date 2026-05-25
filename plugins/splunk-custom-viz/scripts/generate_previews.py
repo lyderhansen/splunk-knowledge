@@ -307,13 +307,46 @@ def _save(img, output_path: str) -> None:
 
 def drawGauge(theme: dict, output_path: str, viz_name: str = "",
               detection_hint: Optional[str] = None) -> None:
-    """240-deg arc with hero value text in centre. bg, accent arc, text label."""
-    img, draw, _bg, accent_rgb, text_rgb = _new_img(theme)
-    cx, cy, r = 58, 42, 28
-    # 240 deg span: start 150, end 30 (clockwise). Pillow angles: 0=right, 90=down.
+    """240-deg arc gauge — faint background arc, accent sweep to hash-derived %,
+    hash-picked hero number in centre, viz_name label band at bottom.
+
+    Follows Correction #13: viz_name drives label + fill percentage + hero text.
+    Two gauges with different names cannot render identically."""
+    img, draw, bg_rgb, accent_rgb, text_rgb = _new_img(theme)
+    textdim_rgb = hex_to_rgb(theme.get("textDim", DEFAULT_THEME["textDim"]))
+    cx, cy, r = 58, 38, 26
+
+    # Faint background arc (full 240° span)
+    bg_arc = with_alpha(accent_rgb, 0.15, bg_rgb)
     draw.arc((cx - r, cy - r, cx + r, cy + r), start=150, end=30,
-             fill=accent_rgb, width=6)
-    draw.text((cx, cy + 2), "84", fill=text_rgb, font=_load_font(FONT_HERO), anchor="mm")
+             fill=bg_arc, width=5)
+
+    # Accent fill — partial sweep based on hash(viz_name): 30%..100%
+    seed = abs(hash(viz_name or "gauge")) & 0xFFFFFFFF
+    pct = 0.30 + (seed % 70) / 100.0
+    sweep = int(round(240 * pct))
+    draw.arc((cx - r, cy - r, cx + r, cy + r),
+             start=150, end=(150 + sweep) % 360,
+             fill=accent_rgb, width=5)
+
+    # Hero text (hash-picked from 12-candidate pool, shared with drawKpi)
+    hero_candidates = [
+        "42", "87", "128", "1.2K", "4.7K", "99%",
+        "73%", "$2.4M", "0.92", "12.5", "3.14", "62",
+    ]
+    hero = hero_candidates[seed % len(hero_candidates)]
+    draw.text((cx, cy + 2), hero, fill=text_rgb,
+              font=_load_font(int(round(FONT_HERO * 1.05))), anchor="mm")
+
+    # viz_name label band — bulletproof per-viz uniqueness
+    label = (viz_name or "viz").replace("_", " ").upper()
+    size = FONT_LABEL
+    label_font = _load_font(size)
+    while size > 7 and _measure_text(draw, label, label_font, size) > 104:
+        size -= 1
+        label_font = _load_font(size)
+    draw.text((PREVIEW_W / 2, 68), label, fill=textdim_rgb,
+              font=label_font, anchor="mm")
     _save(img, output_path)
 
 
@@ -498,15 +531,48 @@ def drawKpi(theme: dict, output_path: str, viz_name: str = "",
 
 def drawRing(theme: dict, output_path: str, viz_name: str = "",
              detection_hint: Optional[str] = None) -> None:
-    """Donut at 65% fill, accent ring, value text centred. Pillow angles: 0=right, 270=top."""
+    """Donut at hash-derived % fill — faint full ring, accent sweep clockwise from
+    top to hash%, dark inner hole, percentage text in the hole, viz_name label
+    band at bottom.
+
+    Follows Correction #13: viz_name drives fill percentage + label. Two rings
+    with different names cannot render identically."""
     img, draw, bg_rgb, accent_rgb, text_rgb = _new_img(theme)
-    cx, cy = 58, 42
+    textdim_rgb = hex_to_rgb(theme.get("textDim", DEFAULT_THEME["textDim"]))
+    cx, cy = 58, 36
     r_out, r_in = 24, 14
-    # Start top (270), sweep clockwise 234 deg = 65% → end 270 + 234 - 360 = 144.
+
+    # Hash-derived fill: 35%..95%
+    seed = abs(hash(viz_name or "ring")) & 0xFFFFFFFF
+    pct = 0.35 + (seed % 60) / 100.0
+
+    # Faint background ring (full circle)
+    bg_ring = with_alpha(accent_rgb, 0.18, bg_rgb)
     draw.pieslice((cx - r_out, cy - r_out, cx + r_out, cy + r_out),
-                  start=270, end=144, fill=accent_rgb)
+                  start=0, end=360, fill=bg_ring)
+
+    # Accent sweep clockwise from top (270°)
+    sweep = pct * 360
+    draw.pieslice((cx - r_out, cy - r_out, cx + r_out, cy + r_out),
+                  start=270, end=(270 + sweep) % 360, fill=accent_rgb)
+
+    # Hole (dark inner disc)
     draw.ellipse((cx - r_in, cy - r_in, cx + r_in, cy + r_in), fill=bg_rgb)
-    draw.text((cx, cy), "65%", fill=text_rgb, font=_load_font(FONT_LABEL), anchor="mm")
+
+    # Percentage text in the hole
+    pct_text = str(int(round(pct * 100))) + "%"
+    draw.text((cx, cy), pct_text, fill=text_rgb,
+              font=_load_font(FONT_LABEL + 2), anchor="mm")
+
+    # viz_name label band
+    label = (viz_name or "viz").replace("_", " ").upper()
+    size = FONT_LABEL
+    label_font = _load_font(size)
+    while size > 7 and _measure_text(draw, label, label_font, size) > 104:
+        size -= 1
+        label_font = _load_font(size)
+    draw.text((PREVIEW_W / 2, 68), label, fill=textdim_rgb,
+              font=label_font, anchor="mm")
     _save(img, output_path)
 
 
