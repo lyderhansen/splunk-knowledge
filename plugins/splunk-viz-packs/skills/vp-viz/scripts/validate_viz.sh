@@ -115,6 +115,9 @@ for f in "$APP_DIR"/appserver/static/visualizations/*/formatter.html; do
     [ "$FORMS" -gt "$LABELS" ] && { echo "  FAIL B5: $((FORMS-LABELS)) <form> without section-label"; FAIL=1; }
 
     # Theme default must be "auto"
+    # Note: validate_ast.js --html checks for the 'auto' option in themeMode radio (DOM-based).
+    # This grep checks for 'dark' as a default value (pattern-based). The two strategies diverge
+    # for a formatter with no themeMode radio at all.
     THEME_DARK=$(grep -c 'themeMode.*value="dark"' "$f" 2>/dev/null || true)
     [ "$THEME_DARK" -gt 0 ] && { echo "  FAIL B20: themeMode defaults to dark (must be auto)"; FAIL=1; }
   fi
@@ -284,14 +287,14 @@ else
 fi
 
 # visualizations.conf
-[ -f "$APP_DIR/default/visualizations.conf" ] || { echo "  FAIL: missing visualizations.conf"; TOTAL_FAIL=1; }
-grep -q 'allow_user_selection' "$APP_DIR/default/visualizations.conf" 2>/dev/null || { echo "  FAIL: missing allow_user_selection"; TOTAL_FAIL=1; }
+[ -f "$APP_DIR/default/visualizations.conf" ] || { echo "  FAIL R2: missing visualizations.conf"; TOTAL_FAIL=1; }
+grep -q 'allow_user_selection' "$APP_DIR/default/visualizations.conf" 2>/dev/null || { echo "  FAIL R3: missing allow_user_selection"; TOTAL_FAIL=1; }
 
 # savedsearches.conf.spec
 [ -f "$APP_DIR/README/savedsearches.conf.spec" ] || { echo "  FAIL R6: missing savedsearches.conf.spec"; TOTAL_FAIL=1; }
 
 # Nav bar
-[ -f "$APP_DIR/default/data/ui/nav/default.xml" ] || echo "  WARN: missing nav bar"
+[ -f "$APP_DIR/default/data/ui/nav/default.xml" ] || echo "  WARN N1: missing nav bar"
 
 # app.conf stanzas
 if [ -f "$APP_DIR/default/app.conf" ]; then

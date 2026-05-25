@@ -70,7 +70,7 @@ function isHex(val) {
     return typeof val === 'string' && /^#[0-9A-Fa-f]{6}$/.test(val);
 }
 
-// ---- Pair definitions (D-11) ----
+// ---- Pair definitions (WCAG AA — check_contrast.js) ----
 
 var PAIRS = [
     { text: 'text',      bg: 'bg',       threshold: 4.5, level: 'FAIL' },

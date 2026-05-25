@@ -369,6 +369,7 @@ function runCrossFileChecks(formatterPath, jsPath) {
     var failures = [];
     var warnings = [];
 
+    // XFILE: formatter↔JS cross-file option key mismatch. See vp-debug/references/broken-rules.md XFILE entry.
     // FAIL XFILE: formatter option not read in JS
     formatterKeys.forEach(function(k) {
         if (jsKeys.indexOf(k) === -1) {

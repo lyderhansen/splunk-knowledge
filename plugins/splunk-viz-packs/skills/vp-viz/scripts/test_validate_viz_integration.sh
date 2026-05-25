@@ -373,8 +373,8 @@ else
   echo "  SKIP T22: test25 not found at $TEST25"
 fi
 
-# --- T_ANEW_1: FAIL A01 — solid-color placeholder preview (< 500 bytes) ---
-echo "--- T_ANEW_1: FAIL A01 — solid-color placeholder preview (<500 bytes) ---"
+# --- T_ANEW_1: FAIL A01 — solid-color placeholder preview (<100 bytes) ---
+echo "--- T_ANEW_1: FAIL A01 — solid-color placeholder preview (<100 bytes) ---"
 TMP_APP=$(mktemp -d /tmp/t_anew1_XXXXXX)
 # Build minimal app structure
 mkdir -p "$TMP_APP/appserver/static/visualizations/test_viz"
@@ -382,8 +382,8 @@ mkdir -p "$TMP_APP/default"
 mkdir -p "$TMP_APP/static"
 mkdir -p "$TMP_APP/README"
 mkdir -p "$TMP_APP/metadata"
-# Write a 400-byte blob as a fake preview.png (too small — placeholder)
-dd if=/dev/zero bs=400 count=1 2>/dev/null > "$TMP_APP/appserver/static/visualizations/test_viz/preview.png"
+# Write a 50-byte blob as a fake preview.png (reliably below 100-byte A01 threshold)
+dd if=/dev/zero bs=50 count=1 2>/dev/null > "$TMP_APP/appserver/static/visualizations/test_viz/preview.png"
 # Write a valid-sized appIcon.png (we will make this pass to isolate A01)
 # Use real 36x36 PNG from test25 if available
 if [ -f "$TEST25/../hospital_nps_gauge/static/appIcon.png" ]; then
@@ -400,9 +400,9 @@ printf '[launcher]\nauthor=test\n[ui]\nis_visible=true\nlabel=test\n[package]\nc
 OUTPUT=$(bash "$VVS" "$TMP_APP" 2>&1)
 rm -rf "$TMP_APP"
 if echo "$OUTPUT" | grep -q 'FAIL A01'; then
-  pass "T_ANEW_1: FAIL A01 raised for solid-color placeholder preview (<500 bytes)"
+  pass "T_ANEW_1: FAIL A01 raised for solid-color placeholder preview (<100 bytes)"
 else
-  fail "T_ANEW_1: FAIL A01 not raised for <500 byte preview.png"
+  fail "T_ANEW_1: FAIL A01 not raised for 50-byte preview.png (below 100-byte threshold)"
   echo "    output excerpt: $(echo "$OUTPUT" | grep -E 'FAIL|preview' | head -5)"
 fi
 
