@@ -1,5 +1,7 @@
 # Animation Recipes
 
+> **Location note:** This file lives in `vp-recipes/references/` (not `vp-viz/references/`) and is the canonical Phase 40 Animation Helper Scope Rule (AF-01/AF-02) owner. Load via `MUST LOAD` in vp-recipes/SKILL.md or directly from vp-viz/SKILL.md animation step.
+
 Load this file before writing any `visualization_source.js` that includes animation.
 These patterns cover all Phase 9 animation requirements (ANI-01 through ANI-06).
 
@@ -99,6 +101,7 @@ this._pulseBlur = 0;
 
 ```javascript
 // In updateView (severity check before render):
+// Required above this block: var t = theme.getTheme(detectTheme()); var ns = getNS(this);
 var flashCritical = opt('flashCritical', 'false') === 'true';
 if (prefersReducedMotion()) { this._stopPulse(); }
 var hasCritical = false;

@@ -121,3 +121,4 @@ main().catch(err => {
 - The script auto-discovers all subdirectories under `visualizations/` — Claude does not list viz names anywhere in this file
 - Output goes to `stage/{{APP_ID}}/appserver/static/visualizations/{viz}/visualization.js` ready for `package.mjs` to tarball
 - Pairs with `package-mjs-template.md` in the same directory — run `node build.mjs` first, then `node package.mjs`
+- **D10 source requirement:** Source files (`src/visualization.js`) must start with `// @viz-type: <type>` as the first line (D10). `check_design.js` validates the IIFE output — this build script does NOT enforce or validate D10. See `visualization-js-template.md` for the valid type list.

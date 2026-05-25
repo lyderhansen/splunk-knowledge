@@ -1,7 +1,6 @@
 # Canvas 2D Recipes
 
-> **Restructured in v5.0.0 Phase 6.** Effect-category recipes have been split into focused files.
-> Load the specific file you need — do not load all files.
+> **v5.0.0:** Effect-category recipes split into focused files. Load the specific file you need — do not load all files.
 
 ## Recipe files — load on demand
 
@@ -10,7 +9,7 @@
 | Depth (gradients, ambient light, vignette, gradient mesh, accent lines) | [depth-recipes.md](../../vp-recipes/references/depth-recipes.md) | Dark theme vizs, Futuristic/Luxury/Precision/Power mood |
 | Texture (noise grain, glass panels, tinted neutrals) | [texture-recipes.md](../../vp-recipes/references/texture-recipes.md) | Organic/Luxury mood, any viz needing surface quality |
 | Typography (3-tier hierarchy, spaced text, measureText) | [typography-recipes.md](../../vp-recipes/references/typography-recipes.md) | All vizs with text — load always |
-| Animation (entrance, pulse, hover, stagger) | [animation-recipes.md](../../vp-recipes/references/animation-recipes.md) | Phase 9 only — do not load in Phase 6/7 |
+| Animation (entrance, pulse, hover, stagger) | [animation-recipes.md](../../vp-recipes/references/animation-recipes.md) | Load when adding animation controls to a viz (entrance, LED pulse, hover, stagger) |
 
 ## Hover tooltip — mandatory on every data-displaying viz
 

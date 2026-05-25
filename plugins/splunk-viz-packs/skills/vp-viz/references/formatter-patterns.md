@@ -146,6 +146,15 @@ The JS side splits on comma and trims whitespace:
 Matching is case-insensitive. Order does not matter. Unmatched values render as neutral/informational.
 See viz-blueprints.md Status Chip and Status Matrix sections for the three-tier status pattern.
 
+## Accent Architecture (Phase 23 — CP-01/CP-02/CP-03)
+
+Four rules govern how color pickers and accent color are used across all vizs:
+
+- **(CP-01)** Every `<splunk-color-picker>` ships with 6-8 `<splunk-color>` brand swatches from `theme.js` DARK: `accent`, `series[0-4]`, `bg`, `panel`. This is the minimum preset count per picker.
+- **(CP-02)** WCAG AA contrast baseline — `LIGHT.textFaint` (`#6B7080`) is the minimum-contrast label token; see theme-template.md THM-02 for the full contrast table.
+- **(CP-03)** `accentColor` is for hover/glow/selection ONLY — never as a solid `ctx.fillStyle` for data bars, arcs, or area fills. Place the `accentColor` picker in the `Effects` section, not `Color and style`.
+- **Series colors:** data series fills use `getSeriesColor(i, t)` from `theme.js`, NOT `t.accent`. Single-value KPI hero arcs may use `t.accent` as the primary fill.
+
 ## WRONG patterns — broken if you see these
 
 ```
@@ -170,7 +179,7 @@ Every viz gets a minimum of 3 sections with these EXACT `section-label` values (
 1. **NO `Data configurations` section for most vizs.** Field binding is via `formatData()` column-index map. Only single-value and generic table vizs get a single optional field input with empty default.
 2. `Data display` — labels, units, toggles, decimals
 3. `Color and style` — themeMode, series color pickers (1-5), seriesColorsOverflow, fieldColorMap, accentIntensity
-4. `Effects` — accentColor picker (FIRST), then mood effect toggles (showAmbientLight, showVignette, showGlow, showGlassPanel). accentColor is ONLY used inside withAlpha() — never ctx.fillStyle = accentColor directly. Default toggles to "true"; user can disable per effect.
+4. `Effects` — accentColor picker (FIRST), then mood effect toggles (showAmbientLight, showVignette, showGlow). accentColor is ONLY used inside withAlpha() — never ctx.fillStyle = accentColor directly. Default toggles to "true"; user can disable per effect. **Note: showGlassPanel is BANNED — Dashboard Studio rectangles handle panel chrome. Do NOT add it.**
 
 > **Data binding rule (D-01):** Most vizs do NOT have a "Data configurations" formatter section.
 > The `formatData()` method builds a `colIdx` map from `data.fields` — vizs access columns by
@@ -203,7 +212,7 @@ Structure rules:
     <!-- themeMode, series color pickers (1-5), seriesColorsOverflow, fieldColorMap, accentIntensity -->
 </form>
 <form class="splunk-formatter-section" section-label="Effects">
-    <!-- individual mood effect toggles: showAmbientLight, showVignette, showGlow, showGlassPanel -->
+    <!-- individual mood effect toggles: showAmbientLight, showVignette, showGlow -->
 </form>
 ```
 
@@ -434,6 +443,7 @@ var flashCritical = opt('flashCritical', 'false') === 'true';
 var showHoverEffect = opt('showHoverEffect', 'true') === 'true';
 var animSpeed = opt('animationSpeed', 'normal');
 var speedMult = animSpeed === 'slow' ? 1.5 : animSpeed === 'fast' ? 0.6 : 1.0;
+var accentColor = hexFromSplunk(opt('accentColor', ''), t.accent); // pass as primitive to animation helpers (AF-02)
 
 // D-03: prefers-reduced-motion override — kills entrance + pulse, keeps hover (functional)
 var reducedMotion = false;

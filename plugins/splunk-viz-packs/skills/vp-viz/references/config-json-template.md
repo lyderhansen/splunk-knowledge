@@ -91,7 +91,7 @@ Each block shows the optionsSchema entry + the editorConfig layout item that bin
 ## Section Grouping
 
 Each editorConfig element is a labeled section. `layout` is array-of-arrays; each inner array
-is one row. Match the 3-section structure from Classic formatter.html:
+is one row. Match the 3-section structure from Classic formatter.html. Add an `Animation` section with `showEntrance`/`flashCritical`/`showHoverEffect`/`animationSpeed` controls when the viz includes animation (see formatter-patterns.md Animation section).
 
 ```json
 "editorConfig": [
@@ -200,3 +200,9 @@ optionsSchema defines defaults — always code defensively with `|| fallback`.
 Read `state.options.backgroundColor` (or its `opts.backgroundColor` alias) exactly once at the top of `render()`, alongside the other option reads, wrapped in `hexFromSplunk()` per the B22 convention: `var bg = hexFromSplunk(opts.backgroundColor, t.bg);`. Use that single `bg` variable as the fill in every paint call that draws the canvas/panel background. Do NOT re-derive the background from `state.theme` inside the `addThemeListener` callback — both the dark and light render branches must paint with the same user-supplied value whenever the user has set one in the Format panel. Replacing `bg` with `t.bg` (or `t.panel`) inside a theme-conditional branch is the Tesla FSD 2026-05-22 failure mode and silently discards the user's brand color in the unhandled theme.
 
 Classic equivalent: theme-template.md THM-05 (WRONG/RIGHT contrast block) + pre-code-checklist.md THM-05 line.
+
+---
+
+## Build Requirements (EF-01/EF-02)
+
+`config.json` describes the Extension API viz's editor interface. The corresponding `src/visualization.js` must be bundled to IIFE format (EF-01) with `@splunk/dashboard-studio-extension` bundled into the output (EF-02, no `external` clause). See `build-mjs-template.md` for the canonical esbuild configuration that satisfies both requirements.
