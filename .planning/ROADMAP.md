@@ -889,25 +889,33 @@ Plans:
 **Goal**: All 6 vp-* skills and all reference files are reviewed for consistency with v5.5-5.7 changes, producing a REVIEW.md with findings
 **Depends on**: Phase 38, 39, 40, 41, 42 (all fixes landed)
 **Requirements**: DR-01, DR-02, DR-03
-**Plans**: 7 plans
+**Plans**: 12 plans
 
 Plans:
 
 **Wave 1**
 
-- [ ] 43-01-PLAN.md — Wave 1 Discovery: review 13 reference files in vp-viz/references/ + vp-recipes/references/animation-recipes.md; produce 43-WAVE-1-REVIEW-REFERENCES.md
-- [ ] 43-02-PLAN.md — Wave 1 Discovery: review 6 vp-* SKILL.md files + vp-debug/references/broken-rules.md; produce 43-WAVE-2-REVIEW-SKILLS.md
-- [ ] 43-03-PLAN.md — Wave 1 Discovery: review 17 vp-viz/scripts/ files for B/D/E/F/R code symmetry vs docs; produce 43-WAVE-3-REVIEW-VP-VIZ-SCRIPTS.md
-- [ ] 43-04-PLAN.md — Wave 1 Discovery: review 5 vp-create/scripts/ files for Phase 41 D-01/D-02 contract; produce 43-WAVE-4-REVIEW-VP-CREATE-SCRIPTS.md
-- [ ] 43-05-PLAN.md — Wave 1 Discovery: review 8 bounded dashboard-studio skills (5 cross-referenced + 3 Phase-38 touched); produce 43-WAVE-5-REVIEW-DASHBOARD-STUDIO.md
+- [x] 43-01-PLAN.md — Wave 1 Discovery: review 13 reference files in vp-viz/references/ + vp-recipes/references/animation-recipes.md; produce 43-WAVE-1-REVIEW-REFERENCES.md
+- [x] 43-02-PLAN.md — Wave 1 Discovery: review 6 vp-* SKILL.md files + vp-debug/references/broken-rules.md; produce 43-WAVE-2-REVIEW-SKILLS.md
+- [x] 43-03-PLAN.md — Wave 1 Discovery: review 17 vp-viz/scripts/ files for B/D/E/F/R code symmetry vs docs; produce 43-WAVE-3-REVIEW-VP-VIZ-SCRIPTS.md
+- [x] 43-04-PLAN.md — Wave 1 Discovery: review 5 vp-create/scripts/ files for Phase 41 D-01/D-02 contract; produce 43-WAVE-4-REVIEW-VP-CREATE-SCRIPTS.md
+- [x] 43-05-PLAN.md — Wave 1 Discovery: review 8 bounded dashboard-studio skills (5 cross-referenced + 3 Phase-38 touched); produce 43-WAVE-5-REVIEW-DASHBOARD-STUDIO.md
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 43-06-PLAN.md — Wave 2 Discovery: tests/ flag-only sweep + consolidate all per-wave REVIEW files into canonical 43-REVIEW.md
+- [x] 43-06-PLAN.md — Wave 2 Discovery: tests/ flag-only sweep + consolidate all per-wave REVIEW files into canonical 43-REVIEW.md
 
-**Wave 3** *(blocked on Wave 2 completion)*
+**Wave 3 — Remediation** *(parallel plans, all depend on Wave 2 completion)*
 
-- [ ] 43-07-PLAN.md — Wave 3 Remediation (PLACEHOLDER): regenerated via /gsd:plan-phase 43 --gaps after 43-REVIEW.md exists; lands BLOCKER+WARNING fixes inline + bumps plugin.json 5.9.1 → 5.10.0
+- [ ] 43-07-PLAN.md — Cluster G: Reference file fixes (pre-code-checklist.md B-codes, visualization-js-template.md D10, formatter-patterns.md showGlassPanel/AccentArch, THM-01/02, Wave 1 WARNINGs, 8 files total)
+- [ ] 43-08-PLAN.md — Cluster E+F: vp-design CP-01 brand swatch step + vp-debug B-range fix + THM-05 entry
+- [ ] 43-09-PLAN.md — Cluster B: broken-rules.md DS1-DS5/XFILE/CONTRAST/B17 backfill + script fixes (check_contrast.js, repair_findings.js, validate_viz.sh, test fixture T_ANEW_1)
+- [ ] 43-10-PLAN.md — Cluster C: PP-01 stale attribution sweep (vp-viz/vp-init/vp-create SKILL.md + generate_assets.js + generate_previews.py + STATE.md)
+- [ ] 43-11-PLAN.md — Cluster D: ds-* schema/format fixes (ds-create deprecated drilldown, ds-ref-layout-grid wrong tabs schema, stale skeleton markers, canvas conflict, Wave 5 NITs)
+
+**Wave 4** *(blocked on all Wave 3 plans completing)*
+
+- [ ] 43-12-PLAN.md — Cluster A: plugin.json version bump (splunk-viz-packs 5.9.1 → 5.10.0; splunk-dashboard-studio minor bump) + description trim + ROADMAP/STATE close-out
 
 ## Progress
 
@@ -955,4 +963,4 @@ Plans:
 | 40. Animation Scope Fix | v5.8.0 | 1/1 | Complete    | 2026-05-24 |
 | 41. Pillow Preview | v5.8.0 | 2/2 | Complete    | 2026-05-24 |
 | 42. Light Mode backgroundColor | v5.8.0 | 1/1 | Complete   | 2026-05-24 |
-| 43. Deep Review | v5.8.0 | 0/7 | Not started | - |
+| 43. Deep Review | v5.8.0 | 6/12 | In Progress |  |
