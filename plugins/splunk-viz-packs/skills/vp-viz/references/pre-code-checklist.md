@@ -22,6 +22,7 @@ Verify EVERY item before writing visualization code. This is the gate between "r
 □ JS: require()/module.exports — NEVER define()
 □ JS: SplunkVisualizationBase.extend({...}) object literal
 □ JS: safeStr()/safeNum() on all row field reads (B21)
+□ JS: Guard data.rows AND data.fields simultaneously at top of formatData (Classic) or updateView (Extension). Access .length on either ONLY after both checks pass. Pattern: `if (!data || !data.rows || !data.fields || data.rows.length === 0 || data.fields.length === 0) { if (this._lastGoodData) return this._lastGoodData; return null; }` — partial guards (just data.rows) cause the first-render flash error `Cannot read properties of undefined (reading 'length')` when Splunk fires updateView before search results land (B21)
 □ JS: escapeHtml() on ALL search data inserted into innerHTML/insertAdjacentHTML; makeSafeUrl() on ALL search data used in href/src attributes — from SplunkVisualizationUtils (ECR-08). Canvas fillText is exempt.
 □ JS: detectTheme() for auto theme detection
 □ JS: clientWidth/clientHeight — NEVER getBoundingClientRect for sizing

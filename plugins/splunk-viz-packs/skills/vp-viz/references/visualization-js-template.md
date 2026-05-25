@@ -244,6 +244,45 @@ VisualizationAPI.addDimensionsListener(function(d) {
 
 ---
 
+## Empty-Data Guard (B21 — both formats)
+
+Splunk fires the data-handling callback (`formatData` Classic / `addDataSourcesListener` Extension) before search results arrive — typically with a partial state like `{ rows: [...], fields: undefined }` or `{}`. Accessing `.length` on `data.fields` or `data.rows` without a structural guard throws `Cannot read properties of undefined (reading 'length')` and produces a visible flash before the second (real) call repaints.
+
+**Classic — at the top of `formatData(data, config)`:**
+
+```js
+formatData: function(data, config) {
+    // B21: Guard data.rows AND data.fields simultaneously. Partial guards fail.
+    if (!data || !data.rows || !data.fields ||
+        data.rows.length === 0 || data.fields.length === 0) {
+        if (this._lastGoodData) return this._lastGoodData;
+        return null;
+    }
+    // Build colIdx ONLY after the guard passes.
+    var colIdx = {};
+    for (var i = 0; i < data.fields.length; i++) {
+        colIdx[data.fields[i].name] = i;
+    }
+    var result = { colIdx: colIdx, rows: data.rows, fields: data.fields };
+    this._lastGoodData = result;
+    return result;
+},
+```
+
+**Extension — at the top of `render()` (or wherever you consume the columnar data):**
+
+```js
+// See line 133 above for the canonical Extension guard:
+//   if (!data || !data.columns || data.columns.length === 0 || data.columns[0].length === 0) { ... }
+// Same discipline: guard the structural shape before any .length access.
+```
+
+The Classic `_lastGoodData` cache lets the viz keep rendering the previous good state during transient empty-data flashes (e.g. time-range changes). Without it the viz blanks then repopulates — visually distracting on long-running dashboards.
+
+**Validator note:** `validate_viz.sh` B21 emits `FAIL B21: formatData missing empty-data guard (data.rows + data.fields)` when the structural guard is absent. Partial guards (only `data.rows`) used to pass — strengthened in splunk-viz-packs v5.10.1.
+
+---
+
 ## Build & Package
 
 Extension API viz packs use two ESM build scripts at the app root — `build.mjs` (esbuild bundler) and `package.mjs` (Splunk .spl packager). Both are scaffolded by Claude during vp-create Step 1 (Extension API).

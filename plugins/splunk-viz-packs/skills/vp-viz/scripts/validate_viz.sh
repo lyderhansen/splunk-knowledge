@@ -243,8 +243,14 @@ for vizdir in "$APP_DIR"/appserver/static/visualizations/*/; do
     grep -qE 'detectTheme|getCurrentTheme' "$f" || { echo "  FAIL B20: no theme detection"; FAIL=1; }
   fi
 
-  # Null guards
+  # Null guards (B21 — two-tier check)
+  # Tier 1 (legacy): any null-guard idiom appears somewhere in the file
   grep -qE '!= null|safeStr|safeNum' "$f" || { echo "  FAIL B21: no null guards"; FAIL=1; }
+  # Tier 2 (structural — added v5.10.1): formatData / updateView MUST guard data.rows AND data.fields
+  # before any .length access. Matches both orderings: !data.rows ... !data.fields  OR  !data.fields ... !data.rows
+  # Also matches the columnar Extension guard against data.columns.
+  grep -qE '!data\.rows[^|]*\|\|[^|]*!data\.fields|!data\.fields[^|]*\|\|[^|]*!data\.rows|!data\.columns[^|]*\|\|[^|]*data\.columns\.length' "$f" \
+    || { echo "  FAIL B21: formatData missing empty-data guard (must guard data.rows AND data.fields together — see visualization-js-template.md)"; FAIL=1; }
 
   # No getBoundingClientRect for canvas sizing (allow in mouse handlers)
   # Heuristic: flag if getBCR appears near canvas.width or clientWidth
