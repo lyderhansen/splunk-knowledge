@@ -84,7 +84,33 @@ Panels in `layout.json` can carry a `drilldown` field:
 }
 ```
 
-`ds-create` translates this into `options.drilldown = "all"` and `options.drilldownAction = <drilldown value>` on the matching visualization, enabling click-through behavior in the rendered dashboard.
+`ds-create` translates this into an `eventHandlers` array on the matching visualization object. First set `options.drilldown: "all"` to enable click events, then declare the handler:
+
+```json
+"viz_p1": {
+  "type": "splunk.table",
+  "dataSources": { "primary": "ds_1" },
+  "options": {
+    "drilldown": "all"
+  },
+  "eventHandlers": [
+    {
+      "type": "drilldown.linkToDashboard",
+      "options": {
+        "app": "<app>",
+        "dashboard": "target_dash",
+        "tokens": [
+          { "token": "selected_host", "value": "row.host.value" }
+        ]
+      }
+    }
+  ]
+}
+```
+
+Use `drilldown.setToken` to capture click context, `drilldown.linkToDashboard` to navigate to another dashboard, `drilldown.linkToSearch` to open Search, or `drilldown.customUrl` for external URLs. Multiple handlers in the same `eventHandlers` array all fire on the same click — common pattern is capture + navigate.
+
+> **Note:** Legacy `options.drilldown` / `options.drilldownAction` are deprecated — use `eventHandlers` array (see `ds-int-drilldowns` for full handler shape, token syntax, and the three-handler chain recipe).
 
 ## Hard rule — every dataSource MUST have a `name`
 

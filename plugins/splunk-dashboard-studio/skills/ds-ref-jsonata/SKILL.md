@@ -354,6 +354,8 @@ function($acc, $v) { $acc + $v }
 Lambdas are JSONata expressions, not JavaScript. No `return`
 keyword — the last expression is the value.
 
+> **[Standard JSONata] confidence note:** `$map`/`$filter`/`$reduce` and lambda syntax are not individually confirmed against a live Dashboard Studio instance. They are standard JSONata and expected to work because Splunk docs state "JSONata's built-in functions" are available — but test output in DS before relying on higher-order expressions in production dashboards.
+
 ## Common recipes
 
 Each recipe shows the **pure JSONata expression** and the **full

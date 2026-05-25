@@ -5,13 +5,11 @@ description: Splunk Dashboard Studio archetypes reference — the four canonical
 
 # ds-ref-archetypes — Splunk dashboard archetypes
 
-> **Status:** skeleton only. Body extracted from `ds-ref-design-principles` in a follow-up task.
-
 ## Scope (what's IN)
 
 - The 4 archetypes (executive summary, operational monitoring, analytical deep-dive, SOC overview / wall) with deep-dive per archetype.
 - Panel-mix fingerprints per archetype.
-- Canvas dimensions per archetype (1440×960 exec, 1920×1080 SOC wall, etc.).
+- Canvas dimensions per archetype (1920×1080 minimum all archetypes, per ds-ref-layout-grid §Canvas Sizes).
 - When-to-use rules per archetype.
 - Hybrid examples and smells (when archetypes mix).
 
@@ -31,17 +29,6 @@ description: Splunk Dashboard Studio archetypes reference — the four canonical
 - `ds-design` (when wireframing a new layout).
 - `ds-init` (during scope phase).
 
-## Source / migration
-
-- Extracted from: `ds-ref-design-principles` "Dashboard archetypes" section (lines ~25–115 of pre-split file in `_backup/2026-04-29/`).
-- New content: hybrid examples, audience-context expansion.
-
-## Estimated size
-
-M
-
----
-
 ## The four archetypes at a glance
 
 | Archetype | Audience | Panels | Primary question |
@@ -58,7 +45,7 @@ panel mix, canvas dimensions, and an ASCII layout sketch.
 
 - **Audience:** Leadership — VPs, directors, business owners.
 - **Panel count:** 6–8 panels. Anything more dilutes the story.
-- **Canvas:** 1440×960 (laptop, occasional projector).
+- **Canvas:** 1920×1080 minimum. (ds-ref-layout-grid §Canvas Sizes mandates 1920×1080 minimum for all archetypes.)
 - **Primary question:** *Is everything healthy right now?*
 - **Purpose:** A single calm story per dashboard. Each panel answers
   "yes / no / by how much" against a target. The viewer spends ~90
@@ -95,7 +82,7 @@ panel mix, canvas dimensions, and an ASCII layout sketch.
 
 - **Audience:** On-call SREs, NOC operators, platform teams.
 - **Panel count:** 8–12 panels.
-- **Canvas:** 1920×1080 (NOC monitor) or 1440×960 (laptop check-in).
+- **Canvas:** 1920×1080 minimum.
 - **Primary question:** *What is happening right now?*
 - **Purpose:** A dense status surface that surfaces the live state of
   every critical service. The viewer drops in for 5–15 minute
@@ -137,7 +124,7 @@ panel mix, canvas dimensions, and an ASCII layout sketch.
   scientists.
 - **Panel count:** 10–14 panels — **use tabs** to keep any single tab
   under 8.
-- **Canvas:** 1440×960 or wider, often scrollable.
+- **Canvas:** 1920×1080 minimum, often scrollable vertically.
 - **Primary question:** *What caused this, and what does the data
   show?*
 - **Purpose:** A guided exploration surface. The viewer expects to

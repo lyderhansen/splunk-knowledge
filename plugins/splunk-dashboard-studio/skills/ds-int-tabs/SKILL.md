@@ -169,6 +169,8 @@ Pair with an `input.dropdown` driving tab selection via token.
 (Token-driven tab selection is documented but beyond verified scope —
 test before relying on it.)
 
+**See also:** `ds-ref-jsonata` for token expression syntax used in tab-switching conditions; `ds-int-tokens` for token binding patterns and the `$eval:name$` reference.
+
 ## Caveats
 
 - **No URL-level tab state by default.** Bookmarking always lands on

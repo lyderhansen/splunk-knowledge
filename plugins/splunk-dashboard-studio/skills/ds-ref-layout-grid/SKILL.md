@@ -5,8 +5,6 @@ description: Layout, spacing, and grid math for Splunk Dashboard Studio — 4pt 
 
 # ds-ref-layout-grid — Layout, spacing, and grid math
 
-> **Status:** skeleton only. Body extracted from `ds-ref-design-principles` in a follow-up task.
-
 ## Scope (what's IN)
 
 - 4pt and 8pt grid scales with named tokens (`S_0_5`, `S_1`, `S_2`, ...).
@@ -31,17 +29,6 @@ description: Layout, spacing, and grid math for Splunk Dashboard Studio — 4pt 
 - `ds-couture` (layout commitment after archetype).
 - `ds-design` (panel positioning during wireframing).
 - `ds-polish` (alignment fixes).
-
-## Source / migration
-
-- Extracted from: `ds-ref-design-principles` "Layout principles", "KPI sizing rules", "Spacing/radius/type scale", "Depth and layering" sections.
-- New content: golden ratio for hero zones, gutter presets per archetype.
-
-## Estimated size
-
-L
-
----
 
 ## Layout principles
 
@@ -83,29 +70,29 @@ but warn that shadow rectangles and singlevalueicon will not render.
 ```json
 {
   "layout": {
-    "tabs": [
-      {
-        "id": "tab_main",
-        "label": "Main",
-        "layoutDefinitionId": "layoutDef_main"
-      }
-    ],
-    "showTabBar": false,
-    "layoutDefinitions": [
-      {
-        "id": "layoutDef_main",
+    "globalInputs": [],
+    "tabs": {
+      "items": [
+        { "layoutId": "layout_main", "label": "Main" }
+      ],
+      "options": { "barPosition": "top", "showTabBar": false }
+    },
+    "layoutDefinitions": {
+      "layout_main": {
         "type": "absolute",
         "options": { "width": 1920, "height": "<content-driven>" },
         "structure": [...]
       }
-    ]
+    }
   }
 }
 ```
 
+Key differences from the deprecated array format: (1) `tabs` is an **object** with an `items` array, not a bare array; (2) `showTabBar` lives inside `tabs.options`, not at layout root; (3) `layoutDefinitions` is an **object** keyed by `layoutId` string, not an array; (4) the linkage key is `layoutId` (not `layoutDefinitionId`). See `ds-int-tabs` for multi-page patterns.
+
 > **ABBREVIATED examples below** show only the `layoutDefinition` content
 > (the `type`, `options`, `structure` keys). In real dashboard JSON these
-> always live inside `layoutDefinitions[n]`, not directly under `layout`.
+> always live inside `layoutDefinitions["layout_key"]`, not directly under `layout`.
 
 ## MANDATORY: Shadow rectangles (depth layer)
 
@@ -222,7 +209,7 @@ content height from layered zones (header + KPI strip + chart row
   "structure": [...]
 }
 ```
-*(This is the `layoutDefinitions[0]` entry — abbreviated; wrap inside the
+*(This is a `layoutDefinitions["layout_main"]` entry — abbreviated; wrap inside the
 `tabs` + `layoutDefinitions` structure shown above.)*
 
 | Archetype | Width | Typical height |
