@@ -405,33 +405,47 @@ Introduce **`@preview-layout`** as a separate annotation from `@viz-type`:
 - Detection is a 4-tier cascade now: 1a layout → 1b type → 2 Canvas-API scan → 3 keyword fallback
 - Unknown layout names fall through to primitive dispatch (no build break on typo)
 
-### Initial layout library (v6.0.6)
+### Layout library (v6.0.7)
 
 | Layout name (+ synonyms) | Composition fingerprint | Modeled on |
 |---|---|---|
 | `kpi-ratio-footer` / `kpi-ratio` / `ratio-footer` | Big numerator / denominator + delta-pill + sparkline + 2-stat footer row | WWF active_collars |
-| `heatmap-with-marks` / `grid-with-marks` / `heatmap-hotzones` | Heatmap grid + 2 hot-bordered cells + corner direction triangle | WWF species_grid |
+| `heatmap-with-marks` / `grid-with-marks` / `heatmap-hotzones` | Heatmap grid + 2 hot-bordered cells + corner direction triangle | WWF species_grid + threat_severity |
 | `composite-stack` / `subject-stack` / `telemetry-stack` | Big subject ID + 3 stacked mini-rows (sparkline / categorical bars / spike-marker line) | WWF mc01_composite |
+| `timeline-with-alert` / `alert-timeline` / `lanes-with-alert` | 3 horizontal lanes of segment events + ONE bright accent alert pin on one lane | WWF patrol_coverage |
+| `bars-with-target` / `target-bars` / `funding-bars` | Bars (hash-seeded heights) + horizontal dashed target line + value above tallest bar | WWF projects_funding |
+| `gauge-with-stats` / `gauge-stats` / `slo-gauge` | Gauge arc top + 3 mini stat tiles (value + unit) in a row below | SLO/health/uptime panels |
+| `line-with-band` / `band-line` / `range-line` / `anomaly-line` | Line chart + faint normal-range shaded band + accent dot on outlier | physiological/anomaly vizs |
 
-Each follows Correction #13 (viz_name drives all variable content) and inherits the series-color rotation from `_pick_primary`.
+Each follows Correction #13 (viz_name drives all variable content) and inherits series-color rotation from `_pick_primary`.
 
-### When to use a layout vs a primitive
+### The standard — every viz must have `@preview-layout`
 
-- **Primitive** (`@viz-type`) — the viz IS just that data primitive: a standalone gauge, a single KPI tile with just a number, a plain heatmap.
-- **Layout** (`@preview-layout`) — the viz combines multiple primitives in a specific composition. The preview should reflect the composition, not just the dominant primitive.
+**As of v6.0.7, `@preview-layout` is MANDATORY for every viz in a `splunk-custom-viz` pack** — not optional. Falling back to a primitive (`@viz-type` only) produces generic "template" previews that don't reflect what the viz actually looks like.
 
-Rule of thumb: if the viz has more than one labeled visual region (e.g. "big number AND sparkline AND footer stats AND label band"), it's a layout candidate, not a primitive.
+User validated this standard on 2026-05-25 after seeing the WWF test49 composite previews: *"this was perfect!!! exactly how every preview should be in the future."* See `[[composite-preview-standard]]` memory + cv-create SKILL.md Step 3a.
+
+### When existing layouts don't fit — propose a new one, don't fall back
+
+If a viz's composition isn't covered by the layout library, add a new renderer to `scripts/generate_previews.py`:
+
+1. Write the `draw<Name>` function following the established pattern: `_seed(viz_name)` for geometry, `_pick_primary(theme, viz_name)` for color rotation, `_label_band(draw, viz_name, ...)` for the bottom label.
+2. Add to `LAYOUT_DISPATCH` with 2-3 synonym keys.
+3. Add a row to the library table above.
+4. Document the composition fingerprint and what real viz it was modeled on.
+
+Falling back to a primitive renderer when a composition would be more accurate is a regression — it's the failure mode this correction exists to prevent.
 
 ### Agent contract (cv-create skill teaching)
 
-When emitting `visualization_source.js`, the agent should set BOTH annotations on composite vizs:
+When emitting `visualization_source.js`, the agent MUST set BOTH annotations on EVERY viz (not just composite ones):
 
 ```javascript
 // @viz-type: <primitive>                 ← Tier 1b fallback if layout unknown
-// @preview-layout: <layout-name>         ← Tier 1a, takes priority
+// @preview-layout: <layout-name>         ← Tier 1a, REQUIRED
 ```
 
-Layouts are extensible — new compositions added to `LAYOUT_DISPATCH` in `scripts/generate_previews.py` over time. cv-create should consult the latest layout list when generating annotations.
+cv-create SKILL.md Step 3a lists the current layout library and the procedure for proposing a new layout when existing ones don't fit.
 
 **Where it lives:**
 - `scripts/generate_previews.py` — `LAYOUT_DISPATCH` dict + 3 composite renderers (`drawKpiRatioFooter`, `drawHeatmapWithMarks`, `drawCompositeStack`)

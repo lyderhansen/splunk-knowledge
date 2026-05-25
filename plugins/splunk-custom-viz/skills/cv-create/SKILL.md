@@ -72,13 +72,41 @@ Write to `<app_id>/shared/theme.js`.
 
 For each viz in `DESIGN-LOCK.md.vizs[]`:
 
-### 3a. Emit boilerplate
+### 3a. Emit boilerplate + MANDATORY annotation pair
 
 ```bash
 node ${CLAUDE_SKILL_PLUGIN_DIR}/../../scripts/boilerplate_emit.js <viz_name> <app_id>.<viz_name> > <app_id>/appserver/static/visualizations/<viz_name>/src/visualization_source.js
 ```
 
 This writes the compliance scaffolding (initialize, formatData, getInitialDataParams, destroy, reflow, helpers, updateView's dispatch to _renderDark/_renderLight). The `_renderDark` and `_renderLight` functions are empty stubs with TODO comments.
+
+**Then prepend BOTH annotation lines to the source file** (line 1 + line 2):
+
+```javascript
+// @viz-type: <primitive>            ← data primitive — Tier 1b fallback
+// @preview-layout: <layout-name>    ← compositional shape — Tier 1a, REQUIRED
+var SplunkVisualizationBase = require("api/SplunkVisualizationBase");
+```
+
+**`@preview-layout` is MANDATORY for every viz**, not optional. The preview generator routes layouts to composition-specific renderers that mirror the actual viz's visual fingerprint. Falling back to a primitive (`@viz-type` only) produces generic "template" previews that don't reflect what the viz actually looks like, regressing to the failure mode that motivated Correction #14.
+
+**Pick a layout from `LAYOUT_DISPATCH`** in `scripts/generate_previews.py`. Current library (v6.0.7):
+
+| Layout | When to use | Visual fingerprint |
+|---|---|---|
+| `kpi-ratio-footer` | KPI showing X/Y ratio + delta + sparkline + footer stats | active_collars-style |
+| `composite-stack` | Subject ID + multiple stacked mini time-series rows | mc01_composite-style |
+| `heatmap-with-marks` | Heatmap grid + highlighted hot cells + corner direction marker | species_grid-style |
+| `timeline-with-alert` | Multi-lane timeline + ONE bright accent alert pin | patrol_coverage-style |
+| `bars-with-target` | Bars + horizontal target line + value above tallest bar | funding/quota-tracker style |
+| `gauge-with-stats` | Gauge arc + 3 mini stat tiles below | SLO/health panel style |
+| `line-with-band` | Line chart + faint normal-range band + accent dot on outlier | physiological/anomaly style |
+
+Each layout has synonyms (e.g. `kpi-ratio` / `ratio-footer` / `kpi-ratio-footer` all map to the same renderer). See `LAYOUT_DISPATCH` for the full list.
+
+**If no existing layout fits**, propose a new one rather than falling back to a primitive. Add the renderer to `scripts/generate_previews.py` following the `_seed`/`_pick_primary`/`_label_band` pattern of the existing layouts. Document it as an addition to KNOWN-CORRECTIONS.md #14.
+
+See [[composite-preview-standard]] memory + KNOWN-CORRECTIONS.md #14 for the full rationale.
 
 ### 3b. Fill `_renderDark` and `_renderLight`
 

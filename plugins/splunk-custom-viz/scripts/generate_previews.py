@@ -1008,6 +1008,203 @@ def drawCompositeStack(theme: dict, output_path: str, viz_name: str = "",
     _save(img, output_path)
 
 
+def drawTimelineWithAlert(theme: dict, output_path: str, viz_name: str = "",
+                          detection_hint: Optional[str] = None) -> None:
+    """Composition: 3 horizontal lanes + segment events + ONE bright accent alert
+    marker on one lane (vertical pin + dot). Modeled on patrol_coverage where
+    a single alert event is the visual focus across multiple team lanes.
+
+    Differs from primitive drawTimeline: explicit single alert pin draws the
+    eye, lanes are otherwise quieter (no random accent bursts)."""
+    img, draw, bg_rgb, accent_rgb, text_rgb = _new_img(theme)
+    textdim_rgb = hex_to_rgb(theme.get("textDim", DEFAULT_THEME["textDim"]))
+    primary_rgb = _pick_primary(theme, viz_name)
+
+    lane_ys = [16, 30, 44]
+    lane_h = 7
+    seed = _seed(viz_name)
+    for li, ly in enumerate(lane_ys):
+        # Faint baseline
+        draw.line((8, ly + lane_h + 1, PREVIEW_W - 8, ly + lane_h + 1),
+                  fill=with_alpha(textdim_rgb, 0.4, bg_rgb), width=1)
+        x = 10
+        while x < PREVIEW_W - 10:
+            seed = _lcg(seed)
+            seg_w = 8 + (seed % 22)
+            seed = _lcg(seed)
+            gap = 3 + (seed % 8)
+            if x + seg_w > PREVIEW_W - 10:
+                seg_w = max(0, PREVIEW_W - 10 - x)
+            if seg_w >= 4:
+                draw.rectangle((x, ly, x + seg_w, ly + lane_h), fill=primary_rgb)
+            x += seg_w + gap
+
+    # Single alert pin — vertical accent line + dot at top, on a hash-picked lane
+    alert_lane = _seed(viz_name, salt=5) % 3
+    alert_x_pct = 0.25 + (_seed(viz_name, salt=11) % 50) / 100.0  # 0.25..0.75
+    ax = 10 + int(round(alert_x_pct * (PREVIEW_W - 20)))
+    ay_top = lane_ys[alert_lane] - 3
+    ay_bot = lane_ys[alert_lane] + lane_h + 3
+    draw.line((ax, ay_top, ax, ay_bot), fill=accent_rgb, width=2)
+    draw.ellipse((ax - 3, ay_top - 3, ax + 3, ay_top + 3), fill=accent_rgb)
+
+    _label_band(draw, viz_name, 68, textdim_rgb)
+    _save(img, output_path)
+
+
+def drawBarsWithTarget(theme: dict, output_path: str, viz_name: str = "",
+                       detection_hint: Optional[str] = None) -> None:
+    """Composition: bars (hash-seeded heights) + horizontal target line at
+    hash% of max + value text above the highlighted (= longest) bar.
+    Modeled on funding/budget/quota-tracking vizs where the bar height is
+    compared against a goal."""
+    img, draw, bg_rgb, accent_rgb, text_rgb = _new_img(theme)
+    textdim_rgb = hex_to_rgb(theme.get("textDim", DEFAULT_THEME["textDim"]))
+    primary_rgb = _pick_primary(theme, viz_name)
+    series = theme.get("series") or [primary_rgb]
+    pool = [c for c in series if isinstance(c, str) and HEX_COLOR_RE.match(c)]
+    secondary_rgb = (hex_to_rgb(pool[_seed(viz_name, _SALT_SECOND) % len(pool)])
+                     if pool else primary_rgb)
+
+    baseline = 56
+    xs = [12, 26, 40, 54, 68, 82, 96]
+    seed = _seed(viz_name)
+    heights = []
+    for _ in range(len(xs)):
+        seed = _lcg(seed)
+        heights.append(16 + (seed % 32))
+    # Find max-height bar (gets primary color; others secondary)
+    max_idx = heights.index(max(heights))
+    bar_w = 9
+    for i, (x, h) in enumerate(zip(xs, heights)):
+        color = primary_rgb if i == max_idx else with_alpha(secondary_rgb, 0.6, bg_rgb)
+        draw.rectangle((x, baseline - h, x + bar_w, baseline), fill=color)
+
+    # Target line — horizontal dashed at hash% of baseline range
+    target_pct = 0.55 + (_seed(viz_name, salt=13) % 35) / 100.0
+    target_y = baseline - int(round(target_pct * 40))
+    # Dashed line via tiny segments
+    for dx in range(8, PREVIEW_W - 8, 4):
+        draw.line((dx, target_y, dx + 2, target_y), fill=accent_rgb, width=1)
+
+    # Value text above the tallest bar
+    val_pool = ["$847K", "$1.2M", "94%", "$2.4M", "73%", "$320K"]
+    val = val_pool[_seed(viz_name, salt=19) % len(val_pool)]
+    val_x = xs[max_idx] + bar_w // 2
+    val_y = baseline - heights[max_idx] - 6
+    draw.text((val_x, val_y), val, fill=text_rgb,
+              font=_load_font(FONT_TICK), anchor="mm")
+
+    # Baseline
+    draw.line((8, baseline, PREVIEW_W - 8, baseline),
+              fill=with_alpha(textdim_rgb, 0.4, bg_rgb), width=1)
+
+    _label_band(draw, viz_name, 68, textdim_rgb)
+    _save(img, output_path)
+
+
+def drawGaugeWithStats(theme: dict, output_path: str, viz_name: str = "",
+                       detection_hint: Optional[str] = None) -> None:
+    """Composition: gauge arc top + 3 mini stat tiles (value + tiny label)
+    in a row below the gauge. Common pattern for health/SLO/uptime panels
+    where the headline metric needs supporting context."""
+    img, draw, bg_rgb, accent_rgb, text_rgb = _new_img(theme)
+    textdim_rgb = hex_to_rgb(theme.get("textDim", DEFAULT_THEME["textDim"]))
+    primary_rgb = _pick_primary(theme, viz_name)
+
+    # Gauge arc top
+    cx, cy, r = PREVIEW_W // 2, 24, 18
+    bg_arc = with_alpha(primary_rgb, 0.15, bg_rgb)
+    draw.arc((cx - r, cy - r, cx + r, cy + r), start=150, end=30,
+             fill=bg_arc, width=4)
+    seed = _seed(viz_name)
+    pct = 0.30 + (seed % 70) / 100.0
+    sweep = int(round(240 * pct))
+    draw.arc((cx - r, cy - r, cx + r, cy + r),
+             start=150, end=(150 + sweep) % 360,
+             fill=primary_rgb, width=4)
+    # Hero percent in arc
+    pct_text = str(int(round(pct * 100))) + "%"
+    draw.text((cx, cy + 2), pct_text, fill=text_rgb,
+              font=_load_font(FONT_LABEL + 1), anchor="mm")
+
+    # 3 stat tiles below
+    tile_y = 44
+    tile_w = (PREVIEW_W - 16) // 3
+    stat_pool = [
+        ("47", "MIN"), ("99.0", "%"), ("8.2", "K"),
+        ("142", "OPS"), ("3.4", "H"), ("12", "ERR"),
+    ]
+    for i in range(3):
+        cx_t = 8 + i * tile_w + tile_w // 2
+        seed = _lcg(seed)
+        val, unit = stat_pool[seed % len(stat_pool)]
+        draw.text((cx_t, tile_y), val, fill=text_rgb,
+                  font=_load_font(FONT_LABEL), anchor="mm")
+        draw.text((cx_t, tile_y + 10), unit, fill=textdim_rgb,
+                  font=_load_font(FONT_TICK), anchor="mm")
+    # Vertical dividers between tiles
+    for i in range(1, 3):
+        x = 8 + i * tile_w
+        draw.line((x, tile_y - 4, x, tile_y + 14),
+                  fill=with_alpha(textdim_rgb, 0.3, bg_rgb), width=1)
+
+    _label_band(draw, viz_name, 68, textdim_rgb)
+    _save(img, output_path)
+
+
+def drawLineWithBand(theme: dict, output_path: str, viz_name: str = "",
+                     detection_hint: Optional[str] = None) -> None:
+    """Composition: line chart + faint shaded "normal range" band + single
+    accent dot marking a point outside the band. Modeled on physiological /
+    SLO / SLA vizs (body_temperature in mc01_composite, latency-vs-budget).
+
+    The band defines what's "normal"; the accent dot is the anomaly that
+    drew attention. The composition tells the story 'mostly fine, one spike'
+    at a glance."""
+    img, draw, bg_rgb, accent_rgb, text_rgb = _new_img(theme)
+    textdim_rgb = hex_to_rgb(theme.get("textDim", DEFAULT_THEME["textDim"]))
+    primary_rgb = _pick_primary(theme, viz_name)
+
+    chart_x, chart_y, chart_w, chart_h = 8, 14, PREVIEW_W - 16, 40
+    # Faint "normal range" band in the middle 40% of chart height
+    band_top = chart_y + int(chart_h * 0.35)
+    band_bot = chart_y + int(chart_h * 0.65)
+    band_rgb = with_alpha(primary_rgb, 0.10, bg_rgb)
+    draw.rectangle((chart_x, band_top, chart_x + chart_w, band_bot), fill=band_rgb)
+    # Band edges (faint dashed)
+    for dx in range(chart_x, chart_x + chart_w, 4):
+        draw.line((dx, band_top, dx + 2, band_top),
+                  fill=with_alpha(primary_rgb, 0.4, bg_rgb), width=1)
+        draw.line((dx, band_bot, dx + 2, band_bot),
+                  fill=with_alpha(primary_rgb, 0.4, bg_rgb), width=1)
+
+    # Line chart — 14 points, mostly inside the band with ONE spike
+    n_points = 14
+    seed = _seed(viz_name)
+    spike_pos = 4 + (_seed(viz_name, salt=23) % 7)  # which point spikes
+    pts = []
+    for i in range(n_points):
+        seed = _lcg(seed)
+        if i == spike_pos:
+            # Spike — well above the band
+            y = chart_y + int(chart_h * 0.10)
+        else:
+            # Inside the band with small jitter
+            y = band_top + 2 + (seed % (band_bot - band_top - 4))
+        x = chart_x + int(round(i * chart_w / (n_points - 1)))
+        pts.append((x, y))
+    if len(pts) >= 2:
+        draw.line(pts, fill=text_rgb, width=1)
+
+    # Accent dot at the spike
+    sx, sy = pts[spike_pos]
+    draw.ellipse((sx - 3, sy - 3, sx + 3, sy + 3), fill=accent_rgb)
+
+    _label_band(draw, viz_name, 68, textdim_rgb)
+    _save(img, output_path)
+
+
 # ---- Section 8: Dispatch function ----
 
 DISPATCH = {
@@ -1023,15 +1220,41 @@ DISPATCH = {
 # Synonyms (kpi-ratio / kpi-ratio-footer / ratio-footer) all map to the same
 # renderer so the annotation can be naturally worded.
 LAYOUT_DISPATCH = {
-    "kpi-ratio":          drawKpiRatioFooter,
-    "kpi-ratio-footer":   drawKpiRatioFooter,
-    "ratio-footer":       drawKpiRatioFooter,
-    "heatmap-with-marks": drawHeatmapWithMarks,
-    "grid-with-marks":    drawHeatmapWithMarks,
-    "heatmap-hotzones":   drawHeatmapWithMarks,
-    "composite-stack":    drawCompositeStack,
-    "subject-stack":      drawCompositeStack,
-    "telemetry-stack":    drawCompositeStack,
+    # KPI-style ratio with delta + sparkline + footer stats
+    "kpi-ratio":           drawKpiRatioFooter,
+    "kpi-ratio-footer":    drawKpiRatioFooter,
+    "ratio-footer":        drawKpiRatioFooter,
+
+    # Heatmap with highlighted hot cells + corner marker
+    "heatmap-with-marks":  drawHeatmapWithMarks,
+    "grid-with-marks":     drawHeatmapWithMarks,
+    "heatmap-hotzones":    drawHeatmapWithMarks,
+
+    # Subject ID + 3 stacked mini time-series rows
+    "composite-stack":     drawCompositeStack,
+    "subject-stack":       drawCompositeStack,
+    "telemetry-stack":     drawCompositeStack,
+
+    # NEW v6.0.7 — timeline with ONE bright alert pin across lanes
+    "timeline-with-alert": drawTimelineWithAlert,
+    "alert-timeline":      drawTimelineWithAlert,
+    "lanes-with-alert":    drawTimelineWithAlert,
+
+    # NEW v6.0.7 — bars + horizontal target line + value above tallest
+    "bars-with-target":    drawBarsWithTarget,
+    "target-bars":         drawBarsWithTarget,
+    "funding-bars":        drawBarsWithTarget,
+
+    # NEW v6.0.7 — gauge + 3 mini stat tiles below
+    "gauge-with-stats":    drawGaugeWithStats,
+    "gauge-stats":         drawGaugeWithStats,
+    "slo-gauge":           drawGaugeWithStats,
+
+    # NEW v6.0.7 — line chart + faint normal-range band + accent dot on outlier
+    "line-with-band":      drawLineWithBand,
+    "band-line":           drawLineWithBand,
+    "range-line":          drawLineWithBand,
+    "anomaly-line":        drawLineWithBand,
 }
 
 
