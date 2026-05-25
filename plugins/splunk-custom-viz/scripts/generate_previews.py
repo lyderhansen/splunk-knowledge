@@ -445,15 +445,54 @@ def drawHeatmap(theme: dict, output_path: str, viz_name: str = "",
 
 def drawKpi(theme: dict, output_path: str, viz_name: str = "",
             detection_hint: Optional[str] = None) -> None:
-    """Large hero number + small label below. Number=accent, label=textDim."""
-    img, draw, _bg, accent_rgb, _tx = _new_img(theme)
+    """Large hero number + viz_name as label band + hash-seeded mini sparkline.
+
+    The label band shows the viz_name (auto-sized to fit) rather than a hardcoded
+    placeholder — this is the bulletproof differentiator for same-type KPI vizs,
+    matching the drawGeneric strategy. Hero text and tiny sparkline are
+    hash-derived so the visual identity stays distinct even before the user
+    reads the label."""
+    img, draw, bg_rgb, accent_rgb, _tx = _new_img(theme)
     textdim_rgb = hex_to_rgb(theme.get("textDim", DEFAULT_THEME["textDim"]))
-    candidates = ["42", "99%", "1.2K"]
-    hero = candidates[abs(hash(viz_name or "kpi")) % len(candidates)]
+
+    # Expanded hero pool — 12 candidates covering integers, percents, abbreviated
+    # large numbers, decimals, currency-like values. Wider variety = less chance
+    # of two same-type KPIs landing on identical hero text.
+    candidates = [
+        "42", "87", "128", "1.2K", "4.7K", "99%",
+        "73%", "$2.4M", "0.92", "12.5", "3.14", "62"
+    ]
+    seed = abs(hash(viz_name or "kpi")) & 0xFFFFFFFF
+    hero = candidates[seed % len(candidates)]
     hero_font = _load_font(int(round(FONT_HERO * 1.4)))
-    draw.text((PREVIEW_W / 2, 32), hero, fill=accent_rgb, font=hero_font, anchor="mm")
-    draw.text((PREVIEW_W / 2, 60), "ACTIVE", fill=textdim_rgb,
-              font=_load_font(FONT_LABEL), anchor="mm")
+    draw.text((PREVIEW_W / 2, 26), hero, fill=accent_rgb, font=hero_font, anchor="mm")
+
+    # Hash-seeded mini sparkline under the hero number — 10 points, 8px tall,
+    # spans ~70% of the width. Suggests "this is a trending KPI" without
+    # overwhelming the big-number hierarchy.
+    spark_w, spark_h = 80, 8
+    spark_x = (PREVIEW_W - spark_w) // 2
+    spark_y = 46
+    points = []
+    for i in range(10):
+        seed = (seed * 1103515245 + 12345) & 0x7FFFFFFF
+        y_off = seed % spark_h
+        x_pt = spark_x + int(round(i * spark_w / 9))
+        points.append((x_pt, spark_y + spark_h - y_off))
+    sparkline_rgb = with_alpha(accent_rgb, 0.55, bg_rgb)
+    if len(points) >= 2:
+        draw.line(points, fill=sparkline_rgb, width=1)
+
+    # Label band: viz_name as text, auto-shrunk to fit. Replace underscores with
+    # spaces, uppercase, and auto-size down from FONT_LABEL until it fits ~100px.
+    label = (viz_name or "viz").replace("_", " ").upper()
+    size = FONT_LABEL
+    label_font = _load_font(size)
+    while size > 7 and _measure_text(draw, label, label_font, size) > 104:
+        size -= 1
+        label_font = _load_font(size)
+    draw.text((PREVIEW_W / 2, 64), label, fill=textdim_rgb,
+              font=label_font, anchor="mm")
     _save(img, output_path)
 
 
