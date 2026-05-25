@@ -1,5 +1,7 @@
 # visualization.js Template (Extension API)
 
+**Extension API ONLY** — Classic vizs use `require()`/`module.exports`. See vp-viz SKILL.md for the format selector.
+
 This is the Extension API Canvas 2D viz wrapper. Copy the template below, fill in
 `{{PLACEHOLDER}}` values and the Canvas rendering section, then run `yarn build`.
 
@@ -19,7 +21,10 @@ wrapper changes. All `ctx.fillRect`, `ctx.arc`, `ctx.fillText` calls transfer un
 
 ## visualization.js Template
 
+> **D10 populator note:** Replace `{{VIZ_TYPE_PLACEHOLDER}}` in the first line below with one of the 10 valid viz types: `kpi`, `gauge`, `bars`, `grid`, `line`, `timeline`, `radar`, `progress`, `scatter`, `network`. This is enforced by `check_design.js` D10 — vizs that omit it will FAIL validation.
+
 ```javascript
+// @viz-type: {{VIZ_TYPE_PLACEHOLDER}}
 import { VisualizationAPI } from '@splunk/dashboard-studio-extension';
 import './visualization.css'; // Optional for Canvas vizs — add only if you need CSS
 
