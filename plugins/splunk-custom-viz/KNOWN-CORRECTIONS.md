@@ -387,6 +387,59 @@ All 10 renderers in `generate_previews.py` satisfy the rule:
 
 ---
 
+## Correction 14 — Composite previews via `@preview-layout` for multi-element vizs
+
+**Source:** WWF Field Ops dashboard review 2026-05-25 — user observed that generic primitive renderers (`drawKpi`, `drawHeatmap`, `drawCompositeStack` via fallback) couldn't capture the actual visual fingerprint of multi-element vizs. A KPI with ratio + delta + sparkline + footer-stats reads totally differently from a plain hero+sparkline KPI, but both shipped with the same generic preview.
+
+### The architectural addition
+
+Introduce **`@preview-layout`** as a separate annotation from `@viz-type`:
+
+```javascript
+// @viz-type: kpi                          ← data primitive (unchanged)
+// @preview-layout: kpi-ratio-footer       ← compositional shape (NEW)
+```
+
+- `@viz-type` continues to select a primitive renderer (gauge, kpi, heatmap, …) — fallback when no layout is set
+- `@preview-layout` overrides with a composition-specific renderer that combines multiple primitives in a recognizable shape
+- Detection is a 4-tier cascade now: 1a layout → 1b type → 2 Canvas-API scan → 3 keyword fallback
+- Unknown layout names fall through to primitive dispatch (no build break on typo)
+
+### Initial layout library (v6.0.6)
+
+| Layout name (+ synonyms) | Composition fingerprint | Modeled on |
+|---|---|---|
+| `kpi-ratio-footer` / `kpi-ratio` / `ratio-footer` | Big numerator / denominator + delta-pill + sparkline + 2-stat footer row | WWF active_collars |
+| `heatmap-with-marks` / `grid-with-marks` / `heatmap-hotzones` | Heatmap grid + 2 hot-bordered cells + corner direction triangle | WWF species_grid |
+| `composite-stack` / `subject-stack` / `telemetry-stack` | Big subject ID + 3 stacked mini-rows (sparkline / categorical bars / spike-marker line) | WWF mc01_composite |
+
+Each follows Correction #13 (viz_name drives all variable content) and inherits the series-color rotation from `_pick_primary`.
+
+### When to use a layout vs a primitive
+
+- **Primitive** (`@viz-type`) — the viz IS just that data primitive: a standalone gauge, a single KPI tile with just a number, a plain heatmap.
+- **Layout** (`@preview-layout`) — the viz combines multiple primitives in a specific composition. The preview should reflect the composition, not just the dominant primitive.
+
+Rule of thumb: if the viz has more than one labeled visual region (e.g. "big number AND sparkline AND footer stats AND label band"), it's a layout candidate, not a primitive.
+
+### Agent contract (cv-create skill teaching)
+
+When emitting `visualization_source.js`, the agent should set BOTH annotations on composite vizs:
+
+```javascript
+// @viz-type: <primitive>                 ← Tier 1b fallback if layout unknown
+// @preview-layout: <layout-name>         ← Tier 1a, takes priority
+```
+
+Layouts are extensible — new compositions added to `LAYOUT_DISPATCH` in `scripts/generate_previews.py` over time. cv-create should consult the latest layout list when generating annotations.
+
+**Where it lives:**
+- `scripts/generate_previews.py` — `LAYOUT_DISPATCH` dict + 3 composite renderers (`drawKpiRatioFooter`, `drawHeatmapWithMarks`, `drawCompositeStack`)
+- `PREVIEW_LAYOUT_ANNOTATION_RE` and the 4-tier cascade in `detect_viz_type`
+- `tests/test49_v6_in_git/wwf_field_ops_viz/` — 3 vizs annotated as proof-of-pattern
+
+---
+
 ## Process note (Finding 4 from HANDOVER-skill-improvements.md)
 
 The user has been discovering corrections, writing them to personal memory, and the plugin docs have continued to teach the wrong thing. Going forward:

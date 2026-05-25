@@ -38,6 +38,7 @@ except ImportError:
 
 # ---- Section 3: Stdlib imports + constants ----
 import argparse
+import math
 import os
 import re
 import sys
@@ -137,6 +138,88 @@ def with_alpha(rgb: tuple, alpha: float, bg_rgb: tuple) -> tuple:
     )
 
 
+# ---- Section 4b: viz-name-derived helpers for Correction #13 ----
+#
+# These helpers turn the viz_name string into deterministic per-viz signals
+# that drive renderer choices:
+#   - _seed(viz_name, salt): repeatable integer seed
+#   - _lcg(seed): next LCG step for sequence generation
+#   - _pick_primary(theme, viz_name): rotates through theme.series so a pack
+#     of N same-type vizs renders in N different palette colors instead of all
+#     using theme.accent. Pure brand colors; never invents off-palette hues.
+#   - _pick_variant(viz_name, n_variants): rotates through composition layouts
+#     so renderers can implement 2-3 sub-styles dispatched per-viz.
+
+def _seed(viz_name, salt=0):
+    return (abs(hash(viz_name or "x")) + salt) & 0xFFFFFFFF
+
+
+def _lcg(seed):
+    return (seed * 1103515245 + 12345) & 0x7FFFFFFF
+
+
+def _pick_primary(theme, viz_name, salt=None):
+    """Pick the primary (data) color from theme.series via hash(viz_name).
+    Falls back to theme.accent if series is empty or invalid. Returns (r, g, b).
+
+    Rationale (Correction #13 enhancement): same-type vizs in a pack should
+    render in different palette colors, not all in the accent. The series
+    palette is the brand-curated set of cohesive colors; rotating through it
+    keeps the pack on-brand while making each viz visually distinct."""
+    if salt is None:
+        salt = _SALT_PRIMARY
+    series = theme.get("series") or []
+    pool = [c for c in series if isinstance(c, str) and HEX_COLOR_RE.match(c)]
+    if not pool:
+        return hex_to_rgb(theme.get("accent", DEFAULT_THEME["accent"]))
+    return hex_to_rgb(pool[_seed(viz_name, salt) % len(pool)])
+
+
+def _pick_variant(viz_name, n_variants):
+    """Pick a composition variant index (0..n_variants-1) deterministically
+    from viz_name. Used by drawKpi/drawGauge/drawRing to dispatch between
+    sub-layouts so packs feel less templated."""
+    if n_variants <= 1:
+        return 0
+    return _seed(viz_name, _SALT_VARIANT) % n_variants
+
+
+# Shared hero-value pool — 22 candidates covering integers, percents, decimals,
+# abbreviated thousands/millions, durations, currency-like values. Larger pool
+# = lower hero-collision rate (1/22 ≈ 4.5%, vs 1/12 ≈ 8% before).
+HERO_POOL = [
+    "42",   "87",    "128",   "256",   "1.2K",  "4.7K",  "18.3K", "1.4M",
+    "99%",  "73%",   "12%",   "3.14",  "0.92",  "12.5",  "62",
+    "$2.4M","$847",  "$1.1B", "2:14",  "0:47",  "94 ms", "1.8s",
+]
+
+
+# Salt constants — keep each dimension's hash statistically independent so a
+# hash collision on one (e.g. color) doesn't drag the others (hero, variant)
+# along with it. Numeric values are arbitrary but distinct primes; do NOT
+# reuse the same salt for two different picks.
+_SALT_PRIMARY = 0
+_SALT_HERO    = 29
+_SALT_VARIANT = 17
+_SALT_DELTA   = 37
+_SALT_SECOND  = 23   # secondary color in nested rings, etc.
+
+
+def _pick_hero(viz_name, salt=_SALT_HERO):
+    """Return a hero string from HERO_POOL chosen deterministically from viz_name."""
+    return HERO_POOL[_seed(viz_name, salt) % len(HERO_POOL)]
+
+
+def _pick_delta(viz_name, salt=_SALT_DELTA):
+    """Return a (sign_char, percent_int, color_hint) tuple for a delta indicator.
+    sign_char is "▲" or "▼"; color_hint is "up" or "down" — caller decides what
+    that maps to (typically up=accent, down=textDim or a red series color)."""
+    seed = _seed(viz_name, salt)
+    pct = 2 + (seed % 28)  # 2..29
+    is_up = (seed >> 8) & 1
+    return ("▲" if is_up else "▼", pct, "up" if is_up else "down")
+
+
 # ---- Section 5: theme.js parser (D-06; security T-41-01 mitigation) ----
 
 _BLOCK_RE = re.compile(r"var\s+DARK\s*=\s*\{([^}]*)\}", re.DOTALL)
@@ -180,8 +263,27 @@ def parse_theme_js(theme_js_path: str) -> dict:
     return result
 
 
-# ---- Section 6: 3-tier detection cascade (Phase 41 D-04) ----
+# ---- Section 6: 4-tier detection cascade ----
+#
+# Tier 1a (NEW v6.0.6): // @preview-layout: <layout-name>
+#   Compositional layout for multi-element vizs (e.g. "kpi-ratio-footer",
+#   "heatmap-with-marks", "composite-stack"). When present, takes priority
+#   over @viz-type because the layout describes the FULL composition, not
+#   just the data primitive. Routes to LAYOUT_DISPATCH.
+#
+# Tier 1b: // @viz-type: <type>
+#   Data primitive (gauge, kpi, bars, line, etc.). Routes to DISPATCH.
+#
+# Tier 2: Canvas API pattern scan of visualization_source.js
+#   ctx.arc count > 2 = gauge, fillRect > 5 = bars, etc.
+#
+# Tier 3: Keyword fallback on viz directory name → drawGeneric with hint
+#
+# The cascade order matters: a complex composite KPI viz might have @viz-type=kpi
+# but @preview-layout=kpi-ratio-footer. The layout annotation wins so the preview
+# matches the full visual fingerprint, not just the data primitive.
 
+PREVIEW_LAYOUT_ANNOTATION_RE = re.compile(r"//\s*@preview-layout:\s*(\S+)")
 VIZ_TYPE_ANNOTATION_RE = re.compile(r"//\s*@viz-type:\s*(\S+)")
 
 # Source content detection patterns - bound at compile time for performance
@@ -214,15 +316,19 @@ def _find_source_path(viz_dir: str) -> Optional[str]:
 def detect_viz_type(viz_dir: str) -> tuple:
     """Return (tier, type_name, detection_hint) for a viz subdirectory.
 
-    Tier 1: @viz-type annotation in first 10 lines of source JS.
-    Tier 2: Canvas API pattern counts (ctx.arc, fillRect, lineTo, fillText, ...).
-    Tier 3: Generic fallback. detection_hint is a keyword for tier-3 motif selection.
+    Tier 1a: @preview-layout annotation in first 10 lines (NEW v6.0.6).
+             When present, type_name is a layout key routed to LAYOUT_DISPATCH.
+             Compositional layouts override primitive types because they
+             describe the FULL composition.
+    Tier 1b: @viz-type annotation. Routes to DISPATCH (primitive renderers).
+    Tier 2:  Canvas API pattern counts (ctx.arc, fillRect, lineTo, fillText, ...).
+    Tier 3:  Generic fallback. detection_hint is a keyword for tier-3 motif selection.
     """
     src_path = _find_source_path(viz_dir)
     if src_path is None:
         return (3, "generic", None)
 
-    # Tier 1: @viz-type annotation (first 10 lines only)
+    # Read first 10 lines for annotation scan
     try:
         with open(src_path, "r", encoding="utf-8") as f:
             head_lines = []
@@ -234,6 +340,12 @@ def detect_viz_type(viz_dir: str) -> tuple:
     except (OSError, UnicodeDecodeError):
         head = ""
 
+    # Tier 1a: @preview-layout annotation (compositional layout)
+    layout_match = PREVIEW_LAYOUT_ANNOTATION_RE.search(head)
+    if layout_match:
+        return (1, layout_match.group(1).lower(), "layout")
+
+    # Tier 1b: @viz-type annotation (data primitive)
     annotation_match = VIZ_TYPE_ANNOTATION_RE.search(head)
     if annotation_match:
         return (1, annotation_match.group(1).lower(), None)
@@ -305,48 +417,104 @@ def _save(img, output_path: str) -> None:
     img.save(output_path, "PNG", compress_level=6)
 
 
-def drawGauge(theme: dict, output_path: str, viz_name: str = "",
-              detection_hint: Optional[str] = None) -> None:
-    """240-deg arc gauge — faint background arc, accent sweep to hash-derived %,
-    hash-picked hero number in centre, viz_name label band at bottom.
-
-    Follows Correction #13: viz_name drives label + fill percentage + hero text.
-    Two gauges with different names cannot render identically."""
-    img, draw, bg_rgb, accent_rgb, text_rgb = _new_img(theme)
-    textdim_rgb = hex_to_rgb(theme.get("textDim", DEFAULT_THEME["textDim"]))
-    cx, cy, r = 58, 38, 26
-
-    # Faint background arc (full 240° span)
-    bg_arc = with_alpha(accent_rgb, 0.15, bg_rgb)
-    draw.arc((cx - r, cy - r, cx + r, cy + r), start=150, end=30,
-             fill=bg_arc, width=5)
-
-    # Accent fill — partial sweep based on hash(viz_name): 30%..100%
-    seed = abs(hash(viz_name or "gauge")) & 0xFFFFFFFF
-    pct = 0.30 + (seed % 70) / 100.0
-    sweep = int(round(240 * pct))
-    draw.arc((cx - r, cy - r, cx + r, cy + r),
-             start=150, end=(150 + sweep) % 360,
-             fill=accent_rgb, width=5)
-
-    # Hero text (hash-picked from 12-candidate pool, shared with drawKpi)
-    hero_candidates = [
-        "42", "87", "128", "1.2K", "4.7K", "99%",
-        "73%", "$2.4M", "0.92", "12.5", "3.14", "62",
-    ]
-    hero = hero_candidates[seed % len(hero_candidates)]
-    draw.text((cx, cy + 2), hero, fill=text_rgb,
-              font=_load_font(int(round(FONT_HERO * 1.05))), anchor="mm")
-
-    # viz_name label band — bulletproof per-viz uniqueness
+def _label_band(draw, viz_name: str, y: int, color: tuple, max_w: int = 104) -> None:
+    """Render viz_name as a bottom label band — uppercased, underscores swapped
+    for spaces, auto-shrunk from FONT_LABEL down to size 7 to fit max_w pixels.
+    The single primitive that satisfies Correction #13 requirement 1."""
     label = (viz_name or "viz").replace("_", " ").upper()
     size = FONT_LABEL
     label_font = _load_font(size)
-    while size > 7 and _measure_text(draw, label, label_font, size) > 104:
+    while size > 7 and _measure_text(draw, label, label_font, size) > max_w:
         size -= 1
         label_font = _load_font(size)
-    draw.text((PREVIEW_W / 2, 68), label, fill=textdim_rgb,
+    draw.text((PREVIEW_W / 2, y), label, fill=color,
               font=label_font, anchor="mm")
+
+
+def _gauge_v1_classic(draw, theme, bg_rgb, primary_rgb, text_rgb, textdim_rgb, viz_name):
+    """V1 — Classic 240° arc with hash-picked hero centered."""
+    cx, cy, r = 58, 38, 26
+    bg_arc = with_alpha(primary_rgb, 0.15, bg_rgb)
+    draw.arc((cx - r, cy - r, cx + r, cy + r), start=150, end=30,
+             fill=bg_arc, width=5)
+    pct = 0.30 + (_seed(viz_name) % 70) / 100.0
+    sweep = int(round(240 * pct))
+    draw.arc((cx - r, cy - r, cx + r, cy + r),
+             start=150, end=(150 + sweep) % 360,
+             fill=primary_rgb, width=5)
+    hero = _pick_hero(viz_name)
+    draw.text((cx, cy + 2), hero, fill=text_rgb,
+              font=_load_font(int(round(FONT_HERO * 1.05))), anchor="mm")
+
+
+def _gauge_v2_hero_above(draw, theme, bg_rgb, primary_rgb, text_rgb, textdim_rgb, viz_name):
+    """V2 — Hero ABOVE the arc + arc + small "/ TARGET" subtitle inside."""
+    cx, cy, r = 58, 50, 22
+    # Hero number above the arc
+    hero = _pick_hero(viz_name)
+    draw.text((cx, 16), hero, fill=primary_rgb,
+              font=_load_font(int(round(FONT_HERO * 0.95))), anchor="mm")
+    # Faint background arc
+    bg_arc = with_alpha(primary_rgb, 0.15, bg_rgb)
+    draw.arc((cx - r, cy - r, cx + r, cy + r), start=150, end=30,
+             fill=bg_arc, width=4)
+    pct = 0.30 + (_seed(viz_name) % 70) / 100.0
+    sweep = int(round(240 * pct))
+    draw.arc((cx - r, cy - r, cx + r, cy + r),
+             start=150, end=(150 + sweep) % 360,
+             fill=primary_rgb, width=4)
+    # Tiny "of 100" style subtitle inside the arc bottom
+    draw.text((cx, cy + 6), "/ 100", fill=textdim_rgb,
+              font=_load_font(FONT_TICK), anchor="mm")
+
+
+def _gauge_v3_marker(draw, theme, bg_rgb, primary_rgb, text_rgb, textdim_rgb, viz_name):
+    """V3 — Classic arc + triangular marker pip at the fill endpoint."""
+    cx, cy, r = 58, 38, 26
+    bg_arc = with_alpha(primary_rgb, 0.15, bg_rgb)
+    draw.arc((cx - r, cy - r, cx + r, cy + r), start=150, end=30,
+             fill=bg_arc, width=5)
+    pct = 0.30 + (_seed(viz_name) % 70) / 100.0
+    sweep_deg = 240 * pct
+    end_deg = 150 + sweep_deg
+    draw.arc((cx - r, cy - r, cx + r, cy + r),
+             start=150, end=end_deg % 360,
+             fill=primary_rgb, width=5)
+    # Triangular marker at the fill endpoint, pointing outward
+    end_rad = math.radians(end_deg)
+    tip_x = cx + math.cos(end_rad) * (r + 5)
+    tip_y = cy + math.sin(end_rad) * (r + 5)
+    perp = end_rad + math.pi / 2
+    base_w = 3
+    b1x = cx + math.cos(end_rad) * (r - 1) + math.cos(perp) * base_w
+    b1y = cy + math.sin(end_rad) * (r - 1) + math.sin(perp) * base_w
+    b2x = cx + math.cos(end_rad) * (r - 1) - math.cos(perp) * base_w
+    b2y = cy + math.sin(end_rad) * (r - 1) - math.sin(perp) * base_w
+    draw.polygon([(b1x, b1y), (b2x, b2y), (tip_x, tip_y)], fill=primary_rgb)
+    # Hero in center
+    hero = _pick_hero(viz_name)
+    draw.text((cx, cy + 2), hero, fill=text_rgb,
+              font=_load_font(int(round(FONT_HERO * 1.05))), anchor="mm")
+
+
+_GAUGE_VARIANTS = [_gauge_v1_classic, _gauge_v2_hero_above, _gauge_v3_marker]
+
+
+def drawGauge(theme: dict, output_path: str, viz_name: str = "",
+              detection_hint: Optional[str] = None) -> None:
+    """240-deg arc gauge — 3 composition variants (classic / hero-above /
+    marker), dispatched by hash(viz_name) % 3. Primary color rotates through
+    theme.series so same-type vizs render in different palette colors. Hero
+    text picked from HERO_POOL; viz_name as label band.
+
+    Correction #13 compliant: viz_name drives variant choice, primary color,
+    fill percentage, hero text, AND label. Five stacked differentiators."""
+    img, draw, bg_rgb, _accent, text_rgb = _new_img(theme)
+    textdim_rgb = hex_to_rgb(theme.get("textDim", DEFAULT_THEME["textDim"]))
+    primary_rgb = _pick_primary(theme, viz_name)
+    variant_idx = _pick_variant(viz_name, len(_GAUGE_VARIANTS))
+    _GAUGE_VARIANTS[variant_idx](draw, theme, bg_rgb, primary_rgb, text_rgb, textdim_rgb, viz_name)
+    _label_band(draw, viz_name, 68, textdim_rgb)
     _save(img, output_path)
 
 
@@ -476,103 +644,144 @@ def drawHeatmap(theme: dict, output_path: str, viz_name: str = "",
     _save(img, output_path)
 
 
-def drawKpi(theme: dict, output_path: str, viz_name: str = "",
-            detection_hint: Optional[str] = None) -> None:
-    """Large hero number + viz_name as label band + hash-seeded mini sparkline.
-
-    The label band shows the viz_name (auto-sized to fit) rather than a hardcoded
-    placeholder — this is the bulletproof differentiator for same-type KPI vizs,
-    matching the drawGeneric strategy. Hero text and tiny sparkline are
-    hash-derived so the visual identity stays distinct even before the user
-    reads the label."""
-    img, draw, bg_rgb, accent_rgb, _tx = _new_img(theme)
-    textdim_rgb = hex_to_rgb(theme.get("textDim", DEFAULT_THEME["textDim"]))
-
-    # Expanded hero pool — 12 candidates covering integers, percents, abbreviated
-    # large numbers, decimals, currency-like values. Wider variety = less chance
-    # of two same-type KPIs landing on identical hero text.
-    candidates = [
-        "42", "87", "128", "1.2K", "4.7K", "99%",
-        "73%", "$2.4M", "0.92", "12.5", "3.14", "62"
-    ]
-    seed = abs(hash(viz_name or "kpi")) & 0xFFFFFFFF
-    hero = candidates[seed % len(candidates)]
-    hero_font = _load_font(int(round(FONT_HERO * 1.4)))
-    draw.text((PREVIEW_W / 2, 26), hero, fill=accent_rgb, font=hero_font, anchor="mm")
-
-    # Hash-seeded mini sparkline under the hero number — 10 points, 8px tall,
-    # spans ~70% of the width. Suggests "this is a trending KPI" without
-    # overwhelming the big-number hierarchy.
+def _kpi_v1_sparkline(draw, theme, bg_rgb, primary_rgb, textdim_rgb, viz_name):
+    """V1 — Hero + hash-seeded mini sparkline (the current default)."""
+    hero = _pick_hero(viz_name)
+    draw.text((PREVIEW_W / 2, 26), hero, fill=primary_rgb,
+              font=_load_font(int(round(FONT_HERO * 1.4))), anchor="mm")
     spark_w, spark_h = 80, 8
     spark_x = (PREVIEW_W - spark_w) // 2
     spark_y = 46
+    seed = _seed(viz_name)
     points = []
     for i in range(10):
-        seed = (seed * 1103515245 + 12345) & 0x7FFFFFFF
+        seed = _lcg(seed)
         y_off = seed % spark_h
         x_pt = spark_x + int(round(i * spark_w / 9))
         points.append((x_pt, spark_y + spark_h - y_off))
-    sparkline_rgb = with_alpha(accent_rgb, 0.55, bg_rgb)
     if len(points) >= 2:
-        draw.line(points, fill=sparkline_rgb, width=1)
+        draw.line(points, fill=with_alpha(primary_rgb, 0.55, bg_rgb), width=1)
 
-    # Label band: viz_name as text, auto-shrunk to fit. Replace underscores with
-    # spaces, uppercase, and auto-size down from FONT_LABEL until it fits ~100px.
-    label = (viz_name or "viz").replace("_", " ").upper()
-    size = FONT_LABEL
-    label_font = _load_font(size)
-    while size > 7 and _measure_text(draw, label, label_font, size) > 104:
-        size -= 1
-        label_font = _load_font(size)
-    draw.text((PREVIEW_W / 2, 64), label, fill=textdim_rgb,
-              font=label_font, anchor="mm")
+
+def _kpi_v2_hero_only(draw, theme, bg_rgb, primary_rgb, textdim_rgb, viz_name):
+    """V2 — Minimalist: hero only, larger, no sparkline."""
+    hero = _pick_hero(viz_name)
+    draw.text((PREVIEW_W / 2, 34), hero, fill=primary_rgb,
+              font=_load_font(int(round(FONT_HERO * 1.7))), anchor="mm")
+
+
+def _kpi_v3_hero_delta(draw, theme, bg_rgb, primary_rgb, textdim_rgb, viz_name):
+    """V3 — Hero + small delta-pill (▲ N% or ▼ N%) below."""
+    hero = _pick_hero(viz_name)
+    draw.text((PREVIEW_W / 2, 28), hero, fill=primary_rgb,
+              font=_load_font(int(round(FONT_HERO * 1.3))), anchor="mm")
+    sign, pct, direction = _pick_delta(viz_name)
+    # Up = primary color (positive). Down = textDim (neutral; avoid red/green
+    # encoding to remain colorblind-friendly and palette-respectful).
+    delta_color = primary_rgb if direction == "up" else textdim_rgb
+    delta_text = sign + " " + str(pct) + "%"
+    draw.text((PREVIEW_W / 2, 50), delta_text, fill=delta_color,
+              font=_load_font(FONT_LABEL + 1), anchor="mm")
+
+
+_KPI_VARIANTS = [_kpi_v1_sparkline, _kpi_v2_hero_only, _kpi_v3_hero_delta]
+
+
+def drawKpi(theme: dict, output_path: str, viz_name: str = "",
+            detection_hint: Optional[str] = None) -> None:
+    """Large hero number + viz_name label — 3 composition variants (sparkline /
+    minimalist / delta-pill), dispatched by hash(viz_name) % 3. Primary color
+    rotates through theme.series so same-type KPIs render in different palette
+    colors. Hero text picked from HERO_POOL.
+
+    Correction #13 compliant: viz_name drives variant choice, primary color,
+    hero text, sparkline shape (V1), delta direction (V3), AND label. Six
+    stacked differentiators."""
+    img, draw, bg_rgb, _accent, _text = _new_img(theme)
+    textdim_rgb = hex_to_rgb(theme.get("textDim", DEFAULT_THEME["textDim"]))
+    primary_rgb = _pick_primary(theme, viz_name)
+    variant_idx = _pick_variant(viz_name, len(_KPI_VARIANTS))
+    _KPI_VARIANTS[variant_idx](draw, theme, bg_rgb, primary_rgb, textdim_rgb, viz_name)
+    _label_band(draw, viz_name, 64, textdim_rgb)
     _save(img, output_path)
 
 
-def drawRing(theme: dict, output_path: str, viz_name: str = "",
-             detection_hint: Optional[str] = None) -> None:
-    """Donut at hash-derived % fill — faint full ring, accent sweep clockwise from
-    top to hash%, dark inner hole, percentage text in the hole, viz_name label
-    band at bottom.
-
-    Follows Correction #13: viz_name drives fill percentage + label. Two rings
-    with different names cannot render identically."""
-    img, draw, bg_rgb, accent_rgb, text_rgb = _new_img(theme)
-    textdim_rgb = hex_to_rgb(theme.get("textDim", DEFAULT_THEME["textDim"]))
-    cx, cy = 58, 36
-    r_out, r_in = 24, 14
-
-    # Hash-derived fill: 35%..95%
-    seed = abs(hash(viz_name or "ring")) & 0xFFFFFFFF
-    pct = 0.35 + (seed % 60) / 100.0
-
-    # Faint background ring (full circle)
-    bg_ring = with_alpha(accent_rgb, 0.18, bg_rgb)
+def _ring_v1_donut(draw, theme, bg_rgb, primary_rgb, text_rgb, textdim_rgb, viz_name):
+    """V1 — Classic donut with % in hole (current default)."""
+    cx, cy, r_out, r_in = 58, 36, 24, 14
+    pct = 0.35 + (_seed(viz_name) % 60) / 100.0
     draw.pieslice((cx - r_out, cy - r_out, cx + r_out, cy + r_out),
-                  start=0, end=360, fill=bg_ring)
-
-    # Accent sweep clockwise from top (270°)
+                  start=0, end=360, fill=with_alpha(primary_rgb, 0.18, bg_rgb))
     sweep = pct * 360
     draw.pieslice((cx - r_out, cy - r_out, cx + r_out, cy + r_out),
-                  start=270, end=(270 + sweep) % 360, fill=accent_rgb)
-
-    # Hole (dark inner disc)
+                  start=270, end=(270 + sweep) % 360, fill=primary_rgb)
     draw.ellipse((cx - r_in, cy - r_in, cx + r_in, cy + r_in), fill=bg_rgb)
-
-    # Percentage text in the hole
     pct_text = str(int(round(pct * 100))) + "%"
     draw.text((cx, cy), pct_text, fill=text_rgb,
               font=_load_font(FONT_LABEL + 2), anchor="mm")
 
-    # viz_name label band
-    label = (viz_name or "viz").replace("_", " ").upper()
-    size = FONT_LABEL
-    label_font = _load_font(size)
-    while size > 7 and _measure_text(draw, label, label_font, size) > 104:
-        size -= 1
-        label_font = _load_font(size)
-    draw.text((PREVIEW_W / 2, 68), label, fill=textdim_rgb,
-              font=label_font, anchor="mm")
+
+def _ring_v2_bead(draw, theme, bg_rgb, primary_rgb, text_rgb, textdim_rgb, viz_name):
+    """V2 — Thin ring outline + accent arc to fill + white bead at endpoint."""
+    cx, cy, r = 58, 36, 24
+    pct = 0.15 + (_seed(viz_name) % 80) / 100.0
+    draw.arc((cx - r, cy - r, cx + r, cy + r), start=0, end=360,
+             fill=with_alpha(primary_rgb, 0.20, bg_rgb), width=2)
+    sweep = pct * 360
+    end_deg = (270 + sweep) % 360
+    draw.arc((cx - r, cy - r, cx + r, cy + r),
+             start=270, end=end_deg, fill=primary_rgb, width=4)
+    bead_rad = math.radians(end_deg)
+    bx = cx + math.cos(bead_rad) * r
+    by = cy + math.sin(bead_rad) * r
+    draw.ellipse((bx - 4, by - 4, bx + 4, by + 4), fill=text_rgb)
+    draw.ellipse((bx - 2, by - 2, bx + 2, by + 2), fill=primary_rgb)
+    hero = _pick_hero(viz_name)
+    draw.text((cx, cy), hero, fill=text_rgb,
+              font=_load_font(FONT_LABEL + 2), anchor="mm")
+
+
+def _ring_v3_nested(draw, theme, bg_rgb, primary_rgb, text_rgb, textdim_rgb, viz_name):
+    """V3 — Two concentric thin rings, outer + inner at independent hash%."""
+    cx, cy = 58, 36
+    series = theme.get("series") or []
+    pool = [c for c in series if isinstance(c, str) and HEX_COLOR_RE.match(c)]
+    secondary_rgb = (hex_to_rgb(pool[_seed(viz_name, _SALT_SECOND) % len(pool)])
+                     if pool else primary_rgb)
+    pct_outer = 0.30 + (_seed(viz_name, salt=3) % 70) / 100.0
+    pct_inner = 0.20 + (_seed(viz_name, salt=11) % 75) / 100.0
+    # Outer
+    r_out = 24
+    draw.arc((cx - r_out, cy - r_out, cx + r_out, cy + r_out),
+             start=0, end=360, fill=with_alpha(primary_rgb, 0.20, bg_rgb), width=3)
+    sweep_out = pct_outer * 360
+    draw.arc((cx - r_out, cy - r_out, cx + r_out, cy + r_out),
+             start=270, end=(270 + sweep_out) % 360, fill=primary_rgb, width=3)
+    # Inner
+    r_in = 16
+    draw.arc((cx - r_in, cy - r_in, cx + r_in, cy + r_in),
+             start=0, end=360, fill=with_alpha(secondary_rgb, 0.20, bg_rgb), width=3)
+    sweep_in = pct_inner * 360
+    draw.arc((cx - r_in, cy - r_in, cx + r_in, cy + r_in),
+             start=270, end=(270 + sweep_in) % 360, fill=secondary_rgb, width=3)
+
+
+_RING_VARIANTS = [_ring_v1_donut, _ring_v2_bead, _ring_v3_nested]
+
+
+def drawRing(theme: dict, output_path: str, viz_name: str = "",
+             detection_hint: Optional[str] = None) -> None:
+    """Donut — 3 composition variants (classic / bead-marker / nested), dispatched
+    by hash(viz_name) % 3. Primary color rotates through theme.series.
+
+    Correction #13 compliant: viz_name drives variant choice, primary color,
+    fill percentage(s), hero text (V2), AND label band."""
+    img, draw, bg_rgb, _accent, text_rgb = _new_img(theme)
+    textdim_rgb = hex_to_rgb(theme.get("textDim", DEFAULT_THEME["textDim"]))
+    primary_rgb = _pick_primary(theme, viz_name)
+    variant_idx = _pick_variant(viz_name, len(_RING_VARIANTS))
+    _RING_VARIANTS[variant_idx](draw, theme, bg_rgb, primary_rgb, text_rgb, textdim_rgb, viz_name)
+    _label_band(draw, viz_name, 68, textdim_rgb)
     _save(img, output_path)
 
 
@@ -626,6 +835,179 @@ def drawGeneric(theme: dict, output_path: str, viz_name: str = "",
     _save(img, output_path)
 
 
+# ---- Section 7c: Composite layout renderers (Correction #14, v6.0.6) ----
+#
+# These render *compositions* (multi-element fingerprints) rather than single
+# data primitives. Routed via @preview-layout annotation, NOT @viz-type.
+# Each maps to a common real-viz composition observed in production packs.
+#
+# Naming: "<primitive>-<modifier>". kpi-ratio = KPI showing a ratio (X/Y).
+# heatmap-with-marks = heatmap + highlighted cells + corner marker.
+# composite-stack = subject ID + multiple stacked mini-charts.
+
+def _sparkline_helper(draw, x, y, w, h, color, seed):
+    """Draw a 10-point hash-seeded sparkline; helper used by composite renderers."""
+    pts = []
+    for i in range(10):
+        seed = _lcg(seed)
+        y_off = seed % h
+        pts.append((x + int(round(i * w / 9)), y + h - y_off))
+    if len(pts) >= 2:
+        draw.line(pts, fill=color, width=1)
+
+
+def drawKpiRatioFooter(theme: dict, output_path: str, viz_name: str = "",
+                       detection_hint: Optional[str] = None) -> None:
+    """Composition: big ratio (X/Y) top-left + delta-pill + sparkline top-right
+    + 2-stat footer row. Modeled on the WWF active_collars panel.
+
+    Hash-derived ratio + delta sign/percent + sparkline + footer stats.
+    Correction #13 compliant — viz_name drives ratio choice, primary color
+    (rotates through series), and label band."""
+    img, draw, bg_rgb, accent_rgb, text_rgb = _new_img(theme)
+    textdim_rgb = hex_to_rgb(theme.get("textDim", DEFAULT_THEME["textDim"]))
+    primary_rgb = _pick_primary(theme, viz_name)
+
+    seed = _seed(viz_name)
+    nums = [("142", "168"), ("87", "94"), ("231", "256"), ("4.7", "5.0"),
+            ("62", "75"), ("18", "24"), ("3.2K", "4.0K"), ("89", "100")]
+    num, den = nums[seed % len(nums)]
+
+    # Big numerator top-left
+    num_font = _load_font(int(round(FONT_HERO * 1.4)))
+    draw.text((8, 16), num, fill=text_rgb, font=num_font, anchor="lm")
+    num_w = _measure_text(draw, num, num_font, int(round(FONT_HERO * 1.4)))
+    draw.text((8 + num_w + 4, 22), "/ " + den, fill=textdim_rgb,
+              font=_load_font(FONT_LABEL), anchor="lm")
+
+    # Delta indicator below
+    seed = _lcg(seed)
+    pct = 2 + (seed % 20)
+    sign = "▼" if (seed >> 4) & 1 else "▲"
+    draw.text((8, 36), sign + " " + str(pct) + "%", fill=primary_rgb,
+              font=_load_font(FONT_LABEL), anchor="lm")
+
+    # Mini sparkline top-right
+    _sparkline_helper(draw, PREVIEW_W - 46, 18, 40, 10,
+                      with_alpha(primary_rgb, 0.6, bg_rgb), _lcg(seed))
+
+    # Footer divider + 2-stat row
+    draw.line((6, 48, PREVIEW_W - 6, 48),
+              fill=with_alpha(textdim_rgb, 0.3, bg_rgb), width=1)
+    # Footer stats hash-picked from small candidate pools
+    seed = _lcg(seed)
+    foot_left_pool = ["57 MIN", "12 SEC", "1.2 H", "47 MIN", "3.4 H"]
+    foot_right_pool = ["84.5%", "92.1%", "78.3%", "99.0%", "61.7%"]
+    draw.text((8, 56), foot_left_pool[seed % len(foot_left_pool)],
+              fill=textdim_rgb, font=_load_font(FONT_TICK), anchor="lm")
+    draw.text((PREVIEW_W - 8, 56), foot_right_pool[seed % len(foot_right_pool)],
+              fill=textdim_rgb, font=_load_font(FONT_TICK), anchor="rm")
+
+    _label_band(draw, viz_name, 68, textdim_rgb)
+    _save(img, output_path)
+
+
+def drawHeatmapWithMarks(theme: dict, output_path: str, viz_name: str = "",
+                         detection_hint: Optional[str] = None) -> None:
+    """Composition: heatmap grid + 2 hot-bordered cells + corner compass triangle.
+    Modeled on the WWF species_grid panel.
+
+    Same per-cell hash-seeded intensities as drawHeatmap, but adds the
+    accent-bordered "hot zone" marks and the corner direction indicator that
+    real spatial/grid vizs typically have."""
+    img, draw, bg_rgb, accent_rgb, text_rgb = _new_img(theme)
+    textdim_rgb = hex_to_rgb(theme.get("textDim", DEFAULT_THEME["textDim"]))
+    primary_rgb = _pick_primary(theme, viz_name)
+
+    cols, rows = 8, 4
+    margin_x, margin_y, gap = 6, 10, 1
+    cell_w = (PREVIEW_W - 2 * margin_x - (cols - 1) * gap) // cols
+    cell_h = ((PREVIEW_H - 18) - 2 * margin_y - (rows - 1) * gap) // rows
+
+    seed = _seed(viz_name)
+    intensities = []
+    for ry in range(rows):
+        for cx in range(cols):
+            seed = _lcg(seed)
+            alpha = [0.0, 0.10, 0.20, 0.35, 0.55, 0.80][seed % 6]
+            intensities.append((ry, cx, alpha))
+            x0 = margin_x + cx * (cell_w + gap)
+            y0 = margin_y + ry * (cell_h + gap)
+            draw.rectangle((x0, y0, x0 + cell_w, y0 + cell_h),
+                           fill=with_alpha(primary_rgb, max(alpha, 0.06), bg_rgb))
+
+    # Top-2 cells get accent borders (hot zones)
+    intensities.sort(key=lambda t: -t[2])
+    for ry, cx, _ in intensities[:2]:
+        x0 = margin_x + cx * (cell_w + gap)
+        y0 = margin_y + ry * (cell_h + gap)
+        draw.rectangle((x0, y0, x0 + cell_w, y0 + cell_h),
+                       outline=accent_rgb, width=1)
+
+    # Corner compass triangle (top-right)
+    cr_x, cr_y = PREVIEW_W - 8, 8
+    draw.polygon([(cr_x, cr_y - 3), (cr_x - 2, cr_y + 2), (cr_x + 2, cr_y + 2)],
+                 fill=accent_rgb)
+
+    _label_band(draw, viz_name, 68, textdim_rgb)
+    _save(img, output_path)
+
+
+def drawCompositeStack(theme: dict, output_path: str, viz_name: str = "",
+                       detection_hint: Optional[str] = None) -> None:
+    """Composition: big subject identifier left + 3 stacked mini-rows on right
+    (sparkline / categorical bars / sparkline with spike marker).
+    Modeled on the WWF mc01_composite panel.
+
+    Subject ID is the viz_name's first underscore segment, uppercased. Categorical
+    bars rotate through series colors, with occasional accent bursts (alarmed-event
+    signal). Bottom row line has a hash-positioned spike + accent marker."""
+    img, draw, bg_rgb, accent_rgb, text_rgb = _new_img(theme)
+    textdim_rgb = hex_to_rgb(theme.get("textDim", DEFAULT_THEME["textDim"]))
+    series = theme.get("series") or [theme.get("accent", DEFAULT_THEME["accent"])]
+    s0 = hex_to_rgb(series[0])
+    s1 = hex_to_rgb(series[1]) if len(series) > 1 else s0
+    s2 = hex_to_rgb(series[2]) if len(series) > 2 else s0
+    s3 = hex_to_rgb(series[3]) if len(series) > 3 else s1
+
+    subject = (viz_name or "viz").split("_")[0].upper()
+    draw.text((8, 14), subject, fill=text_rgb,
+              font=_load_font(int(round(FONT_HERO * 1.0))), anchor="lm")
+
+    seed = _seed(viz_name)
+    # Row 1: mini sparkline
+    _sparkline_helper(draw, PREVIEW_W - 76, 26, 70, 6, s0, seed)
+
+    # Row 2: categorical bars (24 thin, palette rotation, occasional accent burst)
+    r2_y, r2_w, r2_x, r2_h = 40, 100, 6, 6
+    n_bars = 24
+    bar_w = (r2_w - (n_bars - 1)) // n_bars
+    palette = [s0, s3, s1, s2]
+    for i in range(n_bars):
+        seed = _lcg(seed)
+        color = palette[seed % len(palette)]
+        if (seed % 16) == 0:
+            color = accent_rgb
+        bx = r2_x + i * (bar_w + 1)
+        draw.rectangle((bx, r2_y, bx + bar_w, r2_y + r2_h), fill=color)
+
+    # Row 3: line with spike + accent marker
+    r3_y, r3_w, r3_x, r3_h = 52, 100, 6, 8
+    spike_pos = 4 + (_seed(viz_name, salt=7) % 6)
+    pts = []
+    for i in range(12):
+        seed = _lcg(seed)
+        y_off = (r3_h - 1) if i == spike_pos else r3_h // 2 + ((seed % 3) - 1)
+        pts.append((r3_x + int(round(i * r3_w / 11)), r3_y + r3_h - y_off))
+    if len(pts) >= 2:
+        draw.line(pts, fill=text_rgb, width=1)
+    sx, sy = pts[spike_pos]
+    draw.ellipse((sx - 2, sy - 2, sx + 2, sy + 2), fill=accent_rgb)
+
+    _label_band(draw, viz_name, 68, textdim_rgb)
+    _save(img, output_path)
+
+
 # ---- Section 8: Dispatch function ----
 
 DISPATCH = {
@@ -636,13 +1018,39 @@ DISPATCH = {
     "timeline": drawTimeline,
 }
 
+# Tier 1a layout dispatch — compositional renderers, picked via @preview-layout.
+# Distinct from DISPATCH because layouts describe full compositions, not primitives.
+# Synonyms (kpi-ratio / kpi-ratio-footer / ratio-footer) all map to the same
+# renderer so the annotation can be naturally worded.
+LAYOUT_DISPATCH = {
+    "kpi-ratio":          drawKpiRatioFooter,
+    "kpi-ratio-footer":   drawKpiRatioFooter,
+    "ratio-footer":       drawKpiRatioFooter,
+    "heatmap-with-marks": drawHeatmapWithMarks,
+    "grid-with-marks":    drawHeatmapWithMarks,
+    "heatmap-hotzones":   drawHeatmapWithMarks,
+    "composite-stack":    drawCompositeStack,
+    "subject-stack":      drawCompositeStack,
+    "telemetry-stack":    drawCompositeStack,
+}
+
 
 def dispatch(tier: int, type_name: str, theme: dict, output_path: str,
              viz_name: str, detection_hint: Optional[str]) -> None:
-    """Route to the appropriate draw function based on detection result."""
+    """Route to the appropriate draw function based on detection result.
+
+    Detection-hint 'layout' (set by Tier 1a) routes to LAYOUT_DISPATCH first.
+    Falls back to DISPATCH (primitive renderers) if the layout name is unknown
+    — keeps a misspelled @preview-layout from breaking the build."""
     if tier == 3:
         drawGeneric(theme, output_path, viz_name, detection_hint)
         return
+    if detection_hint == "layout":
+        renderer = LAYOUT_DISPATCH.get(type_name)
+        if renderer is not None:
+            renderer(theme, output_path, viz_name, detection_hint)
+            return
+        # Unknown layout name — fall through to primitive dispatch
     DISPATCH.get(type_name, drawGeneric)(theme, output_path, viz_name, detection_hint)
 
 
