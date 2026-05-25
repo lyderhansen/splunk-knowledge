@@ -53,6 +53,8 @@ function isNumericCol(rows, colIdx, fieldName) {
 
 ## Three-Tier Field Resolver Pattern
 
+> **Classic API note:** `data.colIdx` is built in `formatData()` by `SplunkVisualizationBase`. For Extension API vizs, replace `data.colIdx[fieldName]` with `data.fields.findIndex(function(f) { return f.name === fieldName; })` — see viz-blueprints.md Extension API Data Access section. The three-tier pattern below applies to Classic vizs; adapt the column-index lookup for Extension API.
+
 Apply this in `updateView` after `opt()` and `data.fields` are available.
 
 **Tier 1 — Formatter override:** User explicitly set a field name in the formatter. Use it.

@@ -386,7 +386,7 @@ value wrapped in `hexFromSplunk()`. Splunk delivers color picker values as decim
 (e.g., `30646`), not hex strings. Using the raw integer directly as `ctx.fillStyle` renders
 black or an incorrect color.
 
-**Root cause:** broken-rules.md B22 — "Color picker value ignored (reads as integer)."
+**Root cause:** `vp-debug/references/broken-rules.md` B22 — "Color picker value ignored (reads as integer)."
 
 ### Wrong pattern
 

@@ -213,11 +213,11 @@ export = system
     await writeFile(join(staticDir, 'appIcon.png'), iconBuf);
     console.log(`[package] Wrote static/appIcon.png (36x36, ${iconBuf.length} bytes)`);
 
-    // 5. Generate preview.png per viz (D-09: delegate to generate_previews.py for Pillow rendering)
+    // 5. Generate preview.png per viz (Phase 41 D-02: delegate to generate_previews.py for Pillow rendering)
     // The plugin's vp-create/scripts/generate_previews.py owns preview.png generation.
     // It produces Pillow-rendered miniatures using brand colors from shared/theme.js and bundled Inter font.
     // If python3 or Pillow are unavailable, fall back to buildSolidPng (flat-color rectangle per viz).
-    const previewScript = '${PREVIEW_SCRIPT_PATH}'; // Templated to absolute path of generate_previews.py
+    const previewScript = '/absolute/path/to/vp-create/scripts/generate_previews.py'; // FILL: substitute absolute path at scaffolding time
     const previewStageDir = STAGE_DIR;
     try {
         execSync(`python3 "${previewScript}" "${previewStageDir}"`, { stdio: 'inherit' });
