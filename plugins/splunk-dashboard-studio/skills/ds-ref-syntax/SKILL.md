@@ -306,6 +306,8 @@ the first item in `structure`.
 
 ### Grid (row-oriented)
 
+> **Note:** This flat format is shown for reference only. Per `ds-int-tabs`, ALL Dashboard Studio layouts (including grid) must be wrapped in `tabs` + `layoutDefinitions`. The flat format is rejected by the current schema validator. Place this `"type": "grid"` block inside `layoutDefinitions["layout_key"]`, not directly under `layout`.
+
 ```json
 "layout": {
   "type": "grid",

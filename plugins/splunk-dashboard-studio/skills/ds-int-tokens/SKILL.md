@@ -29,8 +29,7 @@ a supported top-level key for derived/computed tokens.
 2. **Drilldown setToken** — `eventHandlers[].type: "drilldown.setToken"`
    captures click context (`row.<field>.value`, `click.value`,
    `click.value2`) into a named token.
-3. **URL parameters** — `drilldown.linkToDashboard` passes `form.<name>`
-   URL params that populate matching input tokens on load.
+3. **URL parameters** — `drilldown.linkToDashboard` passes destination token names as URL parameters that populate matching input tokens on the receiving dashboard on load. **No `form.` prefix in Dashboard Studio token names** — the `form.` prefix is Classic/Simple XML syntax, not used in DS token names. See `ds-int-drilldowns` for the exact `tokens` array shape.
 4. **Defaults** — `defaults.tokens.default` initialises tokens to
    stable values before first interaction.
 5. **Eval expressions** — `expressions.eval` computes derived values from
