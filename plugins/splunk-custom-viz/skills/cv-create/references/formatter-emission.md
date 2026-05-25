@@ -75,6 +75,24 @@ Minimum 10 controls per viz, target 14-18 for domain-specific vizs.
 
 Palette source: use `global.brand` + `global.palette_dark.series` from DESIGN-LOCK.md.
 
+### Color picker contract — emit + consume MUST come together
+
+A color picker in `formatter.html` is one half of a contract. The other half is reading it in `visualization_source.js` via `_resolveTheme(t, opt)`. **Emitting one without the other is a shipping bug — the user clicks the picker, the value persists in dashboard config, the viz doesn't change a pixel.**
+
+This silent failure has shipped multiple times (Cisco pack, then WWF Field Ops 2026-05-25). It is invisible to validation unless you grep for both halves. See `canvas-port-rules.md` Rule 7 for the full consume-side spec.
+
+Side-by-side example for one picker:
+
+| Half | File | Code |
+|---|---|---|
+| Emit | `formatter.html` | `<splunk-color-picker name="{{VIZ_NAMESPACE}}.accentColor" type="custom" value="#F76900">` |
+| Consume | `visualization_source.js` `_resolveTheme(t, opt)` | `c.accent = hexFromSplunk(opt("accentColor", t.accent), t.accent);` |
+| Apply | top of `_renderDark` / `_renderLight` | `t = this._resolveTheme(t, opt);` |
+
+If you emit a picker without writing all three lines, do not move to the next viz. `validate.sh` will FAIL the build.
+
+The rule applies to every color picker — `accentColor`, series colors, background, text, threshold band colors, anything. No exceptions.
+
 ### Theme selector (REQUIRED default "auto")
 
 ```html

@@ -159,11 +159,23 @@ Add to `defaults`:
 "defaults": {
   "tokens": {
     "default": {
-      "selected_driver": "*"
+      "selected_driver": { "value": "*" }
     }
   }
 }
 ```
+
+### CRITICAL — token default MUST be an object, not a bare string
+
+Dashboard Studio v2's schema requires every entry in `defaults.tokens.default` to be a JSON object with at least a `value` field. The bare-string form (`"selected_driver": "*"`) is rejected with a schema error visible only in the browser console:
+
+```
+/defaults/tokens/default/selected_driver: must be object
+```
+
+Symptoms in production: dashboard either fails to load entirely, shows a Splunk fallback error, or silently clamps tokens depending on Splunk version. Users report "the drilldowns don't seem to work" with no clear failure mode.
+
+The bare-string form has shipped in multiple test packs (WWF Field Ops, 2026-05-25). `validate.sh` now FAILS any dashboard XML containing `"selected_*":"*"` or similar bare-string token defaults. Always use the object form: `{ "value": "*" }`.
 
 ## Tabbed layout (if `dashboard.tabs` is non-empty)
 

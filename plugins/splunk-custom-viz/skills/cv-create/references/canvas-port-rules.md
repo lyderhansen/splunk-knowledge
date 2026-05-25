@@ -70,11 +70,19 @@ Example comment:
     // top highlight line. Acceptable trade-off because the panel is small.
 ```
 
-## Rule 4: Animations declared in the spec MUST be implemented
+## Rule 4: Animations declared in the spec MUST be implemented (and MUST NOT crash Splunk)
 
 If `visual_spec.effects.<animation>` exists in DESIGN-LOCK.md, you MUST implement it. Animations are not optional polish.
 
-Implementation pattern for a `requestAnimationFrame` loop:
+### CRITICAL — never call `invalidateUpdateView()` inside `requestAnimationFrame`
+
+`SplunkVisualizationBase.invalidateUpdateView()` calls `updateView(this._data, this._config)` **synchronously** in several Splunk versions. The next `updateView` call re-schedules another RAF, which re-enters during certain framework events (drilldown click during pulse, reflow during alert pulse, theme switch during pulse) → **"Maximum call stack size exceeded"**. The Patrol Coverage panel in `wwf_field_ops_viz` (2026-05-25) shipped with exactly this pattern and crashed on every dashboard reload.
+
+DO NOT EMIT THIS PATTERN. Use the safe pattern below.
+
+### Safe animation pattern — cached config + direct re-call
+
+The boilerplate `updateView` caches `data` and `config` on `this._lastGoodData` / `this._lastConfig`. The RAF callback re-invokes `this.updateView(this._lastGoodData, this._lastConfig)` directly — bypassing Splunk's invalidate pipeline so there is no synchronous re-entry.
 
 ```javascript
     _renderDark: function(ctx, data, t, w, h, opt) {
@@ -82,24 +90,38 @@ Implementation pattern for a `requestAnimationFrame` loop:
 
         // ... static rendering ...
 
-        if (!this._breathAnimating) {
-            this._breathAnimating = true;
-            this._breathStart = performance.now();
-            (function loop(now) {
-                var elapsed = (now - self._breathStart) % 3000;  // 3000ms cycle from spec
-                var phase = Math.sin((elapsed / 3000) * Math.PI * 2);
-                var blur = 16 + (28 - 16) * (0.5 + phase * 0.5);
-                self._currentBlur = blur;
-                self.invalidateUpdateView();
-                self._animationFrameId = requestAnimationFrame(loop);
-            })(performance.now());
+        // Continuous animation (breath, pulse, ring expand, etc.)
+        if (opt("showBreathe", "true") !== "false") {
+            if (!this._animationFrameId) {
+                this._animationFrameId = requestAnimationFrame(function() {
+                    self._animationFrameId = null;
+                    // Re-render with cached args. NEVER use invalidateUpdateView() —
+                    // it can re-enter synchronously and blow the stack.
+                    if (self._lastGoodData && self._lastConfig) {
+                        self.updateView(self._lastGoodData, self._lastConfig);
+                    }
+                });
+            }
         }
     }
 ```
 
-`destroy()` in the boilerplate already clears `_animationFrameId` and `_pulseIntervalId`.
+Compute the animation phase inside `_renderDark` using `Date.now()` or `performance.now()` modulo the cycle length from the spec — no need for a separate `_breathStart` field. Example:
 
-For `flashCritical`-style pulses, use `setInterval` with the cadence from the spec.
+```javascript
+        var now = performance.now();
+        var phase = (now % 3000) / 3000;            // 0..1 over 3s
+        var blur  = 16 + (28 - 16) * (0.5 + Math.sin(phase * Math.PI * 2) * 0.5);
+        ctx.shadowBlur = blur;
+        // ... draw ...
+        ctx.shadowBlur = 0;
+```
+
+`destroy()` in the boilerplate already clears `_animationFrameId` and `_pulseIntervalId`. For `flashCritical`-style pulses with a slow cadence (≥ 1s), prefer `setInterval` + the same cached-arg re-call inside the interval callback. Same rule applies: NEVER call `invalidateUpdateView()` from a timer.
+
+### Why this matters
+
+`validate.sh` will FAIL any viz that contains `invalidateUpdateView()` inside a `requestAnimationFrame` or `setInterval` callback. If your animation needs to re-trigger the render pipeline, use the cached-arg pattern above.
 
 ## Rule 5: Light theme is NEVER derived from dark
 
@@ -126,6 +148,113 @@ Your output is ONLY:
 That's it. Six functions, two of which already have skeleton helpers. Full creative attention goes to `_renderDark` and `_renderLight`.
 
 This is the structural separation that fixes the test44 finding *"compliance work dominates, creative gets minimum viable."* The boilerplate is mechanical; the creative is everything.
+
+### Sub-rule 6a: Cursor affordance is mandatory for drillable elements
+
+If your viz wires any drilldown in `_onClick`, `_onMouseMove` MUST manage `this._canvas.style.cursor`:
+
+```javascript
+_onMouseMove: function(e) {
+    // ... hit-test ...
+    if (hitTestMatchedClickableElement) {
+        // ... show tooltip ...
+        this._canvas.style.cursor = "pointer";   // ← MANDATORY
+        return;
+    }
+    this._tooltip.style.display = "none";
+    this._canvas.style.cursor = "default";       // ← MANDATORY when leaving
+}
+```
+
+Without this, drilldowns are invisible features — users don't know they exist until they accidentally click. The cursor IS the affordance.
+
+## Rule 8: Defensive data access in `_render` and `_layout`
+
+Splunk's framework may call `updateView(data, config)` with `data` shapes that look truthy but lack the fields you expect — most commonly `{}` (empty object, no `rows`, no `colIdx`) during dashboard initialization, theme switches, or token-triggered re-renders. Accessing `data.colIdx[fieldName]` then throws:
+
+```
+TypeError: Cannot read properties of undefined (reading 'collars_online')
+```
+
+This shipped in `wwf_field_ops_viz/active_collars` (2026-05-25). The intermittent failure was caused by the boilerplate's `if (!data)` guard not catching empty-object data shapes.
+
+### Two layers of defense (both required)
+
+**Layer 1 — boilerplate guard** (handled by `boilerplate_emit.js`):
+
+```javascript
+updateView: function(data, config) {
+    if (!data || !data.rows || data.rows.length === 0 || !data.colIdx) {
+        if (this._lastGoodData) data = this._lastGoodData;
+        else return;
+    }
+    this._lastConfig = config;
+    // ...
+}
+```
+
+**Layer 2 — your `_layout` / `_render` MUST still defend**:
+
+```javascript
+_layout: function(data, w, h, opt) {
+    var rows = data.rows || [];
+    var ci   = data.colIdx || {};
+    if (rows.length === 0) {
+        return { /* sane empty-state shape */ };
+    }
+    // ...
+}
+```
+
+The boilerplate guard catches the obvious case. Layer 2 catches the long tail: a row with a missing column, a `last[oIdx]` where `oIdx` is `undefined`, etc. Always default `rows` and `ci` to empty containers, always check `rows.length > 0` before dereferencing `rows[0]` or `rows[rows.length - 1]`.
+
+## Rule 7: Every formatter color picker MUST be read in `_resolveTheme(t, opt)`
+
+The formatter and Canvas form **one contract**, not two independent halves. If `formatter.html` emits a `splunk-color-picker` and the Canvas code uses `t.<theme_default>` without consulting `opt(...)`, the picker is dead UI — the user clicks, the value persists in dashboard config, the viz doesn't change a single pixel.
+
+This bug has shipped in multiple test packs (Cisco viz, then WWF Field Ops 2026-05-25). It is silent — no validation FAIL, no console error.
+
+### The required wiring
+
+For every `<splunk-color-picker name="{{VIZ_NAMESPACE}}.<key>" value="<hex>">` in `formatter.html`, add one line to `_resolveTheme(t, opt)`:
+
+```javascript
+_resolveTheme: function(t, opt) {
+    var c = {};
+    for (var k in t) if (t.hasOwnProperty(k)) c[k] = t[k];
+    // For each color picker key in formatter.html:
+    c.accent     = hexFromSplunk(opt("accentColor",       t.accent),   t.accent);
+    c.brand_hi   = hexFromSplunk(opt("activeTopColor",    t.brand_hi), t.brand_hi);
+    c.brand      = hexFromSplunk(opt("activeBottomColor", t.brand),    t.brand);
+    c.muted      = hexFromSplunk(opt("offDutyColor",      t.muted),    t.muted);
+    // Recompute derived alphas after override:
+    c.accent_dim = theme.withAlpha(c.accent, 0.30);
+    return c;
+},
+```
+
+Then at the top of `_renderDark` and `_renderLight`:
+
+```javascript
+_renderDark: function(ctx, data, t, w, h, opt) {
+    t = this._resolveTheme(t, opt);   // ← MUST be first line
+    // ... rest of render uses t.* (now picker-aware)
+},
+```
+
+### Naming convention
+
+If the formatter key maps directly to a theme token (e.g. `accentColor` → `t.accent`), shadow the token. If the formatter key is viz-specific (e.g. `heroValueColor`), add a `_underscore` alias on `c`:
+
+```javascript
+c._heroValue = hexFromSplunk(opt("heroValueColor", t.text), t.text);
+// then in render:
+ctx.fillStyle = t._heroValue;
+```
+
+### Validator enforcement
+
+`validate.sh` greps every `splunk-color-picker` name attribute out of `formatter.html` and confirms a matching `opt("<key>"...)` call exists in `visualization_source.js`. Unread pickers are a FAIL, not a WARN — they are user-facing lies.
 
 ## Self-check before moving to the next viz
 

@@ -137,10 +137,17 @@ var template =
     '    },\n' +
     '\n' +
     '    updateView: function(data, config) {\n' +
-    '        if (!data) {\n' +
+    '        // Defensive guard: empty object {} passes if(!data) but breaks _render/_layout.\n' +
+    '        // Require both rows (with length) and colIdx to be populated.\n' +
+    '        if (!data || !data.rows || data.rows.length === 0 || !data.colIdx) {\n' +
     '            if (this._lastGoodData) data = this._lastGoodData;\n' +
     '            else return;\n' +
     '        }\n' +
+    '        // Cache for safe animation tick. Animations MUST re-call updateView with\n' +
+    '        // these cached args via requestAnimationFrame, NEVER invalidateUpdateView()\n' +
+    '        // — invalidate re-enters synchronously in some Splunk versions and blows\n' +
+    '        // the call stack. See canvas-port-rules.md Rule 4.\n' +
+    '        this._lastConfig = config;\n' +
     '        var ns = (function(viz) { try { var i = viz.getPropertyNamespaceInfo(); return i && i.propertyNamespace ? i.propertyNamespace : ""; } catch(e) { return ""; } })(this);\n' +
     '        function opt(key, fallback) { return getOption(config, ns, key, fallback); }\n' +
     '\n' +
@@ -166,6 +173,18 @@ var template =
     '        else        { this._renderLight(ctx, data, t, w, h, opt); }\n' +
     '    },\n' +
     '\n' +
+    '    // Apply user color-picker overrides on top of the theme.\n' +
+    '    // MANDATORY: for every <splunk-color-picker> in formatter.html, add one line\n' +
+    '    // here that reads opt("<key>"...) and assigns it to a theme field. Without this,\n' +
+    '    // the picker is dead UI. See canvas-port-rules.md Rule 7.\n' +
+    '    _resolveTheme: function(t, opt) {\n' +
+    '        var c = {};\n' +
+    '        for (var k in t) { if (t.hasOwnProperty(k)) { c[k] = t[k]; } }\n' +
+    '        // TODO: one line per color picker in formatter.html, e.g.:\n' +
+    '        // c.accent = hexFromSplunk(opt("accentColor", t.accent), t.accent);\n' +
+    '        return c;\n' +
+    '    },\n' +
+    '\n' +
     '    // === CREATIVE PORT — AGENT FILLS THESE TWO FUNCTIONS ===\n' +
     '    //\n' +
     '    // Translate visual_reference_html [data-theme="dark"] CSS into Canvas calls.\n' +
@@ -173,6 +192,7 @@ var template =
     '    // by cv-create. Do NOT paraphrase from memory — re-read the CSS.\n' +
     '    //\n' +
     '    _renderDark: function(ctx, data, t, w, h, opt) {\n' +
+    '        t = this._resolveTheme(t, opt);  // ← MUST be first line (Rule 7)\n' +
     '        // TODO: implement per visual_reference_html [data-theme="dark"]\n' +
     '    },\n' +
     '\n' +
@@ -181,6 +201,7 @@ var template =
     '    // Read DESIGN-LOCK visual_spec.fills.background_light for which effects to skip.\n' +
     '    //\n' +
     '    _renderLight: function(ctx, data, t, w, h, opt) {\n' +
+    '        t = this._resolveTheme(t, opt);  // ← MUST be first line (Rule 7)\n' +
     '        // TODO: implement per visual_reference_html [data-theme="light"]\n' +
     '    },\n' +
     '\n' +
