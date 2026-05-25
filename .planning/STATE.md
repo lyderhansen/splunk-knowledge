@@ -4,8 +4,8 @@ milestone: v5.8.0
 milestone_name: Quality & Template Corrections
 status: milestone_complete
 stopped_at: Milestone complete (Phase 43 was final phase)
-last_updated: 2026-05-25T09:12:53.083Z
-last_activity: 2026-05-24 -- Phase 43 execution started
+last_updated: 2026-05-25T17:45:00.000Z
+last_activity: 2026-05-25 -- cv6-skill-corrections quick task complete
 progress:
   total_phases: 38
   completed_phases: 32
@@ -171,13 +171,20 @@ Items acknowledged and carried forward:
 | v2 scope | Dashboard drilldown end-to-end | deferred | 2026-05-15 |
 | v2 scope | Dashboard JSON "title" field | deferred | 2026-05-15 |
 
+## Quick Tasks Completed
+
+| Date | Slug | What |
+|------|------|------|
+| 2026-05-25 | cv6-skill-corrections | Applied 4 handover findings + fixed Patrol Coverage stack overflow + fixed Active Collars undefined error + restored per-type preview.png silhouettes + added KNOWN-CORRECTIONS.md + added 3 validator grep checks (K1/K2/K3). 6 plugin files + 6 test pack files updated. test49 tarball repackaged, validator clean. |
+
 ## Session Continuity
 
-Last session: 2026-05-24T20:34:19.843Z
-Stopped at: Phase 43 context gathered
-Resume: None — phase 34 plan 01 complete
+Last session: 2026-05-25 (cv6-skill-corrections quick task)
+Stopped at: Quick task complete, ready for commits
+Resume: None — task complete
 
 ## Operator Next Steps
 
 - v5.6.0 milestone complete — all phases done
 - Consider v6.0 planning (validate_dash.js, Aviation/Fintech domain types, production SPL templates)
+- Follow-ups from cv6-skill-corrections: boilerplate should emit `@viz-type` annotation line 1; KNOWN-CORRECTIONS.md should be surfaced in cv-create's "before you start" section
