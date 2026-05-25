@@ -150,6 +150,78 @@ if [ -d "$APP_DIR/local" ]; then
     fail STR "local/ directory present — must be removed for Splunk Cloud"
 fi
 
+# === KNOWN-CORRECTIONS ENFORCEMENT (2026-05-25) ===
+#
+# These checks enforce the corrections in KNOWN-CORRECTIONS.md. Each one prevents
+# a real shipped failure mode that previously slipped past validation.
+
+echo ""
+echo "--- KNOWN-CORRECTIONS checks ---"
+
+# K1 — Every color picker in formatter.html MUST be consumed by visualization_source.js
+# (Correction 2 in KNOWN-CORRECTIONS.md)
+for f in "$APP_DIR"/appserver/static/visualizations/*/formatter.html; do
+    [ -f "$f" ] || continue
+    VIZ_DIR=$(dirname "$f")
+    VIZ=$(basename "$VIZ_DIR")
+    SRC="$VIZ_DIR/src/visualization_source.js"
+    [ -f "$SRC" ] || SRC="$VIZ_DIR/visualization_source.js"
+    [ -f "$SRC" ] || continue
+
+    # Extract every color picker key from formatter.html. Pattern matches:
+    #   <splunk-color-picker name="{{VIZ_NAMESPACE}}.someColor" ...>
+    PICKER_KEYS=$(grep -oE 'splunk-color-picker[^>]*name="\{\{VIZ_NAMESPACE\}\}\.[a-zA-Z0-9_]+' "$f" 2>/dev/null \
+                  | sed -E 's/.*\{\{VIZ_NAMESPACE\}\}\.//' | sort -u)
+
+    for K in $PICKER_KEYS; do
+        # Must appear as opt("K"...) somewhere in the source
+        if ! grep -qE "opt\(['\"]${K}['\"]" "$SRC"; then
+            fail K1 "$VIZ: color picker \"$K\" in formatter.html is not consumed by visualization_source.js (dead UI). Add to _resolveTheme(t, opt). See KNOWN-CORRECTIONS.md #2."
+        fi
+    done
+done
+
+# K2 — invalidateUpdateView() MUST NOT appear inside requestAnimationFrame callback
+# (Correction 4 in KNOWN-CORRECTIONS.md — Patrol Coverage stack overflow)
+for f in "$APP_DIR"/appserver/static/visualizations/*/src/visualization_source.js; do
+    [ -f "$f" ] || continue
+    VIZ=$(basename "$(dirname "$(dirname "$f")")")
+
+    # Match: requestAnimationFrame(function(...) { ... invalidateUpdateView( ... }) within ~8 lines.
+    # Ignore matches inside // comment lines (otherwise the safety note in canonical code
+    # itself would trigger). Require an opening paren after invalidateUpdateView to confirm a call.
+    HITS=$(awk '
+        /requestAnimationFrame/ { inRAF = 1; window = 8; next }
+        inRAF && window > 0 {
+            # Strip leading whitespace, check if line starts with //
+            line = $0
+            sub(/^[ \t]+/, "", line)
+            isComment = (substr(line, 1, 2) == "//")
+            if (!isComment && /invalidateUpdateView\(/) { print FILENAME ":" NR; found = 1 }
+            window--
+            if (window <= 0) inRAF = 0
+        }
+        END { if (found) exit 0; else exit 1 }
+    ' "$f" 2>/dev/null)
+
+    if [ -n "$HITS" ]; then
+        fail K2 "$VIZ: invalidateUpdateView() inside requestAnimationFrame — re-enters synchronously, blows stack. Use cached-config pattern. See KNOWN-CORRECTIONS.md #4."
+    fi
+done
+
+# K3 — Dashboard XML (or JSON in CDATA) MUST NOT contain bare-string token defaults
+# (Correction 1 in KNOWN-CORRECTIONS.md)
+# Look in default/data/ui/views/*.xml for tokens defaults pattern
+for xml in "$APP_DIR"/default/data/ui/views/*.xml; do
+    [ -f "$xml" ] || continue
+    XML=$(basename "$xml")
+    # Pattern: "selected_anything": "*"   (bare string instead of object)
+    # Match also: "selected_*": "literal_string" — any bare string default
+    if grep -qE '"selected_[a-zA-Z0-9_]+"[[:space:]]*:[[:space:]]*"[^{]*"' "$xml"; then
+        fail K3 "$XML: bare-string token default found (e.g. \"selected_x\":\"*\") — must be {\"value\":\"*\"}. See KNOWN-CORRECTIONS.md #1."
+    fi
+done
+
 # === DESIGN FIDELITY CHECK (NEW in v6) ===
 
 echo ""
