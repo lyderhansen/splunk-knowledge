@@ -108,7 +108,7 @@ Recent decisions affecting current work:
 - [Architecture]: BG-01 changes land in visual language schema (vp-design/references/ or SKILL.md) — add backgroundType field with enum values
 - [Architecture]: BG-02 changes land in generate_assets.js — branch on backgroundType value for background generation logic
 - [Architecture]: BG-03 changes land in generate_assets.js — add light background variant output path (bg_gradient_light.png or Dashboard Studio backgroundColor)
-- [Architecture]: PA-01 changes land in generate_assets.js preview generation — replace flat fill with gradient fill using 2 brand palette colors; add 2x output at 600x400
+- [Architecture]: PA-01 changes land in generate_assets.js preview generation — replace flat fill with gradient fill using 2 brand palette colors; add 2x output at 600x400 (NOTE: 2x preview output at 600x400 was not implemented when Phase 41 refactored preview ownership to generate_previews.py at 116x76. PA-01 implemented gradient fill for background assets; 2x preview is deferred.)
 - [Architecture]: PA-02 changes land in generate_assets.js appIcon generation — domain symbol lookup table from @viz-type or brand keywords
 - [Architecture]: MC-01 changes land in viz-blueprints.md — new "Multi-Channel Composite" archetype entry
 - [Architecture]: MC-02 changes land in domain-templates.md — add archetype references to F1/motorsport, healthcare monitoring, network ops entries
@@ -121,7 +121,7 @@ Recent decisions affecting current work:
 - [FC-02]: Format field added as first entry in vp-design hand-off context block; propagates to all downstream skills
 - [FC-03]: vp-viz SKILL.md format-conditional workflow block added — Extension routes to config-json-template.md and visualization-js-template.md; Classic workflow unchanged
 - [FC-04]: pre-code-checklist.md Extension API Checklist section (12 items) added — ESM, columnar data, addThemeListener, addDrilldownListener, config.json, bare option names, yarn build
-- [Phase 41]: [41-01]: Bundled Inter Regular 4.0 desktop TTF (407KB) over Web variant — Pillow ImageFont.truetype requires TTF format. The Inter v4.0 Web folder contains only .woff2 files which Pillow cannot consume. extras/ttf/Inter-Regular.ttf (407KB) is the canonical TTF and falls within the 50-500KB budget. Renders predictably at small sizes 7-22pt per D-03.
+- [Phase 41]: [41-01]: Bundled Inter Regular 4.0 desktop TTF (407KB) over Web variant — Pillow ImageFont.truetype requires TTF format. The Inter v4.0 Web folder contains only .woff2 files which Pillow cannot consume. scripts/fonts/Inter-Regular.ttf (407KB) is the canonical TTF and falls within the 50-500KB budget. Renders predictably at small sizes 7-22pt per D-03.
 - [Phase 41]: [41-02]: generate_assets.js --legacy-previews flag preserves silhouette path as D-02 fallback while generate_previews.py owns preview.png by default — argv parser splits positional from --flag args; gated call retains full try/catch; all silhouette draw functions and generatePreviews() preserved verbatim
 - [Phase 41]: [41-02]: package-mjs-template.md Section 5 wraps execSync(generate_previews.py) in try/catch with full buildSolidPng fallback inline — Extension API path achieves parity with Classic; ${PREVIEW_SCRIPT_PATH} added as a new template placeholder
 - [Phase 41]: [41-02]: splunk-viz-packs plugin.json bumped 5.8.0 → 5.9.0 per memory feedback_plugin_version_bump.md and CONTEXT D-10 — reflects Pillow preview feature addition on top of v5.8.0 template corrections

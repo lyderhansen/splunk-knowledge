@@ -2,7 +2,7 @@
 custom visualization apps. Owns ONLY preview.png; appIcon.png and bg_gradient.png
 remain in generate_assets.js. Per phase 41 / PP-01, PP-02.
 
-3-tier detection cascade per D-04:
+3-tier detection cascade per (Phase 41 D-04):
     Tier 1: @viz-type annotation in visualization_source.js (first 10 lines)
     Tier 2: Canvas API pattern detection (ctx.arc, ctx.fillRect, ctx.lineTo, ...)
     Tier 3: Branded generic fallback (brand bg + viz name in Inter font)
@@ -180,7 +180,7 @@ def parse_theme_js(theme_js_path: str) -> dict:
     return result
 
 
-# ---- Section 6: 3-tier detection cascade (D-04) ----
+# ---- Section 6: 3-tier detection cascade (Phase 41 D-04) ----
 
 VIZ_TYPE_ANNOTATION_RE = re.compile(r"//\s*@viz-type:\s*(\S+)")
 
@@ -249,7 +249,7 @@ def detect_viz_type(viz_dir: str) -> tuple:
     composite_op = bool(_PAT_COMPOSITE.search(src))
     large_filltext = bool(_PAT_LARGE_FILLTEXT_FONT.search(src))
 
-    # Dispatch rules - first match wins, per D-04
+    # Dispatch rules - first match wins, per (Phase 41 D-04)
     if arc_count > 2 and composite_op:
         return (2, "ring", "arc+composite")
     if arc_count > 2 and lineto_count == 0:
@@ -407,7 +407,7 @@ def _measure_text(draw, label: str, font, size: int) -> float:
 
 def drawGeneric(theme: dict, output_path: str, viz_name: str = "",
                 detection_hint: Optional[str] = None) -> None:
-    """Tier 3 fallback (D-04): brand bg + viz name in Inter + motif from hint.
+    """Tier 3 fallback (Phase 41 D-04): brand bg + viz name in Inter + motif from hint.
     Every viz lands tier 1/2/3 with a distinct result; never a flat rectangle.
     """
     img, draw, bg_rgb, accent_rgb, text_rgb = _new_img(theme)
