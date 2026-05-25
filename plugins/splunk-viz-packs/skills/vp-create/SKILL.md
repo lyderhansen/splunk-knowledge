@@ -54,7 +54,7 @@ bash ${CLAUDE_SKILL_DIR}/scripts/validate_viz.sh /path/to/app
 
 CRITICAL: Do NOT package if validation fails. Fix and re-validate.
 
-> For Extension API vizs, validation checks config.json instead of formatter.html. Full Extension validation rules are defined in Phase 31.
+> For Extension API vizs, validation checks config.json instead of formatter.html. Extension API checks enforced by validate_viz.sh (E01-E05 codes).
 
 ## Step 3: Fix failures
 

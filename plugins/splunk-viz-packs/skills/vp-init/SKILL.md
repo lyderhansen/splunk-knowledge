@@ -78,7 +78,7 @@ STAGE 2: CODE (load vp-viz)
 
 STAGE 3: VALIDATE + PACKAGE (load vp-create)
   → Step 2: validate_viz.sh (MUST pass with 0 FAIL)
-  → Step 3b: generate_assets.js (icons + previews + gradient bg)
+  → Step 3b: generate_assets.js (icons + gradient bg) + generate_previews.py (per-viz preview.png, 116x76 RGB, Pillow)
   → Step 3c: generate Dashboard Studio JSON with ALL vizs
   → Step 4: package tarball
   → Output: installable .tar.gz
@@ -117,7 +117,7 @@ Building a viz pack produces 3 artifact types. Each has its own plugin:
 | Artifact | Plugin | Key skill |
 |---|---|---|
 | Viz source (JS/HTML) | splunk-viz-packs | vp-viz |
-| Dashboard JSON | splunk-dashboard-studio | ds-create |
+| Dashboard JSON | splunk-dashboard-studio | [ds-create](../../../splunk-dashboard-studio/skills/ds-create/SKILL.md) |
 | SPL queries | splunk-spl | spl-gotchas |
 
 ## Optional Splunk app dependencies
