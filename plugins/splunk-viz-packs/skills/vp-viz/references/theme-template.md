@@ -222,15 +222,33 @@ module.exports = {
 - Text: `#0B0E1A` primary (full opacity for hero values)
 - Grid: `rgba(0,0,0,0.06)`
 
+## THM-03: Glow scaling by theme
+
+Glow intensity MUST be scaled down on light theme — full dark-mode glow at 1.0 looks blown-out and unprofessional on light backgrounds.
+
+| | WRONG | RIGHT |
+|---|---|---|
+| **THM-03** | `ctx.shadowBlur = 20 * gi;` (flat, same on both themes) | `var glowScale = isDark ? 1.0 : 0.4;`<br>`ctx.shadowBlur = 20 * gi * glowScale;`<br>`ctx.shadowColor = theme.withAlpha(accent, gi * glowScale);` |
+
 ```javascript
 // THM-03: Glow scaling on light theme — reduce to 40% of dark intensity
-// var glowScale = isDark ? 1.0 : 0.4;
-// ctx.shadowBlur = 20 * gi * glowScale;
-// ctx.shadowColor = theme.withAlpha(accent, gi * glowScale);
+var glowScale = isDark ? 1.0 : 0.4;
+ctx.shadowBlur = 20 * gi * glowScale;
+ctx.shadowColor = theme.withAlpha(accent, gi * glowScale);
+```
 
+## THM-04: Inner shadow vs 1px border
+
+Dark themes use a subtle inner shadow for panel depth. Light themes MUST substitute a 1px border — inner shadows on white panels look muddy.
+
+| | WRONG | RIGHT |
+|---|---|---|
+| **THM-04** | `drawInnerShadow(ctx, x, y, w, h, 4, cr);` (same on both themes) | Dark: `drawInnerShadow(ctx, x, y, w, h, 4, cr);`<br>Light: `roundRect(ctx, x+0.5, y+0.5, w-1, h-1, cr); ctx.strokeStyle = t.edge; ctx.lineWidth = 1; ctx.stroke();` |
+
+```javascript
 // THM-04: Inner shadow (dark) vs 1px border (light)
-// if (isDark) { drawInnerShadow(ctx, x, y, w, h, 4, cr); }
-// else { roundRect(ctx, x+0.5, y+0.5, w-1, h-1, cr); ctx.strokeStyle = t.edge; ctx.lineWidth = 1; ctx.stroke(); }
+if (isDark) { drawInnerShadow(ctx, x, y, w, h, 4, cr); }
+else { roundRect(ctx, x+0.5, y+0.5, w-1, h-1, cr); ctx.strokeStyle = t.edge; ctx.lineWidth = 1; ctx.stroke(); }
 ```
 
 ## Background Color (THM-05): user opt() overrides theme default in both modes
@@ -256,5 +274,5 @@ ctx.fillStyle = bg;
 ctx.fillRect(0, 0, w, h);
 ```
 
-See also: pre-code-checklist.md THM-05 line; visualization-js-template.md / config-json-template.md for the Extension API equivalent.
+See also: pre-code-checklist.md (THM-05 gate); visualization-js-template.md (bg pattern — THM-05 comment near line 165); config-json-template.md ("Background Color Note" H2).
 
