@@ -42,6 +42,7 @@ Viz shows placeholder icon (bar chart in grey box)
 ├── Values show "null" or "undefined" → B21
 ├── Timestamps show "Jan 1" or "Invalid Date" → B19
 ├── Wrong theme (dark on light) → B20
+├── Background color shows dark bg in light mode → THM-05 (opt('backgroundColor') inside dark branch only — see theme-template.md THM-05)
 ├── Gauge/arc overflows panel → B8
 ├── Formatter settings have no effect → B10 (VIZ_NAMESPACE)
 ├── Settings appear but don't save → B7 (value= not default=)
@@ -74,7 +75,7 @@ See [references/fatal-rules.md](references/fatal-rules.md)
 | F11 | Webpack 5 IIFE may fail — flat AMD alternative |
 | F12 | Formatter must use Splunk components, never raw HTML |
 
-### BROKEN — renders but wrong (B1-B21)
+### BROKEN — renders but wrong (B1-B23)
 See [references/broken-rules.md](references/broken-rules.md)
 
 | Rule | Summary |
@@ -123,3 +124,10 @@ See [references/interactive-cosmetic.md](references/interactive-cosmetic.md)
 | Gauge overflows panel | B8 |
 | Timestamps wrong | B19 |
 | AppInspect failure | R1-R8 |
+| Background color wrong in light mode | THM-05 / B23 — check `opt('backgroundColor')` read unconditionally, not inside dark branch (see theme-template.md THM-05) |
+| FAIL E01-E05 (Extension API config/viz failure) | validate_viz.sh E-codes — check config.json optionsSchema + visualization.js addDataSourcesListener |
+| FAIL A01-A02 (preview.png missing or wrong size) | run `python3 generate_previews.py` (116x76) — see vp-create Step 3b |
+| FAIL A03-A04 (appIcon.png missing or wrong size) | run `node generate_assets.js` — see vp-create Step 3b |
+| Animation has no effect | AF-01 — `opt()` called inside a helper; pass computed values as params (see animation-recipes.md AF-01) |
+
+> **Scope note (W-20):** `check_design.js` (D01-D11 codes) validates `formatter.html` only. Extension API vizs (`visualization.js`) bypass D01-D11 checks entirely — if a D-code appears missing for an Extension viz, that is expected behavior, not a doc gap. Verify Extension API correctness via E01-E05 codes from `validate_viz.sh`.
