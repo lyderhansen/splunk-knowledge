@@ -7,6 +7,15 @@ description: "Ports a DESIGN-LOCK.md visual contract into installable Splunk cus
 
 This skill is purely a translator. It does not invent designs. The HTML mockup in DESIGN-LOCK.md.vizs[].visual_reference_html is the visual contract — your Canvas code must reproduce it, not reimagine it.
 
+## Before you start — MANDATORY reading
+
+Before writing any code, read these two files in order. They are the source of truth for what works in Splunk; deviating from them produces silent failures that ship to users.
+
+1. **`../../KNOWN-CORRECTIONS.md`** (12 corrections, plugin root) — production-discovered bugs that override anything in reference docs. Every correction lists the symptom, the fix, and the validator check (when applicable).
+2. **`../../references/splunk-viz-canon.md`** (1047 lines, 26 rules, plugin root) — the canonical Splunk Canvas 2D viz knowledge base. Independently battle-tested. KNOWN-CORRECTIONS references these rules by number (e.g. "Correction #7 enforces Rule 19").
+
+If you remember these from a previous session, re-read them anyway — they change.
+
 ## Prerequisite
 
 A `DESIGN-LOCK.md` file in `.cv/<app_id>/`. If missing, you're in standalone mode — see [references/standalone-mode.md](references/standalone-mode.md).

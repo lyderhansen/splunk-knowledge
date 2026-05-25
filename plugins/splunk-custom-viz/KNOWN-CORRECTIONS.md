@@ -155,6 +155,178 @@ Plus `_layout` should default `rows = data.rows || []` and `ci = data.colIdx || 
 
 ---
 
+---
+
+## Correction 7 — Formatter `value="…"` MUST exactly match JS `||` fallback (Rule 19)
+
+**Source:** splunk-viz canon Rule 19 (`references/splunk-viz-canon.md`)
+
+Splunk does NOT send formatter HTML defaults to the JS on first load. The `value="..."` attribute on `<splunk-text-input>` / `<splunk-radio-input>` only takes effect AFTER the user opens the Format panel and interacts with it. On initial render — and for any saved search without explicit settings — `config[ns + 'setting']` is `undefined`, so the JS `||` fallback is what actually runs.
+
+Required contract:
+
+```html
+<!-- formatter.html -->
+<splunk-radio-input name="{{VIZ_NAMESPACE}}.themeMode" value="auto">
+```
+
+```javascript
+// visualization_source.js
+var themeMode = opt("themeMode", "auto");  // ← "auto" MUST match value="auto" above
+```
+
+If the formatter defaults to `value="dark"` but the JS falls back to `"auto"`, the viz silently renders the wrong theme until the user opens Format → confirms → closes the panel.
+
+Also required: `savedsearches.conf` must explicitly include every setting (see Correction #12) so dashboards built from saved searches don't depend on first-load defaults.
+
+**Test the viz with a fresh panel (no saved config)** to verify defaults work. cv-create's color picker contract (Rule 7) covers this for colors; this correction extends it to ALL settings.
+
+---
+
+## Correction 8 — NEVER read `config` in `formatData` (Rule 21)
+
+**Source:** splunk-viz canon Rule 21
+
+Splunk internally caches `formatData` results. The interaction between config-dependent `formatData` logic and Splunk's caching produces inconsistent update timing — some vizs update instantly while others stall for up to a minute on the same dashboard with the same search. Symptom: "this viz updates fine, that one doesn't" with no clear cause.
+
+```javascript
+// WRONG — reads config in formatData, triggers caching anomalies
+formatData: function(data, config) {
+    var ns = this.getPropertyNamespaceInfo().propertyNamespace;
+    var fieldName = config[ns + 'field'] || 'speed';
+    return { value: extractField(data, fieldName) };
+}
+
+// CORRECT — formatData passes through data; updateView reads config
+formatData: function(data) {
+    if (!data || !data.rows || data.rows.length === 0) {
+        if (this._lastGoodData) return this._lastGoodData;
+        return null;
+    }
+    var colIdx = {};
+    for (var i = 0; i < data.fields.length; i++) colIdx[data.fields[i].name] = i;
+    var result = { colIdx: colIdx, rows: data.rows, fields: data.fields };
+    this._lastGoodData = result;
+    return result;
+}
+```
+
+**The boilerplate already enforces this** — `boilerplate_emit.js` emits `formatData(data)` (no `config` parameter). Agents writing per-viz code must NEVER add config reads to `formatData`. All config access belongs in `updateView` via the `opt()` closure.
+
+For multi-column vizs with hardcoded field names (no config dependency), extracting values in `formatData` is fine — the field names are constants, not config-dependent.
+
+---
+
+## Correction 9 — `VisualizationError` is the ONLY no-data path in Dashboard Studio v2 + cache in BOTH `formatData` and `updateView` (Rule 20)
+
+**Source:** splunk-viz canon Rule 20
+
+Returning `false` from `formatData` causes Dashboard Studio v2 to show its own grey-bar-chart placeholder and never call `updateView` — there is **no way** to display a custom message. The only mechanism that works:
+
+```javascript
+formatData: function(data) {
+    if (!data || !data.rows || data.rows.length === 0) {
+        if (this._lastGoodData) return this._lastGoodData;
+        throw new SplunkVisualizationBase.VisualizationError(
+            'Awaiting data — Patrol Coverage'
+        );
+    }
+    // ... build result ...
+}
+```
+
+**Cache in BOTH `formatData` AND `updateView`.** Correction #5 covered the `updateView` cache (catches `data = false` race when chain/post-process searches return zero rows). The matching `formatData` cache prevents flashing the `VisualizationError` between batches in real-time searches:
+
+```javascript
+updateView: function(data, config) {
+    if (!data || !data.rows || data.rows.length === 0 || !data.colIdx) {
+        if (this._lastGoodData) data = this._lastGoodData;
+        else return;
+    }
+    this._lastConfig = config;
+    // ...
+}
+```
+
+Two-layer protection:
+- `formatData` cache + `VisualizationError`: shows "Awaiting data" only on the very first call before any data has arrived
+- `updateView` cache: prevents blank canvas when Splunk passes `data = false` directly after `formatData` returned cached data
+
+**Boilerplate already provides both layers** as of v6.0.2 (Correction #5). When writing per-viz logic that ALSO validates required columns or shapes, the cache-return pattern must precede every throw.
+
+---
+
+## Correction 10 — Reset `ctx.shadowBlur` AND `ctx.globalAlpha` after use (Rules 5 + 6)
+
+**Source:** splunk-viz canon Rules 5 + 6
+
+Canvas 2D shadow state and global alpha state LEAK across subsequent draw calls if not explicitly reset to defaults. This produces ghost shadows on text drawn after a glowing shape, faded labels after a translucent fill, and other "why is this faint?" bugs that are impossible to track down without knowing the state-leak class.
+
+```javascript
+// Glow effect on alert pin
+ctx.shadowBlur  = 18;
+ctx.shadowColor = t.accent_dim;
+ctx.fillStyle   = t.accent;
+ctx.fillRect(ax - 1, ay, 2, h);
+ctx.shadowBlur = 0;          // ← MANDATORY reset, every time
+
+// Translucent overlay
+ctx.globalAlpha = 0.4;
+ctx.fillRect(0, 0, w, h);
+ctx.globalAlpha = 1.0;       // ← MANDATORY reset
+```
+
+Best practice: wrap shadow/alpha changes in tight try-style blocks where the reset is in line-of-sight with the change. Save/restore (`ctx.save()` / `ctx.restore()`) is safer for complex multi-state changes but more expensive — use it for save points before heavy compound work, raw set/reset for one-off effects.
+
+---
+
+## Correction 11 — `SplunkVisualizationUtils.escapeHtml` for ALL dynamic DOM strings (Rule 14)
+
+**Source:** splunk-viz canon Rule 14 — **required for Splunk certification**
+
+When inserting dynamic strings from search results into the DOM (`innerHTML`, text nodes, attribute values), wrap them in `SplunkVisualizationUtils.escapeHtml(str)`. Without this, a search result containing `<script>` or an `onerror=` attribute can execute arbitrary JS in the dashboard context.
+
+```javascript
+// WRONG — XSS vector
+this._tooltip.innerHTML = '<div>' + row.team_name + '</div>';
+
+// CORRECT
+this._tooltip.innerHTML = '<div>' +
+    SplunkVisualizationUtils.escapeHtml(row.team_name) + '</div>';
+```
+
+For dynamic URLs (drilldown links, image src, etc.), use `SplunkVisualizationUtils.makeSafeUrl(url)` to strip unsafe schemes like `javascript:`.
+
+**Canvas-only vizs that never touch the DOM with user data can skip this.** But the moment a viz adds a tooltip, an HTML overlay, a label that uses `innerHTML`, or an `<a href>` link, escapeHtml/makeSafeUrl is mandatory.
+
+This is checked during Splunk AppInspect — a viz that interpolates user data into the DOM without escaping will fail certification.
+
+---
+
+## Correction 12 — Use original ingested field names, never require `as` aliases (Rule 26)
+
+**Source:** splunk-viz canon Rule 26
+
+Vizs must reference fields by the exact name used at indexing time. Never require users to rename fields with SPL `as` aliases just to match a viz's hardcoded expectations.
+
+```spl
+-- WRONG (because viz hardcodes "value" instead of accepting the real field name)
+| stats latest(cpu_usage) as value
+
+-- CORRECT (viz reads cpu_usage directly via opt("metricField", "cpu_usage"))
+| stats latest(cpu_usage)
+```
+
+The opt() pattern from Correction #2 + the configurable field names pattern from canon Rule 18 makes this enforceable: every viz exposes a text-input formatter setting for each data field name, defaulting to the realistic field name (NOT a generic "value" / "count" placeholder).
+
+Exceptions:
+- **Display renames in tables** (`| rename status as Status`) where the column header is the user-facing label
+- **Computed/derived fields** (`eval delta = field_a - field_b`) that don't exist at ingest
+
+`savedsearches.conf` must also list every `display.visualizations.custom.{app}.{viz}.{fieldSetting} = realistic_default` so saved searches survive the Rule 19 first-load default trap.
+
+---
+
 ## Process note (Finding 4 from HANDOVER-skill-improvements.md)
 
 The user has been discovering corrections, writing them to personal memory, and the plugin docs have continued to teach the wrong thing. Going forward:

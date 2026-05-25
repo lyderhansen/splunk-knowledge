@@ -7,6 +7,13 @@ description: "Validates, packages, and (on failure) diagnoses a splunk-custom-vi
 
 This skill takes whatever cv-create wrote to disk and produces an installable Splunk artifact. It is intentionally the most mechanical skill in the plugin — no design decisions, no creative judgment, just the pipeline from source files to tarball.
 
+## Before you start — MANDATORY reading
+
+Before validating or packaging, read:
+
+1. **`../../KNOWN-CORRECTIONS.md`** (plugin root) — the 12 production-discovered corrections. The K1/K2/K3 grep checks in `validate.sh` enforce a subset of these. Diagnose validation failures by mapping the FAIL code back to the relevant correction.
+2. **`../../references/splunk-viz-canon.md`** (plugin root) — the 26 canonical Splunk Canvas viz rules. The verification checklist at the bottom of canon (Step 4) overlaps with cv-build's validate step; both must pass.
+
 ## Prerequisite
 
 A `<app_id>/` directory written by cv-create. A `DESIGN-LOCK.md` at `.cv/<app_id>/` for the fidelity check (optional but recommended).
