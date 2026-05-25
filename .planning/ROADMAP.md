@@ -125,7 +125,7 @@ Full details: `.planning/milestones/v5.7.0-ROADMAP.md`
 - [x] **Phase 40: Animation Scope Fix** - Document opt() scope constraint in animation-recipes.md; fix entrance/pulse boilerplates to pass speedMult as parameter (completed 2026-05-24)
 - [x] **Phase 41: Pillow Preview** - Replace raw-buffer silhouettes with Pillow-generated miniature viz renderings in vp-create pipeline (completed 2026-05-24)
 - [x] **Phase 42: Light Mode backgroundColor** - Fix opt() read order so backgroundColor works in both dark and light themes (completed 2026-05-24)
-- [ ] **Phase 43: Deep Review** - Review all 6 vp-* skills and all reference files for consistency with v5.5-5.7 changes; produce REVIEW.md
+- [x] **Phase 43: Deep Review** - Review all 6 vp-* skills and all reference files for consistency with v5.5-5.7 changes; produce REVIEW.md (completed 2026-05-25)
 
 ## Phase Details
 
@@ -907,15 +907,15 @@ Plans:
 
 **Wave 3 — Remediation** *(parallel plans, all depend on Wave 2 completion)*
 
-- [ ] 43-07-PLAN.md — Cluster G: Reference file fixes (pre-code-checklist.md B-codes, visualization-js-template.md D10, formatter-patterns.md showGlassPanel/AccentArch, THM-01/02, Wave 1 WARNINGs, 8 files total)
-- [ ] 43-08-PLAN.md — Cluster E+F: vp-design CP-01 brand swatch step + vp-debug B-range fix + THM-05 entry
-- [ ] 43-09-PLAN.md — Cluster B: broken-rules.md DS1-DS5/XFILE/CONTRAST/B17 backfill + script fixes (check_contrast.js, repair_findings.js, validate_viz.sh, test fixture T_ANEW_1)
-- [ ] 43-10-PLAN.md — Cluster C: PP-01 stale attribution sweep (vp-viz/vp-init/vp-create SKILL.md + generate_assets.js + generate_previews.py + STATE.md)
-- [ ] 43-11-PLAN.md — Cluster D: ds-* schema/format fixes (ds-create deprecated drilldown, ds-ref-layout-grid wrong tabs schema, stale skeleton markers, canvas conflict, Wave 5 NITs)
+- [x] 43-07-PLAN.md — Cluster G: Reference file fixes (pre-code-checklist.md B-codes, visualization-js-template.md D10, formatter-patterns.md showGlassPanel/AccentArch, THM-01/02, Wave 1 WARNINGs, 8 files total)
+- [x] 43-08-PLAN.md — Cluster E+F: vp-design CP-01 brand swatch step + vp-debug B-range fix + THM-05 entry
+- [x] 43-09-PLAN.md — Cluster B: broken-rules.md DS1-DS5/XFILE/CONTRAST/B17 backfill + script fixes (check_contrast.js, repair_findings.js, validate_viz.sh, test fixture T_ANEW_1)
+- [x] 43-10-PLAN.md — Cluster C: PP-01 stale attribution sweep (vp-viz/vp-init/vp-create SKILL.md + generate_assets.js + generate_previews.py + STATE.md)
+- [x] 43-11-PLAN.md — Cluster D: ds-* schema/format fixes (ds-create deprecated drilldown, ds-ref-layout-grid wrong tabs schema, stale skeleton markers, canvas conflict, Wave 5 NITs)
 
 **Wave 4** *(blocked on all Wave 3 plans completing)*
 
-- [ ] 43-12-PLAN.md — Cluster A: plugin.json version bump (splunk-viz-packs 5.9.1 → 5.10.0; splunk-dashboard-studio minor bump) + description trim + ROADMAP/STATE close-out
+- [x] 43-12-PLAN.md — Cluster A: plugin.json version bump (splunk-viz-packs 5.9.1 → 5.10.0; splunk-dashboard-studio minor bump) + description trim + ROADMAP/STATE close-out
 
 ## Progress
 
@@ -963,4 +963,4 @@ Plans:
 | 40. Animation Scope Fix | v5.8.0 | 1/1 | Complete    | 2026-05-24 |
 | 41. Pillow Preview | v5.8.0 | 2/2 | Complete    | 2026-05-24 |
 | 42. Light Mode backgroundColor | v5.8.0 | 1/1 | Complete   | 2026-05-24 |
-| 43. Deep Review | v5.8.0 | 6/12 | In Progress |  |
+| 43. Deep Review | v5.8.0 | 12/12 | Complete    | 2026-05-25 |

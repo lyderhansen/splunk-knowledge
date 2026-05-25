@@ -33,9 +33,9 @@
 
 ### Deep Review (DR)
 
-- [ ] **DR-01**: All 6 splunk-viz-packs skills (vp-init, vp-design, vp-viz, vp-create, vp-debug, vp-recipes) are reviewed for consistency with v5.5-5.7 changes — no stale references, no contradictions, no missing cross-references
-- [ ] **DR-02**: All reference files in vp-viz/references/ are reviewed for accuracy against live-tested findings — pre-code-checklist, formatter-patterns, viz-blueprints, edge-cases, animation-recipes, config-json-template, visualization-js-template
-- [ ] **DR-03**: A REVIEW.md is produced listing every inconsistency found and whether it was fixed or deferred
+- [x] **DR-01**: All 6 splunk-viz-packs skills (vp-init, vp-design, vp-viz, vp-create, vp-debug, vp-recipes) are reviewed for consistency with v5.5-5.7 changes — no stale references, no contradictions, no missing cross-references
+- [x] **DR-02**: All reference files in vp-viz/references/ are reviewed for accuracy against live-tested findings — pre-code-checklist, formatter-patterns, viz-blueprints, edge-cases, animation-recipes, config-json-template, visualization-js-template
+- [x] **DR-03**: A REVIEW.md is produced listing every inconsistency found and whether it was fixed or deferred
 
 ## Future Requirements
 
