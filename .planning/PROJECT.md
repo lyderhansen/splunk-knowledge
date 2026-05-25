@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A marketplace of Claude Code plugins for Splunk development — custom visualizations, dashboards, SPL queries, and admin tasks. The primary focus is **splunk-viz-packs** (v5.6.0): a plugin that generates branded Splunk custom visualization apps from a brand brief. v4.1.0 shipped validation/repair. v5.0.0 added design awesomeness. v5.1.0 hardened vizs and dashboard composition. v5.2.0 added smart fields and domain identity. v5.3.0 polished code quality and added interactive dashboard features. v5.4.0 fixed runtime bugs and visual polish. v5.5.0 added wow-factor — branded backgrounds, animation boilerplates, multi-channel vizs, official API correctness, and XSS prevention. v5.6.0 added dual-format architecture — Extension API (config.json + ESM) alongside Classic (formatter.html + AMD), aesthetic scoring, and a validated test build.
+A marketplace of Claude Code plugins for Splunk development — custom visualizations, dashboards, SPL queries, and admin tasks. The primary focus is **splunk-viz-packs** (v5.10.0): a plugin that generates branded Splunk custom visualization apps from a brand brief. v4.1.0 shipped validation/repair. v5.0.0 added design awesomeness. v5.1.0-v5.4.0 hardened vizs, polished interactive dashboards, fixed runtime bugs. v5.5.0 added wow-factor (branded backgrounds, animation boilerplates, multi-channel vizs, XSS prevention). v5.6.0 added dual-format architecture — Extension API (config.json + ESM) alongside Classic (formatter.html + AMD), aesthetic scoring. v5.7.0 validated end-to-end with Red Bull live Splunk builds. v5.8.0 corrected every issue found during live testing: JSONata reference, Extension API template fixes, animation scope rule, Pillow preview pipeline, THM-05 light-mode `backgroundColor`, and a milestone-wide deep review fixing 19 BLOCKERs + 30 WARNINGs inline.
 
 ## Core Value
 
@@ -52,17 +52,26 @@ When a user runs `/vp-init`, the resulting viz pack installs in Splunk without e
 - Mobile-responsive viz rendering — Splunk dashboards are desktop/wall-display
 - Multi-tenant viz sharing — each pack is a standalone Splunk app
 
-## Current State: v5.7.0 shipped
+## Current State: v5.8.0 shipped
 
-**Shipped:** 2026-05-22 — 4 phases, 7 plans, 15 requirements satisfied.
+**Shipped:** 2026-05-25 — 6 phases, 20 plans, 14 requirements satisfied. **splunk-viz-packs at v5.10.0; splunk-dashboard-studio at v3.5.0.**
 
-**What v5.7.0 delivered:**
-- DS skill updates: linkToDashboard tokens, JSONata expressions, containerOptions.visibility, three-handler chain recipe
-- Red Bull Classic test build: 5 vizs, 140 KB .tar.gz, ALL CHECKS PASSED, scores 65-95/100
-- Red Bull Extension API test build: 3 vizs, 10.8 KB .spl, rendering in live Splunk Dashboard Studio
-- Critical live findings: opt() scope bug, IIFE format required, bare stanza names, bundle the extension package
+**What v5.8.0 delivered:**
+- JSONata reference (`ds-ref-jsonata`) for Dashboard Studio eval/conditions expressions; ds-int-tokens MUST-LOAD wired
+- Extension API templates corrected: IIFE format, bundled extension package, bare stanza names
+- Animation Helper Scope Rule (AF-01/AF-02) — `opt()` only inside `updateView`; helpers receive computed values as parameters
+- Pillow per-viz preview pipeline (`generate_previews.py`, Inter Regular bundled, 116×76 RGB) with `--legacy-previews` fallback
+- THM-05 light-mode `backgroundColor` fix across all 4 template files
+- Deep Review milestone audit: 95 files reviewed, 19 BLOCKERs + 30 WARNINGs all fixed inline, plugin.json descriptions trimmed to match validator reality
 
-**Next milestone:** v5.8.0 Quality & Template Corrections — 6 phases (38-43), 14 requirements. JSONata reference, Extension API template fixes, animation scope fix, Pillow preview, light mode backgroundColor, deep skill review.
+**Next milestone:** TBD. Run `/gsd:new-milestone` to define v5.9.0 requirements and phases.
+
+<details>
+<summary>v5.7.0 Real Brand End-to-End Validation (shipped 2026-05-22)</summary>
+
+DS skill updates (linkToDashboard tokens, JSONata expressions, containerOptions.visibility, three-handler chain recipe). Red Bull Classic test build (5 vizs, 140 KB .tar.gz, ALL CHECKS PASSED). Red Bull Extension API test build (3 vizs, 10.8 KB .spl, rendering live). Critical live findings drove all v5.8.0 fixes.
+
+</details>
 
 <details>
 <summary>v5.6.0 DS Extension API & Dual-Format Architecture (shipped 2026-05-22)</summary>

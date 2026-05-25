@@ -11,7 +11,7 @@
 - ✅ **v5.5.0 Visual Wow-Factor & First-Build Perfection** — Phases 22-27 (shipped 2026-05-21)
 - ✅ **v5.6.0 DS Extension API & Dual-Format Architecture** — Phases 28-33 (shipped 2026-05-22)
 - ✅ **v5.7.0 Real Brand End-to-End Validation** — Phases 34-37 (shipped 2026-05-22)
-- **v5.8.0 Quality & Template Corrections** — Phases 38-43 (active)
+- ✅ **v5.8.0 Quality & Template Corrections** — Phases 38-43 (shipped 2026-05-25)
 
 ## Phases
 
@@ -118,14 +118,19 @@ Full details: `.planning/milestones/v5.7.0-ROADMAP.md`
 
 </details>
 
-**v5.8.0 Quality & Template Corrections (Phases 38-43)**
+<details>
+<summary>✅ v5.8.0 Quality & Template Corrections (Phases 38-43) — SHIPPED 2026-05-25</summary>
 
-- [x] **Phase 38: JSONata Reference** - Create ds-ref-jsonata.md with full JSONata syntax for Dashboard Studio eval expressions; condense ds-int-tokens inline section to summary + link (completed 2026-05-23)
-- [x] **Phase 39: Extension API Template Fixes** - Apply IIFE format, bundled extension package, bare stanza names to visualization-js-template.md and config-json-template.md (completed 2026-05-23)
-- [x] **Phase 40: Animation Scope Fix** - Document opt() scope constraint in animation-recipes.md; fix entrance/pulse boilerplates to pass speedMult as parameter (completed 2026-05-24)
-- [x] **Phase 41: Pillow Preview** - Replace raw-buffer silhouettes with Pillow-generated miniature viz renderings in vp-create pipeline (completed 2026-05-24)
-- [x] **Phase 42: Light Mode backgroundColor** - Fix opt() read order so backgroundColor works in both dark and light themes (completed 2026-05-24)
-- [x] **Phase 43: Deep Review** - Review all 6 vp-* skills and all reference files for consistency with v5.5-5.7 changes; produce REVIEW.md (completed 2026-05-25)
+- [x] Phase 38: JSONata Reference (2/2 plans) — completed 2026-05-23
+- [x] Phase 39: Extension API Template Fixes (2/2 plans) — completed 2026-05-23
+- [x] Phase 40: Animation Scope Fix (1/1 plans) — completed 2026-05-24
+- [x] Phase 41: Pillow Preview (2/2 plans) — completed 2026-05-24
+- [x] Phase 42: Light Mode backgroundColor (1/1 plans) — completed 2026-05-24
+- [x] Phase 43: Deep Review (12/12 plans) — completed 2026-05-25
+
+Full details: `.planning/milestones/v5.8.0-ROADMAP.md`
+
+</details>
 
 ## Phase Details
 
@@ -824,98 +829,6 @@ Plans:
   3. Improvement recommendations are listed for the next milestone
 
 **Plans**: 1 plan
-
-### Phase 38: JSONata Reference
-
-**Goal**: A comprehensive JSONata syntax reference exists for Dashboard Studio eval expressions, and ds-int-tokens links to it
-**Depends on**: Phase 37
-**Requirements**: JR-01, JR-02
-**Plans**: 2 plans
-Plans:
-**Wave 1**
-
-- [x] 38-01-PLAN.md — Create ds-ref-jsonata/SKILL.md with comprehensive JSONata reference (gotchas, operators, functions, recipes)
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 38-02-PLAN.md — Condense ds-int-tokens inline JSONata section to summary with MUST LOAD directive; wire cross-references in ds-ref-syntax, ds-int-drilldowns, plugin.json
-
-### Phase 39: Extension API Template Fixes
-
-**Goal**: The Extension API generation templates reflect all live-tested findings — IIFE format, bundled extension package, bare stanza names
-**Depends on**: Phase 37
-**Requirements**: EF-01, EF-02, EF-03
-**Plans**: 2 plans
-
-### Phase 40: Animation Scope Fix
-
-**Goal**: animation-recipes.md documents the opt() scope constraint and the entrance/pulse boilerplates pass speedMult as parameter
-**Depends on**: Phase 37
-**Requirements**: AF-01, AF-02
-**Plans**: 1 plan
-
-Plans:
-
-- [x] 40-01-PLAN.md — Insert scope rule section + refactor all five animation helper signatures
-
-### Phase 41: Pillow Preview
-
-**Goal**: vp-create generates Pillow-based preview.png files with per-viz custom miniature renderings instead of raw-buffer silhouettes
-**Depends on**: Phase 37
-**Requirements**: PP-01, PP-02
-**Plans**: 2 plans
-Plans:
-**Wave 1**
-
-- [x] 41-01-PLAN.md — Create generate_previews.py + bundle Inter-Regular.ttf + OFL.txt; 7 draw functions + 3-tier detection cascade; smoke test against tests/test42_redbull/redbull_sports_viz
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 41-02-PLAN.md — Wire generate_previews.py into vp-create/SKILL.md Step 3b; gate generate_assets.js preview path behind --legacy-previews; upgrade package-mjs-template.md Extension API preview section; bump plugin.json 5.8.0 to 5.9.0
-
-### Phase 42: Light Mode backgroundColor
-
-**Goal**: Generated viz code reads backgroundColor via opt() before the theme branch so both dark and light modes respect the user's setting
-**Depends on**: Phase 37
-**Requirements**: LM-01, LM-02
-**Plans**: 1 plan
-
-Plans:
-
-- [x] 42-01-PLAN.md — Add THM-05 backgroundColor pattern to theme-template.md (WRONG/RIGHT), pre-code-checklist.md (THM-05/LM-01 line), visualization-js-template.md (bg read + pointer), config-json-template.md (Extension API note); bump plugin.json 5.9.0 to 5.9.1
-
-### Phase 43: Deep Review
-
-**Goal**: All 6 vp-* skills and all reference files are reviewed for consistency with v5.5-5.7 changes, producing a REVIEW.md with findings
-**Depends on**: Phase 38, 39, 40, 41, 42 (all fixes landed)
-**Requirements**: DR-01, DR-02, DR-03
-**Plans**: 12 plans
-
-Plans:
-
-**Wave 1**
-
-- [x] 43-01-PLAN.md — Wave 1 Discovery: review 13 reference files in vp-viz/references/ + vp-recipes/references/animation-recipes.md; produce 43-WAVE-1-REVIEW-REFERENCES.md
-- [x] 43-02-PLAN.md — Wave 1 Discovery: review 6 vp-* SKILL.md files + vp-debug/references/broken-rules.md; produce 43-WAVE-2-REVIEW-SKILLS.md
-- [x] 43-03-PLAN.md — Wave 1 Discovery: review 17 vp-viz/scripts/ files for B/D/E/F/R code symmetry vs docs; produce 43-WAVE-3-REVIEW-VP-VIZ-SCRIPTS.md
-- [x] 43-04-PLAN.md — Wave 1 Discovery: review 5 vp-create/scripts/ files for Phase 41 D-01/D-02 contract; produce 43-WAVE-4-REVIEW-VP-CREATE-SCRIPTS.md
-- [x] 43-05-PLAN.md — Wave 1 Discovery: review 8 bounded dashboard-studio skills (5 cross-referenced + 3 Phase-38 touched); produce 43-WAVE-5-REVIEW-DASHBOARD-STUDIO.md
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 43-06-PLAN.md — Wave 2 Discovery: tests/ flag-only sweep + consolidate all per-wave REVIEW files into canonical 43-REVIEW.md
-
-**Wave 3 — Remediation** *(parallel plans, all depend on Wave 2 completion)*
-
-- [x] 43-07-PLAN.md — Cluster G: Reference file fixes (pre-code-checklist.md B-codes, visualization-js-template.md D10, formatter-patterns.md showGlassPanel/AccentArch, THM-01/02, Wave 1 WARNINGs, 8 files total)
-- [x] 43-08-PLAN.md — Cluster E+F: vp-design CP-01 brand swatch step + vp-debug B-range fix + THM-05 entry
-- [x] 43-09-PLAN.md — Cluster B: broken-rules.md DS1-DS5/XFILE/CONTRAST/B17 backfill + script fixes (check_contrast.js, repair_findings.js, validate_viz.sh, test fixture T_ANEW_1)
-- [x] 43-10-PLAN.md — Cluster C: PP-01 stale attribution sweep (vp-viz/vp-init/vp-create SKILL.md + generate_assets.js + generate_previews.py + STATE.md)
-- [x] 43-11-PLAN.md — Cluster D: ds-* schema/format fixes (ds-create deprecated drilldown, ds-ref-layout-grid wrong tabs schema, stale skeleton markers, canvas conflict, Wave 5 NITs)
-
-**Wave 4** *(blocked on all Wave 3 plans completing)*
-
-- [x] 43-12-PLAN.md — Cluster A: plugin.json version bump (splunk-viz-packs 5.9.1 → 5.10.0; splunk-dashboard-studio minor bump) + description trim + ROADMAP/STATE close-out
 
 ## Progress
 
