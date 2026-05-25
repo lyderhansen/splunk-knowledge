@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "splunk-knowledge",
-  "description": "Marketplace for Splunk plugins. Four plugins: splunk-dashboard-studio (Dashboard Studio v2 authoring, 60+ skills), splunk-viz-packs (themed Canvas 2D custom viz apps), splunk-spl (SPL syntax, 23 traps + 152 command refs), splunk-admin (conf files, REST API, CLI, troubleshooting).",
+  "description": "Marketplace for Splunk plugins. Five plugins: splunk-dashboard-studio (Dashboard Studio v2 authoring, 60+ skills), splunk-viz-packs (legacy v5.x Canvas 2D custom viz apps — superseded by splunk-custom-viz), splunk-spl (SPL syntax, 23 traps + 152 command refs), splunk-admin (conf files, REST API, CLI, troubleshooting), splunk-custom-viz (v6 HTML-first custom viz apps with designer-grade output).",
   "owner": {
     "name": "Lyder Hansen"
   },
@@ -28,7 +28,7 @@
     },
     {
       "name": "splunk-viz-packs",
-      "description": "Build themed Splunk custom viz apps — Canvas 2D rendering, shared design tokens, mood recipes, 14 viz blueprints, design scoring, anti-AI checklist, and AppInspect-ready packaging. Requires splunk-spl (SPL rules) and splunk-dashboard-studio (dashboard rules) for full functionality.",
+      "description": "Legacy v5.x — use splunk-custom-viz for new projects. Build themed Splunk custom viz apps — Canvas 2D rendering, shared design tokens, mood recipes, 14 viz blueprints, design scoring, anti-AI checklist, and AppInspect-ready packaging. Requires splunk-spl (SPL rules) and splunk-dashboard-studio (dashboard rules) for full functionality.",
       "source": "./plugins/splunk-viz-packs",
       "category": "productivity",
       "homepage": "https://github.com/lyderhansen/splunk-knowledge",
@@ -40,6 +40,16 @@
       "name": "splunk-admin",
       "description": "Splunk administration reference — 52 conf files, REST API endpoints, CLI commands, and troubleshooting guides. For Splunk admins, not dashboard designers. Install separately from the dashboard/viz plugins.",
       "source": "./plugins/splunk-admin",
+      "category": "productivity",
+      "homepage": "https://github.com/lyderhansen/splunk-knowledge",
+      "author": {
+        "name": "Lyder Hansen"
+      }
+    },
+    {
+      "name": "splunk-custom-viz",
+      "description": "Create installable Splunk custom visualization apps from a short brand description. HTML-first design workflow producing designer-grade output without AI-slop. Four skills (cv-scope, cv-sketch, cv-create, cv-build). Replacement for splunk-viz-packs (v5.x remains installable for legacy users).",
+      "source": "./plugins/splunk-custom-viz",
       "category": "productivity",
       "homepage": "https://github.com/lyderhansen/splunk-knowledge",
       "author": {
