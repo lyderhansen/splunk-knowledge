@@ -135,6 +135,8 @@ Recent decisions affecting current work:
 - [x] Execute 35-01-PLAN.md — COMPLETE (2026-05-22): Red Bull Classic path build, 5 vizs, ALL CHECKS PASSED, 133KB tarball
 - [x] Execute 36-01-PLAN.md — COMPLETE (2026-05-22): Extension API Red Bull pack, 3 vizs, E01-E05 ALL PASS, 8.6KB .spl
 - [ ] Evaluate cv6 HTML-first as splunk-viz-packs replacement (2026-05-25) — `.planning/todos/pending/2026-05-25-evaluate-cv6-html-first-as-splunk-viz-packs-replacement.md` — three forks: adopt cv6, cherry-pick HTML-first into v5, or coexist until breadth parity
+- [ ] Three live-render bugs in test48 polestar (2026-05-25) — `.planning/todos/pending/2026-05-25-test48-polestar-live-render-bugs.md` — regen dial not rendering, motor telemetry time labels collapsed, title truncation. Defer per Option C until cv6 A/B test informs v5/v6 strategy.
+- [ ] Run v5.10.1 WWF test build — prompt staged at `tests/test49_v510_wwf/PROMPT.md` (paste into `/vp-init`). Stress-tests B21 fix on a fresh build. Optional A/B against cv6 by pasting same brief into `/cv-scope`.
 
 ### Decisions
 
