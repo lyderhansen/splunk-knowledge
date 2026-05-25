@@ -327,6 +327,66 @@ Exceptions:
 
 ---
 
+---
+
+## Correction 13 — Preview uniqueness rule for `generate_previews.py`
+
+**Source:** WWF Field Ops 2026-05-25 — surfaced through 4 iterations:
+1. v6.0.1 letter-only `drawSilhouette` → 14 identical letter cards
+2. v6.0.2 per-type JS silhouettes → 2x identical "IO" KPI tiles + 2x identical grids
+3. v6.0.3 Pillow port (drawBars hardcoded heights) → 3 identical bar charts
+4. v6.0.4 drawKpi rewrite (hardcoded "ACTIVE" label) → active_collars ≈ mc01_composite at thumbnail size
+
+Each round fixed the previous failure mode and introduced a new one. The unifying rule:
+
+### The Rule
+
+> **Every preview must be visually unique at thumbnail size. `viz_name` MUST drive at least one rendering differentiator so two vizs of the same type can never render identically. No hardcoded display text — every label slot derives from `viz_name` or a `viz_name`-seeded hash.**
+
+### Three concrete requirements (every renderer in `generate_previews.py` MUST satisfy all three)
+
+1. **Render `viz_name` visibly somewhere in the preview** — as a label band, badge, or auto-sized hero. Every viz has a unique name, so rendering it as text guarantees unique pixels. This is the only bulletproof differentiator. `drawGeneric` and `drawKpi` already do this (label band at bottom). `drawGauge`, `drawRing`, `drawTable` currently do NOT — they need to.
+
+2. **Any geometry the renderer fills in (heights, cell intensities, segment widths, point positions, fill percentages, marker positions) MUST be seeded from `hash(viz_name)`** — never hardcoded arrays. Use the LCG pattern from `drawLine`/`drawBars`/`drawTimeline`/`drawHeatmap`:
+
+   ```python
+   seed = abs(hash(viz_name or "<fallback>")) & 0xFFFFFFFF
+   for _ in range(n):
+       seed = (seed * 1103515245 + 12345) & 0x7FFFFFFF
+       value = lo + (seed % (hi - lo + 1))
+   ```
+
+3. **Hardcoded display text is banned** — labels, captions, hero numbers, sample data, axis ticks, legend strings. Acceptable sources:
+   - `viz_name` (verbatim, uppercased, with underscores swapped for spaces)
+   - Hash-picked from a candidate pool of ≥8 items (e.g. `drawKpi`'s 12 hero candidates)
+   - Omitted entirely (let the silhouette speak)
+
+   Forbidden examples that have shipped: `"ACTIVE"`, `"65%"`, `"84"`, `"IO"`. Anything literal that ships in every render of the same type is by definition an AI-slop signature across the whole pack.
+
+### Corollary — type detection is necessary but not sufficient
+
+Tier 1/2/3 detection only chooses *which renderer* runs. The renderer itself is responsible for varying its output per `viz_name`. A correctly-typed viz can still produce identical previews if the renderer ignores the name. Detection improvements help (Tier 1 annotation > Tier 2 source scan > Tier 3 keyword fallback), but the within-renderer variation rule is the floor.
+
+### What this fixes structurally
+
+The "same default for every viz" pattern is the AI-slop equivalent of the canon's design anti-patterns (uniform-color KPI rows, default grey canvas, rainbow on severity). Same root cause: pre-baked output that doesn't engage with the specific viz's identity. Same fix: derive from inputs, never hardcode.
+
+### Outstanding work
+
+As of 2026-05-25 the following renderers in `generate_previews.py` still violate this rule and should be updated next time they're touched:
+
+- `drawGauge` — hardcoded `"84"` hero, no label band
+- `drawRing` — hardcoded `"65%"` hero, no label band, fixed 65% fill arc
+
+Both should adopt the `drawKpi` v6.0.4 pattern: viz_name as label, hash-picked hero from a candidate pool, hash-seeded geometry (gauge needle position / ring fill percentage).
+
+**Where it lives:**
+- `scripts/generate_previews.py` — all `draw*` functions are bound by this rule
+- This file (`KNOWN-CORRECTIONS.md` #13) — authoritative
+- `references/splunk-viz-canon.md` — does NOT cover preview generation (canon is about viz code, not pack assets); this correction extends the same anti-slop principle to the asset-generation layer.
+
+---
+
 ## Process note (Finding 4 from HANDOVER-skill-improvements.md)
 
 The user has been discovering corrections, writing them to personal memory, and the plugin docs have continued to teach the wrong thing. Going forward:
