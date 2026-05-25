@@ -360,23 +360,199 @@ function detectVizType(dirName) {
 
 
 
+// Per-type silhouette renderers — each draws a recognizable shape for that viz family.
+// Canvas: 116x76. Drawing area: x∈[8,108], y∈[8,60]. Bottom 6px reserved for accent bar.
+// All shapes use accent (ar,ag,ab) as primary; secondary (s1r,s1g,s1b) for outlines/contrast.
+
+function _drawGauge(rows, ar, ag, ab, s1r, s1g, s1b) {
+    // 9 segments forming a semicircle, like a battery / RPM gauge
+    var cx = 58, cy = 50, segs = 9;
+    for (var i = 0; i < segs; i++) {
+        var ang = Math.PI + (Math.PI / (segs - 1)) * i;
+        var px = Math.round(cx + Math.cos(ang) * 38);
+        var py = Math.round(cy + Math.sin(ang) * 24);
+        var r = (i < 6) ? ar : s1r, g = (i < 6) ? ag : s1g, b = (i < 6) ? ab : s1b;
+        fillRect(rows, px - 3, py - 3, 6, 6, r, g, b);
+    }
+    fillRect(rows, cx - 2, cy - 2, 4, 4, ar, ag, ab);
+}
+
+function _drawBars(rows, ar, ag, ab, s1r, s1g, s1b) {
+    var heights = [22, 36, 28, 44, 18];
+    var x = 22;
+    for (var i = 0; i < heights.length; i++) {
+        var h = heights[i];
+        var r = (i === 3) ? ar : s1r, g = (i === 3) ? ag : s1g, b = (i === 3) ? ab : s1b;
+        fillRect(rows, x, 60 - h, 12, h, r, g, b);
+        x += 16;
+    }
+}
+
+function _drawLine(rows, ar, ag, ab, s1r, s1g, s1b) {
+    var pts = [
+        {x: 12, y: 48}, {x: 24, y: 36}, {x: 36, y: 42}, {x: 48, y: 28},
+        {x: 60, y: 32}, {x: 72, y: 20}, {x: 84, y: 26}, {x: 96, y: 18}, {x: 104, y: 14}
+    ];
+    for (var i = 0; i < pts.length - 1; i++) {
+        var dx = pts[i + 1].x - pts[i].x;
+        var dy = pts[i + 1].y - pts[i].y;
+        var steps = Math.max(Math.abs(dx), Math.abs(dy));
+        for (var s = 0; s <= steps; s++) {
+            fillRect(rows,
+                Math.round(pts[i].x + (dx * s) / steps),
+                Math.round(pts[i].y + (dy * s) / steps),
+                2, 2, s1r, s1g, s1b);
+        }
+    }
+    var last = pts[pts.length - 1];
+    fillRect(rows, last.x - 2, last.y - 2, 5, 5, ar, ag, ab);
+}
+
+function _drawTimeline(rows, ar, ag, ab, s1r, s1g, s1b) {
+    var lanes = [
+        {y: 18, segs: [[14, 24], [44, 18], [78, 20]]},
+        {y: 32, segs: [[10, 32], [50, 16], [76, 24]]},
+        {y: 46, segs: [[18, 14], [40, 30], [78, 22]]}
+    ];
+    for (var l = 0; l < lanes.length; l++) {
+        fillRect(rows, 10, lanes[l].y + 3, 96, 1, s1r, s1g, s1b);
+        for (var s = 0; s < lanes[l].segs.length; s++) {
+            var seg = lanes[l].segs[s];
+            var isAccent = (l === 1 && s === 1);
+            var r = isAccent ? ar : s1r, g = isAccent ? ag : s1g, b = isAccent ? ab : s1b;
+            fillRect(rows, seg[0], lanes[l].y, seg[1], 6, r, g, b);
+        }
+    }
+}
+
+function _drawGrid(rows, ar, ag, ab, s1r, s1g, s1b) {
+    var cellW = 14, cellH = 11, gap = 2, startX = 12, startY = 12;
+    var pattern = [
+        [1, 0, 2, 1, 0, 2],
+        [2, 1, 1, 2, 1, 0],
+        [0, 2, 1, 0, 2, 1],
+        [1, 0, 2, 1, 1, 2]
+    ];
+    for (var ry = 0; ry < 4; ry++) {
+        for (var rx = 0; rx < 6; rx++) {
+            var v = pattern[ry][rx];
+            if (v === 0) continue;
+            var r = (v === 2) ? ar : s1r, g = (v === 2) ? ag : s1g, b = (v === 2) ? ab : s1b;
+            fillRect(rows,
+                startX + rx * (cellW + gap),
+                startY + ry * (cellH + gap),
+                cellW, cellH, r, g, b);
+        }
+    }
+}
+
+function _drawKpi(rows, ar, ag, ab, s1r, s1g, s1b) {
+    // Big-number tile: render two letter-blocks as stand-in for digits + caption bar
+    drawLetter(rows, 'I', 30, 14, 5, ar, ag, ab);
+    drawLetter(rows, 'O', 56, 14, 5, ar, ag, ab);
+    fillRect(rows, 32, 56, 52, 2, s1r, s1g, s1b);
+}
+
+function _drawProgress(rows, ar, ag, ab, s1r, s1g, s1b) {
+    fillRect(rows, 10, 28, 96, 12, s1r, s1g, s1b);
+    fillRect(rows, 10, 28, 62, 12, ar, ag, ab);
+    for (var i = 0; i <= 4; i++) {
+        var tx = 10 + Math.round((i / 4) * 96);
+        fillRect(rows, tx - 1, 44, 2, 4, s1r, s1g, s1b);
+    }
+}
+
+function _drawScatter(rows, ar, ag, ab, s1r, s1g, s1b) {
+    var pts = [
+        {x: 18, y: 42, a: 0}, {x: 28, y: 22, a: 1}, {x: 42, y: 50, a: 0},
+        {x: 50, y: 30, a: 0}, {x: 60, y: 18, a: 1}, {x: 68, y: 44, a: 0},
+        {x: 76, y: 28, a: 0}, {x: 84, y: 14, a: 1}, {x: 92, y: 38, a: 0},
+        {x: 22, y: 32, a: 0}, {x: 38, y: 16, a: 1}, {x: 100, y: 26, a: 0}
+    ];
+    fillRect(rows, 10, 8, 1, 52, s1r, s1g, s1b);
+    fillRect(rows, 10, 59, 100, 1, s1r, s1g, s1b);
+    for (var i = 0; i < pts.length; i++) {
+        var r = pts[i].a ? ar : s1r, g = pts[i].a ? ag : s1g, b = pts[i].a ? ab : s1b;
+        var sz = pts[i].a ? 5 : 4;
+        fillRect(rows, pts[i].x, pts[i].y, sz, sz, r, g, b);
+    }
+}
+
+function _drawNetwork(rows, ar, ag, ab, s1r, s1g, s1b) {
+    var hub = {x: 58, y: 36};
+    var spokes = [
+        {x: 18, y: 16}, {x: 96, y: 16}, {x: 100, y: 50}, {x: 28, y: 56}, {x: 14, y: 36}
+    ];
+    for (var i = 0; i < spokes.length; i++) {
+        var dx = spokes[i].x - hub.x, dy = spokes[i].y - hub.y;
+        var steps = Math.max(Math.abs(dx), Math.abs(dy));
+        for (var s = 0; s <= steps; s += 2) {
+            fillRect(rows,
+                Math.round(hub.x + (dx * s) / steps),
+                Math.round(hub.y + (dy * s) / steps),
+                1, 1, s1r, s1g, s1b);
+        }
+    }
+    fillRect(rows, hub.x - 4, hub.y - 4, 9, 9, ar, ag, ab);
+    for (var j = 0; j < spokes.length; j++) {
+        fillRect(rows, spokes[j].x - 3, spokes[j].y - 3, 6, 6, s1r, s1g, s1b);
+    }
+}
+
+function _drawRadar(rows, ar, ag, ab, s1r, s1g, s1b) {
+    var cx = 58, cy = 36, axes = 6;
+    var radii = [22, 18, 26, 16, 20, 24];
+    var pts = [];
+    for (var i = 0; i < axes; i++) {
+        var ang = -Math.PI / 2 + (Math.PI * 2 / axes) * i;
+        pts.push({
+            x: Math.round(cx + Math.cos(ang) * radii[i]),
+            y: Math.round(cy + Math.sin(ang) * radii[i])
+        });
+        var endx = Math.round(cx + Math.cos(ang) * 28);
+        var endy = Math.round(cy + Math.sin(ang) * 28);
+        var dxA = endx - cx, dyA = endy - cy;
+        var stepsA = Math.max(Math.abs(dxA), Math.abs(dyA));
+        for (var s = 0; s <= stepsA; s += 2) {
+            fillRect(rows,
+                Math.round(cx + (dxA * s) / stepsA),
+                Math.round(cy + (dyA * s) / stepsA),
+                1, 1, s1r, s1g, s1b);
+        }
+    }
+    for (var p = 0; p < pts.length; p++) {
+        var next = pts[(p + 1) % pts.length];
+        var dxE = next.x - pts[p].x, dyE = next.y - pts[p].y;
+        var stepsE = Math.max(Math.abs(dxE), Math.abs(dyE));
+        for (var sE = 0; sE <= stepsE; sE++) {
+            fillRect(rows,
+                Math.round(pts[p].x + (dxE * sE) / stepsE),
+                Math.round(pts[p].y + (dyE * sE) / stepsE),
+                2, 2, ar, ag, ab);
+        }
+    }
+}
+
 function drawSilhouette(rows, type, ar, ag, ab, bgr, bgg, bgb, s1r, s1g, s1b) {
-    // v6 simplification: one renderer for all viz types.
-    // Brand-tinted background, viz name in accent color, centered.
-    //
-    // type parameter is kept for backward compat but no longer changes rendering.
     fillRect(rows, 0, 0, 116, 76, bgr, bgg, bgb);
-
-    // Draw a subtle accent bar at the bottom (12% of height).
-    var barH = 9;
-    fillRect(rows, 0, 76 - barH, 116, barH, ar, ag, ab);
-
-    // Center a single letter (first letter of viz name) in accent color.
-    // The viz name is passed via the global VIZ_LABEL var set by the caller.
-    var letter = (typeof VIZ_LABEL === 'string' && VIZ_LABEL.length > 0)
-        ? VIZ_LABEL.charAt(0).toUpperCase()
-        : 'V';
-    drawLetter(rows, letter, 50, 25, 3, ar, ag, ab);
+    switch (type) {
+        case 'gauge':    _drawGauge(rows, ar, ag, ab, s1r, s1g, s1b); break;
+        case 'bars':     _drawBars(rows, ar, ag, ab, s1r, s1g, s1b); break;
+        case 'line':     _drawLine(rows, ar, ag, ab, s1r, s1g, s1b); break;
+        case 'timeline': _drawTimeline(rows, ar, ag, ab, s1r, s1g, s1b); break;
+        case 'grid':     _drawGrid(rows, ar, ag, ab, s1r, s1g, s1b); break;
+        case 'kpi':      _drawKpi(rows, ar, ag, ab, s1r, s1g, s1b); break;
+        case 'progress': _drawProgress(rows, ar, ag, ab, s1r, s1g, s1b); break;
+        case 'scatter':  _drawScatter(rows, ar, ag, ab, s1r, s1g, s1b); break;
+        case 'network':  _drawNetwork(rows, ar, ag, ab, s1r, s1g, s1b); break;
+        case 'radar':    _drawRadar(rows, ar, ag, ab, s1r, s1g, s1b); break;
+        default:
+            var letter = (typeof VIZ_LABEL === 'string' && VIZ_LABEL.length > 0)
+                ? VIZ_LABEL.charAt(0).toUpperCase() : 'V';
+            if (!FONT_GLYPHS[letter]) letter = '*';
+            drawLetter(rows, letter, 50, 22, 3, ar, ag, ab);
+    }
+    fillRect(rows, 0, 76 - 6, 116, 6, ar, ag, ab);
 }
 
 // ---- Asset generators ----
