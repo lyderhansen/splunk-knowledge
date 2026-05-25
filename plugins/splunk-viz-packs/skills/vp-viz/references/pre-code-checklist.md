@@ -4,14 +4,16 @@ Verify EVERY item before writing visualization code. This is the gate between "r
 
 ```
 □ Viz files in appserver/static/visualizations/{viz}/ — NEVER default/visualizations/
-□ Formatter: {{VIZ_NAMESPACE}}.key in ALL name= attributes
-□ Formatter: value= on all inputs (NEVER default=)
-□ Formatter: type="splunkCategorical" on series color pickers; type="custom" on brand/accent pickers (accentColor, backgroundColor, fontColor, thresholdColor*)
+□ Formatter: {{VIZ_NAMESPACE}}.key in ALL name= attributes (B10)
+□ Formatter: value= on all inputs (NEVER default=) (B7)
+□ Formatter: type="splunkCategorical" on series color pickers; type="custom" on brand/accent pickers (accentColor, backgroundColor, fontColor, thresholdColor*) (B5)
 □ Formatter: class="splunk-formatter-section" section-label="..." on every <form>
-□ Formatter: themeMode defaults to "auto" (NEVER "dark")
-□ Formatter: minimum 10 controls (4 sections required when mood effects present)
+□ Formatter: themeMode defaults to "auto" (NEVER "dark") (B20)
+□ Formatter: minimum 10 controls (target 14-18 for domain vizs); minimum 3 `section-label` sections (4 sections when Animation section present)
 □ Formatter: Color pickers — read theme.js DARK palette, populate 6-8 brand swatches as <splunk-color> elements (accent, series[0-4], bg or panel)
 □ JS light theme: hero text uses t.text, NEVER t.textDim (ghost-text on white — D-08)
+□ JS light theme: light theme is NOT an inversion of dark — design LIGHT token set independently (THM-01)
+□ JS light theme: LIGHT.textFaint '#6B7080' meets WCAG AA 3:1 on #F0F2F5 bg — never replace with a lower-contrast value (THM-02/CP-02)
 □ JS light theme: glow scaled by isDark ? 1.0 : 0.4 (THM-03)
 □ JS light theme: inner shadow replaced by 1px t.edge border on panels (THM-04)
 □ JS: backgroundColor read unconditionally — var bg = hexFromSplunk(opt('backgroundColor', t.bg), t.bg); — rendering uses bg in BOTH isDark paths, never t.bg/t.panel directly (THM-05/LM-01)
@@ -19,7 +21,7 @@ Verify EVERY item before writing visualization code. This is the gate between "r
   **ENFORCED by check_design.js D10 -- will FAIL validation if missing**
 □ JS: require()/module.exports — NEVER define()
 □ JS: SplunkVisualizationBase.extend({...}) object literal
-□ JS: safeStr()/safeNum() on all row field reads
+□ JS: safeStr()/safeNum() on all row field reads (B21)
 □ JS: escapeHtml() on ALL search data inserted into innerHTML/insertAdjacentHTML; makeSafeUrl() on ALL search data used in href/src attributes — from SplunkVisualizationUtils (ECR-08). Canvas fillText is exempt.
 □ JS: detectTheme() for auto theme detection
 □ JS: clientWidth/clientHeight — NEVER getBoundingClientRect for sizing
@@ -33,7 +35,7 @@ Verify EVERY item before writing visualization code. This is the gate between "r
 □ JS accent role: t.accent used ONLY for hover highlight, glow shadowColor, selection ring, threshold breach, focus indicator. Never as ctx.fillStyle for data bars, arcs, or area fills. See DPR-03b.
 □ JS series data fills: multi-series fills use theme.getSeriesColor(i, t) from t.series[0]-[4]. Single-series vizs may use t.accent as the primary fill (KPI hero value, single gauge arc).
 □ JS: pure ES5 — no const/let/arrow/template literals
-□ Dashboard JSON type: {app_id}.{viz_name} — NEVER custom.* or splunk.custom.*
+□ Dashboard JSON type: {app_id}.{viz_name} — NEVER custom.* or splunk.custom.* (B9)
 □ Dashboard JSON options: {app_id}.{viz_name}.key — NEVER bare key names
 □ Dashboard data sources: every ds.search has "name" field
 □ Tables: sort ALL columns, pagination with maxRows, hiddenColumns, columnWidths
@@ -93,4 +95,6 @@ Skip the Classic items marked with "Formatter:" and "JS: require()/module.export
 Template references:
 - config.json: references/config-json-template.md
 - visualization.js: references/visualization-js-template.md
+
+> **Note (W-20):** `check_design.js` (D01-D11 design quality gate) operates on `formatter.html` only. Extension API vizs using `config.json` bypass D01-D11 design checks. Validate Extension API pack design quality manually.
 
