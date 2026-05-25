@@ -15,12 +15,11 @@ var path = require('path');
 var os = require('os');
 
 var SCRIPT = path.join(__dirname, 'validate_ast.js');
-var TESTS_ROOT = path.join(__dirname, '..', '..', '..', '..', '..', '..', '..', 'tests');
 
 // Resolve the tests directory relative to this script location:
 // scripts/ -> vp-viz/ -> skills/ -> splunk-viz-packs/ -> plugins/ -> (repo root) -> tests/
 var REPO_ROOT = path.resolve(__dirname, '..', '..', '..', '..', '..');
-TESTS_ROOT = path.join(REPO_ROOT, 'tests');
+var TESTS_ROOT = path.join(REPO_ROOT, 'tests');
 
 var CLEAN_JS = path.join(TESTS_ROOT,
     'test28_drilldown_tabs', 'cloudflare_noc',

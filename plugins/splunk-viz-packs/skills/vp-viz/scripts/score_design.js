@@ -52,6 +52,8 @@ if (!fs.existsSync(themeJsPath)) {
 // ---- Load file contents ----
 
 var jsSrc        = fs.readFileSync(jsSrcPath, 'utf8');
+// themeContent loaded but currently unused by scoring functions. Future enhancement:
+// use in scoreGradient() to penalize unfulfilled fillTechnique:gradient commitments.
 var themeContent = fs.readFileSync(themeJsPath, 'utf8');
 
 // ---- Dimension 1: Gradient usage (0-20) ----

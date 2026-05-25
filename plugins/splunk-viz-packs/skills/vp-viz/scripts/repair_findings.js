@@ -45,6 +45,7 @@ if (!fs.existsSync(findingsFile)) {
 
 // ---- NDJSON group-by-file ----
 
+// CONTRAST, DS1-DS5, XFILE, D-codes intentionally excluded — require human design decisions or schema corrections
 var FIXABLE_CODES = ['B10', 'B9', 'B7', 'B5', 'B20'];
 
 var lines = fs.readFileSync(findingsFile, 'utf8').split('\n');
