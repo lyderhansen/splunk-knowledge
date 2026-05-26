@@ -2,59 +2,64 @@
 
 ## What This Is
 
-A marketplace of Claude Code plugins for Splunk development — custom visualizations, dashboards, SPL queries, and admin tasks. The primary focus is **splunk-viz-packs** (v5.10.0): a plugin that generates branded Splunk custom visualization apps from a brand brief. v4.1.0 shipped validation/repair. v5.0.0 added design awesomeness. v5.1.0-v5.4.0 hardened vizs, polished interactive dashboards, fixed runtime bugs. v5.5.0 added wow-factor (branded backgrounds, animation boilerplates, multi-channel vizs, XSS prevention). v5.6.0 added dual-format architecture — Extension API (config.json + ESM) alongside Classic (formatter.html + AMD), aesthetic scoring. v5.7.0 validated end-to-end with Red Bull live Splunk builds. v5.8.0 corrected every issue found during live testing: JSONata reference, Extension API template fixes, animation scope rule, Pillow preview pipeline, THM-05 light-mode `backgroundColor`, and a milestone-wide deep review fixing 19 BLOCKERs + 30 WARNINGs inline.
+A marketplace of Claude Code plugins for Splunk development — custom visualizations, dashboards, SPL queries, and admin tasks. Two primary plugins now: **splunk-viz-packs** (v5.10.1, legacy multi-viz / validator-driven) and **splunk-custom-viz** (v6.0.7, HTML-first / 4-skill, currently the active one for new projects per marketplace.json). v4.1.0-v5.8.0 built and hardened splunk-viz-packs (validation, design quality gate, Extension API dual-format, live Red Bull verification). The cv6 rewrite landed mid-2026-05 as splunk-custom-viz with an HTML-first mockup contract. v6.0 turns to hardening + speed: cv6 must finish a full session in fewer turns without hanging mid-code-write, and a new oneshot-dashboard path produces a working Dashboard Studio dashboard from dummy data with zero design ceremony.
 
 ## Core Value
 
-When a user runs `/vp-init`, the resulting viz pack installs in Splunk without errors and produces a dashboard that makes someone say "wait, that's Splunk?" — zero manual fixes, wow-factor by default.
+When a user runs `/cv-scope` (cv6) or `/cv-oneshot` (v6.0), they get an installable Splunk artifact fast — no hangs, no design ceremony when speed is the priority, designer-grade output when it's not. `splunk-viz-packs` retains its zero-fix / wow-factor guarantee for multi-viz brand packs.
 
 ## Requirements
 
 ### Validated
 
-- ✓ Plugin architecture with 4 plugins (splunk-viz-packs, splunk-dashboard-studio, splunk-spl, splunk-admin) — existing
-- ✓ 6 skills in splunk-viz-packs (vp-init, vp-design, vp-viz, vp-create, vp-debug, vp-recipes) — v4.1.0
-- ✓ Progressive disclosure (<500 lines per SKILL.md, references/) — v4.0.0
-- ✓ Executable validation (validate_viz.sh, build_flat.js) — deterministic checks
-- ✓ Subagent ban for code generation — 100% failure rate proven in test22a/b
-- ✓ B9 type format fix (STOP section at top of vp-viz) — passes since test27
-- ✓ Namespaced options (B10) — three-format table in vp-viz
-- ✓ AST/DOM/schema validation (acorn + cheerio + ajv) — v4.1.0 Phase 1-2
-- ✓ Automated repair loop (--repair flag, B10/B9/B5/B7/B20 auto-fix) — v4.1.0 Phase 3
-- ✓ WCAG AA contrast enforcement (check_contrast.js, 4.5:1 ratio) — v4.1.0 Phase 3
-- ✓ Pure JS PNG asset generation (appIcon + preview silhouettes) — v4.1.0 Phase 4
-- ✓ Visual Language schema + novelty scoring — v4.1.0 Phase 4
-- ✓ Mandatory viz interactivity (sort, hover, drilldown) — v4.1.0 Phase 4
-- ✓ Rule consolidation (54→15 quick-rules, all-patterns 911→185 lines) — v4.1.0 Phase 5
-- ✓ Expanded automated validation (195 tests across 6 test suites) — v4.1.0
+- ✓ Plugin architecture (splunk-viz-packs, splunk-custom-viz, splunk-dashboard-studio, splunk-spl, splunk-admin) — existing
+- ✓ splunk-viz-packs: 6 skills, progressive disclosure (<500 lines/SKILL.md), validate_viz.sh + build_flat.js, AST/DOM/schema validation, repair loop, WCAG contrast, asset generation, visual language schema, rule consolidation, 195 tests — v4.1.0–v5.8.0
+- ✓ splunk-viz-packs: design principles, design quality gate (D01-D11), premium recipes, intelligent formatter config, theme parity, cross-viz consistency, edge-case resilience — v5.0.0–v5.5.0
+- ✓ splunk-viz-packs: dual-format (Classic .tar.gz + Extension API .spl), aesthetic scoring (score_design.js), JSONata reference, animation scope rule, Pillow per-viz preview pipeline, THM-05 light-mode backgroundColor — v5.6.0–v5.8.0
+- ✓ splunk-viz-packs: end-to-end live Splunk verification (Red Bull Classic + Extension API) — v5.7.0
+- ✓ splunk-custom-viz: 4 skills (cv-scope → cv-sketch → cv-create → cv-build), HTML-first mockup workflow, DESIGN-LOCK.md contract, dual-format output — v6.0.0–v6.0.7
+- ✓ splunk-custom-viz: composite preview layouts, variant dispatch, series colors, mandated @preview-layout — v6.0.6–v6.0.7
 
-### Active
+### Active (v6.0)
 
-- [ ] Design principles engine — codified Canvas 2D design rules from top design skills
-- [ ] Design quality gate — automated scorer for aesthetics (shadows, color, typography, spacing)
-- [ ] Premium rendering recipes — gradients, glow, shadow layering, responsive text, animations
-- [ ] Enhanced vp-viz generation — DataDrivers-quality code from the start
-- [ ] Intelligent viz configuration — context-aware formatter options with smart defaults per viz type
-- [ ] Theme parity — dark and light themes that both look intentional
-- [ ] Cross-viz consistency — shared spacing grid, hover contract, typography scale
-- [ ] Edge case resilience — graceful degradation for empty/null/overflow data
-- [ ] First-build success hardening — push FISR toward 100%
+- [ ] Hang-free code writes in cv-create — no mid-file stalls on long viz files; chunked / smaller-unit emission
+- [ ] Slimmer cv-sketch mockup output — drop redundant emission, keep the visual contract intact
+- [ ] End-to-end session reduction in splunk-custom-viz — measurably fewer turns from cv-scope → installable artifact
+- [ ] cv-oneshot skill — dummy data (makeresults SPL) in, installable Dashboard Studio dashboard out, zero design-principles loads
 
 ### Deferred
 
 - [ ] Harden splunk-dashboard-studio plugin (ds-* skills)
 - [ ] Harden splunk-spl and splunk-admin plugins
+- [ ] Decide splunk-viz-packs vs splunk-custom-viz long-term (adopt / cherry-pick / coexist) — pending breadth parity evidence; tracked in `.planning/todos/pending/2026-05-25-evaluate-cv6-html-first-as-splunk-viz-packs-replacement.md`
+- [ ] Original 2026-05-23 v6.0 draft (Mood × Aesthetic Flavor collapse, AST strategy, Phase A/B/C/D/E) — shelved, may revisit post-v6.0 if cv6 wins the breadth comparison
 
-### Out of Scope
+### Out of Scope (v6.0)
 
-- PNG export from vizs — SVG only for dashboard imagery
-- Real-time streaming vizs — standard Splunk polling is sufficient
-- Mobile-responsive viz rendering — Splunk dashboards are desktop/wall-display
-- Multi-tenant viz sharing — each pack is a standalone Splunk app
+- Any redesign of splunk-viz-packs (v5.10.1 stays as legacy)
+- Mood × Aesthetic Flavor archetype consolidation — that's the shelved v6.0 draft, defer to v7+
+- AST validator drop / opt-in strategy — deferred with the shelved draft
+- New domain-specific viz types — orthogonal to perf/hardening
+- PNG export from vizs, real-time streaming, mobile-responsive rendering, multi-tenant viz sharing
 
-## Current State: v5.8.0 shipped
+## Current Milestone: v6.0 Speed & Oneshot
 
-**Shipped:** 2026-05-25 — 6 phases, 20 plans, 14 requirements satisfied. **splunk-viz-packs at v5.10.0; splunk-dashboard-studio at v3.5.0.**
+**Goal:** splunk-custom-viz finishes a full session in fewer turns without hanging mid-code-write, AND a new oneshot-dashboard path produces a working Dashboard Studio dashboard from dummy data with zero design ceremony.
+
+**Target features:**
+- Hang-free code writes in cv-create (chunked / smaller-unit emission strategy)
+- Slimmer cv-sketch HTML mockup output
+- End-to-end session reduction across splunk-custom-viz pipeline
+- New `cv-oneshot` skill: `| makeresults | eval ...` dummy data → installable Dashboard Studio dashboard, zero design-principles loads, "just create it" path
+
+**Key context:**
+- cv6 hung mid-code-write at least once during recent use → treat as hard requirement, not a nice-to-have
+- splunk-viz-packs (v5.10.1) is legacy this milestone — no v6 work there
+- Original 2026-05-23 v6.0 draft (consolidation / Mood collapse / AST strategy) is shelved — may revisit later
+
+## Previous Milestone: v5.8.0 shipped
+
+**Shipped:** 2026-05-25 — 6 phases, 20 plans, 14 requirements satisfied. **splunk-viz-packs at v5.10.1; splunk-dashboard-studio at v3.5.0; splunk-custom-viz at v6.0.7.**
 
 **What v5.8.0 delivered:**
 - JSONata reference (`ds-ref-jsonata`) for Dashboard Studio eval/conditions expressions; ds-int-tokens MUST-LOAD wired
@@ -64,7 +69,7 @@ When a user runs `/vp-init`, the resulting viz pack installs in Splunk without e
 - THM-05 light-mode `backgroundColor` fix across all 4 template files
 - Deep Review milestone audit: 95 files reviewed, 19 BLOCKERs + 30 WARNINGs all fixed inline, plugin.json descriptions trimmed to match validator reality
 
-**Next milestone:** TBD. Run `/gsd:new-milestone` to define v5.9.0 requirements and phases.
+**Post-v5.8.0 quick task:** cv6-skill-corrections (2026-05-25) — applied 4 handover findings, fixed Patrol Coverage stack overflow, restored per-type preview.png silhouettes, added KNOWN-CORRECTIONS.md + 3 validator grep checks.
 
 <details>
 <summary>v5.7.0 Real Brand End-to-End Validation (shipped 2026-05-22)</summary>
@@ -183,4 +188,4 @@ Branded backgrounds, color pickers, multi-channel vizs, animation boilerplates, 
 This document evolves at phase transitions and milestone boundaries.
 
 ---
-*Last updated: 2026-05-20 after v5.5.0 milestone start*
+*Last updated: 2026-05-25 — v6.0 Speed & Oneshot milestone started*

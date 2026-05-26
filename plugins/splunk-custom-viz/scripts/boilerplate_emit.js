@@ -193,7 +193,9 @@ var template =
     '    //\n' +
     '    _renderDark: function(ctx, data, t, w, h, opt) {\n' +
     '        t = this._resolveTheme(t, opt);  // ← MUST be first line (Rule 7)\n' +
+    '        /* CV-RENDER-DARK-BEGIN */\n' +
     '        // TODO: implement per visual_reference_html [data-theme="dark"]\n' +
+    '        /* CV-RENDER-DARK-END */\n' +
     '    },\n' +
     '\n' +
     '    // Translate visual_reference_html [data-theme="light"] CSS into Canvas calls.\n' +
@@ -202,7 +204,9 @@ var template =
     '    //\n' +
     '    _renderLight: function(ctx, data, t, w, h, opt) {\n' +
     '        t = this._resolveTheme(t, opt);  // ← MUST be first line (Rule 7)\n' +
+    '        /* CV-RENDER-LIGHT-BEGIN */\n' +
     '        // TODO: implement per visual_reference_html [data-theme="light"]\n' +
+    '        /* CV-RENDER-LIGHT-END */\n' +
     '    },\n' +
     '\n' +
     '    _onMouseMove: function(e) {\n' +

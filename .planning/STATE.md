@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v5.8.0
-milestone_name: Quality & Template Corrections
-status: milestone_complete
-stopped_at: Milestone complete (Phase 43 was final phase)
-last_updated: 2026-05-25T17:45:00.000Z
-last_activity: 2026-05-25 -- cv6-skill-corrections quick task complete
+milestone: v6.0
+milestone_name: Speed & Oneshot
+status: planning
+last_updated: "2026-05-25T21:04:08.930Z"
+last_activity: 2026-05-25
 progress:
-  total_phases: 38
-  completed_phases: 32
-  total_plans: 72
-  completed_plans: 99
-  percent: 84
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -25,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-05-20)
 
 ## Current Position
 
-Phase: 43
-Plan: Not started
-Status: Milestone complete
-Last activity: 2026-05-25
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-05-25 — Milestone v6.0 started
 
 ## Performance Metrics
 
