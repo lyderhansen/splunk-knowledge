@@ -100,14 +100,40 @@ After editing, verify the YAML still parses. If parsing fails, report and stop.
 
 ## Step 7: Re-render the viz
 
-Regenerate ONLY the affected viz's files:
+Regenerate ONLY the affected viz's files. Use the same per-viz sequence as full-pipeline (D-08): sentinel-anchored Edits target the dark / light render bodies directly so each iteration is a clean delta instead of an overwrite-from-scratch.
 
-- `<app_id>/appserver/static/visualizations/<viz_name>/src/visualization_source.js` (re-emit from boilerplate + new render functions):
+**Resume detection does NOT apply in iteration mode** — it is one-shot (exactly one viz, the one the user named). The Edit and checkpoint mechanics from cv-create/SKILL.md Step 3.2 / 3.3 / 3.6 still apply.
+
+**Default shape — sentinel-anchored Edit (replaces previous full boilerplate re-emit):**
+
+For changes that affect ONLY the dark or light render body (e.g., *"make the gauge segments wider"*, *"add a green glow on the full segment"*), use an Edit whose `old_string` is the current render body between the sentinels and whose `new_string` is the updated body. The sentinels are deterministic anchors that make the Edit grep-stable.
+
+```
+# Dark body update — Edit anchors
+old_string:
+    /* CV-RENDER-DARK-BEGIN */
+    <existing dark body Canvas calls>
+    /* CV-RENDER-DARK-END */
+
+new_string:
+    /* CV-RENDER-DARK-BEGIN */
+    <updated dark body Canvas calls>
+    /* CV-RENDER-DARK-END */
+```
+
+Same shape for `_renderLight` against the `CV-RENDER-LIGHT-BEGIN` / `CV-RENDER-LIGHT-END` pair. This is the **default** for iteration deltas — it preserves the rest of the source file (helpers, formatData, theme dispatch, event handlers) and never disturbs the user's prior render work in the other theme path.
+
+**Formatter changes:** for deltas that affect controls (e.g., *"add an animationSpeed slider"*), the existing `formatter.html` Write is preserved — re-write the file from the updated `visual_spec`.
+
+**Exception — full boilerplate re-emit:** if the `visual_spec` structure changes such that the source skeleton itself needs to be regenerated (very rare; for example, the viz_name itself changed, which is a degenerate case anyway), fall back to:
 
 ```bash
 node ${CLAUDE_SKILL_PLUGIN_DIR}/../../scripts/boilerplate_emit.js <viz_name> <app_id>.<viz_name> \
     > <app_id>/appserver/static/visualizations/<viz_name>/src/visualization_source.js
 ```
+
+This is the exception, not the default. Use the sentinel-anchored Edit for ordinary visual deltas.
+
 - `<app_id>/appserver/static/visualizations/<viz_name>/formatter.html` (re-emit if visual_spec changed)
 - Theme.js — only re-emit if `global` tokens changed (unlikely in iteration)
 
@@ -115,6 +141,20 @@ PRESERVE:
 - Other vizs' source files (untouched)
 - Existing formatter VALUES (the user may have tweaked them in Splunk; don't overwrite)
 - Demo CSV data (unless data_contract changed)
+
+**Per-viz checkpoint** (D-06) — after the Edit(s) and any Write(s) complete, run the same five-predicate composition documented in cv-create/SKILL.md Step 3.6. On pass, print:
+
+```
+✓ [1/1] <viz_name> — boilerplate + renderDark + renderLight + formatter + css
+```
+
+On fail, print and stop (D-07):
+
+```
+✗ [1/1] <viz_name> — checkpoint failed: <reason>
+```
+
+`[1/1]` because iteration mode regenerates exactly one viz. The user investigates and re-runs cv-create with the corrected instruction.
 
 ## Step 8: Report
 

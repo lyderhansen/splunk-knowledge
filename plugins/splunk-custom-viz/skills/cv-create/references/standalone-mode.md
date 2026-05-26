@@ -168,13 +168,45 @@ If the cwd already contains an `<app_id>/` directory, only write the new viz fil
 
 ## Step 4: Generate the viz files
 
-Same as full-pipeline Step 3:
+Standalone uses the **same per-viz sequence** as full-pipeline Step 3 (D-08): boilerplate (Bash) → Edit `_renderDark` body between `/* CV-RENDER-DARK-BEGIN */` … `/* CV-RENDER-DARK-END */` → Edit `_renderLight` body between `/* CV-RENDER-LIGHT-BEGIN */` … `/* CV-RENDER-LIGHT-END */` → Write `formatter.html` → Write `visualization.css`.
 
-1. Run `boilerplate_emit.js` to get the skeleton
-2. Paste the mini-lock's `visual_reference_html` as a comment above `_renderDark` and `_renderLight`
-3. Fill `_renderDark` and `_renderLight` from the CSS
-4. Write `formatter.html` from `visual_spec`
-5. Write the demo CSV
+**Resume detection does NOT apply in standalone** — it is one-shot mode with exactly one viz, and the mini-lock is held in memory rather than on disk, so the resume predicate has nothing to read. The four-tool-call sequence always runs.
+
+Refer to cv-create/SKILL.md Step 3.2 / 3.3 for the literal `old_string` / `new_string` shape of the sentinel-anchored Edits, and Step 3.6 for the per-viz checkpoint predicate (D-08 contract — single source of truth for the chunked mechanics).
+
+Per-viz sequence:
+
+1. **Run `boilerplate_emit.js`** (one Bash call) — generates the source file with the four sentinels in their canonical positions (Plan 01).
+
+   ```bash
+   node ${CLAUDE_SKILL_PLUGIN_DIR}/../../scripts/boilerplate_emit.js <viz_name> <app_id>.<viz_name> > <app_id>/appserver/static/visualizations/<viz_name>/src/visualization_source.js
+   ```
+
+2. **Paste the mini-lock's `visual_reference_html`** as a comment block ABOVE `_renderDark` and `_renderLight` (above each begin sentinel). Existing standalone behavior, preserved — this is the in-source visual contract.
+
+3. **Edit the `_renderDark` body** between `/* CV-RENDER-DARK-BEGIN */` and `/* CV-RENDER-DARK-END */` (one Edit call). Translate the dark-theme CSS from `visual_reference_html` into Canvas calls; keep the sentinels in `new_string`.
+
+4. **Edit the `_renderLight` body** between `/* CV-RENDER-LIGHT-BEGIN */` and `/* CV-RENDER-LIGHT-END */` (one Edit call). Light is a different code path, not a dimmed dark.
+
+5. **Write `formatter.html`** from `visual_spec` (one Write call). Same minimum-10-controls + `{{VIZ_NAMESPACE}}` rules as full pipeline.
+
+6. **Write `visualization.css`** (one Write call). One line: `.<app_id>-<viz_name>-viz { background: transparent; }`.
+
+7. **Per-viz checkpoint** (D-06) — run the same five-predicate composition documented in cv-create/SKILL.md Step 3.6 against the on-disk files for this viz. On pass, print:
+
+   ```
+   ✓ [1/1] <viz_name> — boilerplate + renderDark + renderLight + formatter + css
+   ```
+
+   On fail, print and stop (D-07):
+
+   ```
+   ✗ [1/1] <viz_name> — checkpoint failed: <reason>
+   ```
+
+   `[1/1]` because standalone has exactly one viz. No retry; the user re-runs cv-create.
+
+8. **Write the demo CSV** to `<app_id>/lookups/<app_id>_demo_<viz>.csv`.
 
 ## Step 5: Report
 
