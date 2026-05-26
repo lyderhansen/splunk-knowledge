@@ -2,15 +2,16 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Speed & Oneshot
-status: planning
-last_updated: "2026-05-25T21:04:08.930Z"
-last_activity: 2026-05-25
+status: completed
+stopped_at: Phase 44 context gathered
+last_updated: "2026-05-26T15:26:12.887Z"
+last_activity: 2026-05-26 -- Phase 44 marked complete
 progress:
-  total_phases: 0
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_phases: 35
+  completed_phases: 1
+  total_plans: 2
+  completed_plans: 2
+  percent: 3
 ---
 
 # Project State
@@ -20,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-20)
 
 **Core value:** Zero-fix first builds AND wow-factor dashboards — reliable + beautiful every time
-**Current focus:** Milestone complete
+**Current focus:** Phase 44 — chunked-code-emission-in-cv-create
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-05-25 — Milestone v6.0 started
+Phase: 44 — COMPLETE
+Plan: 1 of 2
+Status: Phase 44 complete
+Last activity: 2026-05-26 -- Phase 44 marked complete
 
 ## Performance Metrics
 
@@ -178,8 +179,8 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-05-25 (cv6-skill-corrections quick task)
-Stopped at: Quick task complete, ready for commits
+Last session: 2026-05-25T22:00:07.796Z
+Stopped at: Phase 44 context gathered
 Resume: None — task complete
 
 ## Operator Next Steps

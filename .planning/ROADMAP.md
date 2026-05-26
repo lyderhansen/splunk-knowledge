@@ -12,6 +12,7 @@
 - ✅ **v5.6.0 DS Extension API & Dual-Format Architecture** — Phases 28-33 (shipped 2026-05-22)
 - ✅ **v5.7.0 Real Brand End-to-End Validation** — Phases 34-37 (shipped 2026-05-22)
 - ✅ **v5.8.0 Quality & Template Corrections** — Phases 38-43 (shipped 2026-05-25)
+- 🚧 **v6.0 Speed & Oneshot** — Phases 44-46 (in progress, started 2026-05-25)
 
 ## Phases
 
@@ -830,6 +831,70 @@ Plans:
 
 **Plans**: 1 plan
 
+<details open>
+<summary>🚧 v6.0 Speed & Oneshot (Phases 44-46) — IN PROGRESS, started 2026-05-25</summary>
+
+- [x] Phase 44: Chunked Code Emission in cv-create (2/2 plans) — anti-hang, highest user pain
+- [ ] Phase 45: splunk-custom-viz Session Reduction (0/0 plans) — fewer turns end-to-end
+- [ ] Phase 46: cv-oneshot Skill (0/0 plans) — zero-ceremony Dashboard Studio dashboard from dummy SPL
+
+Target plugin: `plugins/splunk-custom-viz/` (cv6 at v6.0.7). `splunk-viz-packs` (v5.10.1) is legacy this milestone.
+
+</details>
+
+### Phase 44: Chunked Code Emission in cv-create
+
+**Goal**: cv-create writes long viz files without mid-file hangs, by emitting each viz as a discrete, self-contained, resumable unit
+**Depends on**: Phase 43 (v5.8.0 shipped — splunk-custom-viz at v6.0.7 baseline)
+**Requirements**: CHUNK-01, CHUNK-02, CHUNK-03
+**Success Criteria** (what must be TRUE):
+
+  1. User runs `cv-create` against any viz in a multi-viz design lock and never observes a mid-file hang requiring restart — across at least one re-run of an existing pack that previously hung (e.g., test48 polestar regen)
+  2. User watching `cv-create` execute sees each viz emitted as one discrete write unit — one viz = one self-contained Write call (or chunked sequence with explicit per-viz boundary), never a single mega-output covering multiple vizs
+  3. User invoking `cv-create` after a previous interrupted run sees the skill skip already-written vizs and resume from the first missing one — per-viz isolation makes partial progress durable across restarts
+  4. cv-create SKILL.md contains an explicit "Emit one viz at a time" instruction in its workflow section, with a per-viz checkpoint pattern (write → verify file exists → move to next viz)
+
+**Plans**: 2 plans
+Plans:
+**Wave 1**
+
+- [x] 44-01-PLAN.md — Insert CV-RENDER-DARK/LIGHT-BEGIN/END sentinels into boilerplate_emit.js render-function template
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [x] 44-02-PLAN.md — Rewrite cv-create/SKILL.md Step 3 + standalone-mode.md Step 4 + iteration-mode.md Step 7 as chunked per-viz sequence with resume detection, per-viz checkpoint, and ✓/↻/✗ progress glyphs
+
+### Phase 45: splunk-custom-viz Session Reduction
+
+**Goal**: A full cv6 session (cv-scope → installable artifact) completes in measurably fewer turns than the v6.0.7 baseline, by trimming sketch output and lazy-loading references per step
+**Depends on**: Phase 44 (need stable per-viz emission before measuring session-length improvements)
+**Requirements**: PERF-01, PERF-02, PERF-03
+**Success Criteria** (what must be TRUE):
+
+  1. User re-runs an existing cv6 test prompt (test48 polestar or equivalent) and reaches an installable artifact in fewer assistant turns AND fewer total tokens than the v6.0.7 baseline recorded in the test handover — improvement quantified in a short benchmark note
+  2. User runs `cv-sketch` on a 3-5 viz brief and the emitted `mockup.html` + `DESIGN-LOCK.md` are visibly smaller (line count and byte count) than the v6.0.7 output for an equivalent brief — and downstream `cv-create` still produces vizs faithful to the design contract
+  3. User invoking any cv-* skill sees only the references that step actually consumes loaded into context — eager loads of recipes / blueprints / KNOWN-CORRECTIONS that the current step won't read are removed from the SKILL.md MUST-LOAD blocks
+  4. Each cv-* SKILL.md MUST-LOAD section is annotated with which step in the workflow requires each file — references with no consuming step are removed or moved to a step-local "load if needed" pointer
+
+**Plans**: TBD
+
+### Phase 46: cv-oneshot Skill
+
+**Goal**: A new `/cv-oneshot` skill produces an installable Dashboard Studio dashboard from `| makeresults |` dummy SPL in the fewest possible turns, with zero design-principles machinery loaded
+**Depends on**: Phase 43 (independent of Phase 44/45 — runs in parallel; only needs the splunk-custom-viz plugin scaffold)
+**Requirements**: ONE-01, ONE-02, ONE-03, ONE-04
+**Success Criteria** (what must be TRUE):
+
+  1. User runs `/cv-oneshot <brand or domain hint>` and receives an installable Dashboard Studio dashboard (JSON + minimal app wrapper, .tar.gz or equivalent) backed entirely by inline `| makeresults | eval ...` SPL — no real Splunk data source, lookup, or saved search required
+  2. cv-oneshot completes in one assistant turn after the initial prompt for the median brief — no clarifying questions, no design ceremony, no validator repair loops, no scope/sketch/create handshakes
+  3. User opens the generated dashboard JSON and finds each panel's SPL in a clearly-delimited, single-location block (e.g., one `query` field per panel with an inline comment marker) — swapping dummy SPL for real SPL is a single-line edit per panel, no template scaffolding to unwind
+  4. cv-oneshot SKILL.md MUST-LOAD section contains zero references to design-principles.md, archetype files, mood-recipes.md, aesthetic-flavor docs, DPR-* rules, D-* design checks, or score_design.js — verified by grep
+  5. cv-oneshot does NOT chain into cv-sketch or cv-create — it produces its dashboard artifact directly and exits; no design-lock contract is written
+
+**Plans**: TBD
+
+**UI hint**: yes
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -877,3 +942,6 @@ Plans:
 | 41. Pillow Preview | v5.8.0 | 2/2 | Complete    | 2026-05-24 |
 | 42. Light Mode backgroundColor | v5.8.0 | 1/1 | Complete   | 2026-05-24 |
 | 43. Deep Review | v5.8.0 | 12/12 | Complete    | 2026-05-25 |
+| 44. Chunked Code Emission in cv-create | v6.0 | 0/2 | Planning | - |
+| 45. splunk-custom-viz Session Reduction | v6.0 | 0/0 | Not started | - |
+| 46. cv-oneshot Skill | v6.0 | 0/0 | Not started | - |
