@@ -1,34 +1,33 @@
 ---
 gsd_state_version: 1.0
-milestone: v6.0
-milestone_name: Speed & Oneshot
-status: completed
-stopped_at: Phase 44 context gathered
-last_updated: "2026-05-26T15:26:12.887Z"
-last_activity: 2026-05-26 -- Phase 44 marked complete
+milestone: v6.1
+milestone_name: HANDOFF Harvest
+status: in_progress
+last_updated: "2026-05-29T00:00:00.000Z"
+last_activity: 2026-05-29
 progress:
-  total_phases: 35
-  completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
-  percent: 3
+  total_phases: 6
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-20)
+See: .planning/PROJECT.md (updated 2026-05-27)
 
 **Core value:** Zero-fix first builds AND wow-factor dashboards — reliable + beautiful every time
-**Current focus:** Phase 44 — chunked-code-emission-in-cv-create
+**Current focus:** v6.1 HANDOFF Harvest — defining requirements from test51_cucm + test52_asus_rog HANDOFFs
 
 ## Current Position
 
-Phase: 44 — COMPLETE
-Plan: 1 of 2
-Status: Phase 44 complete
-Last activity: 2026-05-26 -- Phase 44 marked complete
+Phase: 47 (queued — roadmap drafted, ready for /gsd-plan-phase 47)
+Plan: —
+Status: Roadmap complete, awaiting first phase plan
+Last activity: 2026-05-29 — v6.1 roadmap created (Phases 47-52, 29 requirements mapped)
 
 ## Performance Metrics
 
@@ -127,6 +126,14 @@ Recent decisions affecting current work:
 - [Phase 41]: [41-02]: package-mjs-template.md Section 5 wraps execSync(generate_previews.py) in try/catch with full buildSolidPng fallback inline — Extension API path achieves parity with Classic; ${PREVIEW_SCRIPT_PATH} added as a new template placeholder
 - [Phase 41]: [41-02]: splunk-viz-packs plugin.json bumped 5.8.0 → 5.9.0 per memory feedback_plugin_version_bump.md and CONTEXT D-10 — reflects Pillow preview feature addition on top of v5.8.0 template corrections
 
+
+- [Roadmap v6.1]: Phase 47 (VAL-01..05) first — validator hardening unblocks FONT-01 (Phase 48) and MERGE-01 (Phase 49); K1b/K2/K3/K4 + no-regression land before the new pipelines they need to guard
+- [Roadmap v6.1]: Phase 48 (FONT-01..03) depends on Phase 47 — VAL-03/K3 is the contract the FONT-01 deliverable is checked against; shipping FONT-01 first would leave it unguarded
+- [Roadmap v6.1]: Phase 49 (MERGE-01..03) depends on Phase 47 — VAL-04/K4 is the contract the MERGE-01 deliverable is checked against; same pattern as Phase 48
+- [Roadmap v6.1]: Phase 50 bundles SKETCH-01..03 + PATTERN-01..04 — both groups are pure markdown reference work in splunk-custom-viz (cv-sketch + cv-create + ds-couture); bundling saves a context round-trip vs splitting
+- [Roadmap v6.1]: Phase 51 (SPL-01..05) standalone — pure reference writes in splunk-spl with no cross-plugin dependencies
+- [Roadmap v6.1]: Phase 52 (DS-01..06) depends on Phase 50 (DS-03 cross-references SKETCH-03 markdown-overlay anti-pattern) and Phase 51 (DS-04 reuses SPL-01 case() wrapper) — runs last so cross-references land coherently
+
 ### Pending Todos
 
 - [x] Execute 27-02-PLAN.md (remaining plan in phase 27) — COMPLETE
@@ -185,6 +192,4 @@ Resume: None — task complete
 
 ## Operator Next Steps
 
-- v5.6.0 milestone complete — all phases done
-- Consider v6.0 planning (validate_dash.js, Aviation/Fintech domain types, production SPL templates)
-- Follow-ups from cv6-skill-corrections: boilerplate should emit `@viz-type` annotation line 1; KNOWN-CORRECTIONS.md should be surfaced in cv-create's "before you start" section
+- Start the next milestone with /gsd-new-milestone

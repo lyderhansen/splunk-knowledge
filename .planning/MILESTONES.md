@@ -1,5 +1,23 @@
 # Milestones
 
+## v6.0 Speed & Oneshot (Shipped: 2026-05-27)
+
+**Phases completed:** 1 of 3 planned (closed early). Phases 45 (session reduction) and 46 (cv-oneshot) deferred to v6.2+.
+
+**Key accomplishments:**
+
+- **Phase 44 — chunked code emission in cv-create.** Added `/* CV-RENDER-{DARK,LIGHT}-{BEGIN,END} */` sentinels to `boilerplate_emit.js`; rewrote `cv-create/SKILL.md` Step 3 + standalone-mode + iteration-mode for per-viz discrete four-tool-call emission with resume detection, per-viz checkpoint, and ✓/↻/✗ progress glyphs. SKILL.md = 322 lines (under 500 cap). MANDATORY reading prelude preserved.
+- **Production validation at scale.** Two real-brand v6.0.8 runs: `tests/test51_cucm/` (Cisco UC + Pexip, 3 dashboards + 6 vizs) and `tests/test52_asus_rog/` (Asus ROG, 7 vizs + 3 dashboards, 1613-line mockup + 3039-line viz source) both shipped with **0 mid-file hangs and 0 final-validation failures**. SC#1 from the v6.0 ROADMAP is met.
+- **HANDOFF backlog surfaced.** Both runs produced HANDOFF.md files documenting ~27 corrections, ~6 new validator checks, and ~5 working patterns — now harvested in v6.1.
+
+**Plugin versions at close:** splunk-custom-viz v6.0.8 · splunk-viz-packs v5.10.1 (legacy) · splunk-dashboard-studio v3.5.0 · splunk-spl v1.2.0
+
+**Deferred to v6.2+:**
+- Phase 45 — splunk-custom-viz session reduction (fewer turns end-to-end)
+- Phase 46 — cv-oneshot skill (zero-ceremony Dashboard Studio from dummy SPL)
+
+---
+
 ## v5.4.0 Runtime Robustness & Visual Polish (Shipped: 2026-05-19)
 
 **Phases completed:** 3 phases, 5 plans, 9 tasks

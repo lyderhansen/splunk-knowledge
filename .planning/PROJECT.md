@@ -19,45 +19,58 @@ When a user runs `/cv-scope` (cv6) or `/cv-oneshot` (v6.0), they get an installa
 - ✓ splunk-viz-packs: end-to-end live Splunk verification (Red Bull Classic + Extension API) — v5.7.0
 - ✓ splunk-custom-viz: 4 skills (cv-scope → cv-sketch → cv-create → cv-build), HTML-first mockup workflow, DESIGN-LOCK.md contract, dual-format output — v6.0.0–v6.0.7
 - ✓ splunk-custom-viz: composite preview layouts, variant dispatch, series colors, mandated @preview-layout — v6.0.6–v6.0.7
+- ✓ splunk-custom-viz: chunked per-viz emission in cv-create (sentinel-anchored four-tool-call sequence, resume detection, per-viz checkpoint, ✓/↻/✗ progress glyphs) — v6.0.8 (Phase 44, validated at scale in test51_cucm + test52_asus_rog)
 
-### Active (v6.0)
+### Active (v6.1)
 
-- [ ] Hang-free code writes in cv-create — no mid-file stalls on long viz files; chunked / smaller-unit emission
-- [ ] Slimmer cv-sketch mockup output — drop redundant emission, keep the visual contract intact
-- [ ] End-to-end session reduction in splunk-custom-viz — measurably fewer turns from cv-scope → installable artifact
-- [ ] cv-oneshot skill — dummy data (makeresults SPL) in, installable Dashboard Studio dashboard out, zero design-principles loads
+- [ ] Validator hardening — K1b (picker value reaches Canvas call), K3 (declared font embedded as @font-face), K4 (cross-app viz type consistency), and the wired-to-render contract for text-inputs (test51 Correction #15)
+- [ ] Font embedding pipeline in cv-create — `theme.js.FONTS` declarations must produce real `@font-face` blocks in each viz's `visualization.css` (test52 Correction #26)
+- [ ] Cross-app merge ergonomics — viz pack → parent app namespace rewrite as a single `cv-build --merge-into <parent_app>` flag (or new `cv-merge` skill); kills test52 Correction #24 foot-gun
+- [ ] cv-sketch Stage D Slop Test additions — SVG arc geometry (test52 #22), small-markdown-on-shape badges (test51 G2)
+- [ ] splunk-spl reference debt — `relative_time(now(), "0")` All-time trap, `multisearch` + `inputlookup` incompatibility, `stats round(avg(...))` invalid syntax, wide→tall `makemv + mvexpand + case` recipe
+- [ ] splunk-dashboard-studio reference debt — `fillergauge` 100px min height, `splunk.area.stackMode` enum, cache invalidation 3-step refresh checklist, small-markdown-overlay anti-pattern
+- [ ] Working patterns codified — bottom-up multi-row layout (canvas-port-rules.md Rule 9), `_render<X>(..., isLight)` shared helper pattern, three-dashboard multi-audience matrix, anti-references-into-DESIGN-LOCK persistence
 
 ### Deferred
 
-- [ ] Harden splunk-dashboard-studio plugin (ds-* skills)
-- [ ] Harden splunk-spl and splunk-admin plugins
-- [ ] Decide splunk-viz-packs vs splunk-custom-viz long-term (adopt / cherry-pick / coexist) — pending breadth parity evidence; tracked in `.planning/todos/pending/2026-05-25-evaluate-cv6-html-first-as-splunk-viz-packs-replacement.md`
-- [ ] Original 2026-05-23 v6.0 draft (Mood × Aesthetic Flavor collapse, AST strategy, Phase A/B/C/D/E) — shelved, may revisit post-v6.0 if cv6 wins the breadth comparison
+- [ ] Phase 45 — splunk-custom-viz session reduction (fewer turns end-to-end) — moved from v6.0
+- [ ] Phase 46 — cv-oneshot skill (zero-ceremony Dashboard Studio from dummy SPL) — moved from v6.0
+- [ ] Harden splunk-dashboard-studio plugin beyond reference-debt items (full ds-* skill audit)
+- [ ] Harden splunk-spl and splunk-admin plugins beyond reference-debt items
+- [ ] Decide splunk-viz-packs vs splunk-custom-viz long-term (adopt / cherry-pick / coexist) — pending breadth parity evidence
+- [ ] Original 2026-05-23 v6.0 draft (Mood × Aesthetic Flavor collapse, AST strategy) — shelved, may revisit post-v6.x
 
-### Out of Scope (v6.0)
+### Out of Scope (v6.1)
 
+- New viz types or new cv-* skills not directly tied to the HANDOFFs
+- Any rework of phase 44's chunked emission contract (validated, leave alone)
+- Cross-dashboard `linkToDashboard` drilldown handler completion in test52_asus_rog/ — that's a tarball v1.1 patch, not a skill-level fix
 - Any redesign of splunk-viz-packs (v5.10.1 stays as legacy)
-- Mood × Aesthetic Flavor archetype consolidation — that's the shelved v6.0 draft, defer to v7+
-- AST validator drop / opt-in strategy — deferred with the shelved draft
-- New domain-specific viz types — orthogonal to perf/hardening
-- PNG export from vizs, real-time streaming, mobile-responsive rendering, multi-tenant viz sharing
 
-## Current Milestone: v6.0 Speed & Oneshot
+## Current Milestone: v6.1 HANDOFF Harvest
 
-**Goal:** splunk-custom-viz finishes a full session in fewer turns without hanging mid-code-write, AND a new oneshot-dashboard path produces a working Dashboard Studio dashboard from dummy data with zero design ceremony.
+**Goal:** Harvest the proven-in-production lessons from two real-brand v6.0.8 builds (Cisco UC and Asus ROG) into skills, references, and validators so the next pack does not repeat the same caught mistakes.
 
 **Target features:**
-- Hang-free code writes in cv-create (chunked / smaller-unit emission strategy)
-- Slimmer cv-sketch HTML mockup output
-- End-to-end session reduction across splunk-custom-viz pipeline
-- New `cv-oneshot` skill: `| makeresults | eval ...` dummy data → installable Dashboard Studio dashboard, zero design-principles loads, "just create it" path
+- Validator hardening — K1b, K3, K4 + text-input wired-to-render contract
+- Font embedding pipeline so brand fonts actually land in the Splunk iframe
+- Cross-app merge ergonomics (cv-build `--merge-into` or new cv-merge skill)
+- cv-sketch Slop Test additions (SVG arc geometry, small-markdown-on-shape)
+- SPL reference debt (4 new traps + 1 reshape recipe)
+- Dashboard Studio reference debt (fillergauge min height, area stackMode enum, cache invalidation, markdown-overlay anti-pattern)
+- Working patterns codified (Rule 9 bottom-up layout, shared `_render<X>` helper, three-dashboard matrix, anti-refs persistence)
 
 **Key context:**
-- cv6 hung mid-code-write at least once during recent use → treat as hard requirement, not a nice-to-have
-- splunk-viz-packs (v5.10.1) is legacy this milestone — no v6 work there
-- Original 2026-05-23 v6.0 draft (consolidation / Mood collapse / AST strategy) is shelved — may revisit later
+- Source inputs already in repo: `tests/test51_cucm/HANDOFF.md` + `tests/test52_asus_rog/HANDOFF.md` — both gitignored but readable
+- Phase 44 (chunked emission) is shipped and validated — v6.1 builds on top, not in parallel
+- Cross-plugin scope: splunk-custom-viz + splunk-spl + splunk-dashboard-studio (no splunk-admin or splunk-viz-packs work)
+- Plugin language: English only per CLAUDE.md
 
-## Previous Milestone: v5.8.0 shipped
+## Previous Milestone: v6.0 shipped
+
+**Shipped:** 2026-05-27 — 1 of 3 planned phases (closed early). **splunk-custom-viz at v6.0.8.** Phase 44 (chunked code emission in cv-create) shipped and validated at scale in two real-brand runs (test51_cucm + test52_asus_rog) — 0 mid-file hangs across 1613-line mockup and 3039-line viz source. Phases 45 (session reduction) and 46 (cv-oneshot) deferred to v6.2+ because the test runs surfaced a HANDOFF backlog that needed harvesting first.
+
+## Earlier Milestone: v5.8.0 shipped
 
 **Shipped:** 2026-05-25 — 6 phases, 20 plans, 14 requirements satisfied. **splunk-viz-packs at v5.10.1; splunk-dashboard-studio at v3.5.0; splunk-custom-viz at v6.0.7.**
 
@@ -188,4 +201,4 @@ Branded backgrounds, color pickers, multi-channel vizs, animation boilerplates, 
 This document evolves at phase transitions and milestone boundaries.
 
 ---
-*Last updated: 2026-05-25 — v6.0 Speed & Oneshot milestone started*
+*Last updated: 2026-05-27 — v6.0 closed (Phase 44 shipped, 45/46 deferred); v6.1 HANDOFF Harvest milestone started*
