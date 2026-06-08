@@ -1,0 +1,102 @@
+============================================
+  Phase 47 validator no-regression sweep
+============================================
+  Repo root: /Users/joehanse/Library/CloudStorage/OneDrive-Cisco/Documents/03_Funny_Projects/splunk-knowledge
+  Validator: /Users/joehanse/Library/CloudStorage/OneDrive-Cisco/Documents/03_Funny_Projects/splunk-knowledge/plugins/splunk-custom-viz/scripts/validate.sh
+
+  Packs discovered: 49
+
+--- per-pack results ---
+
+pack=tests/test12_mood/spacex_mission_control                               FAILs=13  K1=0 K1b=0 K2=0 K3=0 K5=0 K6=0 K7=0 OTHER=13
+pack=tests/test13_tuning/porsche_taycan_viz                                 FAILs=16  K1=0 K1b=0 K2=0 K3=0 K5=0 K6=0 K7=0 OTHER=16
+pack=tests/test13_tuning/porsche_taycan_viz/dist/porsche_taycan_viz         FAILs=15  K1=0 K1b=0 K2=0 K3=0 K5=0 K6=0 K7=0 OTHER=15
+pack=tests/test14_more_freedom/jwst_viz_pack                                FAILs=6   K1=0 K1b=0 K2=0 K3=0 K5=0 K6=0 K7=0 OTHER=6
+pack=tests/test15_340/porsche_motorsport_viz                                FAILs=10  K1=0 K1b=0 K2=0 K3=0 K5=0 K6=0 K7=0 OTHER=10
+pack=tests/test16_porche/nordshield_viz_pack                                FAILs=23  K1=0 K1b=0 K2=0 K3=0 K5=0 K6=4 K7=0 OTHER=19
+pack=tests/test17_impecable_ui_implement/uber_ops_viz                       FAILs=11  K1=0 K1b=0 K2=0 K3=0 K5=0 K6=0 K7=0 OTHER=11
+pack=tests/test18_spotify/spotify_viz_pack                                  FAILs=23  K1=0 K1b=0 K2=0 K3=0 K5=0 K6=0 K7=0 OTHER=23
+pack=tests/test19_netflix/netflix_viz_pack                                  FAILs=22  K1=0 K1b=0 K2=0 K3=0 K5=0 K6=0 K7=0 OTHER=22
+pack=tests/test20_McLaren/mclaren_f1_viz                                    FAILs=22  K1=7 K1b=0 K2=0 K3=0 K5=13 K6=0 K7=1 OTHER=1
+pack=tests/test21_patagonia/patagonia_outdoor_ops                           FAILs=40  K1=14 K1b=0 K2=0 K3=0 K5=12 K6=0 K7=0 OTHER=14
+pack=tests/test23_single_viz/nike_gauge_single                              FAILs=1   K1=0 K1b=0 K2=0 K3=0 K5=0 K6=0 K7=0 OTHER=1
+pack=tests/test24_apple/apple_retail_viz                                    FAILs=19  K1=3 K1b=0 K2=0 K3=0 K5=15 K6=0 K7=0 OTHER=1
+pack=tests/test25_v4/hospital_nps_gauge                                     FAILs=1   K1=0 K1b=0 K2=0 K3=0 K5=0 K6=0 K7=0 OTHER=1
+pack=tests/test26_full_pack/riot_liveops_viz                                FAILs=0   K1=0 K1b=0 K2=0 K3=0 K5=0 K6=0 K7=0 OTHER=0
+pack=tests/test27_table/stripe_payment_ops_viz                              FAILs=8   K1=0 K1b=0 K2=0 K3=0 K5=8 K6=0 K7=0 OTHER=0
+pack=tests/test28_drilldown_tabs/cloudflare_noc                             FAILs=2   K1=0 K1b=0 K2=0 K3=1 K5=0 K6=0 K7=0 OTHER=1
+pack=tests/test29_v5/cloudflare_soc_viz                                     FAILs=2   K1=0 K1b=2 K2=0 K3=0 K5=0 K6=0 K7=0 OTHER=0
+pack=tests/test30_v5.1/cloudflare_soc_viz                                   FAILs=5   K1=0 K1b=0 K2=0 K3=0 K5=4 K6=0 K7=0 OTHER=1
+pack=tests/test31_v5.1/tesla_energy_viz                                     FAILs=5   K1=0 K1b=0 K2=4 K3=0 K5=0 K6=0 K7=0 OTHER=1
+pack=tests/test32_avinor/avinor_ops                                         FAILs=2   K1=0 K1b=0 K2=2 K3=0 K5=0 K6=0 K7=0 OTHER=0
+pack=tests/test33_2_nasa/nasa_telemetry_viz                                 FAILs=6   K1=0 K1b=0 K2=1 K3=0 K5=4 K6=0 K7=0 OTHER=1
+pack=tests/test33_nasa/nasa_mission_control                                 FAILs=3   K1=0 K1b=0 K2=3 K3=0 K5=0 K6=0 K7=0 OTHER=0
+pack=tests/test34_emirates/emirates_aero_viz                                FAILs=2   K1=0 K1b=0 K2=0 K3=0 K5=1 K6=0 K7=0 OTHER=1
+pack=tests/test35_cocacola/coca_cola_sales                                  FAILs=4   K1=0 K1b=0 K2=1 K3=0 K5=3 K6=0 K7=0 OTHER=0
+pack=tests/test36_forsvaret/forsvaret_ops_viz                               FAILs=5   K1=0 K1b=5 K2=0 K3=0 K5=0 K6=0 K7=0 OTHER=0
+pack=tests/test37_Spotify/spotify_streaming_viz                             FAILs=0   K1=0 K1b=0 K2=0 K3=0 K5=0 K6=0 K7=0 OTHER=0
+pack=tests/test38_strava/strava_coaching_viz                                FAILs=0   K1=0 K1b=0 K2=0 K3=0 K5=0 K6=0 K7=0 OTHER=0
+pack=tests/test39_skatt/tesla_fsd_crashes                                   FAILs=1   K1=0 K1b=0 K2=1 K3=0 K5=0 K6=0 K7=0 OTHER=0
+pack=tests/test40_rema/rema1000_retail                                      FAILs=2   K1=0 K1b=1 K2=0 K3=0 K5=0 K6=0 K7=0 OTHER=1
+pack=tests/test41_extension/ext_api_test_pack/stage/ext_api_test_pack       FAILs=1   K1=0 K1b=0 K2=0 K3=0 K5=0 K6=0 K7=0 OTHER=1
+pack=tests/test42_redbull/redbull_sports_ext/stage/redbull_sports_ext       FAILs=1   K1=0 K1b=0 K2=0 K3=0 K5=0 K6=0 K7=0 OTHER=1
+pack=tests/test42_redbull/redbull_sports_viz                                FAILs=3   K1=0 K1b=1 K2=0 K3=0 K5=1 K6=0 K7=0 OTHER=1
+pack=tests/test43_redbull_detailed/redbull_racing_viz                       FAILs=0   K1=0 K1b=0 K2=0 K3=0 K5=0 K6=0 K7=0 OTHER=0
+pack=tests/test44_redbull_Detailed_5.7/redbull_cockpit_viz                  FAILs=7   K1=0 K1b=2 K2=4 K3=0 K5=0 K6=0 K7=0 OTHER=1
+pack=tests/test44_redbull_Detailed_5.7/redbull_racing_viz_v2                FAILs=6   K1=0 K1b=1 K2=4 K3=0 K5=0 K6=0 K7=0 OTHER=1
+pack=tests/test45_lego/lego_factory_viz                                     FAILs=0   K1=0 K1b=0 K2=0 K3=0 K5=0 K6=0 K7=0 OTHER=0
+pack=tests/test46_cursor_skill/cisco_sec_viz                                FAILs=1   K1=0 K1b=0 K2=0 K3=0 K5=0 K6=1 K7=0 OTHER=0
+pack=tests/test48_v510/polestar_fleet_ops                                   FAILs=0   K1=0 K1b=0 K2=0 K3=0 K5=0 K6=0 K7=0 OTHER=0
+pack=tests/test49_v6_in_git/wwf_field_ops_viz                               FAILs=17  K1=0 K1b=0 K2=0 K3=0 K5=6 K6=10 K7=0 OTHER=1
+pack=tests/test50_lufthansa/lufthansa_ops_viz                               FAILs=5   K1=0 K1b=0 K2=0 K3=0 K5=5 K6=0 K7=0 OTHER=0
+pack=tests/test51_cucm/app_build/cucm_communications_pulse                  FAILs=33  K1=0 K1b=13 K2=0 K3=0 K5=8 K6=11 K7=0 OTHER=1
+pack=tests/test51_cucm/cisco_collab_viz                                     FAILs=21  K1=0 K1b=1 K2=0 K3=0 K5=8 K6=11 K7=0 OTHER=1
+pack=tests/test52_asus_rog/app_build/asus_rog_command_center                FAILs=32  K1=0 K1b=8 K2=0 K3=0 K5=10 K6=14 K7=0 OTHER=0
+pack=tests/test52_asus_rog/rog_telemetry_viz                                FAILs=32  K1=0 K1b=8 K2=0 K3=0 K5=10 K6=14 K7=0 OTHER=0
+pack=tests/test53_mcp_meraki/meraki_facility_viz                            FAILs=23  K1=0 K1b=0 K2=0 K3=0 K5=21 K6=2 K7=0 OTHER=0
+pack=tests/test54_samsoe/samsoe_retail_viz                                  FAILs=39  K1=0 K1b=0 K2=0 K3=0 K5=9 K6=30 K7=0 OTHER=0
+pack=tests/test56_trafo/trafo_station_viz                                   FAILs=18  K1=0 K1b=0 K2=0 K3=0 K5=18 K6=0 K7=0 OTHER=0
+pack=tests/test57_forsvaret/forsvaret_custom_viz_pack_01                    FAILs=13  K1=0 K1b=0 K2=0 K3=0 K5=7 K6=6 K7=0 OTHER=0
+
+============================================
+  Phase 47 validator no-regression sweep
+============================================
+  Packs scanned: 49
+
+  Per-code FAIL totals:
+    K1  (existing):   24
+    K1b (NEW):        42     <- expected: >=1 (test52 rog_session_timeline, etc.)
+    K2  (existing):   20
+    K3  (existing):   1
+    K5  (NEW):        163     <- expected: >=1 (test51 cisco_collab_viz)
+    K6  (NEW):        103     <- expected: >=1 (test52 vizs, until Phase 48 ships)
+    K7  (NEW):        1     <- expected: 0 (merged apps are clean)
+    OTHER:            167     (B/R/F-codes from formatter / source / runtime checks)
+
+  Packs with UNEXPECTED new-code FAILs:
+
+  - tests/test16_porche/nordshield_viz_pack  K1b=0 K5=0 K6=4 K7=0
+  - tests/test20_McLaren/mclaren_f1_viz  K1b=0 K5=13 K6=0 K7=1
+  - tests/test21_patagonia/patagonia_outdoor_ops  K1b=0 K5=12 K6=0 K7=0
+  - tests/test24_apple/apple_retail_viz  K1b=0 K5=15 K6=0 K7=0
+  - tests/test27_table/stripe_payment_ops_viz  K1b=0 K5=8 K6=0 K7=0
+  - tests/test29_v5/cloudflare_soc_viz  K1b=2 K5=0 K6=0 K7=0
+  - tests/test30_v5.1/cloudflare_soc_viz  K1b=0 K5=4 K6=0 K7=0
+  - tests/test33_2_nasa/nasa_telemetry_viz  K1b=0 K5=4 K6=0 K7=0
+  - tests/test34_emirates/emirates_aero_viz  K1b=0 K5=1 K6=0 K7=0
+  - tests/test35_cocacola/coca_cola_sales  K1b=0 K5=3 K6=0 K7=0
+  - tests/test36_forsvaret/forsvaret_ops_viz  K1b=5 K5=0 K6=0 K7=0
+  - tests/test40_rema/rema1000_retail  K1b=1 K5=0 K6=0 K7=0
+  - tests/test42_redbull/redbull_sports_viz  K1b=1 K5=1 K6=0 K7=0
+  - tests/test44_redbull_Detailed_5.7/redbull_cockpit_viz  K1b=2 K5=0 K6=0 K7=0
+  - tests/test44_redbull_Detailed_5.7/redbull_racing_viz_v2  K1b=1 K5=0 K6=0 K7=0
+  - tests/test46_cursor_skill/cisco_sec_viz  K1b=0 K5=0 K6=1 K7=0
+  - tests/test49_v6_in_git/wwf_field_ops_viz  K1b=0 K5=6 K6=10 K7=0
+  - tests/test50_lufthansa/lufthansa_ops_viz  K1b=0 K5=5 K6=0 K7=0
+  - tests/test53_mcp_meraki/meraki_facility_viz  K1b=0 K5=21 K6=2 K7=0
+  - tests/test54_samsoe/samsoe_retail_viz  K1b=0 K5=9 K6=30 K7=0
+  - tests/test56_trafo/trafo_station_viz  K1b=0 K5=18 K6=0 K7=0
+  - tests/test57_forsvaret/forsvaret_custom_viz_pack_01  K1b=0 K5=7 K6=6 K7=0
+
+  Phase 47 sweep result: INVESTIGATE
+
