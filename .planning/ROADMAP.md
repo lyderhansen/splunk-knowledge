@@ -899,7 +899,7 @@ Plans:
 <details open>
 <summary>🚧 v6.1 HANDOFF Harvest (Phases 47-52) — IN PROGRESS, started 2026-05-27</summary>
 
-- [ ] Phase 47: Validator Hardening (0/0 plans) — K1b/K2/K3/K4 + no-regression, scripts/validate.sh in splunk-custom-viz
+- [x] Phase 47: Validator Hardening (2/2 plans) — K1b/K5/K6/K7 + no-regression sweep across 49 packs, shipped in splunk-custom-viz v6.0.9
 - [ ] Phase 48: Font Embedding Pipeline (0/0 plans) — declared brand fonts actually land in the Splunk iframe
 - [ ] Phase 49: Cross-App Merge Ergonomics (0/0 plans) — `cv-build --merge-into` (or `cv-merge`) kills the namespace-rewrite foot-gun
 - [ ] Phase 50: cv-sketch Slop Test & Working Patterns Codified (0/0 plans) — SVG arc geometry, markdown-on-shape, Rule 9 bottom-up, shared `_render<X>` helper, three-audience matrix, anti-references persisted
@@ -919,12 +919,15 @@ Sources: `tests/test51_cucm/HANDOFF.md` (Cisco UC) + `tests/test52_asus_rog/HAND
 **Success Criteria** (what must be TRUE):
 
   1. User running `scripts/validate.sh` on a viz whose color-picker key is `opt(...)`-read but never reaches a `ctx.*` call sees a FAIL with code `K1b` naming the unused picker key (test52 Correction #23)
-  2. User running `scripts/validate.sh` on a viz whose text-input key is `opt(...)`-read but never reaches a `ctx.*` call sees a FAIL with code `K2` naming the unused text-input key (test51 Correction #15)
-  3. User running `scripts/validate.sh` on a viz that declares a font family in `ctx.font = '... "<family>" ...'` without a matching `@font-face { font-family: "<family>"` block in its `visualization.css` sees a FAIL with code `K3` (test52 Correction #26)
-  4. User running `scripts/validate.sh` against a merged parent-app directory sees a FAIL with code `K4` if any `"type": "<x>.<viz_name>"` in a dashboard XML uses an `<x>` that does not match the parent app's `[package] id` in `app.conf` (test52 Correction #24)
-  5. User re-running `scripts/validate.sh` on every existing in-repo viz pack after the K1b/K2/K3/K4 work lands sees zero new false positives — `sans-serif` and `monospace` fallbacks are exempt from K3, and all pre-existing K1 / B / R / F checks still fire correctly
+  2. User running `scripts/validate.sh` on a viz whose text-input key is `opt(...)`-read but never reaches a `ctx.*` call sees a FAIL with code `K5` naming the unused text-input key (test51 Correction #15). Code `K5` (not `K2`) because `K2` is already in use for the `invalidateUpdateView`-in-RAF check (KNOWN-CORRECTIONS #4).
+  3. User running `scripts/validate.sh` on a viz that declares a font family in `ctx.font = '... "<family>" ...'` without a matching `@font-face { font-family: "<family>"` block in its `visualization.css` sees a FAIL with code `K6` (test52 Correction #26). Code `K6` (not `K3`) because `K3` is already in use for the bare-string-token-default check (KNOWN-CORRECTIONS #1).
+  4. User running `scripts/validate.sh` against a merged parent-app directory sees a FAIL with code `K7` if any `"type": "<x>.<viz_name>"` in a dashboard XML uses an `<x>` that does not match the parent app's `[package] id` in `app.conf` (test52 Correction #24). Built-in viz type prefixes `splunk|ds|input|drilldown` are exempt.
+  5. User re-running `scripts/validate.sh` on every existing in-repo viz pack after the K1b/K5/K6/K7 work lands sees zero new false positives — `sans-serif` / `monospace` / `serif` / `system-ui` / `Inter` / `Arial` / `Helvetica` fallbacks are exempt from K6, and all pre-existing K1 / K2 / K3 / B / R / F checks still fire correctly. (Sweep verdict 2026-06-08: 49 packs, every new-code FAIL traces to a real failure mode.)
 
-**Plans**: TBD
+**Plans**:
+
+- [x] 47-01-PLAN.md — Add K1b/K5/K6/K7 functions to validate.sh, KNOWN-CORRECTIONS entries #15/#23/#24/#26, plugin bump 6.0.8 → 6.0.9
+- [x] 47-02-PLAN.md — Create dev-local tests/validate_sweep.sh and run no-regression sweep across 49 in-repo packs
 
 ### Phase 48: Font Embedding Pipeline
 
