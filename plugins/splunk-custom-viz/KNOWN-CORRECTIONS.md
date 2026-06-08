@@ -454,6 +454,100 @@ cv-create SKILL.md Step 3a lists the current layout library and the procedure fo
 
 ---
 
+## Correction 15 — Every formatter text-input MUST be opt()-read AND reach a Canvas call (extends Correction 2 to text/number inputs)
+
+**Source:** `tests/test51_cucm/HANDOFF.md` Correction #15 (plus parallel `accentIntensity` failure across all 6 test52 vizs in `tests/test52_asus_rog/HANDOFF.md`).
+
+Correction 2 enforces that every `<splunk-color-picker>` in `formatter.html` has a matching `opt("<key>")` call in `visualization_source.js`. Text-input and number-input controls had no equivalent check, and the gap shipped real bugs: in test51 Cisco UC, every viz declared `accentIntensity` (and `mos_health_gauge` additionally declared `tollThreshold` and `synthThreshold`) — none of these values were ever opt()-read, never influenced any draw call. Users adjusted the setting in the Format panel, saw zero visual change, and reported the control as broken.
+
+Required contract — every `<splunk-text-input>` or `<splunk-number-input>` whose name attribute is `{{VIZ_NAMESPACE}}.<key>` MUST satisfy BOTH:
+
+1. The source calls `opt("<key>", ...)` somewhere in `_resolveTheme` or `_render*`.
+2. The value returned from that `opt()` call reaches at least one `ctx.*` line — either directly on the same line (`ctx.lineWidth = opt("lineWidth")`) or via an LHS variable that appears in a line containing `ctx.`. Helper-function reach (e.g. `drawBand(value, ...)` where `drawBand` internally calls `ctx.fillStyle = value`) counts via the variable-name being referenced elsewhere in the file.
+
+**Exemption:** keys ending with `Field` (e.g. `mosField`, `rigField`, `recordsField`) are field-name overrides that select which data column to read — they do not flow to a Canvas draw call and are correctly exempt. The convention is suffix-based (`*Field$`), not prefix-based.
+
+**Where it lives:**
+- `skills/cv-create/references/formatter-emission.md` — text-input contract (every visual text-input must have an `opt()` + ctx-reach contract; field-name inputs exempt).
+- `scripts/validate.sh check_k5` — variable-name reach heuristic with `*Field` suffix exemption.
+
+**Validator:** `scripts/validate.sh` `FAIL K5` — fires on both (a) text-input declared but never opt()-read and (b) opt()-read but value never reaches `ctx.*`.
+
+---
+
+## Correction 23 — Color picker opt() value MUST reach a Canvas call (extends Correction 2 / K1)
+
+**Source:** `tests/test52_asus_rog/HANDOFF.md` Correction #23 (`rog_session_timeline` `accentColor` -> `c._hoverTint` dead alias).
+
+Correction 2's K1 grep catches the easy failure mode: a `<splunk-color-picker>` exists in `formatter.html` but `opt("<key>")` is never called in source. That leaves a deeper failure mode in the blind spot — `opt()` IS called, but the returned value is assigned to an alias (typically underscore-prefixed: `c._hoverTint`, `c._unused`, `c._reserved`) that is never referenced in any `ctx.*` line. The picker satisfies K1 but is still dead UI: clicking it persists a value the viz never reads.
+
+The canonical shipped instance was test52 `rog_session_timeline`:
+
+```javascript
+c._hoverTint = hexFromSplunk(opt("accentColor", t.accent), t.accent);
+```
+
+`_hoverTint` appeared exactly once in the file (the assignment itself). The picker passed K1 and shipped to production where users changed `accentColor` and saw no visual difference.
+
+The validator's reach heuristic uses variable-name tracking: capture the LHS of the `opt()` assignment, then verify the LHS name appears in any line containing `ctx.` OR in any non-assignment line elsewhere in the file (covers helper-function reach like `drawBand(t.good, ...)` where the consumer is internal to a helper). Underscore-prefix is bug bait but not by itself disqualifying — the gate is two-condition AND: LHS captured AND no further reference.
+
+**Where it lives:**
+- `skills/cv-create/references/canvas-port-rules.md` Rule 7 — already documents the contract; this validator enforces it.
+- `scripts/validate.sh check_k1b` — variable-name tracking reach heuristic.
+
+**Validator:** `scripts/validate.sh` `FAIL K1b` — fires when picker is opt()-read but the LHS name never reaches a `ctx.*` line and never appears anywhere else in the file.
+
+---
+
+## Correction 24 — Dashboard XML viz type prefix MUST match parent app's `[package] id`
+
+**Source:** `tests/test52_asus_rog/HANDOFF.md` Correction #24 (cross-app merge from `rog_telemetry_viz` into `asus_rog_command_center`).
+
+Dashboard Studio locates custom viz code via the `"type": "<owning_app_id>.<viz_name>"` string in the dashboard JSON — it loads the viz from `$SPLUNK_HOME/etc/apps/<owning_app_id>/appserver/static/visualizations/<viz_name>/`. When packaging a viz pack into a parent app (e.g. merging `rog_telemetry_viz` files into `asus_rog_command_center`), every `"type": "<old_app_id>.<viz_name>"` reference in every dashboard XML must be rewritten to use the parent app's id. Forgetting this leaves a "dead" reference: Splunk renders a blank panel because the viz lookup fails — and there is no clear error message pointing at the cause.
+
+The canonical instance was the asus_rog merge where the type strings were eventually rewritten correctly, but the rewrite step is the single most foot-gun-prone step in a multi-deliverable build. Without validator enforcement, the build can ship with partial coverage that the developer never notices.
+
+Required pattern:
+
+```json
+// Before merge (in viz-pack-internal dashboard)
+"type": "rog_telemetry_viz.rog_rig_grid"
+
+// After merge (in merged parent-app dashboard)
+"type": "asus_rog_command_center.rog_rig_grid"
+```
+
+**Exemptions:** Splunk built-in type prefixes — `splunk` (e.g. `splunk.markdown`, `splunk.singlevalue`), `ds` (e.g. `ds.search`), `input` (e.g. `input.dropdown`, `input.timerange`), and `drilldown` (e.g. `drilldown.setToken`). These are framework types, not custom-app refs, and are correctly exempt from the prefix-match check.
+
+**Where it lives:**
+- `skills/cv-build/` cross-app merge guide (planned Phase 49).
+- `scripts/validate.sh check_k7` — extracts `[package] id` from `default/app.conf` and intersects it against every dashboard XML's `"type": "<prefix>.<viz>"` strings.
+
+**Validator:** `scripts/validate.sh` `FAIL K7` — fires when a non-exempt prefix in dashboard XML does not match the parent app's `[package] id`. Standalone viz packs (no `default/data/ui/views/` directory) are correctly skipped, not failed.
+
+---
+
+## Correction 26 — Declared brand font MUST have a matching `@font-face` block in the viz's `visualization.css`
+
+**Source:** `tests/test52_asus_rog/HANDOFF.md` Correction #26 (`Chakra Petch` and `JetBrains Mono` declared but never embedded).
+
+Declaring a font family in a `ctx.font = '...' "<Family>", sans-serif'` string is aspirational. The font only renders if there is a matching `@font-face` block (typically a base64-encoded woff2) in the viz's `visualization.css`. Without that, Splunk's iframe silently falls back to the `sans-serif` (or `monospace`) generic — and the brand commitment ("predatory, overclocked, mechanical" in the test52 Asus ROG case) is lost. The bug is invisible during local mockup development (the mockup.html loads fonts from Google Fonts) and only manifests once the pack ships to Splunk where the fonts are absent from the iframe environment.
+
+The current `cv-create` flow does not run the font embedding step described in `references/theme-emission.md` lines 124-145. Phase 48 (FONT-01..03) will produce the actual `@font-face` embedding pipeline. K6 enforces the contract immediately so test52 (and every future pack) cannot ship a brand-font declaration without the matching embed.
+
+**Exemptions (no `@font-face` required):**
+- CSS generic families: `sans-serif`, `monospace`, `serif`, `system-ui`
+- Universally available system fonts: `Arial`, `Helvetica`
+- Bundled plugin font: `Inter` (shipped in `plugins/splunk-custom-viz/scripts/fonts/Inter-Regular.ttf`)
+
+**Where it lives:**
+- `scripts/validate.sh check_k6` — extracts font families from `ctx.font` lines in `*/src/visualization_source.js`, intersects against `@font-face` declarations in the same viz's `visualization.css`.
+- `scripts/embed_fonts.sh` — planned Phase 48 helper that downloads woff2 from Google Fonts, base64-encodes, and emits the `@font-face` blocks.
+
+**Validator:** `scripts/validate.sh` `FAIL K6` — fires when a non-exempt family used in `ctx.font` has no matching `@font-face` block in the viz's `visualization.css`.
+
+---
+
 ## Process note (Finding 4 from HANDOVER-skill-improvements.md)
 
 The user has been discovering corrections, writing them to personal memory, and the plugin docs have continued to teach the wrong thing. Going forward:
