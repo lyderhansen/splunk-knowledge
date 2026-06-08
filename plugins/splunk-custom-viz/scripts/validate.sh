@@ -222,6 +222,230 @@ for xml in "$APP_DIR"/default/data/ui/views/*.xml; do
     fi
 done
 
+# === KNOWN-CORRECTIONS HARDENING (Phase 47, 2026-06-08) ===
+#
+# K1b/K5/K6/K7 extend the K1/K2/K3 enforcement: each closes a real shipped
+# failure mode from test51_cucm (Cisco UC) or test52_asus_rog (Asus ROG)
+# under v6.0.8. Implementation style mirrors K1/K2/K3 (pure bash + grep
+# + awk + sed, no new dependencies, BSD/macOS-compatible -oE only).
+
+echo ""
+echo "--- Phase 47 hardening checks (K1b/K5/K6/K7) ---"
+
+# K1b — Color picker opt() value MUST reach a Canvas (ctx.*) call
+# (Correction 23 in KNOWN-CORRECTIONS.md — test52 rog_session_timeline _hoverTint)
+#
+# Heuristic: capture the LHS variable name assigned from opt("<key>"...), then
+# verify that name appears elsewhere in the file (preferably on a ctx.* line,
+# but ANY non-assignment reference counts as "reached" because helper functions
+# like drawBand(color, ...) consume the value indirectly). This widens the
+# CONTEXT.md draft 30-line window to cover cross-function reach (e.g.
+# mos_health_gauge _resolveTheme -> drawBand -> ctx.fillStyle).
+check_k1b() {
+    for f in "$APP_DIR"/appserver/static/visualizations/*/formatter.html; do
+        [ -f "$f" ] || continue
+        VIZ_DIR=$(dirname "$f")
+        VIZ=$(basename "$VIZ_DIR")
+        SRC="$VIZ_DIR/src/visualization_source.js"
+        [ -f "$SRC" ] || SRC="$VIZ_DIR/visualization_source.js"
+        [ -f "$SRC" ] || continue
+
+        PICKER_KEYS=$(grep -oE 'splunk-color-picker[^>]*name="\{\{VIZ_NAMESPACE\}\}\.[a-zA-Z0-9_]+' "$f" 2>/dev/null \
+                      | sed -E 's/.*\{\{VIZ_NAMESPACE\}\}\.//' | sort -u)
+
+        for K in $PICKER_KEYS; do
+            # Defensive skip — K1 already FAILed when opt() is not called at all
+            grep -qE "opt\([\"']${K}[\"']" "$SRC" || continue
+
+            # Capture LHS variable names from any assignment whose RHS calls opt("K"...)
+            # Patterns: `var name = ... opt("K"...)`, `c.name = ... opt("K"...)`, `t.name = ... opt("K"...)`
+            LHS_NAMES=$(grep -oE "(var[[:space:]]+|c\.|t\.)[a-zA-Z_][a-zA-Z0-9_]*[[:space:]]*=[^;]*opt\([\"']${K}[\"']" "$SRC" 2>/dev/null \
+                        | grep -oE "(var[[:space:]]+|c\.|t\.)[a-zA-Z_][a-zA-Z0-9_]*" \
+                        | sed -E 's/^(var[[:space:]]+|c\.|t\.)//' | sort -u)
+
+            # If no LHS captured, the opt() call is inline (e.g. `someFn(opt("K"))`)
+            # — that's a direct reach into a call, count as PASS.
+            if [ -z "$LHS_NAMES" ]; then
+                continue
+            fi
+
+            FOUND_REACH=0
+            for LHS in $LHS_NAMES; do
+                # Primary signal: LHS name appears on a line containing ctx.
+                if grep -E "ctx\." "$SRC" 2>/dev/null | grep -qE "[.[:space:]]${LHS}\b"; then
+                    FOUND_REACH=1
+                    break
+                fi
+                # Secondary signal: LHS name appears in ANY line other than its own
+                # opt-assignment (helper-function reach, e.g. drawBand(t.good, ...)).
+                # Count total occurrences; if > 1, it is referenced beyond the assignment.
+                OCCURRENCES=$(grep -cE "\b${LHS}\b" "$SRC" 2>/dev/null || echo 0)
+                if [ "${OCCURRENCES:-0}" -gt 1 ]; then
+                    FOUND_REACH=1
+                    break
+                fi
+            done
+
+            if [ "$FOUND_REACH" -eq 0 ]; then
+                fail K1b "$VIZ: color picker \"$K\" is opt()-read but the value never reaches a ctx.* call (dead value). See KNOWN-CORRECTIONS.md #23."
+            fi
+        done
+    done
+}
+check_k1b
+
+# K5 — Text-input / number-input opt() value MUST reach a Canvas (ctx.*) call
+# (Correction 15 in KNOWN-CORRECTIONS.md — test51 accentIntensity / tollThreshold / synthThreshold)
+#
+# Exemption: keys ending in "Field" (e.g. mosField, rigField, recordsField) are
+# field-name overrides, not visual params. Researcher A5 empirically confirmed
+# the suffix convention.
+check_k5() {
+    for f in "$APP_DIR"/appserver/static/visualizations/*/formatter.html; do
+        [ -f "$f" ] || continue
+        VIZ_DIR=$(dirname "$f")
+        VIZ=$(basename "$VIZ_DIR")
+        SRC="$VIZ_DIR/src/visualization_source.js"
+        [ -f "$SRC" ] || SRC="$VIZ_DIR/visualization_source.js"
+        [ -f "$SRC" ] || continue
+
+        INPUT_KEYS=$(grep -oE 'splunk-(text|number)-input[^>]*name="\{\{VIZ_NAMESPACE\}\}\.[a-zA-Z0-9_]+' "$f" 2>/dev/null \
+                     | sed -E 's/.*\{\{VIZ_NAMESPACE\}\}\.//' | sort -u)
+
+        for K in $INPUT_KEYS; do
+            # Exempt field-name overrides (suffix convention)
+            case "$K" in *Field) continue;; esac
+
+            # Case A: opt() never called -> dead UI (FAIL)
+            if ! grep -qE "opt\([\"']${K}[\"']" "$SRC"; then
+                fail K5 "$VIZ: text-input \"$K\" is declared in formatter.html but never opt()-read (dead UI). See KNOWN-CORRECTIONS.md #15."
+                continue
+            fi
+
+            # Case B: opt() called -> verify reach via variable-name tracking
+            LHS_NAMES=$(grep -oE "(var[[:space:]]+|c\.|t\.|this\.)[a-zA-Z_][a-zA-Z0-9_]*[[:space:]]*=[^;]*opt\([\"']${K}[\"']" "$SRC" 2>/dev/null \
+                        | grep -oE "(var[[:space:]]+|c\.|t\.|this\.)[a-zA-Z_][a-zA-Z0-9_]*" \
+                        | sed -E 's/^(var[[:space:]]+|c\.|t\.|this\.)//' | sort -u)
+
+            # If no LHS captured, opt() is consumed inline -> PASS (e.g. `ctx.lineWidth = opt("lineWidth")`)
+            if [ -z "$LHS_NAMES" ]; then
+                continue
+            fi
+
+            FOUND_REACH=0
+            for LHS in $LHS_NAMES; do
+                if grep -E "ctx\." "$SRC" 2>/dev/null | grep -qE "[.[:space:]]${LHS}\b"; then
+                    FOUND_REACH=1
+                    break
+                fi
+                OCCURRENCES=$(grep -cE "\b${LHS}\b" "$SRC" 2>/dev/null || echo 0)
+                if [ "${OCCURRENCES:-0}" -gt 1 ]; then
+                    FOUND_REACH=1
+                    break
+                fi
+            done
+
+            if [ "$FOUND_REACH" -eq 0 ]; then
+                fail K5 "$VIZ: text-input \"$K\" is opt()-read but the value never reaches a ctx.* call (dead UI). See KNOWN-CORRECTIONS.md #15."
+            fi
+        done
+    done
+}
+check_k5
+
+# K6 — Every distinct font family in ctx.font = '... "<family>" ...' MUST have
+# a matching @font-face block in the same viz's visualization.css.
+# (Correction 26 in KNOWN-CORRECTIONS.md — test52 Chakra Petch / JetBrains Mono)
+#
+# Scope: grep only */src/visualization_source.js (NOT shared/theme.js — Pitfall #3).
+# Exempt families: CSS generics + bundled/universal system fonts.
+check_k6() {
+    EXEMPT_FAMILIES="sans-serif monospace serif system-ui Inter Arial Helvetica"
+
+    for f in "$APP_DIR"/appserver/static/visualizations/*/src/visualization_source.js; do
+        [ -f "$f" ] || continue
+        VIZ_DIR=$(dirname "$(dirname "$f")")
+        VIZ=$(basename "$VIZ_DIR")
+        CSS="$VIZ_DIR/visualization.css"
+
+        # Extract every quoted family token from ctx.font assignment lines.
+        # Pattern accepts either single- or double-quoted outer strings;
+        # the family token itself is always double-quoted inside.
+        # Iterate newline-delimited (families may contain spaces, e.g. "Chakra Petch").
+        FAMILIES=$(grep -hE 'ctx\.font[[:space:]]*=' "$f" 2>/dev/null \
+                   | grep -oE '"[A-Za-z][A-Za-z0-9 _-]*"' | tr -d '"' | sort -u)
+
+        OLDIFS="$IFS"
+        IFS='
+'
+        for FAM in $FAMILIES; do
+            IFS="$OLDIFS"
+            # Skip empty
+            [ -z "$FAM" ] && { IFS='
+'; continue; }
+            # Skip exempt families
+            IS_EXEMPT=0
+            for E in $EXEMPT_FAMILIES; do
+                if [ "$FAM" = "$E" ]; then
+                    IS_EXEMPT=1
+                    break
+                fi
+            done
+            if [ "$IS_EXEMPT" -eq 1 ]; then
+                IFS='
+'
+                continue
+            fi
+
+            # Require @font-face block in visualization.css for this family
+            if [ ! -f "$CSS" ] || ! grep -qE "@font-face[^}]*font-family:[[:space:]]*[\"']${FAM}[\"']" "$CSS"; then
+                fail K6 "$VIZ: font \"$FAM\" used in ctx.font but no @font-face declaration in visualization.css. See KNOWN-CORRECTIONS.md #26."
+            fi
+            IFS='
+'
+        done
+        IFS="$OLDIFS"
+    done
+}
+check_k6
+
+# K7 — Dashboard XML viz type prefix MUST match parent app's [package] id
+# (Correction 24 in KNOWN-CORRECTIONS.md — test52 cross-app merge)
+#
+# Skip standalone viz packs (no views/ directory). Exempt Splunk built-in
+# type prefixes: splunk, ds, input, drilldown.
+check_k7() {
+    # Skip if no dashboards (standalone viz pack)
+    [ -d "$APP_DIR/default/data/ui/views" ] || return 0
+    [ -f "$APP_DIR/default/app.conf" ] || return 0
+
+    # Extract parent app id from [package] stanza
+    APP_ID=$(awk '/^\[package\]/{in_pkg=1;next} /^\[/{in_pkg=0} in_pkg && /^[[:space:]]*id[[:space:]]*=/{
+        sub(/^[[:space:]]*id[[:space:]]*=[[:space:]]*/,"");
+        sub(/[[:space:]]*$/,"");
+        print; exit
+    }' "$APP_DIR/default/app.conf")
+    [ -n "$APP_ID" ] || return 0
+
+    for xml in "$APP_DIR"/default/data/ui/views/*.xml; do
+        [ -f "$xml" ] || continue
+        XML=$(basename "$xml")
+
+        # Extract all "type": "<prefix>.<viz>" prefixes (just the prefix part)
+        PREFIXES=$(grep -oE '"type":[[:space:]]*"[a-zA-Z_][a-zA-Z0-9_]*\.[a-zA-Z_][a-zA-Z0-9_]*"' "$xml" 2>/dev/null \
+                   | grep -oE '"[a-zA-Z_][a-zA-Z0-9_]*\.' | tr -d '".' | sort -u)
+
+        for PFX in $PREFIXES; do
+            # Exempt Splunk built-in prefixes
+            case "$PFX" in splunk|ds|input|drilldown) continue;; esac
+            if [ "$PFX" != "$APP_ID" ]; then
+                fail K7 "$XML: viz type prefix \"$PFX\" does not match parent app id \"$APP_ID\" (incomplete cross-app merge). See KNOWN-CORRECTIONS.md #24."
+            fi
+        done
+    done
+}
+check_k7
+
 # === DESIGN FIDELITY CHECK (NEW in v6) ===
 
 echo ""
