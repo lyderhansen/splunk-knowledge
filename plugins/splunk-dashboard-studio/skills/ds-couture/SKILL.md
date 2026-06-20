@@ -370,6 +370,10 @@ The Design Context Protocol asks for "tone" as one of the 5 required inputs. Ton
 
 These are starting points, not commands — confirm the flavor with the user before locking it.
 
+### Multi-audience apps — one flavor per audience, not one for all
+
+When a single app serves several audiences, do NOT reuse one flavor across every dashboard — each view should BREAK from the others on theme + flavor + density. See [references/multi-audience-apps.md](references/multi-audience-apps.md) for the recommended C-suite (Editorial / light / sparse) + Operations (Refined / dark / medium) + Specialist (Industrial / black / dense) three-flavor starting matrix.
+
 ## Composition principles — making dashboards pop
 
 Three graphic-design principles that separate "functional" from "wow."
