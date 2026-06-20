@@ -251,6 +251,20 @@ extended type conversion/checking) are documented in `reference/eval.md`.
 ... | sort 0 _time | streamstats sum(count) as cumulative_count
 ```
 
+### 27. relative_time(now(), "0") fails on the All-time picker
+
+**Wrong:** `| where _time >= relative_time(now(), "$global_time.earliest$")`
+**Right:**
+```spl
+| where _time >= case(
+    "$global_time.earliest$" = "0" OR "$global_time.earliest$" = "", 0,
+    1==1, relative_time(now(), "$global_time.earliest$"))
+  AND _time <= case(
+    "$global_time.latest$" = "now" OR "$global_time.latest$" = "", now(),
+    1==1, relative_time(now(), "$global_time.latest$"))
+```
+**Why:** Splunk's "All time" preset sets `$global_time.earliest$ = "0"` (literal string zero, no suffix). `relative_time(now(), "0")` rejects `"0"` because it is not a valid relative-time modifier, so the panel errors with "Argument is invalid". Wrap every token-fed `relative_time` in a `case()` that handles the `"0"` and `""` edge cases. This is the canonical instance of the general rule in **Token substitution safety** below. The dashboard-side application of this same wrapper is documented in Phase 52 DS-04 (`splunk-dashboard-studio/skills/ds-data-explore`) — this trap owns the SPL-language side.
+
 ---
 
 ## Search performance hierarchy
@@ -279,6 +293,22 @@ Optimize SPL in this order — earlier stages eliminate more work:
 If scanCount >> eventCount, you're decompressing and parsing events
 only to throw them away. Add TERM() or tighten the first line of
 your search to eliminate earlier in the pipeline.
+
+---
+
+## Token substitution safety
+
+Dashboard and saved-search tokens (`$token$`, `$global_time.earliest$`, etc.) are **dumb string substitution** — Splunk literally pastes the token's current string value into the SPL before parsing. The substituted value is never validated against the format the surrounding function expects.
+
+**Rule:** never let a token value flow directly into a function that requires a specific format. Always wrap it in `case()` or `if()` with explicit edge-case branches.
+
+The canonical instance is trap #27 above: the All-time picker substitutes `"0"` into `relative_time(now(), ...)`, which rejects it. Other at-risk functions: `strptime` (token must match the format string), `relative_time` (token must be a valid modifier), `tonumber` (token must be numeric), `cidrmatch` (token must be a valid CIDR). When in doubt, guard the token with a `case()` that maps the known edge values (`"0"`, `""`, `"*"`, `"now"`) to safe defaults before passing the rest through.
+
+---
+
+## Reshape recipes
+
+**Wide → tall reshape without `untable`** — to convert a single "wide" one-row result (e.g. `gpu_temp`, `cpu_temp`, `vrm_temp` as columns) into "tall" N-row output (`component`, `current_temp`) for radar / clock / fan vizs, use `makemv + mvexpand + case` rather than `untable` (which loses type metadata Canvas vizs need). Full recipe with the test52 canonical example: `reference/reshape-wide-to-tall.md`. Different use case than trap #19 (makemv sparkline typing) — see that file for the distinction.
 
 ---
 
