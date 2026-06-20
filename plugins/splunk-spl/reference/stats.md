@@ -129,6 +129,18 @@ Feed a single-value visualization a pre-aggregated number:
   `BY` clause. If you need different grouping dimensions, chain multiple `stats` calls
   or use `eventstats` with different `BY` fields.
 
+- **Aggregation functions cannot be wrapped in math/eval functions inline** — `| stats
+  round(avg(field), 1) AS x` errors with "The argument 'round(avg(field), N)' is invalid".
+  `stats` does not allow an aggregation function to be nested inside another function in the
+  same clause. Round (or otherwise transform) in a separate `eval` after the `stats`:
+
+  ```spl
+  # WRONG
+  | stats round(avg(field), 1) AS x
+  # RIGHT
+  | stats avg(field) AS x | eval x=round(x, 1)
+  ```
+
 ## See also
 
 - `eventstats.md` — like stats but preserves all original events

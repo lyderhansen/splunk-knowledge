@@ -62,6 +62,17 @@ Use `append` with `| noop search_optimization=false` if you need to exclude a pe
 - **Splunk may auto-convert `append`** — the search optimizer can internally rewrite
   `append` as `multisearch`. Add `| noop search_optimization=false` if you need the
   original `append` behavior.
+- **DOES NOT WORK with `inputlookup`** — `multisearch` requires each subsearch to begin with
+  the `search` command. `| inputlookup table.csv` does not qualify and the panel returns no
+  rows (or errors) silently. To merge lookup tables, use `append` with a discriminator field
+  instead:
+
+  ```spl
+  | inputlookup table_a.csv | eval src="a"
+  | append [| inputlookup table_b.csv | eval src="b"]
+  | stats avg(eval(if(src="a", metric_a, null()))) AS "Metric A"
+          count(eval(src="b")) AS "Count B" by _time
+  ```
 
 ## Tips
 
