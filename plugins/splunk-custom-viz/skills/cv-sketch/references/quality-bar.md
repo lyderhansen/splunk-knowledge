@@ -42,6 +42,38 @@ Each effect must serve communication, not exist for its own sake:
 
 Carbon fiber / noise texture / radial wash backgrounds: ONLY when the brand calls for them (e.g., motorsport, luxury, industrial). Not as a default.
 
+## SVG arc geometry
+
+Every concentric-arc mockup (radial gauges, ring meters, donut progress) MUST compute its arc
+endpoints from `start_angle + sweep_angle + radius` using trig — never approximate by eye. The
+test52 failure (Correction #22) was a 270° gauge arc drawn with eyeballed endpoints `(-95, 32)`
+and `(95, 32)` that did not sit on the r=100 circle, which rendered as two disconnected colored
+segments instead of one continuous arc.
+
+The canonical helper:
+
+```javascript
+// For an arc on a circle of radius r centered at (cx, cy):
+// angle in degrees, 0deg = 12 o'clock, increasing clockwise.
+function arcPoint(cx, cy, r, angleDeg) {
+  var a = (angleDeg - 90) * Math.PI / 180;  // -90 so 0deg = 12 o'clock
+  return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+}
+// 270deg arc opening at the bottom of an r=100 circle centered at origin:
+//   start = arcPoint(0, 0, 100, 225)           -> lower-left
+//   end   = arcPoint(0, 0, 100, 135)           -> lower-right (clockwise 270deg)
+//   value end at 93% sweep: arcPoint(0, 0, 100, 225 + 270 * 0.93)
+```
+
+Angle convention committed here: degrees, `0deg = 12 o'clock`, increasing **clockwise**. A
+bottom-opening 270° arc therefore starts at `225` (lower-left), sweeps clockwise through the top,
+and ends at `135` (lower-right) — a full `270` of sweep. The value tip for a fractional reading is
+`arcPoint(cx, cy, r, start_angle + sweep_angle * fraction)`.
+
+The rule: compute endpoints from `start_angle + sweep_angle + radius`, never approximate. Keep the
+helper ES5 (`var` / `function`, no `const`/`let`/arrow functions) so it ports cleanly into the
+Splunk Canvas viz at cv-create.
+
 ## What "designer-grade" specifically requires
 
 A non-designer looking at the mockup should NOT be able to say "an AI made this." The mockup should make them ask "how was this made?"
@@ -61,7 +93,7 @@ Concrete tells of AI output to avoid:
 
 ## The Slop Test (executed at end of Stage B)
 
-Before showing the mockup to the user, run the 8-question Slop Test from [slop-test.md](slop-test.md). For any "yes" answer, fix the HTML before proceeding to Stage D.
+Before showing the mockup to the user, run the 10-question Slop Test from [slop-test.md](slop-test.md). For any "yes" answer, fix the HTML before proceeding to Stage D.
 
 ## Inspiration sources to consult (NOT to copy)
 
