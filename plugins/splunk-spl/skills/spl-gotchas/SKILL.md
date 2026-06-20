@@ -304,13 +304,9 @@ Dashboard and saved-search tokens (`$token$`, `$global_time.earliest$`, etc.) ar
 
 The canonical instance is trap #27 above: the All-time picker substitutes `"0"` into `relative_time(now(), ...)`, which rejects it. Other at-risk functions: `strptime` (token must match the format string), `relative_time` (token must be a valid modifier), `tonumber` (token must be numeric), `cidrmatch` (token must be a valid CIDR). When in doubt, guard the token with a `case()` that maps the known edge values (`"0"`, `""`, `"*"`, `"now"`) to safe defaults before passing the rest through.
 
----
-
 ## Reshape recipes
 
 **Wide → tall reshape without `untable`** — to convert a single "wide" one-row result (e.g. `gpu_temp`, `cpu_temp`, `vrm_temp` as columns) into "tall" N-row output (`component`, `current_temp`) for radar / clock / fan vizs, use `makemv + mvexpand + case` rather than `untable` (which loses type metadata Canvas vizs need). Full recipe with the test52 canonical example: `reference/reshape-wide-to-tall.md`. Different use case than trap #19 (makemv sparkline typing) — see that file for the distinction.
-
----
 
 ## Command index
 
