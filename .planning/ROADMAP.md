@@ -903,7 +903,7 @@ Plans:
 - [ ] Phase 48: Font Embedding Pipeline (0/0 plans) — declared brand fonts actually land in the Splunk iframe
 - [ ] Phase 49: Cross-App Merge Ergonomics (0/0 plans) — `cv-build --merge-into` (or `cv-merge`) kills the namespace-rewrite foot-gun
 - [x] Phase 50: cv-sketch Slop Test & Working Patterns Codified (2/2 plans) — SVG arc geometry, markdown-on-shape, Rule 9 bottom-up, shared `_render<X>` helper, three-audience matrix, anti-references persisted (cv 6.0.10, ds 3.5.1)
-- [ ] Phase 51: splunk-spl Reference Debt (0/1 plans) — All-time relative_time trap, multisearch+inputlookup, stats round-wrap, wide→tall reshape, token substitution safety
+- [x] Phase 51: splunk-spl Reference Debt (1/1 plans) — All-time relative_time trap (#27), multisearch+inputlookup, stats round-wrap, wide→tall reshape, token substitution safety (splunk-spl 1.2.1)
 - [ ] Phase 52: splunk-dashboard-studio Reference Debt (0/0 plans) — fillergauge min height, area stackMode enum, pitfalls matrix, ds-data-explore case() wrapper, anti-patterns badge note, 3-step refresh checklist
 
 Sources: `tests/test51_cucm/HANDOFF.md` (Cisco UC) + `tests/test52_asus_rog/HANDOFF.md` (Asus ROG). Target plugins: splunk-custom-viz (v6.0.8) · splunk-spl (v1.2.0) · splunk-dashboard-studio (v3.5.0). No splunk-viz-packs or splunk-admin work.
@@ -993,7 +993,7 @@ Plans:
 **Plans**: 1 plan
 Plans:
 
-- [ ] 51-01-PLAN.md — Harvest SPL-01..05 into splunk-spl: trap #27 + token-safety section + reshape pointer in spl-gotchas, new reference/reshape-wide-to-tall.md, multisearch.md + stats.md gotchas, version bump to 1.2.1
+- [x] 51-01-PLAN.md — Harvest SPL-01..05 into splunk-spl: trap #27 + token-safety section + reshape pointer in spl-gotchas, new reference/reshape-wide-to-tall.md, multisearch.md + stats.md gotchas, version bump to 1.2.1
 
 ### Phase 52: splunk-dashboard-studio Reference Debt
 
