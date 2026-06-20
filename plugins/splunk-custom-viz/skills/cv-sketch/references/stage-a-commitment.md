@@ -49,6 +49,15 @@ Anti-references (3 concrete things this must NOT look like):
   → <thing 3, specific>
 ```
 
+> **MANDATORY — anti-references persistence:** The anti-references list above MUST be written
+> verbatim into `DESIGN-LOCK.md.global.commitments.anti_references` (the structured field —
+> not just the prose summary). test52 named this list **"the single most valuable anti-slop
+> anchor."** It is only a working defense mechanism if it survives into the lock so cv-create
+> can re-read it mid-port; an anti-reference that lives only in `sketch-rationale.md` prose is
+> invisible to the porting stage. The field already exists in the lock schema
+> ([lock-schema.md](lock-schema.md) `global.commitments.anti_references`) — populate it, do not
+> leave it as a placeholder.
+
 ## Reflex-reject font list
 
 These fonts are your training-data defaults. They create monoculture across AI-generated projects. Reject all of them and pick from outside this list:
@@ -87,5 +96,7 @@ These fail the block and require redo:
 ## Why the commitment block matters
 
 By the time the LLM is writing the 5th HTML viz section, context pressure has accumulated and the LLM tends to grab the closest familiar pattern. The commitment block is read at the start, recorded in `sketch-rationale.md`, and persisted into `DESIGN-LOCK.md.global.commitments` — so when cv-create is mid-port and has to make a sub-decision, it can re-read the commitments and stay aligned with what was committed at Stage A.
+
+The anti-references list specifically MUST be persisted into `DESIGN-LOCK.md.global.commitments.anti_references` (the structured field, not just prose). test52 named it the single most valuable anti-slop anchor, and it only works as a defense if cv-create can re-read it mid-port — an anti-reference that never makes it into the lock cannot stop slop at port time.
 
 This is the structural fix for the test44 finding: *"the agent prioritizes compliance over creativity every time, and the creative work gets the minimum viable implementation."* Locking commitments at Stage A means there's no minimum viable to fall back to — the spec is concrete.
