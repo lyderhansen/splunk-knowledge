@@ -8,7 +8,7 @@ The core question:
 
 If yes — that's the problem. The mockup should make someone ask "how was this made?" not "which AI made this?"
 
-## The 8 questions
+## The 10 questions
 
 For each, answer honestly. For any "yes", fix the HTML before proceeding.
 
@@ -40,6 +40,16 @@ For each, answer honestly. For any "yes", fix the HTML before proceeding.
 
 8. **Does anything in here surprise me, or could AI make all of this?**
    (This is the hardest question. Be honest.)
+
+9. **For any concentric-arc viz, do all arc start/end points sit on the same circle within 0.1px?**
+   (Symptom: two disconnected colored segments, or a stub of color in the wrong place — test52 #22.)
+   Arc endpoints MUST be computed with sin/cos, never eyeballed. See the SVG arc geometry
+   section in [quality-bar.md](quality-bar.md) for the trig helper.
+
+10. **Did I overlay small (<32px) markdown text on a background shape for a number badge?**
+    (Unreliable rendering at small sizes — test51 G2 shipped a glitchy partial-fill badge.)
+    Working alternative: a colored dot (12-14px) + the number embedded inline in the
+    section-title text (e.g. `**01 · QUALITY EXPERIENCE**`).
 
 ## What to do with each "yes"
 
