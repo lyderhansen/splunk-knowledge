@@ -902,8 +902,8 @@ Plans:
 - [x] Phase 47: Validator Hardening (2/2 plans) — K1b/K5/K6/K7 + no-regression sweep across 49 packs, shipped in splunk-custom-viz v6.0.9
 - [ ] Phase 48: Font Embedding Pipeline (0/0 plans) — declared brand fonts actually land in the Splunk iframe
 - [ ] Phase 49: Cross-App Merge Ergonomics (0/0 plans) — `cv-build --merge-into` (or `cv-merge`) kills the namespace-rewrite foot-gun
-- [ ] Phase 50: cv-sketch Slop Test & Working Patterns Codified (0/0 plans) — SVG arc geometry, markdown-on-shape, Rule 9 bottom-up, shared `_render<X>` helper, three-audience matrix, anti-references persisted
-- [ ] Phase 51: splunk-spl Reference Debt (0/0 plans) — All-time relative_time trap, multisearch+inputlookup, stats round-wrap, wide→tall reshape, token substitution safety
+- [ ] Phase 50: cv-sketch Slop Test & Working Patterns Codified (0/2 plans) — SVG arc geometry, markdown-on-shape, Rule 9 bottom-up, shared `_render<X>` helper, three-audience matrix, anti-references persisted
+- [ ] Phase 51: splunk-spl Reference Debt (0/1 plans) — All-time relative_time trap, multisearch+inputlookup, stats round-wrap, wide→tall reshape, token substitution safety
 - [ ] Phase 52: splunk-dashboard-studio Reference Debt (0/0 plans) — fillergauge min height, area stackMode enum, pitfalls matrix, ds-data-explore case() wrapper, anti-patterns badge note, 3-step refresh checklist
 
 Sources: `tests/test51_cucm/HANDOFF.md` (Cisco UC) + `tests/test52_asus_rog/HANDOFF.md` (Asus ROG). Target plugins: splunk-custom-viz (v6.0.8) · splunk-spl (v1.2.0) · splunk-dashboard-studio (v3.5.0). No splunk-viz-packs or splunk-admin work.
@@ -971,7 +971,11 @@ Sources: `tests/test51_cucm/HANDOFF.md` (Cisco UC) + `tests/test52_asus_rog/HAND
   6. User reading `splunk-dashboard-studio/skills/ds-couture/SKILL.md` finds a "Multi-audience apps" sub-section with the three-flavor matrix (C-suite editorial light · Operations refined dark · Specialist industrial black) as the recommended starting template for multi-dashboard apps — test51 Pattern D is the default, not a footnote
   7. User reading `cv-sketch/references/stage-a-commitment.md` finds an explicit note that the Stage A anti-references list MUST be persisted into `DESIGN-LOCK.md.global.commitments.anti_references` so `cv-create` can re-read it mid-port as a defense mechanism — test52 Section 3 working pattern is durable across sessions
 
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+
+- [ ] 50-01-PLAN.md — cv-sketch Slop Test Q9/Q10 + SVG arc geometry section + anti-references persistence note (SKETCH-01/02/03, PATTERN-04); bump splunk-custom-viz to 6.0.10
+- [ ] 50-02-PLAN.md — canvas-port-rules Rule 9 (bottom-up layout) + Rule 5 impl pattern (shared _render<X>) + ds-couture multi-audience matrix (PATTERN-01/02/03); bump splunk-dashboard-studio to 3.5.1
 
 ### Phase 51: splunk-spl Reference Debt
 
@@ -986,7 +990,10 @@ Sources: `tests/test51_cucm/HANDOFF.md` (Cisco UC) + `tests/test52_asus_rog/HAND
   4. User reading `splunk-spl/skills/spl-gotchas.md` finds a "Wide → tall reshape without `untable`" recipe using `makemv + mvexpand + case` with the test52 canonical example (single rig latest row → component-row radar) — test52 Correction #25 is reusable beyond the Asus ROG context
   5. User reading `splunk-spl/skills/spl-gotchas.md` finds a "Token substitution safety" section warning that tokens are dumb string substitution, with the `case()` wrapper pattern for any function that requires a specific format — test51 Gap G4 cannot bite a future build silently
 
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+
+- [ ] 51-01-PLAN.md — Harvest SPL-01..05 into splunk-spl: trap #27 + token-safety section + reshape pointer in spl-gotchas, new reference/reshape-wide-to-tall.md, multisearch.md + stats.md gotchas, version bump to 1.2.1
 
 ### Phase 52: splunk-dashboard-studio Reference Debt
 
