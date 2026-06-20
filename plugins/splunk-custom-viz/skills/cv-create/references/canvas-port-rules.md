@@ -133,6 +133,21 @@ Why: the test44 failure mode was treating light theme as "dimmed dark" — apply
 
 If you find yourself sharing helper functions between the two render paths, that's fine — extract them as private methods. But the top-level render flow is two separate paths.
 
+### Rule 5 implementation pattern — shared `_render<X>` helper
+
+test52 (ASUS ROG) proved a clean way to share the legitimate common geometry between the two paths without collapsing them into one parameterized render. Keep `_renderDark` and `_renderLight` as the two real entry points, but let each delegate to a shared helper that takes an `isLight` flag — and branch every THEME-DEPENDENT effect with `if (!isLight)`:
+
+```javascript
+    _renderDark:  function(ctx, data, t, w, h, opt) { t = this._resolveTheme(t, opt); this._renderShared(ctx, data, t, w, h, opt, false); },
+    _renderLight: function(ctx, data, t, w, h, opt) { t = this._resolveTheme(t, opt); this._renderShared(ctx, data, t, w, h, opt, true);  },
+    _renderShared: function(ctx, data, t, w, h, opt, isLight) {
+        // shared geometry both paths legitimately need
+        if (!isLight) { /* dark-only ambient glow / carbon-fiber overlay */ }
+    }
+```
+
+**This does NOT violate Rule 5.** Rule 5 forbids a single parameterized render that DERIVES light from dark by dimming the same effects — the shared helper here is the legitimate common geometry both paths genuinely need, while every theme-dependent EFFECT (ambient glow, carbon overlay) is properly branched out with `if (!isLight)` so light is never "dimmed dark."
+
 ## Rule 6: Compliance work is emitted by the boilerplate script
 
 You do not write `safeStr`, `safeNum`, `hexFromSplunk`, `getOption`, `detectTheme`, `initialize`, `formatData`, `getInitialDataParams`, `reflow`, or `destroy`. Those are emitted by `boilerplate_emit.js` and you must not modify them.
@@ -255,6 +270,33 @@ ctx.fillStyle = t._heroValue;
 ### Validator enforcement
 
 `validate.sh` greps every `splunk-color-picker` name attribute out of `formatter.html` and confirms a matching `opt("<key>"...)` call exists in `visualization_source.js`. Unread pickers are a FAIL, not a WARN — they are user-facing lies.
+
+## Rule 9: Compute multi-row layouts bottom-up, not top-down
+
+When a viz stacks multiple rows of content (e.g. a gauge above a hero value above a caption above a legend), anchor the layout at the BOTTOM edge and walk UPWARD, subtracting each row's height as you go. The bottom row is the most height-sensitive — pin it to `h` and let the rows above flex.
+
+The test51 (CUCM) working snippet — a legend → caption → value → gauge stack, computed bottom-up:
+
+```javascript
+var legendH      = 50;
+var legendTopY   = h - legendH - 8;
+var captionY     = legendTopY - 16;
+var valueY       = captionY - 12;
+var gaugeBottomY = valueY - 56;
+var gaugeMaxR    = Math.min(w * 0.32, (gaugeBottomY - 60) * 1.0);
+```
+
+**Symptom:** elements collide at small panel heights — invisible during dev at one test height, breaks in production at a different panel size.
+
+**Anti-pattern (top-down):** pinning the bottom row first and then walking DOWNWARD by fixed offsets —
+
+```javascript
+var gaugeBottomY = h - 76;
+var valueY       = gaugeBottomY + 38;
+// ... each row added below the previous by a fixed offset
+```
+
+This pins the bottom row, then adds fixed offsets going down, so when `h` shrinks the rows run off the bottom or overlap. Always derive each row's `Y` by SUBTRACTING from the row below it, starting at `h`.
 
 ## Self-check before moving to the next viz
 
