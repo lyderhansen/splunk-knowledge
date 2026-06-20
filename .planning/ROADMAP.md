@@ -902,7 +902,7 @@ Plans:
 - [x] Phase 47: Validator Hardening (2/2 plans) — K1b/K5/K6/K7 + no-regression sweep across 49 packs, shipped in splunk-custom-viz v6.0.9
 - [ ] Phase 48: Font Embedding Pipeline (0/0 plans) — declared brand fonts actually land in the Splunk iframe
 - [ ] Phase 49: Cross-App Merge Ergonomics (0/0 plans) — `cv-build --merge-into` (or `cv-merge`) kills the namespace-rewrite foot-gun
-- [ ] Phase 50: cv-sketch Slop Test & Working Patterns Codified (0/2 plans) — SVG arc geometry, markdown-on-shape, Rule 9 bottom-up, shared `_render<X>` helper, three-audience matrix, anti-references persisted
+- [x] Phase 50: cv-sketch Slop Test & Working Patterns Codified (2/2 plans) — SVG arc geometry, markdown-on-shape, Rule 9 bottom-up, shared `_render<X>` helper, three-audience matrix, anti-references persisted (cv 6.0.10, ds 3.5.1)
 - [ ] Phase 51: splunk-spl Reference Debt (0/1 plans) — All-time relative_time trap, multisearch+inputlookup, stats round-wrap, wide→tall reshape, token substitution safety
 - [ ] Phase 52: splunk-dashboard-studio Reference Debt (0/0 plans) — fillergauge min height, area stackMode enum, pitfalls matrix, ds-data-explore case() wrapper, anti-patterns badge note, 3-step refresh checklist
 
@@ -974,8 +974,8 @@ Sources: `tests/test51_cucm/HANDOFF.md` (Cisco UC) + `tests/test52_asus_rog/HAND
 **Plans**: 2 plans
 Plans:
 
-- [ ] 50-01-PLAN.md — cv-sketch Slop Test Q9/Q10 + SVG arc geometry section + anti-references persistence note (SKETCH-01/02/03, PATTERN-04); bump splunk-custom-viz to 6.0.10
-- [ ] 50-02-PLAN.md — canvas-port-rules Rule 9 (bottom-up layout) + Rule 5 impl pattern (shared _render<X>) + ds-couture multi-audience matrix (PATTERN-01/02/03); bump splunk-dashboard-studio to 3.5.1
+- [x] 50-01-PLAN.md — cv-sketch Slop Test Q9/Q10 + SVG arc geometry section + anti-references persistence note (SKETCH-01/02/03, PATTERN-04); bump splunk-custom-viz to 6.0.10
+- [x] 50-02-PLAN.md — canvas-port-rules Rule 9 (bottom-up layout) + Rule 5 impl pattern (shared _render<X>) + ds-couture multi-audience matrix (PATTERN-01/02/03); bump splunk-dashboard-studio to 3.5.1
 
 ### Phase 51: splunk-spl Reference Debt
 
