@@ -62,6 +62,15 @@
 - [ ] **DS-05**: User reading `splunk-dashboard-studio/references/ds-ref-anti-patterns.md` finds the number-inside-circle / small-markdown-on-shape badge pattern added as a named anti-pattern with the working alternative (test51 Gap G2)
 - [ ] **DS-06**: User reading any `cv-build`-generated report finds the 3-step refresh checklist (reinstall app → hit `/_bump` → hard-refresh browser) replacing the old "Restart: Required for static images" line (test51 Gap G1)
 
+### Formatter Section-Label Consistency (`vp-viz` + `cv-build`) — added 2026-06-23 from live DS debugging
+
+- [ ] **FMT-01**: User reading `vp-viz/SKILL.md` "Formatter structure" + `vp-viz/references/formatter-patterns.md` sees ONLY the three standard Classic `section-label` values (`Data configurations` / `Data display` / `Color and style`); the non-standard "Effects" section is removed and its toggles (showAmbientLight, showVignette, showGlow, accentColor picker) folded into `Color and style` — resolves the contradiction with cv-create's authoritative rule (formatter-emission.md)
+- [ ] **FMT-02**: User reading the `vp-viz` STOP / pre-code checklist (`references/pre-code-checklist.md`) sees the EXACT-3-label rule enforced as a check (it currently enforces only namespace/type rules); the "4 sections when Animation/Effects present" line is corrected
+- [ ] **FMT-03**: User DEBUGGING a viz finds a symptom-first rule in `cv-build/references/diagnostic-rules.md`: "Formatter controls missing in Dashboard Studio config panel" → cause: non-standard `<form>` section-label → fix: use exactly `Data configurations` / `Data display` / `Color and style` (today the rule only lives in cv-create's emission reference, invisible when debugging)
+- [ ] **FMT-04**: Both `vp-viz` and `cv-build` state explicitly that this rule applies to ANY Classic custom viz embedded in Dashboard Studio, including hand-authored vizs not produced by cv-create
+- [ ] **FMT-05**: The Extension API `editorConfig` path (`vp-viz/references/config-json-template.md` "Effects" label) is investigated on a live viz; the finding is documented (whether the 3-label constraint applies to Extension API too) and the "Effects" editorConfig label is either confirmed safe and kept, or corrected — NOT blindly renamed
+- [ ] **FMT-06**: Companion DS custom-viz gotchas verified/strengthened: (a) namespace dual-read documented as the 3-way probe (getPropertyNamespaceInfo ns+key → short `<app>.<viz>.<key>` → bare key) with the SXML long-key form `display.visualizations.custom.<app>.<viz>.<key>` stated alongside the short-key dashboard form; (b) preview.png auto-discovery semantics stated (ships at `appserver/static/visualizations/<viz>/preview.png`, Splunk auto-discovers with no `visualizations.conf` reference, picker tile blank if missing)
+
 ---
 
 ## Out of Scope (v6.1)
@@ -71,7 +80,7 @@ Explicit exclusions with reasoning:
 - **Phase 45 (session reduction) and Phase 46 (cv-oneshot)** — moved from v6.0 to v6.2+. Both are orthogonal to HANDOFF Harvest theme. Address separately so phase boundaries stay clean.
 - **Any rework of Phase 44 chunked emission contract** — validated in production across 7,400+ lines of emitted source. Leave alone.
 - **New viz types or new cv-* skills not directly tied to the HANDOFFs** — keep the milestone scoped to documented findings.
-- **splunk-viz-packs work** — legacy plugin, no v6.x changes planned.
+- **splunk-viz-packs work** — legacy plugin, no v6.x changes planned. **EXCEPTION (2026-06-23):** Phase 53 re-includes vp-viz for the formatter section-label contradiction fix only — the bug lives in vp-viz and cannot be fixed elsewhere. No other vp-* changes.
 - **splunk-admin work** — no HANDOFF findings touch it.
 - **Tarball-level patches to test51_cucm or test52_asus_rog deliverables** — those are per-build v1.1 follow-ups, not skill-level harvests.
 
@@ -110,5 +119,11 @@ Explicit exclusions with reasoning:
 | DS-04 | Phase 52 | Mapped |
 | DS-05 | Phase 52 | Mapped |
 | DS-06 | Phase 52 | Mapped |
+| FMT-01 | Phase 53 | Mapped |
+| FMT-02 | Phase 53 | Mapped |
+| FMT-03 | Phase 53 | Mapped |
+| FMT-04 | Phase 53 | Mapped |
+| FMT-05 | Phase 53 | Mapped |
+| FMT-06 | Phase 53 | Mapped |
 
-**Total: 29 requirements** across 7 categories (5 VAL · 3 FONT · 3 MERGE · 3 SKETCH · 4 PATTERN · 5 SPL · 6 DS).
+**Total: 35 requirements** across 8 categories (5 VAL · 3 FONT · 3 MERGE · 3 SKETCH · 4 PATTERN · 5 SPL · 6 DS · 6 FMT).

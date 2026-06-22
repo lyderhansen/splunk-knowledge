@@ -897,7 +897,7 @@ Plans:
 **UI hint**: yes
 
 <details open>
-<summary>🚧 v6.1 HANDOFF Harvest (Phases 47-52) — IN PROGRESS, started 2026-05-27</summary>
+<summary>🚧 v6.1 HANDOFF Harvest (Phases 47-53) — IN PROGRESS, started 2026-05-27</summary>
 
 - [x] Phase 47: Validator Hardening (2/2 plans) — K1b/K5/K6/K7 + no-regression sweep across 49 packs, shipped in splunk-custom-viz v6.0.9
 - [ ] Phase 48: Font Embedding Pipeline (0/0 plans) — declared brand fonts actually land in the Splunk iframe
@@ -905,8 +905,9 @@ Plans:
 - [x] Phase 50: cv-sketch Slop Test & Working Patterns Codified (2/2 plans) — SVG arc geometry, markdown-on-shape, Rule 9 bottom-up, shared `_render<X>` helper, three-audience matrix, anti-references persisted (cv 6.0.10, ds 3.5.1)
 - [x] Phase 51: splunk-spl Reference Debt (1/1 plans) — All-time relative_time trap (#27), multisearch+inputlookup, stats round-wrap, wide→tall reshape, token substitution safety (splunk-spl 1.2.1)
 - [ ] Phase 52: splunk-dashboard-studio Reference Debt (0/0 plans) — fillergauge min height, area stackMode enum, pitfalls matrix, ds-data-explore case() wrapper, anti-patterns badge note, 3-step refresh checklist
+- [ ] Phase 53: Formatter Section-Label Consistency (0/0 plans) — fix vp-viz "Effects" contradiction, symptom-first DS-missing-controls debug rule, applies to any Classic viz incl. hand-authored
 
-Sources: `tests/test51_cucm/HANDOFF.md` (Cisco UC) + `tests/test52_asus_rog/HANDOFF.md` (Asus ROG). Target plugins: splunk-custom-viz (v6.0.8) · splunk-spl (v1.2.0) · splunk-dashboard-studio (v3.5.0). No splunk-viz-packs or splunk-admin work.
+Sources: `tests/test51_cucm/HANDOFF.md` (Cisco UC) + `tests/test52_asus_rog/HANDOFF.md` (Asus ROG) + live DS formatter-label debugging (Phase 53). Target plugins: splunk-custom-viz · splunk-spl · splunk-dashboard-studio. Phase 53 also re-includes legacy **splunk-viz-packs** (vp-viz) for the formatter contradiction fix.
 
 </details>
 
@@ -1011,6 +1012,23 @@ Plans:
 
 **Plans**: TBD
 
+### Phase 53: Formatter Section-Label Consistency (Dashboard Studio)
+
+**Goal**: Eliminate the cross-skill contradiction that makes Classic custom-viz formatter controls vanish in the Dashboard Studio config panel — vp-viz currently instructs a non-standard "Effects" `<form section-label>` that DS silently drops, while cv-create correctly forbids it. Make the EXACT-3-label rule consistent across vp-viz, surfaced as a symptom-first debugging rule in cv-build, and applicable to any Classic custom viz embedded in DS (including hand-authored ones).
+**Depends on**: Phase 44 (independent of font/merge/reference work — pure skill-doc consistency fix)
+**Requirements**: FMT-01, FMT-02, FMT-03, FMT-04, FMT-05, FMT-06
+**Scope note**: This phase RE-INCLUDES the legacy `splunk-viz-packs` plugin (vp-viz), which v6.1 had declared out of scope — the contradiction lives in vp-viz and cannot be fixed elsewhere. Touches splunk-viz-packs + splunk-custom-viz only.
+**Success Criteria** (what must be TRUE):
+
+  1. User reading `vp-viz/SKILL.md` "Formatter structure" + `vp-viz/references/formatter-patterns.md` sees ONLY the three standard Classic `section-label` values (`Data configurations` / `Data display` / `Color and style`); the "Effects" section is gone and its toggles (showAmbientLight, showVignette, showGlow, accentColor picker) are folded into `Color and style` (FMT-01)
+  2. User reading the `vp-viz` STOP / pre-code checklist sees the EXACT-3-label rule enforced as a check (it currently enforces only namespace/type rules) (FMT-02)
+  3. User DEBUGGING a viz finds a symptom-first rule in `cv-build/references/diagnostic-rules.md`: "Formatter controls missing in Dashboard Studio config panel" → cause: non-standard `<form>` section-label → fix: use exactly `Data configurations` / `Data display` / `Color and style` (FMT-03)
+  4. Both vp-viz and cv-build state explicitly that the rule applies to ANY Classic custom viz embedded in DS, including hand-authored vizs not produced by cv-create (FMT-04)
+  5. The Extension API `editorConfig` path is investigated on a live viz and the finding documented: whether the 3-label constraint also applies there, and the `config-json-template.md` "Effects" label is either confirmed safe (kept) or corrected accordingly — not blindly renamed (FMT-05)
+  6. Companion DS custom-viz gotchas verified/strengthened: (a) namespace dual-read is documented as the 3-way probe (getPropertyNamespaceInfo ns+key → short `<app>.<viz>.<key>` → bare key), with the SXML long-key form `display.visualizations.custom.<app>.<viz>.<key>` stated alongside the short-key dashboard form; (b) preview.png auto-discovery semantics stated (ships at `appserver/static/visualizations/<viz>/preview.png`, Splunk auto-discovers it with no `visualizations.conf` reference, picker tile is blank if missing) (FMT-06)
+
+**Plans**: TBD
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -1067,3 +1085,4 @@ Plans:
 | 50. cv-sketch Slop Test & Working Patterns Codified | v6.1 | 0/0 | Not started | - |
 | 51. splunk-spl Reference Debt | v6.1 | 0/0 | Not started | - |
 | 52. splunk-dashboard-studio Reference Debt | v6.1 | 0/0 | Not started | - |
+| 53. Formatter Section-Label Consistency | v6.1 | 0/0 | Not started | - |
