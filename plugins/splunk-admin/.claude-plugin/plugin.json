@@ -1,7 +1,7 @@
 {
   "name": "splunk-admin",
-  "description": "Splunk administration reference covering all ~61 configuration files, all REST API endpoints, CLI commands, and troubleshooting diagnostics. Four eagerly-loaded skills (conf files, REST API, CLI, troubleshooting) with gotchas and indexes, plus lazy-loaded per-file reference. Sourced from Splunk Enterprise 10.2.",
-  "version": "1.1.0",
+  "description": "Splunk administration reference covering all ~61 configuration files, all REST API endpoints, CLI commands, and troubleshooting diagnostics, plus add-on development with the UCC framework and the Splunk UI Toolkit (SUIT). Six eagerly-loaded skills (conf files, REST API, CLI, troubleshooting, UCC, UI toolkit) with gotchas and indexes, plus lazy-loaded per-file reference. Sourced from Splunk Enterprise 10.2.",
+  "version": "1.2.0",
   "author": {
     "name": "Lyder Hansen"
   },
@@ -17,6 +17,10 @@
     "cli",
     "troubleshooting",
     "btool",
-    "splunk-enterprise"
+    "splunk-enterprise",
+    "ucc",
+    "add-on",
+    "ui-toolkit",
+    "react"
   ]
 }
