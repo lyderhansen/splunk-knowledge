@@ -90,9 +90,9 @@ All content sourced from Splunk Enterprise Search Reference 10.2.
 - `join` 50K subsearch limit
 - Dotted field names need tick-quoting in `where`/`eval`
 
-### splunk-admin v1.1.0
+### splunk-admin v1.2.0
 
-Splunk administration reference. Four skills covering the full admin surface:
+Splunk administration and add-on development reference. Six skills:
 
 | Skill | What it covers |
 |---|---|
@@ -100,6 +100,8 @@ Splunk administration reference. Four skills covering the full admin surface:
 | **sa-cli** | Every `splunk` CLI subcommand with flags and syntax |
 | **sa-rest-api** | REST API reference — auth, endpoints across 14 categories |
 | **sa-troubleshooting** | Internal logs, metrics.log, health checks, diagnostic SPL |
+| **sa-ucc** | UCC Framework add-on development — globalConfig, inputs/config pages, build/package, OAuth, alert actions, custom UI |
+| **sa-ui-toolkit** | Splunk UI Toolkit (SUIT) — `@splunk/create`, Unified Dashboard Framework, custom React visualizations, `@splunk/react-ui` |
 
 ## Repository layout
 
@@ -128,12 +130,14 @@ splunk-knowledge/
 │   │   │   ├── spl-init/               entry point + router
 │   │   │   └── spl-gotchas/            26 traps + command index
 │   │   └── reference/                  per-command markdown files
-│   └── splunk-admin/                  4 skills, v1.1.0
+│   └── splunk-admin/                  6 skills, v1.2.0
 │       └── skills/
 │           ├── sa-conf-files/           configuration file reference
 │           ├── sa-cli/                  CLI command reference
 │           ├── sa-rest-api/             REST API reference
-│           └── sa-troubleshooting/      diagnostics + debugging
+│           ├── sa-troubleshooting/      diagnostics + debugging
+│           ├── sa-ucc/                  UCC add-on development
+│           └── sa-ui-toolkit/           Splunk UI Toolkit (SUIT)
 ├── .claude-plugin/marketplace.json
 ├── CLAUDE.md
 └── README.md
