@@ -38,7 +38,7 @@
     },
     {
       "name": "splunk-admin",
-      "description": "Splunk administration reference — 52 conf files, REST API endpoints, CLI commands, and troubleshooting guides. For Splunk admins, not dashboard designers. Install separately from the dashboard/viz plugins.",
+      "description": "Splunk administration reference — 52 conf files, REST API endpoints, CLI commands, and troubleshooting guides, plus add-on development with the UCC framework and the Splunk UI Toolkit (SUIT). For Splunk admins and add-on developers, not dashboard designers. Install separately from the dashboard/viz plugins.",
       "source": "./plugins/splunk-admin",
       "category": "productivity",
       "homepage": "https://github.com/lyderhansen/splunk-knowledge",
