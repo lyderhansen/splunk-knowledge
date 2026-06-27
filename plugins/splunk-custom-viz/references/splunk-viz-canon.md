@@ -174,6 +174,8 @@ display.visualizations.custom.{app_name}.{app_name}.{setting1} = {default1}
 display.visualizations.custom.{app_name}.{app_name}.{setting2} = {default2}
 ```
 
+> **Key-form note (long vs short):** This `display.visualizations.custom.<app>.<viz>.<key>` form is the **Classic Simple XML** LONG key. **Dashboard Studio** dashboard JSON uses the SHORT bare key (`<key>`) instead — DS prefixes the namespace itself. A viz that runs under both hosts reads all three forms via the `getOption` 3-way probe (ns+key → short `<app>.<viz>.<key>` → bare key); see cv-build/references/diagnostic-rules.md B3.
+
 #### README/savedsearches.conf.spec
 
 Document every custom setting:

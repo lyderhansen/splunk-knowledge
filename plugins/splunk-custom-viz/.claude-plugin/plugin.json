@@ -1,7 +1,7 @@
 {
   "name": "splunk-custom-viz",
   "description": "Create installable Splunk custom visualization apps from a short brand description. Make sure to use this skill whenever the user mentions building a Splunk custom viz, a custom visualization for Splunk, a themed Splunk dashboard app, or wants branded Canvas 2D vizs for Splunk \u2014 even if they don't explicitly say 'plugin'. HTML-first design workflow: produces a designer-grade HTML mockup that the user can preview, then ports it to ES5 Canvas Splunk vizs with light + dark theme support and both Classic AMD (.tar.gz) and Extension API (.spl) output. Four skills: cv-scope (gather context), cv-sketch (HTML mockup + DESIGN-LOCK.md), cv-create (port to Splunk code), cv-build (validate + package).",
-  "version": "6.0.10",
+  "version": "6.0.11",
   "author": {
     "name": "Lyder Hansen"
   },

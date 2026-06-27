@@ -117,6 +117,8 @@ The `theme` attribute on `<dashboard>` MUST match `applicationProperties.theme` 
 
 **Custom viz options use SHORT KEYS only** (NOT namespaced). Inside `visualizations.viz_<name>.options`, use bare key names like `"field": "value"`, NEVER `"<app_id>.<viz_name>.field": "value"`. Dashboard Studio automatically prefixes the namespace when passing options to `updateView` — providing full-namespace keys breaks binding.
 
+> **vs. Classic Simple XML:** SXML `<option name>` uses the LONG form `display.visualizations.custom.<app_id>.<viz_name>.<key>` (see splunk-viz-canon.md), while DS dashboard JSON uses the SHORT bare key here. A viz that must run under both reads all three forms via the `getOption` 3-way probe (diagnostic-rules.md B3).
+
 ## Critical Dashboard Studio v2 rules
 
 - Visualization types use `<app_id>.<viz_name>` format — NEVER `viz.custom.*`, NEVER `splunk.custom.*`, NEVER `"custom"` + `customVizId`

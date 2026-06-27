@@ -9,7 +9,9 @@ The asset generator reads `<app_id>/shared/theme.js` for brand colors and produc
 | `static/appIcon.png` | 36×36 | Splunk Manage Apps icon — accent color background + white app initial |
 | `static/appIcon_2x.png` | 72×72 | Retina version of appIcon.png |
 | `appserver/static/images/bg_gradient.png` | 1920×1080 | Branded gradient background for dashboard composition |
-| `appserver/static/visualizations/<viz>/preview.png` | 116×76 | Per-viz preview thumbnail shown in formatter dropdown |
+| `appserver/static/visualizations/<viz>/preview.png` | 116×76 | Per-viz preview thumbnail shown in the viz-picker tile + formatter dropdown |
+
+**preview.png auto-discovery:** Splunk auto-discovers `appserver/static/visualizations/<viz>/preview.png` by convention — there is **no** `visualizations.conf` reference for it. If the file is missing, the viz-picker tile renders **blank** (no error, just an empty thumbnail). The file must ship at exactly that path; nothing else wires it up.
 
 ## Brand colors source
 

@@ -109,7 +109,14 @@ Without `ctx.scale(dpr, dpr)` after setting `canvas.width = w * dpr`, Retina dis
 
 ### B3: `getOption` helper is mandatory
 
-Dashboard Studio v2 may pass formatter values as short keys (without namespace prefix) while initial dashboard JSON values may use full-namespace keys. Use `getOption(config, ns, key, defaultValue)` that tries both. The boilerplate emitter includes this helper.
+Dashboard Studio v2 may pass formatter values as short keys (without namespace prefix) while initial dashboard JSON values may use full-namespace keys. Use `getOption(config, ns, key, defaultValue)`. The boilerplate emitter includes this helper.
+
+**The probe is 3-way, in order:** (1) `ns + key` where `ns` comes from `this.getPropertyNamespaceInfo().propertyNamespace`; (2) the short namespaced form `<app_id>.<viz_name>.<key>`; (3) the bare `key`. First match wins; fall back to the default if none resolve.
+
+**Key-form by host (read all three at runtime):**
+- Dashboard Studio JSON `options`: SHORT key — bare `"<key>"` (see dashboard-transcription.md). DS prefixes the namespace before calling `updateView`.
+- Classic Simple XML `<option name>`: LONG key — `display.visualizations.custom.<app_id>.<viz_name>.<key>` (see splunk-viz-canon.md).
+The 3-way probe makes one viz work under both hosts.
 
 ### B4: Never read config in `formatData`
 
@@ -118,6 +125,14 @@ Dashboard Studio v2 may pass formatter values as short keys (without namespace p
 ### B5: Formatter section labels + `type="custom"` on color picker
 
 Sections MUST use `class="splunk-formatter-section"` with `section-label="..."`. Color pickers MUST have `type="custom"`. Without these, Splunk creates duplicate / mis-rendered groups.
+
+### Symptom: Formatter controls missing in the Dashboard Studio config panel
+
+A Classic custom viz's controls render fine in Simple XML's Format menu but do NOT appear in the Dashboard Studio config panel (or appear under a duplicate viz-name-prefixed group). The same formatter looks complete in SXML and broken in DS — that contrast is the tell.
+
+**Cause:** a `<form class="splunk-formatter-section">` uses a `section-label` that is not one of Dashboard Studio's three standard groups. DS merges Classic formatter sections into its own panel keyed by `section-label` and renders ONLY these (case- and plural-sensitive): `Data configurations` · `Data display` · `Color and style`. Any other label (Effects, Columns, Coloring, Pagination, Appearance, ...) is dropped or duplicated.
+
+**Fix:** rename every formatter section to exactly one of the three; fold effect/animation toggles into `Color and style`. **This applies to ANY Classic custom viz embedded in DS, including hand-authored vizs not produced by cv-create.** (Authoritative emission rule: cv-create/references/formatter-emission.md.)
 
 ### B6: Canvas shadow state leaks
 
