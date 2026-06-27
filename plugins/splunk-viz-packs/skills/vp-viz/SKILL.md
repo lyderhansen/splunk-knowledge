@@ -172,13 +172,13 @@ WRONG: themeMode value="dark"          → MUST be value="auto"
 
 ### Formatter structure
 
-Every viz gets a minimum of 3 sections:
+Classic `formatter.html` uses ONLY these three `section-label` values — exactly, case- and plural-sensitive: `Data configurations` · `Data display` · `Color and style`. Dashboard Studio merges Classic formatter sections into its own config panel keyed by `section-label` and renders ONLY these three groups; any other label (Effects, Columns, Coloring, Appearance, ...) is dropped or shown as a duplicate viz-name-prefixed group, so those controls look "missing" in Studio. Simple XML renders any label as a tab — the same formatter looks complete in SXML and broken in DS. **This applies to ANY Classic custom viz embedded in DS, including hand-authored vizs not produced by this skill.** Fold effect/animation toggles into "Color and style" — never create a 4th section.
+
 1. **NO Data configurations section for most vizs** — field binding via `formatData()` colIdx map (per D-01). Only single-value/generic table get one optional field input.
 2. **Data display** — labels, units, toggles, decimals
-3. **Color and style** — themeMode, series color pickers (1-5), seriesColorsOverflow, fieldColorMap, accentIntensity
-4. **Effects** — individual mood effect toggles (showAmbientLight, showVignette, showGlow, showGlassPanel)
+3. **Color and style** — themeMode, series color pickers (1-5), seriesColorsOverflow, fieldColorMap, accentIntensity, the accentColor picker, AND all effect/animation toggles (showAmbientLight, showVignette, showGlow). `showGlassPanel` is BANNED — do not add it.
 
-Minimum 10 controls. See formatter-patterns.md for the 3-section full example and data binding note.
+Minimum 10 controls. See formatter-patterns.md for the full example and data binding note.
 
 ### Per-viz option derivation (CFG-08)
 

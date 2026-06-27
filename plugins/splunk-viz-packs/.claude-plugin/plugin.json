@@ -1,7 +1,7 @@
 {
   "name": "splunk-viz-packs",
   "description": "Build fully themed Splunk custom visualization apps — branded viz suites with shared design tokens, Canvas 2D rendering, and dual-format output (Classic AMD .tar.gz or Extension API ESM .spl). Takes brand context (palette, fonts, tone) and produces installable Splunk apps with multiple custom vizs sharing one design system. Includes aesthetic scoring (score_design.js), auto-repair validation loop (B5/B7/B9/B10/B20 auto-fix), design quality gate (D01-D11), Extension API checks (E01-E05), asset checks (A01-A04), F3 ES5 compliance, animation boilerplates, multi-channel archetype, and threshold RAG template. Pairs with splunk-dashboard-studio plugin for dashboard JSON.",
-  "version": "5.10.1",
+  "version": "5.10.2",
   "author": {
     "name": "Lyder Hansen"
   },

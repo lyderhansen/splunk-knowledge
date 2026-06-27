@@ -123,6 +123,8 @@ is one row. Match the 3-section structure from Classic formatter.html. Add an `A
 ]
 ```
 
+> **NOTE (FMT-05, OPEN — do not change without verification):** This is the **Extension API** `editorConfig` path, rendered by the viz's own extension — it is NOT the Classic `formatter.html` `<form section-label>` path that Dashboard Studio merges into its three standard groups. The Classic 3-label constraint (`Data configurations` / `Data display` / `Color and style`) that forbids an "Effects" section is **NOT confirmed to apply** to Extension API `editorConfig`. Do **NOT** rename this `"Effects"` group to match the Classic rule without live verification on a Splunk 10.x Extension API instance — renaming could break a working path. The authoritative resolution is tracked in **Phase 54 / EXT-05** (runtime-verified DS-native findings indicate editorConfig labels are free; the 3-label constraint is Classic-only). Until EXT-05 lands, treat this as an open question.
+
 ---
 
 ## Drilldown Wiring

@@ -164,7 +164,7 @@ WRONG: series picker without type=     → series1-5 pickers MUST use type="splu
 WRONG: accentColor/bgColor without type → brand/accent pickers MUST use type="custom"
 WRONG: <form>                          → MUST add class="splunk-formatter-section" section-label="..."
 WRONG: themeMode value="dark"          → MUST be value="auto"
-NOTE:  accentColor picker belongs in Effects section (not Color and style). Controls glow/highlight overlay only — never solid fill. (Phase 23 CP-03)
+NOTE:  accentColor picker belongs in the "Color and style" section. Controls glow/highlight overlay only — never solid fill; used ONLY inside withAlpha(). (Phase 23 CP-03)
 NOTE:  fontColor/bgColor controls ARE correct here (Phase 18 D-11 overrides the older D-03 guidance in this file)
 WRONG: hardcoded if (status === 'ok') → MUST read comma-separated statusOkValues from formatter
                                          and match case-insensitively. Hardcoded status strings
@@ -174,12 +174,11 @@ WRONG: hardcoded if (status === 'ok') → MUST read comma-separated statusOkValu
 
 ## Section structure
 
-Every viz gets a minimum of 3 sections with these EXACT `section-label` values (casing matters):
+Every viz uses ONLY these EXACT `section-label` values (casing and plural matter): `Data configurations` · `Data display` · `Color and style`. Dashboard Studio merges Classic formatter sections into its own config panel keyed by `section-label` and renders ONLY these three groups — any other label (Effects, Columns, Coloring, Appearance, ...) is dropped or duplicated, so the controls look "missing" in Studio. Simple XML renders any label as a tab, so the same formatter looks complete in SXML and broken in DS. **This applies to ANY Classic custom viz embedded in DS, including hand-authored vizs not produced by this skill.** Never create a 4th section — fold effect/animation toggles into "Color and style".
 
 1. **NO `Data configurations` section for most vizs.** Field binding is via `formatData()` column-index map. Only single-value and generic table vizs get a single optional field input with empty default.
 2. `Data display` — labels, units, toggles, decimals
-3. `Color and style` — themeMode, series color pickers (1-5), seriesColorsOverflow, fieldColorMap, accentIntensity
-4. `Effects` — accentColor picker (FIRST), then mood effect toggles (showAmbientLight, showVignette, showGlow). accentColor is ONLY used inside withAlpha() — never ctx.fillStyle = accentColor directly. Default toggles to "true"; user can disable per effect. **Note: showGlassPanel is BANNED — Dashboard Studio rectangles handle panel chrome. Do NOT add it.**
+3. `Color and style` — themeMode, series color pickers (1-5), seriesColorsOverflow, fieldColorMap, accentIntensity, the accentColor picker, AND all mood effect toggles (showAmbientLight, showVignette, showGlow). accentColor is ONLY used inside withAlpha() — never ctx.fillStyle = accentColor directly. Default toggles to "true"; user can disable per effect. **Note: showGlassPanel is BANNED — Dashboard Studio rectangles handle panel chrome. Do NOT add it.**
 
 > **Data binding rule (D-01):** Most vizs do NOT have a "Data configurations" formatter section.
 > The `formatData()` method builds a `colIdx` map from `data.fields` — vizs access columns by
@@ -194,7 +193,7 @@ Add `help=` text only on non-obvious controls (accentIntensity, effect toggles).
 | `"Data Configuration"` (singular, capital C) | `"Data configurations"` |
 | `"Data Display"` (capital D) | `"Data display"` |
 | `"Color and Style"` (capital S) | `"Color and style"` |
-| `"Visual effects"` or `"Mood effects"` | `"Effects"` |
+| `"Effects"`, `"Visual effects"`, or `"Mood effects"` | `"Color and style"` (no separate effects section — DS drops it) |
 
 Structure rules:
 - No wrapper `<div>` around forms — bare `<form>` elements only
@@ -209,10 +208,8 @@ Structure rules:
     <!-- labels, units, toggles, decimals -->
 </form>
 <form class="splunk-formatter-section" section-label="Color and style">
-    <!-- themeMode, series color pickers (1-5), seriesColorsOverflow, fieldColorMap, accentIntensity -->
-</form>
-<form class="splunk-formatter-section" section-label="Effects">
-    <!-- individual mood effect toggles: showAmbientLight, showVignette, showGlow -->
+    <!-- themeMode, series color pickers (1-5), seriesColorsOverflow, fieldColorMap, accentIntensity,
+         accentColor picker, and mood effect toggles: showAmbientLight, showVignette, showGlow -->
 </form>
 ```
 
@@ -351,9 +348,7 @@ using viz-blueprints.md Settings: list as your guide (D-01, D-04).
         <splunk-text-input name="{{VIZ_NAMESPACE}}.accentIntensity" value="50">
         </splunk-text-input>
     </splunk-control-group>
-</form>
-
-<form class="splunk-formatter-section" section-label="Effects">
+    <!-- accentColor + mood effect toggles live HERE, inside "Color and style" — NOT a separate "Effects" section (DS drops non-standard section-labels) -->
     <splunk-control-group label="Accent color" help="Glow and highlight overlay color — used only in withAlpha() for hover, glow halo, and selection ring. Never a solid fill.">
         <splunk-color-picker name="{{VIZ_NAMESPACE}}.accentColor" type="custom" value="#FILL_ACCENT">
             <!-- Populate 6-8 brand colors from theme.js DARK palette -->
@@ -390,7 +385,7 @@ using viz-blueprints.md Settings: list as your guide (D-01, D-04).
 
 ### Animation section
 
-Add after the Effects section. All animation controls are independently toggleable per D-03/D-05/D-06.
+Add these controls inside the "Color and style" section (never a separate section — DS drops non-standard `section-label`s). All animation controls are independently toggleable per D-03/D-05/D-06.
 
 ```html
 <form class="splunk-formatter-section" section-label="Animation">

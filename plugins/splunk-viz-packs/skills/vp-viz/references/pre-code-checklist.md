@@ -9,7 +9,8 @@ Verify EVERY item before writing visualization code. This is the gate between "r
 □ Formatter: type="splunkCategorical" on series color pickers; type="custom" on brand/accent pickers (accentColor, backgroundColor, fontColor, thresholdColor*) (B5)
 □ Formatter: class="splunk-formatter-section" section-label="..." on every <form>
 □ Formatter: themeMode defaults to "auto" (NEVER "dark") (B20)
-□ Formatter: minimum 10 controls (target 14-18 for domain vizs); minimum 3 `section-label` sections (4 sections when Animation section present)
+□ Formatter: minimum 10 controls (target 14-18 for domain vizs)
+□ Formatter: Classic `section-label` is EXACTLY one of `Data configurations` / `Data display` / `Color and style` (case- and plural-sensitive) — NO "Effects"/"Animation"/custom Classic sections. Dashboard Studio drops any other label (controls vanish from the DS config panel). Fold effect/animation toggles into "Color and style". Applies to any Classic viz incl. hand-authored.
 □ Formatter: Color pickers — read theme.js DARK palette, populate 6-8 brand swatches as <splunk-color> elements (accent, series[0-4], bg or panel)
 □ JS light theme: hero text uses t.text, NEVER t.textDim (ghost-text on white — D-08)
 □ JS light theme: light theme is NOT an inversion of dark — design LIGHT token set independently (THM-01)
