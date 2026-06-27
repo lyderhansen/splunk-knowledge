@@ -905,7 +905,7 @@ Plans:
 - [x] Phase 50: cv-sketch Slop Test & Working Patterns Codified (2/2 plans) — SVG arc geometry, markdown-on-shape, Rule 9 bottom-up, shared `_render<X>` helper, three-audience matrix, anti-references persisted (cv 6.0.10, ds 3.5.1)
 - [x] Phase 51: splunk-spl Reference Debt (1/1 plans) — All-time relative_time trap (#27), multisearch+inputlookup, stats round-wrap, wide→tall reshape, token substitution safety (splunk-spl 1.2.1)
 - [ ] Phase 52: splunk-dashboard-studio Reference Debt (0/0 plans) — fillergauge min height, area stackMode enum, pitfalls matrix, ds-data-explore case() wrapper, anti-patterns badge note, 3-step refresh checklist
-- [ ] Phase 53: Formatter Section-Label Consistency (0/0 plans) — fix vp-viz "Effects" contradiction, symptom-first DS-missing-controls debug rule, applies to any Classic viz incl. hand-authored
+- [x] Phase 53: Formatter Section-Label Consistency (2/2 plans) — fix vp-viz "Effects" contradiction, symptom-first DS-missing-controls debug rule, applies to any Classic viz incl. hand-authored
 - [ ] Phase 54: Extension API Correctness + Master/Detail (0/0 plans) — fix wrong dataContract/triggerDrilldown/canSetTokens/editorConfig in cv extension-api.md; document named secondary datasources, eventHandler token path, flat payload keys, datasource-less widgets, in-panel master/detail
 
 Sources: `tests/test51_cucm/HANDOFF.md` (Cisco UC) + `tests/test52_asus_rog/HANDOFF.md` (Asus ROG) + live DS formatter-label debugging (Phase 53) + `ds_master_detail_test/HANDOVER-ds-native-master-detail.md` (runtime-verified on Splunk 10.4.0, Phase 54). Target plugins: splunk-custom-viz · splunk-spl · splunk-dashboard-studio. Phase 53 also re-includes legacy **splunk-viz-packs** (vp-viz) for the formatter contradiction fix.
@@ -1103,5 +1103,5 @@ Plans:
 | 50. cv-sketch Slop Test & Working Patterns Codified | v6.1 | 0/0 | Not started | - |
 | 51. splunk-spl Reference Debt | v6.1 | 0/0 | Not started | - |
 | 52. splunk-dashboard-studio Reference Debt | v6.1 | 0/0 | Not started | - |
-| 53. Formatter Section-Label Consistency | v6.1 | 0/0 | Not started | - |
+| 53. Formatter Section-Label Consistency | v6.1 | 2/2 | Complete | 2026-06-27 |
 | 54. Extension API Correctness + Master/Detail | v6.1 | 0/0 | Not started | - |
