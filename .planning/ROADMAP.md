@@ -897,7 +897,7 @@ Plans:
 **UI hint**: yes
 
 <details open>
-<summary>🚧 v6.1 HANDOFF Harvest (Phases 47-53) — IN PROGRESS, started 2026-05-27</summary>
+<summary>🚧 v6.1 HANDOFF Harvest (Phases 47-54) — IN PROGRESS, started 2026-05-27</summary>
 
 - [x] Phase 47: Validator Hardening (2/2 plans) — K1b/K5/K6/K7 + no-regression sweep across 49 packs, shipped in splunk-custom-viz v6.0.9
 - [ ] Phase 48: Font Embedding Pipeline (0/0 plans) — declared brand fonts actually land in the Splunk iframe
@@ -906,8 +906,9 @@ Plans:
 - [x] Phase 51: splunk-spl Reference Debt (1/1 plans) — All-time relative_time trap (#27), multisearch+inputlookup, stats round-wrap, wide→tall reshape, token substitution safety (splunk-spl 1.2.1)
 - [ ] Phase 52: splunk-dashboard-studio Reference Debt (0/0 plans) — fillergauge min height, area stackMode enum, pitfalls matrix, ds-data-explore case() wrapper, anti-patterns badge note, 3-step refresh checklist
 - [ ] Phase 53: Formatter Section-Label Consistency (0/0 plans) — fix vp-viz "Effects" contradiction, symptom-first DS-missing-controls debug rule, applies to any Classic viz incl. hand-authored
+- [ ] Phase 54: Extension API Correctness + Master/Detail (0/0 plans) — fix wrong dataContract/triggerDrilldown/canSetTokens/editorConfig in cv extension-api.md; document named secondary datasources, eventHandler token path, flat payload keys, datasource-less widgets, in-panel master/detail
 
-Sources: `tests/test51_cucm/HANDOFF.md` (Cisco UC) + `tests/test52_asus_rog/HANDOFF.md` (Asus ROG) + live DS formatter-label debugging (Phase 53). Target plugins: splunk-custom-viz · splunk-spl · splunk-dashboard-studio. Phase 53 also re-includes legacy **splunk-viz-packs** (vp-viz) for the formatter contradiction fix.
+Sources: `tests/test51_cucm/HANDOFF.md` (Cisco UC) + `tests/test52_asus_rog/HANDOFF.md` (Asus ROG) + live DS formatter-label debugging (Phase 53) + `ds_master_detail_test/HANDOVER-ds-native-master-detail.md` (runtime-verified on Splunk 10.4.0, Phase 54). Target plugins: splunk-custom-viz · splunk-spl · splunk-dashboard-studio. Phase 53 also re-includes legacy **splunk-viz-packs** (vp-viz) for the formatter contradiction fix.
 
 </details>
 
@@ -1029,6 +1030,23 @@ Plans:
 
 **Plans**: TBD
 
+### Phase 54: Extension API Correctness + Master/Detail
+
+**Goal**: Correct the materially-wrong DS-native (Extension API) guidance in `cv-create/references/extension-api.md` and document three runtime-verified capabilities it omits — named secondary datasources, in-panel master/detail, and datasource-less widgets — using the authoritative findings from `ds_master_detail_test/HANDOVER-ds-native-master-detail.md` (verified live on Splunk Enterprise 10.4.0, 2026-06-27).
+**Depends on**: Phase 44 (independent — pure cv reference-doc correction). Resolves the FMT-05 open question from Phase 53 authoritatively (Extension API editorConfig labels are NOT constrained to the 3 Classic groups).
+**Source**: `ds_master_detail_test/HANDOVER-ds-native-master-detail.md` — runtime-instrumented POC at v0.1.5, contradicts official Splunk docs and our current reference. Target plugin: splunk-custom-viz only.
+**Requirements**: EXT-01, EXT-02, EXT-03, EXT-04, EXT-05, EXT-06
+**Success Criteria** (what must be TRUE):
+
+  1. User reading `extension-api.md` sees the corrected `dataContract` shape `{ requiredDataSources:[...], optionalDataSources:[...] }` — the current `{ primary:{ required, optional } }` form (which does not match any shipping viz) is gone (EXT-01)
+  2. User reading `extension-api.md` sees that direct `triggerDrilldown({action:'setToken'})` is INERT on 10.4, and the working token path documented: viz emits `triggerDrilldown({ action:'custom.click', payload })` (event type MUST end in `.click`), dashboard maps it via a `drilldown.setToken` eventHandler with `tokens:[{token, key}]`; `config.json` needs `showDrilldown:true` + `hasEventHandlers:true` (EXT-02)
+  3. User reading `extension-api.md` sees the flat payload-key contract: eventHandler `key` does a flat `payload[key]` read (not a nested path), so dynamic field drilldown emits the whole row as flat dotted keys (`row.<field>.value`); the three working `key` forms (`value` = clicked cell, `name` = clicked field, `row.<field>.value` = pinned field) are documented; and token READBACK is flat (`tokens.submitted.<name>` is a string) while AUTHORING `defaults.tokens.default` stays object form `{ "<name>": { "value": "…" } }` (EXT-03)
+  4. User reading `extension-api.md` finds the named-secondary-datasource + in-panel master/detail pattern: `optionalDataSources:["detail"]` in config.json, `dataSources:{ primary, detail }` in dashboard JSON, both delivered (columnar) via `addDataSourcesListener`, and the click→token→detail-rerun→listener loop that yields a live sub-search inside one panel (EXT-04)
+  5. User reading `extension-api.md` finds: datasource-less rendering works (`requiredDataSources` is a hint not a render gate — token-setting control panels / buttons / API-driven widgets are possible); `canSetTokens` corrected (array form e.g. `["dynamic"]`, noted as not gating the token path); and `editorConfig` corrected to the array-of-`{label, layout}` shape — which also RESOLVES FMT-05 (Extension API editorConfig labels are free, the 3-label constraint is Classic-only) (EXT-05)
+  6. User reading `extension-api.md` (or a cv-build authoring note) finds how to author without the interactive `@splunk/create` CLI: copy the template `build.mjs`/`package.mjs`/build-plugins verbatim, patch `package.mjs` to bundle `package/default/data` so a DS dashboard ships in the app, and the `type` = `<appId>.<vizDirName>` gotcha (EXT-06)
+
+**Plans**: TBD
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -1086,3 +1104,4 @@ Plans:
 | 51. splunk-spl Reference Debt | v6.1 | 0/0 | Not started | - |
 | 52. splunk-dashboard-studio Reference Debt | v6.1 | 0/0 | Not started | - |
 | 53. Formatter Section-Label Consistency | v6.1 | 0/0 | Not started | - |
+| 54. Extension API Correctness + Master/Detail | v6.1 | 0/0 | Not started | - |

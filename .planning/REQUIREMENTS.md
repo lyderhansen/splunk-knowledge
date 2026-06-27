@@ -71,6 +71,17 @@
 - [ ] **FMT-05**: The Extension API `editorConfig` path (`vp-viz/references/config-json-template.md` "Effects" label) is investigated on a live viz; the finding is documented (whether the 3-label constraint applies to Extension API too) and the "Effects" editorConfig label is either confirmed safe and kept, or corrected — NOT blindly renamed
 - [ ] **FMT-06**: Companion DS custom-viz gotchas verified/strengthened: (a) namespace dual-read documented as the 3-way probe (getPropertyNamespaceInfo ns+key → short `<app>.<viz>.<key>` → bare key) with the SXML long-key form `display.visualizations.custom.<app>.<viz>.<key>` stated alongside the short-key dashboard form; (b) preview.png auto-discovery semantics stated (ships at `appserver/static/visualizations/<viz>/preview.png`, Splunk auto-discovers with no `visualizations.conf` reference, picker tile blank if missing)
 
+### Extension API Correctness + Master/Detail (`cv-create/references/extension-api.md`) — added 2026-06-27 from runtime-verified DS-native POC
+
+Source: `ds_master_detail_test/HANDOVER-ds-native-master-detail.md` (verified live on Splunk Enterprise 10.4.0). Contradicts official Splunk docs and our current reference.
+
+- [ ] **EXT-01**: User reading `extension-api.md` sees the corrected `dataContract` shape `{ requiredDataSources:[...], optionalDataSources:[...] }`; the current invented `{ primary:{ required, optional } }` form is removed
+- [ ] **EXT-02**: User reading `extension-api.md` sees that direct `triggerDrilldown({action:'setToken'})` is INERT on 10.4, and the working token path: viz emits `triggerDrilldown({ action:'custom.click', payload })` (event type MUST end in `.click`), dashboard maps via `drilldown.setToken` eventHandler `tokens:[{token, key}]`, config.json needs `showDrilldown:true`+`hasEventHandlers:true`
+- [ ] **EXT-03**: User reading `extension-api.md` sees the flat payload-key contract (eventHandler `key` = flat `payload[key]`, not nested path → emit whole row as flat dotted `row.<field>.value` keys), the three working `key` forms (`value`/`name`/`row.<field>.value`), and flat token readback (`tokens.submitted.<name>` string) vs object authoring (`defaults.tokens.default` = `{ "<name>": { "value": "…" } }`)
+- [ ] **EXT-04**: User reading `extension-api.md` finds the named-secondary-datasource + in-panel master/detail pattern: `optionalDataSources:["detail"]`, dashboard `dataSources:{primary, detail}`, both delivered columnar via `addDataSourcesListener`, click→token→detail-rerun→listener loop
+- [ ] **EXT-05**: User reading `extension-api.md` finds datasource-less rendering (`requiredDataSources` is a hint, not a render gate), `canSetTokens` corrected (array form, not gating), and `editorConfig` corrected to array-of-`{label, layout}` — which RESOLVES FMT-05 (Extension API editorConfig labels are free; the 3-label constraint is Classic-only)
+- [ ] **EXT-06**: User reading `extension-api.md` (or a cv-build authoring note) finds how to author without the interactive `@splunk/create` CLI: copy template build/packager verbatim, patch `package.mjs` to bundle `package/default/data` (ship a DS dashboard in the app), and the `type` = `<appId>.<vizDirName>` gotcha
+
 ---
 
 ## Out of Scope (v6.1)
@@ -125,5 +136,11 @@ Explicit exclusions with reasoning:
 | FMT-04 | Phase 53 | Mapped |
 | FMT-05 | Phase 53 | Mapped |
 | FMT-06 | Phase 53 | Mapped |
+| EXT-01 | Phase 54 | Mapped |
+| EXT-02 | Phase 54 | Mapped |
+| EXT-03 | Phase 54 | Mapped |
+| EXT-04 | Phase 54 | Mapped |
+| EXT-05 | Phase 54 | Mapped |
+| EXT-06 | Phase 54 | Mapped |
 
-**Total: 35 requirements** across 8 categories (5 VAL · 3 FONT · 3 MERGE · 3 SKETCH · 4 PATTERN · 5 SPL · 6 DS · 6 FMT).
+**Total: 41 requirements** across 9 categories (5 VAL · 3 FONT · 3 MERGE · 3 SKETCH · 4 PATTERN · 5 SPL · 6 DS · 6 FMT · 6 EXT).
